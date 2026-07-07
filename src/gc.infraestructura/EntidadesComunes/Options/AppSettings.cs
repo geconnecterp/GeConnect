@@ -44,6 +44,8 @@ namespace gc.infraestructura.Core.EntidadesComunes.Options
 
         public string RutaFileCaja { get; set; } = string.Empty;
         public string TipoCuil { get; set; } = "80";
+        public string NotaCreditoDevolucionAfipId { get; set; } = "%";
+        public string NotaCreditoDevolucionOptId { get; set; } = "VE";
     }
     
 }

@@ -1083,10 +1083,10 @@ namespace gc.caja.Areas.Facturacion.Controllers
                 }
 
                 var esConsumidorFinal = string.Equals(
-    clienteActual.Origen,
-    "F",
-    StringComparison.OrdinalIgnoreCase
-);
+                            clienteActual.Origen,
+                            "F",
+                            StringComparison.OrdinalIgnoreCase
+                        );
 
                 // Reconsulta SPGECO_CAJA_Valores_NC y construye las uniones canónicas.
                 // Nunca se serializan directamente las uniones que llegaron del navegador.

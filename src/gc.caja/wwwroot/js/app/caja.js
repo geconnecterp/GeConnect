@@ -989,7 +989,145 @@ $(function () {
             }
         });
     }
-    function abrirModuloDevolucion() { console.log('↩️ Devolución NC...'); }
+    function abrirModuloDevolucion() {
+        console.log('↩️ Iniciando validación para Nota de Crédito por Devolución...');
+
+        if (
+            typeof notaCreditoDevolucionValidarUrl === 'undefined' ||
+            !notaCreditoDevolucionValidarUrl ||
+            typeof notaCreditoDevolucionInicializaUrl === 'undefined' ||
+            !notaCreditoDevolucionInicializaUrl
+        ) {
+            console.error(
+                'No están definidas las URLs del módulo Nota de Crédito por Devolución.'
+            );
+
+            AbrirMensaje(
+                'Error de configuración',
+                'No se pudo preparar el módulo de Nota de Crédito por Devolución.',
+                function () {
+                    $('#msjModal').modal('hide');
+                },
+                false,
+                ['Aceptar'],
+                'error!',
+                null
+            );
+
+            return;
+        }
+
+        mostrarLoader(
+            "Validando datos de caja...<br>" +
+            "<small class='text-muted'>Preparando módulo de Nota de Crédito por Devolución</small>"
+        );
+
+        $.ajax({
+            url: notaCreditoDevolucionValidarUrl,
+            type: 'POST',
+            dataType: 'json',
+            timeout: 10000,
+
+            success: function (response) {
+                ocultarLoader();
+
+                if (!response || response.success !== true) {
+                    const mensaje =
+                        response?.message ||
+                        'No fue posible validar los datos de caja para iniciar la devolución.';
+
+                    console.error(
+                        'Validación fallida para NC por Devolución:',
+                        mensaje
+                    );
+
+                    AbrirMensaje(
+                        'Error de validación',
+                        `<div class="text-center">
+                        <i class='bx bx-error-circle text-danger'
+                           style='font-size: 3rem;'></i>
+                        <p class="mt-3">${mensaje}</p>
+                        <hr>
+                        <small class="text-muted">
+                            Verifique la configuración de caja o contacte al administrador.
+                        </small>
+                    </div>`,
+                        function () {
+                            $('#msjModal').modal('hide');
+                        },
+                        false,
+                        ['Aceptar'],
+                        'error!',
+                        null
+                    );
+
+                    return;
+                }
+
+                console.log(
+                    'Validación exitosa. Abriendo módulo de Nota de Crédito por Devolución.'
+                );
+
+                const menuModal = getModalMenu();
+
+                if (menuModal) {
+                    menuModal.hide();
+                }
+
+                mostrarLoader(
+                    "Abriendo módulo de Nota de Crédito por Devolución...<br>" +
+                    "<small class='text-muted'>Por favor, espere...</small>"
+                );
+
+                setTimeout(function () {
+                    window.location.href = notaCreditoDevolucionInicializaUrl;
+                }, 800);
+            },
+
+            error: function (xhr, status, error) {
+                ocultarLoader();
+
+                console.error(
+                    'Error al validar datos para NC por Devolución:',
+                    {
+                        status: xhr?.status,
+                        textStatus: status,
+                        error
+                    }
+                );
+
+                let mensaje =
+                    'Error al validar los datos de caja para Nota de Crédito por Devolución.';
+
+                if (status === 'timeout') {
+                    mensaje =
+                        'La validación tardó demasiado tiempo. Intente nuevamente.';
+                } else if (xhr?.status === 500) {
+                    mensaje =
+                        'Error interno del servidor. Contacte al administrador.';
+                } else if (xhr?.responseJSON?.message) {
+                    mensaje = xhr.responseJSON.message;
+                }
+
+                AbrirMensaje(
+                    'Error',
+                    `<div class="text-center">
+                    <i class='bx bx-error-circle text-danger'
+                       style='font-size: 3rem;'></i>
+                    <p class="mt-3">${mensaje}</p>
+                </div>`,
+                    function () {
+                        $('#msjModal').modal('hide');
+                    },
+                    false,
+                    ['Aceptar'],
+                    'error!',
+                    null
+                );
+            }
+        });
+    }
+
     function abrirModuloDebitoCredito() { console.log('💳 Débito y Crédito...'); }
     function abrirModuloCobranzacc() {
         console.log('💰 Iniciando Módulo Cobranza en Cuenta Corriente');

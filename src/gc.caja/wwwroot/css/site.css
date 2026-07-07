@@ -7250,3 +7250,369 @@ span[data-bs-toggle="tooltip"] {
 #virtual-keyboard {
     z-index: 5020 !important;
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   NOTA DE CRÉDITO POR DEVOLUCIÓN
+   Integración con estilo Golden existente
+   ═══════════════════════════════════════════════════════════════ */
+
+/* El estilo Golden original contemplaba form-control, pero no select. */
+.modal-golden .form-select:focus {
+    border-color: #b8860b;
+    box-shadow: 0 0 0 0.2rem rgba(184, 134, 11, 0.25);
+}
+
+/* Contenedor de tablas Golden dentro de modales. */
+.modal-golden .table-wrapper-500-full-width {
+    border: 1px solid #f5e7c1;
+    border-radius: 6px;
+    background-color: #ffffff;
+}
+
+    /* Evita margen inferior adicional dentro del contenedor scrolleable. */
+    .modal-golden .table-wrapper-500-full-width .table-golden {
+        margin-bottom: 0;
+    }
+
+/*
+   AbrirMensaje utiliza #msjModal.
+   Debe mostrarse por encima de un modal Golden activo,
+   especialmente durante "Cancelar operación".
+*/
+#msjModal.modal.show {
+    z-index: 5110 !important;
+}
+
+    #msjModal.modal.show ~ .modal-backdrop {
+        z-index: 5109 !important;
+    }
+
+#msjModal .modal-dialog {
+    z-index: 5111 !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   GOLDEN COMPACT
+   Grids protagonistas + información compacta
+   ═══════════════════════════════════════════════════════════════ */
+
+.table-golden-header-compact th,
+.table-golden-header-compact .th-compact {
+    padding: 0.35rem 0.45rem !important;
+    font-size: 0.72rem;
+    line-height: 1.1;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+    vertical-align: middle;
+}
+
+.table-golden td.td-compact,
+.table-golden tbody td {
+    padding: 0.32rem 0.45rem;
+    font-size: 0.83rem;
+    vertical-align: middle;
+}
+
+.table-golden.table-sm tbody td {
+    padding: 0.28rem 0.42rem;
+    font-size: 0.81rem;
+}
+
+.golden-summary-compact .card-header {
+    padding: 0.55rem 0.85rem;
+    min-height: auto;
+}
+
+    .golden-summary-compact .card-header strong {
+        font-size: 0.95rem;
+    }
+
+.golden-summary-compact .card-body {
+    padding: 0.75rem 0.95rem;
+}
+
+.golden-summary-compact dl.row {
+    margin-bottom: 0;
+}
+
+.golden-summary-compact dt,
+.golden-summary-compact dd {
+    margin-bottom: 0.35rem;
+    font-size: 0.80rem;
+    line-height: 1.2;
+}
+
+.golden-summary-compact dt {
+    font-weight: 700;
+}
+
+.golden-summary-compact dd {
+    word-break: break-word;
+}
+
+.ncdev-modal-body-compact {
+    padding: 0.85rem 1rem 0.75rem 1rem !important;
+}
+
+.ncdev-section-gap-compact {
+    margin-bottom: 0.75rem !important;
+}
+
+.ncdev-alert-compact {
+    padding: 0.55rem 0.8rem;
+    margin-bottom: 0.75rem;
+    font-size: 0.90rem;
+}
+
+.ncdev-grid-note-compact {
+    font-size: 0.80rem;
+    margin-top: 0.45rem !important;
+}
+
+.ncdev-grid-zone-priority {
+    margin-top: 0.15rem;
+}
+
+    .ncdev-grid-zone-priority .table-wrapper-500-full-width {
+        min-height: 360px;
+    }
+
+    .ncdev-grid-zone-priority .table-responsive {
+        max-height: 420px;
+    }
+
+    .ncdev-grid-zone-priority .table-golden {
+        margin-bottom: 0;
+    }
+
+.ncdev-badge-compact {
+    font-size: 0.72rem;
+    padding: 0.28rem 0.48rem;
+}
+
+.ncdev-modal-header-compact .modal-title {
+    margin-bottom: 0.10rem !important;
+    font-size: 1.15rem;
+}
+
+.ncdev-modal-header-compact small {
+    font-size: 0.78rem;
+}
+
+.ncdev-modal-footer-compact {
+    padding: 0.55rem 1rem;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   NC DEVOLUCIÓN - MODAL FULLSCREEN
+   Grid como elemento principal de la vista
+   ═══════════════════════════════════════════════════════════════ */
+
+#modalProductoDevolucion .modal-dialog.ncdev-modal-dialog-fullscreen {
+    width: 100vw;
+    max-width: none;
+    height: 100vh;
+    height: 100dvh;
+    margin: 0;
+}
+
+#modalProductoDevolucion .modal-content {
+    height: 100vh;
+    height: 100dvh;
+    border-radius: 0;
+    overflow: hidden;
+}
+
+#modalProductoDevolucion .modal-header {
+    flex: 0 0 auto;
+    padding: 0.70rem 1.25rem;
+}
+
+#modalProductoDevolucion .modal-footer {
+    flex: 0 0 auto;
+    padding: 0.55rem 1.25rem;
+}
+
+#modalProductoDevolucion .ncdev-productos-modal-body {
+    display: flex;
+    flex: 1 1 auto;
+    min-height: 0;
+    padding: 0.75rem 1rem;
+    overflow: hidden;
+}
+
+.ncdev-productos-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(290px, 30%);
+    gap: 0.75rem;
+    width: 100%;
+    min-height: 0;
+}
+
+.ncdev-productos-main {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 0;
+}
+
+.ncdev-productos-sidebar {
+    display: flex;
+    flex-direction: column;
+    align-self: stretch;
+    gap: 0.75rem;
+    min-width: 0;
+    min-height: 0;
+}
+
+.ncdev-sidebar-card {
+    flex: 0 0 auto;
+}
+
+    .ncdev-sidebar-card .card-header {
+        padding: 0.55rem 0.80rem;
+    }
+
+        .ncdev-sidebar-card .card-header strong {
+            font-size: 0.88rem;
+        }
+
+    .ncdev-sidebar-card .card-body {
+        padding: 0.65rem 0.80rem;
+        overflow-wrap: anywhere;
+    }
+
+        .ncdev-sidebar-card .card-body dl,
+        .ncdev-sidebar-card .card-body .row {
+            margin-bottom: 0;
+        }
+
+        .ncdev-sidebar-card .card-body dt,
+        .ncdev-sidebar-card .card-body dd {
+            margin-bottom: 0.32rem;
+            font-size: 0.80rem;
+            line-height: 1.15;
+        }
+
+.ncdev-productos-main > .alert,
+.ncdev-productos-main > .ncdev-productos-mensajes {
+    flex: 0 0 auto;
+}
+
+#ncDevolucionProductosManual {
+    flex: 0 0 auto;
+    margin-bottom: 0.50rem !important;
+}
+
+    #ncDevolucionProductosManual .card-body {
+        padding: 0.60rem 0.85rem;
+    }
+
+    #ncDevolucionProductosManual .form-text {
+        margin-top: 0.25rem;
+        font-size: 0.76rem;
+    }
+
+#ncDevolucionProductosEstado {
+    flex: 0 0 auto;
+    padding: 0.50rem 0.75rem;
+    margin-bottom: 0.50rem;
+    font-size: 0.86rem;
+}
+
+.ncdev-productos-mensajes {
+    max-height: 120px;
+    overflow-y: auto;
+    margin-bottom: 0.50rem;
+}
+
+#ncDevolucionProductosResultado {
+    flex: 1 1 auto;
+    min-height: 0;
+}
+
+    #ncDevolucionProductosResultado:not(.d-none) {
+        display: flex;
+        flex-direction: column;
+    }
+
+    #ncDevolucionProductosResultado .ncdev-grid-zone-priority {
+        display: flex;
+        flex: 1 1 auto;
+        min-height: 0;
+        margin-top: 0;
+    }
+
+    #ncDevolucionProductosResultado .table-wrapper-500-full-width {
+        display: flex;
+        flex: 1 1 auto;
+        min-height: 0;
+        min-height: 300px;
+        border-radius: 6px;
+        overflow: hidden;
+    }
+
+    #ncDevolucionProductosResultado .table-responsive {
+        flex: 1 1 auto;
+        max-height: none !important;
+        height: 100%;
+        overflow-y: auto;
+    }
+
+    #ncDevolucionProductosResultado .table-golden {
+        margin-bottom: 0;
+    }
+
+        #ncDevolucionProductosResultado .table-golden thead {
+            z-index: 2;
+        }
+
+        #ncDevolucionProductosResultado .table-golden tbody td {
+            white-space: nowrap;
+        }
+
+            #ncDevolucionProductosResultado .table-golden tbody td:nth-child(2) {
+                width: 100%;
+                white-space: normal;
+            }
+
+@media (max-width: 1199.98px) {
+    #modalProductoDevolucion .ncdev-productos-modal-body {
+        overflow-y: auto;
+    }
+
+    .ncdev-productos-layout {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .ncdev-productos-sidebar {
+        order: -1;
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    #ncDevolucionProductosResultado .table-wrapper-500-full-width {
+        min-height: 360px;
+    }
+}
+
+@media (max-width: 767.98px) {
+    #modalProductoDevolucion .modal-header {
+        padding: 0.55rem 0.75rem;
+    }
+
+    #modalProductoDevolucion .ncdev-productos-modal-body {
+        padding: 0.50rem;
+    }
+
+    .ncdev-productos-sidebar {
+        display: flex;
+        flex-direction: column;
+    }
+
+    #ncDevolucionProductosResultado .table-wrapper-500-full-width {
+        min-height: 300px;
+    }
+}

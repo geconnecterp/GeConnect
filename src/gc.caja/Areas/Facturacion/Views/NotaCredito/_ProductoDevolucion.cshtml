@@ -1,0 +1,303 @@
+﻿<div class="modal fade modal-golden"
+     id="modalProductoDevolucion"
+     tabindex="-1"
+     aria-labelledby="modalProductoDevolucionLabel"
+     aria-hidden="true"
+     data-bs-backdrop="static"
+     data-bs-keyboard="false">
+
+    <div class="modal-dialog modal-fullscreen ncdev-modal-dialog-fullscreen">
+
+        <div class="modal-content">
+
+            <div class="modal-header ncdev-modal-header-compact">
+
+                <div>
+                    <h5 id="modalProductoDevolucionLabel"
+                        class="modal-title">
+
+                        <i class="bx bx-package me-1"></i>
+                        Productos de la Devolución
+                    </h5>
+
+                    <small>
+                        Comprobante original y detalle de productos a devolver.
+                    </small>
+                </div>
+
+                <div class="d-flex align-items-center ms-3">
+
+                    <span id="ncDevolucionModalidadBadge"
+                          class="badge bg-primary me-2 ncdev-badge-compact">
+                        Sin definir
+                    </span>
+
+                    <span id="ncDevolucionCantidadProductos"
+                          class="badge bg-white text-dark ncdev-badge-compact">
+                        0 productos
+                    </span>
+                </div>
+            </div>
+
+            <div class="modal-body ncdev-productos-modal-body">
+
+                <div class="ncdev-productos-layout">
+
+                    @* ======================================================
+                       ZONA PRINCIPAL - 70%
+                       Carga manual + mensajes + grilla
+                       ====================================================== *@
+                    <section class="ncdev-productos-main">
+
+                        <div id="ncDevolucionProductosManual"
+                             class="d-none">
+
+                            <div class="card card-golden card-golden-bordered golden-summary-compact">
+
+                                <div class="card-header d-flex justify-content-between align-items-center">
+
+                                    <strong>
+                                        <i class="bx bx-barcode-reader me-1"></i>
+                                        Carga Manual de Productos
+                                    </strong>
+
+                                    <span class="badge bg-light text-dark ncdev-badge-compact">
+                                        Código o cantidad+código
+                                    </span>
+                                </div>
+
+                                <div class="card-body">
+
+                                    <div class="row g-2 align-items-end">
+
+                                        <div class="col-lg-9">
+
+                                            <label for="txtNcDevolucionCodigoProducto"
+                                                   class="form-label mb-1 small fw-semibold">
+
+                                                Código de producto
+                                            </label>
+
+                                            <input type="text"
+                                                   id="txtNcDevolucionCodigoProducto"
+                                                   class="form-control"
+                                                   maxlength="36"
+                                                   autocomplete="off"
+                                                   inputmode="text"
+                                                   placeholder="EAN, código interno o cantidad+código"
+                                                   aria-describedby="ncDevolucionAyudaCodigoProducto" />
+
+                                            <div id="ncDevolucionAyudaCodigoProducto"
+                                                 class="form-text">
+
+                                                Ejemplos:
+                                                <code>7790070036599</code>,
+                                                <code>004627</code>,
+                                                <code>2+7790070036599</code>,
+                                                <code>1.250+004627</code>.
+                                            </div>
+                                        </div>
+
+                                        <div class="col-lg-3 d-grid">
+
+                                            <button type="button"
+                                                    id="btnNcDevolucionAgregarProducto"
+                                                    class="btn btn-golden">
+
+                                                <span id="spnNcDevolucionAgregarProducto"
+                                                      class="spinner-border spinner-border-sm d-none me-2"
+                                                      role="status"
+                                                      aria-hidden="true">
+                                                </span>
+
+                                                <i id="icoNcDevolucionAgregarProducto"
+                                                   class="bx bx-plus-circle me-1">
+                                                </i>
+
+                                                Agregar
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <div id="ncDevolucionEstadoEntradaManual"
+                                         class="small text-muted mt-2">
+
+                                        <i class="bx bx-info-circle me-1"></i>
+                                        Presione <kbd>Enter</kbd> o <strong>Agregar</strong> para incorporar un producto.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="ncDevolucionProductosEstado"
+                             class="alert alert-info"
+                             role="alert"
+                             aria-live="polite">
+
+                            <i class="bx bx-info-circle me-1"></i>
+                            Esperando definición de la modalidad de carga.
+                        </div>
+
+                        <div id="ncDevolucionProductosCargando"
+                             class="alert alert-info d-none"
+                             role="status">
+
+                            <span class="spinner-border spinner-border-sm me-2"
+                                  aria-hidden="true">
+                            </span>
+
+                            Consultando productos del comprobante original...
+                        </div>
+
+                        <div id="ncDevolucionProductosError"
+                             class="alert alert-danger d-none"
+                             role="alert">
+                        </div>
+
+                        <div class="ncdev-productos-mensajes">
+
+                            <div id="ncDevolucionAdvertenciasProductos"
+                                 class="alert alert-warning d-none mb-2"
+                                 role="alert">
+
+                                <div class="fw-semibold mb-1">
+                                    <i class="bx bx-error-circle me-1"></i>
+                                    Advertencias
+                                </div>
+
+                                <ul id="ncDevolucionListaAdvertenciasProductos"
+                                    class="mb-0 ps-3">
+                                </ul>
+                            </div>
+
+                            <div id="ncDevolucionRechazosProductos"
+                                 class="alert alert-danger d-none mb-2"
+                                 role="alert">
+
+                                <div class="fw-semibold mb-1">
+                                    <i class="bx bx-x-circle me-1"></i>
+                                    Productos no incorporados
+                                </div>
+
+                                <ul id="ncDevolucionListaRechazosProductos"
+                                    class="mb-0 ps-3">
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div id="ncDevolucionProductosResultado"
+                             class="d-none">
+
+                            <div class="ncdev-grid-zone-priority">
+
+                                <div class="table-wrapper-500-full-width">
+
+                                    <div class="table-responsive">
+
+                                        <table class="table table-sm table-hover mb-0 table-golden align-middle"
+                                               id="tbNcDevolucionProductos">
+
+                                            <thead class="sticky-top table-golden-header-compact">
+                                                <tr class="header">
+
+                                                    <th class="text-center th-compact"
+                                                        style="width: 14%;">
+                                                        Código
+                                                    </th>
+
+                                                    <th class="th-compact">
+                                                        Descripción
+                                                    </th>
+
+                                                    <th class="text-end th-compact"
+                                                        style="width: 10%;">
+                                                        Cantidad
+                                                    </th>
+
+                                                    <th class="text-end th-compact"
+                                                        style="width: 14%;">
+                                                        Precio Unitario
+                                                    </th>
+
+                                                    <th class="text-end th-compact"
+                                                        style="width: 14%;">
+                                                        Neto
+                                                    </th>
+
+                                                    <th class="text-end th-compact"
+                                                        style="width: 12%;">
+                                                        IVA
+                                                    </th>
+                                                </tr>
+                                            </thead>
+
+                                            <tbody id="ncDevolucionTablaProductos">
+
+                                                <tr>
+                                                    <td colspan="6"
+                                                        class="text-center text-muted py-4 td-compact">
+
+                                                        No hay productos cargados para esta devolución.
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    @* ======================================================
+                       PANEL CONTEXTUAL - 30%
+                       Arriba: comprobante origen
+                       Abajo: nota de crédito
+                       ====================================================== *@
+                    <aside class="ncdev-productos-sidebar">
+
+                        <div class="card card-golden card-golden-bordered golden-summary-compact ncdev-sidebar-card">
+
+                            <div class="card-header">
+
+                                <strong>
+                                    <i class="bx bx-receipt me-1"></i>
+                                    Comprobante Original
+                                </strong>
+                            </div>
+
+                            <div id="ncDevolucionProductoResumenOrigen"
+                                 class="card-body">
+                            </div>
+                        </div>
+
+                        <div class="card card-golden card-golden-bordered golden-summary-compact ncdev-sidebar-card">
+
+                            <div class="card-header">
+
+                                <strong>
+                                    <i class="bx bx-file me-1"></i>
+                                    Nota de Crédito a Emitir
+                                </strong>
+                            </div>
+
+                            <div id="ncDevolucionProductoResumenNc"
+                                 class="card-body">
+                            </div>
+                        </div>
+                    </aside>
+                </div>
+            </div>
+
+            <div class="modal-footer ncdev-modal-footer-compact">
+
+                <button type="button"
+                        id="btnCancelarNcDevolucionProductos"
+                        class="btn btn-outline-secondary">
+
+                    <i class="bx bx-x-circle me-1"></i>
+                    Cancelar operación
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
