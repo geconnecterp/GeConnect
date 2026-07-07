@@ -43,5 +43,7 @@ namespace gc.api.core.Contratos.Servicios
         List<SaldoResumenDto> BuscarSaldoResumenCtaDistribuidora(BuscarSaldoDetalleRequest filtros);
         List<ComisionesDeVendedoresDetalleDto> BuscarComisionDeVendedorDetalle(ComisionesDeVendedoresRequest filtros);
         List<ComisionesDeVendedoresResumenDto> BuscarComisionDeVendedorResumen(ComisionesDeVendedoresRequest filtros);
+        List<ComisionesDeRepartidoresDetalleDto> BuscarComisionDeRepartidorDetalle(ComisionesDeRepartidoresRequest filtros);
+        List<ComisionesDeRepartidoresResumenDto> BuscarComisionDeRepartidorResumen(ComisionesDeRepartidoresRequest filtros);
 	}
 }

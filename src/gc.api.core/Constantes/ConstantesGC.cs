@@ -509,6 +509,8 @@
 			public const string SP_CONS_C_VTO_X_VE_RESUMEN = "SPGECO_C_Vto_X_Ve_Resumen";
 			public const string SP_CONS_C_COMISIONES_VE = "SPGECO_C_Comisiones_Ve";
 			public const string SP_CONS_C_COMISIONES_VE_RESUMEN = "SPGECO_C_Comisiones_Ve_Resumen";
+			public const string SP_CONS_C_COMISIONES_RP = "SPGECO_C_Comisiones_Rp";
+			public const string SP_CONS_C_COMISIONES_RP_RESUMEN = "SPGECO_C_Comisiones_Rp_Resumen";
 			#endregion
 
 			#region Certificados

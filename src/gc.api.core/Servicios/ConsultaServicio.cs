@@ -775,5 +775,29 @@ namespace gc.api.core.Servicios
 			List<ComisionesDeVendedoresResumenDto> res = _repository.EjecutarLstSpExt<ComisionesDeVendedoresResumenDto>(sp, ps, true);
 			return res;
 		}
+
+		public List<ComisionesDeRepartidoresDetalleDto> BuscarComisionDeRepartidorDetalle(ComisionesDeRepartidoresRequest filtros)
+		{
+			var sp = ConstantesGC.StoredProcedures.SP_CONS_C_COMISIONES_RP;
+			var ps = new List<SqlParameter>
+			{
+				new SqlParameter("@desde", filtros.Desde),
+				new SqlParameter("@hasta", filtros.Hasta)
+			};
+			List<ComisionesDeRepartidoresDetalleDto> res = _repository.EjecutarLstSpExt<ComisionesDeRepartidoresDetalleDto>(sp, ps, true);
+			return res;
+		}
+
+		public List<ComisionesDeRepartidoresResumenDto> BuscarComisionDeRepartidorResumen(ComisionesDeRepartidoresRequest filtros)
+		{
+			var sp = ConstantesGC.StoredProcedures.SP_CONS_C_COMISIONES_RP_RESUMEN;
+			var ps = new List<SqlParameter>
+			{
+				new SqlParameter("@desde", filtros.Desde),
+				new SqlParameter("@hasta", filtros.Hasta)
+			};
+			List<ComisionesDeRepartidoresResumenDto> res = _repository.EjecutarLstSpExt<ComisionesDeRepartidoresResumenDto>(sp, ps, true);
+			return res;
+		}
 	}
 }

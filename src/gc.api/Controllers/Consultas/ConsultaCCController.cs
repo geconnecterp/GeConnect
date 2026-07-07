@@ -573,5 +573,33 @@ namespace gc.api.Controllers.Consultas
 
 			return Ok(response);
 		}
+
+		[HttpPost]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<ComisionesDeRepartidoresDetalleDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult BuscarComisionDeRepartidorDetalle(ComisionesDeRepartidoresRequest request)
+		{
+			ApiResponse<List<ComisionesDeRepartidoresDetalleDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
+			var res = _consSv.BuscarComisionDeRepartidorDetalle(request);
+			response = new ApiResponse<List<ComisionesDeRepartidoresDetalleDto>>(res);
+
+			return Ok(response);
+		}
+
+		[HttpPost]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<ComisionesDeRepartidoresResumenDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult BuscarComisionDeRepartidorResumen(ComisionesDeRepartidoresRequest request)
+		{
+			ApiResponse<List<ComisionesDeRepartidoresResumenDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
+			var res = _consSv.BuscarComisionDeRepartidorResumen(request);
+			response = new ApiResponse<List<ComisionesDeRepartidoresResumenDto>>(res);
+
+			return Ok(response);
+		}
 	}
 }
