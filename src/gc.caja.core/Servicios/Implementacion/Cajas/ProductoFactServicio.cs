@@ -18,9 +18,11 @@ using System.Reflection;
 
 namespace gc.caja.core.Servicios.Implementacion.Cajas
 {
-    public class ProductoFactServicio: Servicio<Dto>, IProductoFactServicio
+    public class ProductoFactServicio : Servicio<Dto>, IProductoFactServicio
     {
         private const string RutaAPI = "/api/apiproductofact";
+       
+
         private const string RutaAPIProducto = "/api/apiproducto";
 
         private const string POST_OBTENER_PRODUCTO_DATOS = "/ObtenerProductoDatos";
@@ -31,6 +33,8 @@ namespace gc.caja.core.Servicios.Implementacion.Cajas
         private const string POST_OBTENER_COTIZACION = "/ObtenerCotizacion";
         private const string POST_CREAR_PREF_DIFERIDA = "/CrearPrefacturaDiferida";
         private const string POST_CREAR_PAGO_DIFERIDO = "/CrearPagoDiferido";
+
+        
 
         public ProductoFactServicio(IOptions<AppSettings> options, ILogger<ProductoFactServicio> logger) : base(options, logger)
         {

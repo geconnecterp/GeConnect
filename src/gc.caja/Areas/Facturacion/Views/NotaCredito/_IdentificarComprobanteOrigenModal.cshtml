@@ -1,0 +1,166 @@
+﻿<div class="modal fade modal-golden"
+     id="modalIdentificarComprobanteOrigen"
+     tabindex="-1"
+     aria-labelledby="modalIdentificarComprobanteOrigenLabel"
+     aria-hidden="true"
+     data-bs-backdrop="static"
+     data-bs-keyboard="false">
+
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+
+            <div class="modal-header">
+                <h5 class="modal-title"
+                    id="modalIdentificarComprobanteOrigenLabel">
+
+                    <i class="bx bx-receipt me-2"></i>
+                    Identificar Comprobante Original
+                </h5>
+            </div>
+
+            <div class="modal-body p-4">
+
+                <div class="alert alert-info d-flex align-items-start mb-4"
+                     role="alert">
+
+                    <i class="bx bx-info-circle fs-3 me-3"></i>
+
+                    <div>
+                        <strong>Nota de Crédito por Devolución</strong>
+                        <div class="small mt-1">
+                            Ingrese los datos del comprobante de venta que origina
+                            la devolución. La Nota de Crédito sólo podrá emitirse
+                            si existe una relación válida con dicho comprobante.
+                        </div>
+                    </div>
+                </div>
+
+                <div id="alertValidacionComprobanteOrigen"
+                     class="alert d-none mb-4"
+                     role="alert">
+                </div>
+
+                <div class="row g-3">
+
+                    <div class="col-12">
+                        <label for="ddlTipoComprobanteOrigen"
+                               class="form-label fw-semibold">
+
+                            <i class="bx bx-file me-1"></i>
+                            Tipo de Comprobante
+                        </label>
+
+                        <select id="ddlTipoComprobanteOrigen"
+                                class="form-select form-select-lg"
+                                disabled>
+
+                            <option value="">
+                                Cargando tipos de comprobante...
+                            </option>
+                        </select>
+
+                        <div class="form-text">
+                            Seleccione el tipo del comprobante original.
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label for="txtPuntoVentaOrigen"
+                               class="form-label fw-semibold">
+
+                            <i class="bx bx-building me-1"></i>
+                            Punto de Venta
+                        </label>
+
+                        <input type="text"
+                               id="txtPuntoVentaOrigen"
+                               class="form-control form-control-lg text-center"
+                               maxlength="4"
+                               inputmode="numeric"
+                               autocomplete="off"
+                               placeholder="0000"
+                               disabled />
+
+                        <div class="form-text">
+                            Hasta 4 dígitos.
+                        </div>
+                    </div>
+
+                    <div class="col-md-8">
+                        <label for="txtNumeroComprobanteOrigen"
+                               class="form-label fw-semibold">
+
+                            <i class="bx bx-hash me-1"></i>
+                            Número de Comprobante
+                        </label>
+
+                        <input type="text"
+                               id="txtNumeroComprobanteOrigen"
+                               class="form-control form-control-lg text-center"
+                               maxlength="8"
+                               inputmode="numeric"
+                               autocomplete="off"
+                               placeholder="00000000"
+                               disabled />
+
+                        <div class="form-text">
+                            Hasta 8 dígitos.
+                            El sistema completará con ceros a la izquierda.
+                        </div>
+                    </div>
+
+                    <div class="col-12">
+                        <div class="border rounded bg-light p-3">
+                            <div class="d-flex align-items-center">
+                                <i class="bx bx-barcode-reader fs-2 text-primary me-3"></i>
+
+                                <div>
+                                    <strong>Formato esperado</strong>
+                                    <div class="text-muted small">
+                                        Punto de Venta: <code>NNNN</code>
+                                        &nbsp;·&nbsp;
+                                        Número: <code>NNNNNNNN</code>
+                                        &nbsp;·&nbsp;
+                                        Resultado:
+                                        <code>NNNN-NNNNNNNN</code>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="modal-footer">
+
+                <button type="button"
+                        id="btnCancelarNcDevolucion"
+                        class="btn btn-outline-secondary">
+
+                    <i class="bx bx-arrow-back me-1"></i>
+                    Cancelar
+                </button>
+
+                <button type="button"
+                        id="btnValidarComprobanteOrigen"
+                        class="btn btn-golden"
+                        disabled>
+
+                    <span id="spnValidarComprobanteOrigen"
+                          class="spinner-border spinner-border-sm d-none me-2"
+                          role="status"
+                          aria-hidden="true">
+                    </span>
+
+                    <i id="icoValidarComprobanteOrigen"
+                       class="bx bx-check-circle me-1">
+                    </i>
+
+                    Validar y Seguir
+                </button>
+
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,86 @@
+﻿<div class="modal fade modal-golden"
+     id="modalSeleccionComprobanteRepetido"
+     tabindex="-1"
+     aria-labelledby="modalSeleccionComprobanteRepetidoLabel"
+     aria-hidden="true"
+     data-bs-backdrop="static"
+     data-bs-keyboard="false">
+
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+
+            <div class="modal-header">
+                <h5 class="modal-title"
+                    id="modalSeleccionComprobanteRepetidoLabel">
+
+                    <i class="bx bx-copy-alt me-2"></i>
+                    Seleccionar Comprobante Original
+                </h5>
+            </div>
+
+            <div class="modal-body p-4">
+
+                <div class="alert alert-warning d-flex align-items-start"
+                     role="alert">
+
+                    <i class="bx bx-error-circle fs-3 me-3"></i>
+
+                    <div>
+                        <strong>Se encontraron comprobantes repetidos.</strong>
+                        <div class="small mt-1">
+                            Seleccione el comprobante correcto según fecha, cliente,
+                            total y número de repetición.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="table-wrapper-500-full-width">
+                    <div class="table-responsive" style="max-height: 320px;">
+                        <table class="table table-sm table-hover mb-0 table-golden align-middle"
+                               id="tbComprobantesRepetidos">
+
+                            <thead class="sticky-top table-golden-header-compact">
+                                <tr>
+                                    <th class="text-center  th-compact">Comprobante</th>
+                                    <th class="text-center th-compact">Repetición</th>
+                                    <th class="text-center th-compact">Fecha</th>
+                                    <th class=" th-compact">Cliente</th>
+                                    <th class="text-end th-compact">Total</th>
+                                    <th class="text-center th-compact">Estado</th>
+                                    <th class="text-center th-compact">Acción</th>
+                                </tr>
+                            </thead>
+
+                            <tbody id="tbodyComprobantesRepetidos">
+                                <tr>
+                                    <td colspan="7"
+                                        class="text-center text-muted py-4">
+
+                                        <i class="bx bx-loader-alt bx-spin fs-3"></i>
+                                        <div class="mt-2">
+                                            Cargando comprobantes...
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="modal-footer">
+
+                <button type="button"
+                        id="btnVolverIdentificacionComprobante"
+                        class="btn btn-outline-secondary">
+
+                    <i class="bx bx-arrow-back me-1"></i>
+                    Volver
+                </button>
+
+            </div>
+        </div>
+    </div>
+</div>
