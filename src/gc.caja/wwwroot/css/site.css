@@ -7616,3 +7616,109 @@ span[data-bs-toggle="tooltip"] {
         min-height: 300px;
     }
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   NC DEVOLUCIÓN - AJUSTES GOLDEN DEL MÓDULO COMPLETO
+   ═══════════════════════════════════════════════════════════════ */
+
+.ncdev-index-card {
+    border: 1px solid var(--bs-golden-light);
+    box-shadow: 0 0.5rem 1rem rgba(var(--bs-golden-primary-rgb), 0.10);
+}
+
+.ncdev-alert-golden {
+    border-left-width: 4px !important;
+    background: linear-gradient(135deg, rgba(var(--bs-golden-primary-rgb), 0.08) 0%, rgba(255, 255, 255, 0.92) 100%);
+}
+
+#modalIdentificarComprobanteOrigen .modal-body,
+#modalSeleccionComprobanteRepetido .modal-body {
+    background-color: #f8f7f2;
+}
+
+#modalIdentificarComprobanteOrigen .form-select,
+#modalIdentificarComprobanteOrigen .form-control,
+#modalProductoDevolucion .form-control,
+#modalNcDevolucionCalculo .form-control {
+    border-color: var(--bs-golden-light);
+}
+
+#modalIdentificarComprobanteOrigen .form-control:focus,
+#modalIdentificarComprobanteOrigen .form-select:focus,
+#modalProductoDevolucion .form-control:focus,
+#modalNcDevolucionCalculo .form-control:focus {
+    border-color: var(--bs-golden-primary);
+    box-shadow: 0 0 0 0.2rem rgba(var(--bs-golden-primary-rgb), 0.20);
+}
+
+#modalProductoDevolucion input[readonly],
+#modalNcDevolucionCalculo input[readonly] {
+    background-color: #fff;
+    border-color: var(--bs-golden-light);
+}
+
+#modalProductoDevolucion .modal-content,
+#modalNcDevolucionCalculo .modal-content {
+    background-color: #f8f7f2;
+}
+
+#modalProductoDevolucion .card-golden,
+#modalNcDevolucionCalculo .card-golden,
+#ncDevolucionResumenModalidadCarga .card-golden {
+    box-shadow: 0 0.25rem 0.75rem rgba(var(--bs-golden-primary-rgb), 0.08);
+}
+
+#modalProductoDevolucion .alert-info,
+#modalProductoDevolucion .alert-warning,
+#modalProductoDevolucion .alert-danger {
+    border-left-width: 4px;
+}
+
+#modalProductoDevolucion .alert-info {
+    border-color: var(--bs-golden-info);
+    background-color: rgba(var(--bs-golden-info-rgb), 0.08);
+}
+
+#modalProductoDevolucion .alert-warning {
+    border-color: var(--bs-golden-warning);
+}
+
+#modalProductoDevolucion .alert-danger {
+    border-color: var(--bs-golden-danger);
+}
+
+#modalProductoDevolucion .ncdev-productos-mensajes,
+#modalProductoDevolucion .table-responsive,
+#modalNcDevolucionCalculo .table-responsive,
+#modalSeleccionComprobanteRepetido .table-responsive {
+    scrollbar-color: var(--bs-golden-primary) #f6efd1;
+    scrollbar-width: thin;
+}
+
+#modalProductoDevolucion .ncdev-productos-mensajes::-webkit-scrollbar,
+#modalProductoDevolucion .table-responsive::-webkit-scrollbar,
+#modalNcDevolucionCalculo .table-responsive::-webkit-scrollbar,
+#modalSeleccionComprobanteRepetido .table-responsive::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+#modalProductoDevolucion .ncdev-productos-mensajes::-webkit-scrollbar-thumb,
+#modalProductoDevolucion .table-responsive::-webkit-scrollbar-thumb,
+#modalNcDevolucionCalculo .table-responsive::-webkit-scrollbar-thumb,
+#modalSeleccionComprobanteRepetido .table-responsive::-webkit-scrollbar-thumb {
+    background-color: var(--bs-golden-primary);
+    border-radius: 8px;
+}
+
+#modalProductoDevolucion .ncdev-productos-mensajes::-webkit-scrollbar-track,
+#modalProductoDevolucion .table-responsive::-webkit-scrollbar-track,
+#modalNcDevolucionCalculo .table-responsive::-webkit-scrollbar-track,
+#modalSeleccionComprobanteRepetido .table-responsive::-webkit-scrollbar-track {
+    background-color: #f6efd1;
+}
+
+#modalNcDevolucionCalculo .total-final-calc {
+    color: var(--bs-golden-success) !important;
+    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.65);
+}
