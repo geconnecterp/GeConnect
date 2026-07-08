@@ -12,6 +12,10 @@ namespace gc.caja.core.Servicios.Contratos.Cajas
         Task<RespuestaGenerica<NCValidaResponseDto>> ValidarNC(NCValidaRequestDto request, string token);
 
         Task<RespuestaGenerica<NCProductoBuscarResponseDto>> BuscarProducto(NCProductoBuscarRequestDto request, string token);
+
+        Task<RespuestaGenerica<CalculaFilasResDto>> CalcularFilas(CalcularFilasReqDto request, string token);
+
+        Task<RespuestaGenerica<RespuestaDto>> ConfirmarOperacionCaja(CajaOpeConfirmarReq request, string token);
     }
 
 

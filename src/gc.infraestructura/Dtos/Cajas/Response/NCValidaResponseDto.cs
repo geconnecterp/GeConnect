@@ -24,6 +24,8 @@ namespace gc.infraestructura.Dtos.Cajas.Response
         public string cm_cuit { get; set; }= string.Empty;
         public string cm_nombre { get; set; }= string.Empty;
         public string cm_domicilio { get; set; }= string.Empty;
+        public string cm_email { get; set; } = string.Empty;
+        public string cm_movil { get; set; } = string.Empty;
         public DateTime? cm_fecha { get; set; }
         public string cm_libro_iva { get; set; }= string.Empty; 
         public decimal? cm_gravado { get; set; }

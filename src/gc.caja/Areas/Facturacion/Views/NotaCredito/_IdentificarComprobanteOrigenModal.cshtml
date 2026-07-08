@@ -7,9 +7,9 @@
      data-bs-keyboard="false">
 
     <div class="modal-dialog modal-lg modal-dialog-centered">
-        <div class="modal-content border-0 shadow">
+        <div class="modal-content">
 
-            <div class="modal-header">
+            <div class="modal-header bg-gradient-golden">
                 <h5 class="modal-title"
                     id="modalIdentificarComprobanteOrigenLabel">
 
@@ -20,10 +20,10 @@
 
             <div class="modal-body p-4">
 
-                <div class="alert alert-info d-flex align-items-start mb-4"
+                <div class="alert alert-info border-golden ncdev-alert-golden d-flex align-items-start mb-4"
                      role="alert">
 
-                    <i class="bx bx-info-circle fs-3 me-3"></i>
+                    <i class="bx bx-info-circle fs-3 me-3 text-golden"></i>
 
                     <div>
                         <strong>Nota de Crédito por Devolución</strong>
@@ -44,7 +44,7 @@
 
                     <div class="col-12">
                         <label for="ddlTipoComprobanteOrigen"
-                               class="form-label fw-semibold">
+                               class="form-label fw-semibold text-golden-dark">
 
                             <i class="bx bx-file me-1"></i>
                             Tipo de Comprobante
@@ -66,7 +66,7 @@
 
                     <div class="col-md-4">
                         <label for="txtPuntoVentaOrigen"
-                               class="form-label fw-semibold">
+                               class="form-label fw-semibold text-golden-dark">
 
                             <i class="bx bx-building me-1"></i>
                             Punto de Venta
@@ -74,7 +74,7 @@
 
                         <input type="text"
                                id="txtPuntoVentaOrigen"
-                               class="form-control form-control-lg text-center"
+                               class="form-control form-control-lg text-center jsteclado jsinteger"
                                maxlength="4"
                                inputmode="numeric"
                                autocomplete="off"
@@ -88,7 +88,7 @@
 
                     <div class="col-md-8">
                         <label for="txtNumeroComprobanteOrigen"
-                               class="form-label fw-semibold">
+                               class="form-label fw-semibold text-golden-dark">
 
                             <i class="bx bx-hash me-1"></i>
                             Número de Comprobante
@@ -96,7 +96,7 @@
 
                         <input type="text"
                                id="txtNumeroComprobanteOrigen"
-                               class="form-control form-control-lg text-center"
+                               class="form-control form-control-lg text-center jsteclado jsinteger"
                                maxlength="8"
                                inputmode="numeric"
                                autocomplete="off"
@@ -110,9 +110,11 @@
                     </div>
 
                     <div class="col-12">
-                        <div class="border rounded bg-light p-3">
+                        <div id="ncDevolucionTecladoAnclaIdentificacion"
+                             data-teclado-ancla
+                             class="border border-golden rounded bg-golden-light p-3">
                             <div class="d-flex align-items-center">
-                                <i class="bx bx-barcode-reader fs-2 text-primary me-3"></i>
+                                <i class="bx bx-barcode-reader fs-2 text-golden-dark me-3"></i>
 
                                 <div>
                                     <strong>Formato esperado</strong>
@@ -132,11 +134,11 @@
                 </div>
             </div>
 
-            <div class="modal-footer">
+            <div class="modal-footer bg-golden-light border-top border-golden">
 
                 <button type="button"
                         id="btnCancelarNcDevolucion"
-                        class="btn btn-outline-secondary">
+                        class="btn btn-outline-secondary btn-lg">
 
                     <i class="bx bx-arrow-back me-1"></i>
                     Cancelar
@@ -144,7 +146,7 @@
 
                 <button type="button"
                         id="btnValidarComprobanteOrigen"
-                        class="btn btn-golden"
+                        class="btn btn-golden btn-lg"
                         disabled>
 
                     <span id="spnValidarComprobanteOrigen"
