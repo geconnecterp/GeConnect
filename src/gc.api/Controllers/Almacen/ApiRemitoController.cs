@@ -3,10 +3,12 @@ using gc.api.Controllers.Base;
 using gc.api.core.Contratos.Servicios;
 using gc.infraestructura.Core.Interfaces;
 using gc.infraestructura.Core.Responses;
+using gc.infraestructura.Dtos;
 using gc.infraestructura.Dtos.Almacen.Rpr;
 using gc.infraestructura.Dtos.Almacen.Tr.Remito;
 using gc.infraestructura.Dtos.Almacen.Tr.Request;
 using gc.infraestructura.Dtos.Gen;
+using gc.infraestructura.Dtos.Productos;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
@@ -118,6 +120,25 @@ namespace gc.api.Controllers.Almacen
 
 			var response = new ApiResponse<List<RTRxULDto>>(lista);
 			return Ok(response);
+		}
+
+		[HttpPost("cargar-productos-desde-comprobante")]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<List<RemitoExternoValidaDto>>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		public ActionResult<RemitoExternoValidaDto> CargarProductosDesdeComprobante(RemitoExternoValidaRequest req)
+		{
+			if (req == null)
+			{
+				return BadRequest("No se recepcionaron los valores para la carga de productos desde comprobante.");
+			}
+			var resultado = _remSv.CargarProductosDesdeComprobante(req);
+
+			if (resultado == null)
+			{
+				return BadRequest("No se pudo cargar los productos desde el comprobante. Verifique los datos ingresados.");
+			}
+
+			return Ok(new ApiResponse<List<RemitoExternoValidaDto>>(resultado));
 		}
 	}
 }

@@ -1,0 +1,53 @@
+﻿@model GridCoreSmart<RemitoExternoValidaDto>
+@{
+	var alt = true;
+	string clase = string.Empty;
+}
+<div class="table-wrapper" id="containerListaProducto">
+	<table class="table table-sm table-golden" id="tbGridProductos">
+		<thead>
+			<tr class="header">
+				<th class="text-center fw-bold">ID</th>
+				<th class="text-center fw-bold">Descripción</th>
+				<th class="text-center fw-bold">ID Prov</th>
+				<th class="text-center fw-bold">Box</th>
+				<th class="text-center fw-bold" title="Cantidad Comprada">Cant. Comp.</th>
+				<th class="text-center fw-bold" title="Ya entregado">Ya Entr./th>
+				<th class="text-center fw-bold" title="A entregar">A Entr.</th>
+				<th class="text-center fw-bold" title="A remitir">A Rem.</th>
+			</tr>
+		</thead>
+		<tbody>
+			@if (Model == null || Model.ListaDatos == null || !Model.ListaDatos.Any())
+			{
+				<tr class="fila-vacia">
+					<td colspan="8" class="text-center text-muted py-2">
+						<i class="bx bx-info-circle me-1"></i>
+						No hay items para mostrar.
+					</td>
+				</tr>
+			}
+			else
+			{
+				foreach (var item in Model.ListaDatos)
+				{
+					if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+					<tr class="@clase row-ajuste"
+						data-p-id="@item.p_id"
+						data-pre-id="@item.pre_id"
+						data-pree-id="@item.pree_id"
+						data-pret-od="@item.pret_id">
+						<td class="text-center">@item.p_id</td>
+						<td class="text-start">@item.p_desc</td>
+						<td class="text-center"></td>
+						<td class="text-center"></td>
+						<td class="text-end">@item.pre_cantidad</td>
+						<td class="text-end">@item.pre_cantidad_ent</td>
+						<td class="text-end">@item.pre_cantidad</td>
+						<td class="text-end">@item.pre_cantidad_ent</td>
+					</tr>
+				}
+			}
+		</tbody>
+	</table>
+</div>

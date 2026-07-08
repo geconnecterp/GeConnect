@@ -1,0 +1,13 @@
+﻿@using gc.infraestructura.Dtos.Almacen.AjusteDeStock
+@model BoxListDto
+@{
+	var cmbBoxes = Model.ComboBoxes;
+}
+<div class="label-block">
+	<label class="mb-0" for="listaBoxes">BOX:</label>
+</div>
+
+@Html.DropDownList("id",
+Model.ComboBoxes,
+"Seleccionar...",
+new { @id = "listaBoxes", @class = "form-select form-select-sm input-uniform" })

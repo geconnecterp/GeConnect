@@ -1,4 +1,5 @@
 ﻿using gc.api.core.Entidades;
+using gc.infraestructura.Dtos;
 using gc.infraestructura.Dtos.Almacen.Rpr;
 using gc.infraestructura.Dtos.Almacen.Tr.Remito;
 using gc.infraestructura.Dtos.Almacen.Tr.Request;
@@ -15,6 +16,7 @@ namespace gc.api.core.Contratos.Servicios
         RespuestaDto VerificaProductoEnRemito(string remCompte, string pId);
         RespuestaDto RTRCargarConteos(CargarJsonGenRequest request,bool esModificacion);
         List<RTRxULDto> RTRCargarConteosXUL(string reCompte);
+        List<RemitoExternoValidaDto> CargarProductosDesdeComprobante(RemitoExternoValidaRequest request);
 
 	}
 }

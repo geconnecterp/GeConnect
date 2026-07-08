@@ -1,16 +1,21 @@
-﻿using gc.infraestructura.Core.EntidadesComunes.Options;
+﻿using gc.infraestructura.Core.EntidadesComunes;
+using gc.infraestructura.Core.EntidadesComunes.Options;
+using gc.infraestructura.Core.Exceptions;
 using gc.infraestructura.Core.Helpers;
 using gc.infraestructura.Core.Responses;
+using gc.infraestructura.Dtos;
+using gc.infraestructura.Dtos.Almacen.Rpr;
 using gc.infraestructura.Dtos.Almacen.Tr.Remito;
+using gc.infraestructura.Dtos.Almacen.Tr.Request;
+using gc.infraestructura.Dtos.Gen;
+using gc.infraestructura.Dtos.Productos;
 using gc.sitio.core.Servicios.Contratos;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using Org.BouncyCastle.Ocsp;
 using System.Net;
-using gc.infraestructura.Dtos.Gen;
-using gc.infraestructura.Dtos.Almacen.Tr.Request;
-using gc.infraestructura.Dtos.Almacen.Rpr;
-using gc.infraestructura.Core.Exceptions;
+using System.Reflection;
 
 namespace gc.sitio.core.Servicios.Implementacion
 {
@@ -23,10 +28,11 @@ namespace gc.sitio.core.Servicios.Implementacion
         private const string RemitosConfirmarRecepcion = "/ConfirmarRecepcion";
         private const string Verif_ProductoEnRemito = "/VerificaProductoEnRemito";
         private const string RemitoCargarConteos = "/RTRCargarConteos";
-        private const string RemitosCargarConteosXUL = "/RTRCargarConteosXUL"; 
+        private const string RemitosCargarConteosXUL = "/RTRCargarConteosXUL";
+		private const string RemitoExternoProductosAValidar = "/cargar-productos-desde-comprobante";
 
 
-        private readonly AppSettings _appSettings;
+		private readonly AppSettings _appSettings;
         public RemitoServicio(IOptions<AppSettings> options, ILogger<RemitoServicio> logger) : base(options, logger, RutaAPI)
         {
             _appSettings = options.Value;
@@ -274,6 +280,61 @@ namespace gc.sitio.core.Servicios.Implementacion
 				string stringData = await response.Content.ReadAsStringAsync();
 				_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
 				return new();
+			}
+		}
+
+		public async Task<RespuestaGenerica<RemitoExternoValidaDto>> CargarProductosDesdeComprobante(RemitoExternoValidaRequest request, string token)
+		{
+			try
+			{
+				ApiResponse<List<RemitoExternoValidaDto>>? apiResponse;
+				HelperAPI helper = new();
+
+				HttpClient client = helper.InicializaCliente(request, token, out StringContent contentData);
+				HttpResponseMessage response;
+
+				var link = $"{_appSettings.RutaBase}{RutaAPI}{RemitoExternoProductosAValidar}";
+
+				response = await client.PostAsync(link, contentData);
+
+				if (response.StatusCode == HttpStatusCode.OK)
+				{
+					string stringData = await response.Content.ReadAsStringAsync();
+					if (string.IsNullOrEmpty(stringData))
+					{
+						throw new NegocioException("No se recepcionó una respuesta válida. Intente de nuevo más tarde.");
+					}
+					apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<RemitoExternoValidaDto>>>(stringData);
+
+					var listado = apiResponse?.Data;
+
+					return new RespuestaGenerica<RemitoExternoValidaDto> { Ok = true, ListaEntidad = listado };
+
+				}
+				else
+				{
+					string stringData = await response.Content.ReadAsStringAsync();
+					_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+					var error = JsonConvert.DeserializeObject<ExceptionValidation>(stringData);
+					if (error.TypeException.Equals(nameof(NegocioException)))
+					{
+						throw new NegocioException(error.Detail);
+					}
+					else if (error.TypeException.Equals(nameof(NotFoundException)))
+					{
+						throw new NegocioException(error.Detail);
+					}
+					else
+					{
+						throw new Exception(error.Detail);
+					}
+				}
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError($"{this.GetType().Name}-{MethodBase.GetCurrentMethod()?.Name} - {ex}");
+
+				throw new Exception("Algo no fue bien al intentar cargar los productos desde el comprobante.");
 			}
 		}
 	}

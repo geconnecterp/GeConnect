@@ -2,6 +2,7 @@
 using gc.api.core.Entidades;
 using gc.api.core.Interfaces.Datos;
 using gc.infraestructura.Core.EntidadesComunes.Options;
+using gc.infraestructura.Dtos;
 using gc.infraestructura.Dtos.Almacen.Rpr;
 using gc.infraestructura.Dtos.Almacen.Tr.Remito;
 using gc.infraestructura.Dtos.Almacen.Tr.Request;
@@ -97,6 +98,19 @@ namespace gc.api.core.Servicios
 			};
 			var resp = _repository.EjecutarLstSpExt<RTRxULDto>(sp, ps, true);
 			return resp;
+		}
+
+		public List<RemitoExternoValidaDto> CargarProductosDesdeComprobante(RemitoExternoValidaRequest request)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_RE_VALIDA;
+			var ps = new List<SqlParameter>()
+			{
+					new("@pre_id",request.pre_id),
+					new("@tco_id",request.tco_id),
+					new("@cm_compte",request.cm_compte)
+			};
+			var listaTemp = _repository.EjecutarLstSpExt<RemitoExternoValidaDto>(sp, ps, true);
+			return listaTemp;
 		}
 	}
 }

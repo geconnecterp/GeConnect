@@ -723,8 +723,10 @@
 			public const string SP_REPO_EXISTE = "SPGECO_REPO_ReporteLink_ExisteXCodigo";
             public const string SP_REPO_DELETE = "SPGECO_REPO_ReporteLink_EliminarExpirados";
 
-            #endregion
-        }
+			#endregion
+
+			public const string SP_RE_VALIDA = "SPGECO_RE_Valida";
+		}
 
         public static class StoredFunctions
 		{

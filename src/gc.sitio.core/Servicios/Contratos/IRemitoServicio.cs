@@ -1,4 +1,5 @@
-﻿using gc.infraestructura.Dtos.Almacen.Rpr;
+﻿using gc.infraestructura.Dtos;
+using gc.infraestructura.Dtos.Almacen.Rpr;
 using gc.infraestructura.Dtos.Almacen.Tr.Remito;
 using gc.infraestructura.Dtos.Gen;
 
@@ -13,6 +14,6 @@ namespace gc.sitio.core.Servicios.Contratos
         Task<RespuestaDto> VerificaProductoEnRemito(string rm, string pId, string token);
         Task<RespuestaDto> RTRCargarConteos(List<ProductoGenDto> lista,bool esModificacion, string token);
         Task<List<RTRxULDto>> RTRCargarConteosXUL(string reCompte, string token);
-
+		Task<RespuestaGenerica<RemitoExternoValidaDto>> CargarProductosDesdeComprobante(RemitoExternoValidaRequest request, string token);
 	}
 }
