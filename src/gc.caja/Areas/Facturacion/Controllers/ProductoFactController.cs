@@ -716,11 +716,11 @@ namespace gc.caja.Areas.Facturacion.Controllers
                 if (string.IsNullOrEmpty(request.afip_desc))
                     request.afip_desc = clienteActual.afip_desc ?? string.Empty;
 
-                if (string.IsNullOrEmpty(request.cta_ib_nro))
-                    request.cta_ib_nro = clienteActual.cta_ib_nro ?? string.Empty;
+                //if (string.IsNullOrEmpty(request.cta_ib_nro))
+                //    request.cta_ib_nro = clienteActual.cta_ib_nro ?? string.Empty;
 
-                if (string.IsNullOrEmpty(request.ib_id))
-                    request.ib_id = clienteActual.ib_id ?? string.Empty;
+                //if (string.IsNullOrEmpty(request.ib_id))
+                //    request.ib_id = clienteActual.ib_id ?? string.Empty;
 
                 // ❽ COMPLETAR DATOS DE COMPROBANTE (si existen en sesión)
                 // TODO: Completar según datos de factura en sesión
@@ -733,17 +733,17 @@ namespace gc.caja.Areas.Facturacion.Controllers
                 request.tco_id_ori = string.Empty;
                 request.cm_compte_ori = string.Empty;
 
-                if (string.IsNullOrEmpty(request.pib_cert))
-                    request.pib_cert = clienteActual.pib_cert ?? string.Empty;
+                //if (string.IsNullOrEmpty(request.pib_cert))
+                //    request.pib_cert = clienteActual.pib_cert ?? string.Empty;
 
-                if (request.pib_cert_vto == DateTime.MinValue)
-                    request.pib_cert_vto = clienteActual.pib_cert_vto;
+                //if (request.pib_cert_vto == DateTime.MinValue)
+                //    request.pib_cert_vto = clienteActual.pib_cert_vto;
 
-                if (string.IsNullOrEmpty(request.piva_cert))
-                    request.piva_cert = clienteActual.piva_cert ?? string.Empty;
+                //if (string.IsNullOrEmpty(request.piva_cert))
+                //    request.piva_cert = clienteActual.piva_cert ?? string.Empty;
 
-                if (request.piva_cert_vto == DateTime.MinValue)
-                    request.piva_cert_vto = clienteActual.piva_cert_vto;
+                //if (request.piva_cert_vto == DateTime.MinValue)
+                //    request.piva_cert_vto = clienteActual.piva_cert_vto;
 
 
 

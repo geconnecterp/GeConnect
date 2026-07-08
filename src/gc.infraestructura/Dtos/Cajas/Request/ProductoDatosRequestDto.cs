@@ -42,7 +42,7 @@
         public decimal p_pvta { get; set; }
 
         public decimal cantidad_tot { get; set; }
-        public bool bultos { get; set; }
+        public int bultos { get; set; }
 
         public decimal lp_prevision_tot { get; set; }
         public decimal lp_prevision_pin { get; set; }

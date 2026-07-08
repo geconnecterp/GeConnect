@@ -7577,6 +7577,37 @@ span[data-bs-toggle="tooltip"] {
                 white-space: normal;
             }
 
+            #ncDevolucionProductosResultado .table-golden tbody td:last-child {
+                width: 1%;
+                white-space: nowrap;
+            }
+
+.ncdev-producto-acciones {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+    min-width: 4.55rem;
+}
+
+    .ncdev-producto-acciones .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 1.95rem;
+        height: 1.95rem;
+        padding: 0;
+        line-height: 1;
+    }
+
+    .ncdev-producto-acciones .btn i {
+        font-size: 1.05rem;
+    }
+
+#ncDevolucionProductosResultado .table-golden tbody tr.ncdev-producto-con-advertencia td {
+    background-color: rgba(255, 193, 7, 0.08);
+}
+
 @media (max-width: 1199.98px) {
     #modalProductoDevolucion .ncdev-productos-modal-body {
         overflow-y: auto;

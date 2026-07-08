@@ -63,6 +63,10 @@ window.NCDevolucion = window.NCDevolucion || {};
         resultado: '#ncDevolucionProductosResultado',
 
         tablaProductos: '#ncDevolucionTablaProductos',
+        btnEliminarProducto:
+            '.btn-ncdev-eliminar-producto',
+        btnVerAdvertenciaProducto:
+            '.btn-ncdev-ver-advertencia-producto',
 
         advertencias: '#ncDevolucionAdvertenciasProductos',
         listaAdvertencias: '#ncDevolucionListaAdvertenciasProductos',
@@ -236,6 +240,26 @@ window.NCDevolucion = window.NCDevolucion || {};
             SELECTORES.btnAgregarManual,
             function () {
                 procesarEntradaManual();
+            }
+        );
+
+        $(document).on(
+            'click',
+            SELECTORES.btnEliminarProducto,
+            function () {
+                const indice = Number($(this).data('index'));
+
+                solicitarQuitarProducto(indice);
+            }
+        );
+
+        $(document).on(
+            'click',
+            SELECTORES.btnVerAdvertenciaProducto,
+            function () {
+                const indice = Number($(this).data('index'));
+
+                mostrarAdvertenciaProducto(indice);
             }
         );
 
@@ -848,9 +872,9 @@ window.NCDevolucion = window.NCDevolucion || {};
 
                 renderizarProductos(
                     productos,
+                    obtenerAdvertenciasDesdeProductos(productos),
                     [],
-                    [],
-                    'MANUAL'
+                    obtenerOrigenCargaActual()
                 );
 
                 callback?.(true);
@@ -875,6 +899,223 @@ window.NCDevolucion = window.NCDevolucion || {};
 
                 callback?.(false);
             });
+    }
+
+    function solicitarQuitarProducto(indice) {
+        const producto = obtenerProductoPorIndice(indice);
+
+        if (!producto) {
+            mostrarMensaje(
+                'Atención',
+                'No se pudo identificar el producto seleccionado.',
+                'warn!'
+            );
+
+            return;
+        }
+
+        if (calculoActual) {
+            mostrarMensaje(
+                'Atención',
+                'La Nota de Crédito ya fue calculada. Vuelva a la carga para modificar productos.',
+                'warn!'
+            );
+
+            return;
+        }
+
+        const descripcion = producto.p_desc ||
+            producto.p_id_barrado ||
+            producto.p_id ||
+            'este producto';
+
+        AbrirMensaje(
+            'Quitar producto',
+            `¿Desea quitar "${descripcion}" de la Nota de Crédito?`,
+            function (respuesta) {
+                $('#msjModal').modal('hide');
+
+                if (respuesta !== 'SI') {
+                    return;
+                }
+
+                quitarProducto(indice);
+            },
+            true,
+            ['Sí', 'No'],
+            'warn!'
+        );
+    }
+
+    function quitarProducto(indice) {
+        const url = String(
+            window.ncDevolucionQuitarProductoUrl || ''
+        ).trim();
+
+        if (!url) {
+            mostrarMensaje(
+                'Error',
+                'No se encontró la URL para quitar productos de la devolución.',
+                'error!'
+            );
+
+            logError('PRODUCTOS - QUITAR', {
+                accion: 'URL QuitarProductoDevolucion no disponible.'
+            });
+
+            return;
+        }
+
+        bloquearAccionSeguir(true);
+        bloquearEntradaManual(true);
+
+        logInfo('PRODUCTOS - QUITAR', {
+            accion: 'Invocando QuitarProductoDevolucion.',
+            url: url,
+            indice: indice
+        });
+
+        $.ajax({
+            url: url,
+            type: 'POST',
+            contentType: 'application/json; charset=utf-8',
+            dataType: 'json',
+            timeout: 20000,
+            data: JSON.stringify({
+                indice: indice
+            })
+        })
+            .done(function (response) {
+                logInfo('PRODUCTOS - QUITAR', {
+                    accion: 'Respuesta recibida desde QuitarProductoDevolucion.',
+                    respuesta: resumirRespuestaManual(response)
+                });
+
+                if (!response || response.ok !== true) {
+                    mostrarMensaje(
+                        'Atención',
+                        response?.mensaje ||
+                        'No fue posible quitar el producto de la devolución.',
+                        'warn!'
+                    );
+
+                    return;
+                }
+
+                const productos = Array.isArray(response.productos)
+                    ? response.productos
+                    : [];
+
+                renderizarProductos(
+                    productos,
+                    obtenerAdvertenciasDesdeProductos(productos),
+                    [],
+                    obtenerOrigenCargaActual()
+                );
+
+                mostrarEstadoEntradaManual(
+                    response.mensaje ||
+                    'Producto quitado de la Nota de Crédito.',
+                    'success'
+                );
+            })
+            .fail(function (xhr, status, error) {
+                logError('PRODUCTOS - QUITAR', {
+                    accion: 'Error HTTP o de red al quitar producto.',
+                    httpStatus: xhr?.status || 0,
+                    textStatus: status || '',
+                    error: String(error || ''),
+                    mensajeApi: xhr?.responseJSON?.mensaje || '',
+                    respuestaTexto: String(
+                        xhr?.responseText || ''
+                    ).substring(0, 500)
+                });
+
+                mostrarMensaje(
+                    'Error de Comunicación',
+                    xhr?.responseJSON?.mensaje ||
+                    'Ocurrió un error al quitar el producto de la devolución.',
+                    'error!'
+                );
+            })
+            .always(function () {
+                bloquearEntradaManual(false);
+                actualizarAccionesProductos(productosActuales.length > 0);
+            });
+    }
+
+    function mostrarAdvertenciaProducto(indice) {
+        const producto = obtenerProductoPorIndice(indice);
+
+        if (!producto || !tieneAdvertenciaProducto(producto)) {
+            mostrarMensaje(
+                'Advertencia',
+                'El producto seleccionado no tiene un mensaje de advertencia disponible.',
+                'info!'
+            );
+
+            return;
+        }
+
+        const codigo = producto.p_id_barrado ||
+            producto.p_id ||
+            'Sin código';
+
+        const descripcion = producto.p_desc ||
+            'Producto sin descripción';
+
+        const mensaje = producto.respuesta_msj ||
+            producto.mensaje ||
+            'El producto fue incorporado con advertencia.';
+
+        AbrirMensaje(
+            'Advertencia del producto',
+            `${codigo} - ${descripcion}\n\n${mensaje}`,
+            function () {
+                $('#msjModal').modal('hide');
+            },
+            false,
+            ['Aceptar'],
+            'warn!'
+        );
+    }
+
+    function obtenerProductoPorIndice(indice) {
+        const posicion = Number(indice);
+
+        if (!Number.isInteger(posicion) ||
+            posicion < 0 ||
+            posicion >= productosActuales.length) {
+            return null;
+        }
+
+        return productosActuales[posicion] || null;
+    }
+
+    function tieneAdvertenciaProducto(producto) {
+        return Number(producto?.respuesta || 0) > 0;
+    }
+
+    function obtenerAdvertenciasDesdeProductos(productos) {
+        return (Array.isArray(productos) ? productos : [])
+            .filter(tieneAdvertenciaProducto)
+            .map(function (producto) {
+                return {
+                    p_id: producto.p_id,
+                    p_id_barrado: producto.p_id_barrado,
+                    p_desc: producto.p_desc,
+                    respuesta: producto.respuesta,
+                    mensaje: producto.respuesta_msj ||
+                        producto.mensaje ||
+                        'El producto fue incorporado con advertencia.'
+                };
+            });
+    }
+
+    function obtenerOrigenCargaActual() {
+        return modalidadActual?.cargarTodoDetalle === true
+            ? 'TODOS'
+            : 'MANUAL';
     }
 
     function bloquearEntradaManual(bloquear) {
@@ -1224,7 +1465,7 @@ window.NCDevolucion = window.NCDevolucion || {};
         if (!productos.length) {
             $tbody.html(`
                 <tr>
-                    <td colspan="6"
+                    <td colspan="7"
                          class="text-center text-muted py-4 td-compact">
                         No hay productos cargados para esta devolución.
                     </td>
@@ -1235,10 +1476,13 @@ window.NCDevolucion = window.NCDevolucion || {};
         }
 
         $tbody.html(
-            productos.map(function (producto) {
+            productos.map(function (producto, indice) {
                 const codigo = producto.p_id_barrado ||
                     producto.p_id ||
                     '-';
+
+                const tieneAdvertencia =
+                    tieneAdvertenciaProducto(producto);
 
                 const combo = String(
                     producto.cmd_cmb_desc || ''
@@ -1252,8 +1496,19 @@ window.NCDevolucion = window.NCDevolucion || {};
                        </div>`
                     : escaparHtml(producto.p_desc || '');
 
+                const botonAdvertencia = tieneAdvertencia
+                    ? `
+                        <button type="button"
+                                class="btn btn-warning btn-sm btn-ncdev-ver-advertencia-producto"
+                                data-index="${indice}"
+                                title="Ver advertencia"
+                                aria-label="Ver advertencia del producto">
+                            <i class="bx bx-message-error"></i>
+                        </button>`
+                    : '';
+
                 return `
-                    <tr class="ncdev-producto-row">
+                    <tr class="ncdev-producto-row ${tieneAdvertencia ? 'ncdev-producto-con-advertencia' : ''}">
                         <td class="text-center td-compact">
                             <strong>${escaparHtml(codigo)}</strong>
                         </td>
@@ -1274,6 +1529,20 @@ window.NCDevolucion = window.NCDevolucion || {};
 
                         <td class="text-end td-compact">
                             $ ${formatearImporte(producto.p_iva)}
+                        </td>
+
+                        <td class="text-center td-compact">
+                            <div class="ncdev-producto-acciones">
+                                ${botonAdvertencia}
+
+                                <button type="button"
+                                        class="btn btn-outline-danger btn-sm btn-ncdev-eliminar-producto"
+                                        data-index="${indice}"
+                                        title="Quitar producto de la Nota de Crédito"
+                                        aria-label="Quitar producto de la Nota de Crédito">
+                                    <i class="bx bx-trash"></i>
+                                </button>
+                            </div>
                         </td>
                     </tr>
                 `;
@@ -1407,7 +1676,7 @@ window.NCDevolucion = window.NCDevolucion || {};
 
         $(SELECTORES.tablaProductos).html(`
             <tr>
-                <td colspan="6"
+                <td colspan="7"
                     class="text-center text-muted py-4">
                     No hay productos cargados.
                 </td>

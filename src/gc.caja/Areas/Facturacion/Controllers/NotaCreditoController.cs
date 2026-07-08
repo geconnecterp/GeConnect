@@ -969,6 +969,141 @@ namespace gc.caja.Areas.Facturacion.Controllers
         }
 
         /// <summary>
+        /// Quita un producto de la grilla de devolucion actual.
+        /// La lista se actualiza en el contexto aislado de sesion para que
+        /// el calculo y la confirmacion trabajen con el mismo detalle.
+        /// </summary>
+        [HttpPost]
+        public IActionResult QuitarProductoDevolucion(
+            [FromBody] QuitarProductoDevolucionRequest request)
+        {
+            var correlationId = Guid.NewGuid().ToString("N");
+
+            if (!VerificarAutenticacion(out IActionResult redirectResult))
+            {
+                _logger?.LogWarning(
+                    "NC Devolución: sesión expirada al quitar producto. CorrelationId={CorrelationId}",
+                    correlationId
+                );
+
+                return Json(new
+                {
+                    ok = false,
+                    codigo = "SESION_EXPIRADA",
+                    mensaje = "La sesión ha expirado. Vuelva a iniciar sesión."
+                });
+            }
+
+            if (request == null || request.Indice < 0)
+            {
+                _logger?.LogWarning(
+                    "NC Devolución: request inválido al quitar producto. Indice={Indice}, CorrelationId={CorrelationId}",
+                    request?.Indice,
+                    correlationId
+                );
+
+                return Json(new
+                {
+                    ok = false,
+                    codigo = "REQUEST_INVALIDO",
+                    mensaje = "No se recibió un producto válido para quitar."
+                });
+            }
+
+            try
+            {
+                var contexto = ObtenerContextoDevolucion();
+                var validacion = ValidarContextoConProductos(contexto);
+
+                if (!validacion.Ok)
+                {
+                    _logger?.LogWarning(
+                        "NC Devolución: no se pudo quitar producto por contexto inválido. Codigo={Codigo}, Mensaje={Mensaje}, CorrelationId={CorrelationId}",
+                        validacion.Codigo,
+                        validacion.Mensaje,
+                        correlationId
+                    );
+
+                    return Json(new
+                    {
+                        ok = false,
+                        codigo = validacion.Codigo,
+                        mensaje = validacion.Mensaje
+                    });
+                }
+
+                var productos = contexto!.ProductosDevolucion
+                    ?? new List<NCProductoBuscarResponseDto>();
+
+                if (request.Indice >= productos.Count)
+                {
+                    _logger?.LogWarning(
+                        "NC Devolución: índice fuera de rango al quitar producto. Indice={Indice}, Productos={Productos}, CorrelationId={CorrelationId}",
+                        request.Indice,
+                        productos.Count,
+                        correlationId
+                    );
+
+                    return Json(new
+                    {
+                        ok = false,
+                        codigo = "INDICE_INVALIDO",
+                        mensaje = "El producto seleccionado ya no se encuentra en la grilla."
+                    });
+                }
+
+                var productoQuitado = productos[request.Indice];
+                productos.RemoveAt(request.Indice);
+
+                contexto.ProductosDevolucion = productos;
+                contexto.CoTipo = string.Empty;
+                contexto.JsonProductosCalculado = string.Empty;
+                contexto.JsonSubtotal = string.Empty;
+                contexto.JsonSorteo = string.Empty;
+                contexto.FechaUltimoCalculoUtc = null;
+                contexto.FechaUltimaCargaProductosUtc = DateTime.UtcNow;
+
+                GuardarContextoDevolucion(contexto);
+
+                _logger?.LogInformation(
+                    "NC Devolución: producto quitado de la grilla. Producto={Producto}, CodigoBarra={CodigoBarra}, Indice={Indice}, ProductosRestantes={ProductosRestantes}, CorrelationId={CorrelationId}",
+                    productoQuitado.p_id,
+                    productoQuitado.p_id_barrado,
+                    request.Indice,
+                    productos.Count,
+                    correlationId
+                );
+
+                return Json(new
+                {
+                    ok = true,
+                    codigo = "PRODUCTO_QUITADO",
+                    mensaje = "El producto fue quitado de la Nota de Crédito.",
+                    productosCargados = productos.Count,
+                    productoQuitado = CrearResumenProductoDevolucion(productoQuitado),
+                    productos = productos
+                        .Select(CrearResumenProductoDevolucion)
+                        .ToList()
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(
+                    ex,
+                    "NC Devolución: error inesperado al quitar producto. CorrelationId={CorrelationId}",
+                    correlationId
+                );
+
+                return Json(new
+                {
+                    ok = false,
+                    codigo = "ERROR_INTERNO_QUITAR_PRODUCTO",
+                    mensaje = "No fue posible quitar el producto de la devolución."
+                });
+            }
+        }
+
+        /// <summary>
         /// Agrega un producto manualmente a la devolución actual.
         ///
         /// El navegador sólo informa valor y cantidad.
@@ -2251,10 +2386,62 @@ namespace gc.caja.Areas.Facturacion.Controllers
         private string CrearJsonProductosDevolucion(
             NCDevolucionContextoSesion contexto)
         {
+            List<ProductoFactJsonDto> productos = MapearProductosModeloNC_aModeloFact(contexto.ProductosDevolucion);
+
             return JsonConvert.SerializeObject(
-                contexto.ProductosDevolucion ?? [],
+                productos ?? [],
                 Formatting.None
             );
+        }
+
+        private List<ProductoFactJsonDto> MapearProductosModeloNC_aModeloFact(List<NCProductoBuscarResponseDto> pdev)
+        {
+            //realiza el mapeo campo a campo del modelo NCProductoBuscarResponseDto => ProductoFactJsonDto
+            var prods = new List<ProductoFactJsonDto>();
+            foreach (var item in pdev)
+            {
+                var p = new ProductoFactJsonDto(MapeaProdNC(item));
+                prods.Add(p);
+            }
+
+            return prods;
+        }
+
+        private ProductoDatosResponseDto MapeaProdNC(NCProductoBuscarResponseDto item)
+        {
+            //traspasar los valores de item al tipo de dato resultante
+            var p = new ProductoDatosResponseDto();
+            p.p_id = item.p_id;
+            p.p_id_barrado = item.p_id_barrado;
+            //p.sin_scan_con_barrado = item.sin_scan_con_barrado;
+            p.p_desc = item.p_desc;
+            p.p_pcosto = item.p_pcosto ?? 0m;
+            p.p_pcosto_repo = item.p_pcosto_repo ?? 0m;
+            p.in_alicuota = item.in_alicuota ?? 0m;
+            p.p_in = item.p_in ?? 0m;
+            p.p_pvta = item.p_pvta ?? 0m;
+            p.iva_situacion = item.iva_situacion;
+            p.iva_alicuota= item.iva_alicuota ?? 0m;
+            p.p_iva = item.p_iva ?? 0m;
+            p.p_pneto= item.p_pneto ?? 0m;
+            p.po = item.po;
+            p.po_limite =  0;
+            p.p_pvta = item.p_pvta ?? 0m;
+            p.cantidad_tot = item.cantidad_tot ?? 0m;
+            p.bultos = item.bultos ;
+            p.p_activo = item.p_activo;
+            p.rub_id = item.rub_id;
+            p.rub_desc = item.rub_desc;
+            p.cta_id = item.cta_id;
+            p.pg_id = item.pg_id;
+            p.up_id = item.up_id;
+            p.up_tipo = item.up_tipo;
+            p.up_desc = item.up_desc;
+            p.p_unidad_pres = item.p_unidad_pres;
+            p.p_peso = item.p_peso ?? 0m;
+            p.cpf_nro = null;
+
+            return p;
         }
 
         private CalcularFilasReqDto CrearRequestCalculo(

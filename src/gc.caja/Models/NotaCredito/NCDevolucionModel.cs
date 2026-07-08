@@ -60,6 +60,15 @@ namespace gc.caja.Models.NotaCredito
         public decimal Cantidad { get; set; } = 1m;
     }
 
+    /// <summary>
+    /// Producto que el cajero decide excluir de la Nota de Credito.
+    /// El indice corresponde a la grilla vigente guardada en sesion.
+    /// </summary>
+    public sealed class QuitarProductoDevolucionRequest
+    {
+        public int Indice { get; set; } = -1;
+    }
+
     public sealed class SeguirNotaCreditoRequest
     {
         public bool? DejarEnCuentaCorriente { get; set; }
