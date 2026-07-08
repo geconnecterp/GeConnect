@@ -7753,3 +7753,18 @@ span[data-bs-toggle="tooltip"] {
     color: var(--bs-golden-success) !important;
     text-shadow: 0 1px 0 rgba(255, 255, 255, 0.65);
 }
+
+.ncdev-resumen-monto {
+    font-size: 2rem;
+    font-weight: 700;
+    line-height: 1.15;
+}
+
+#modalNcDevolucionResumenFinal .card-body dl,
+#modalNcDevolucionResumenFinal .card-body .row {
+    font-size: 0.95rem;
+}
+
+#modalNcDevolucionResumenFinal .alert {
+    border-left: 4px solid var(--bs-golden-primary);
+}

@@ -141,6 +141,7 @@
 @await Html.PartialAsync("_IdentificarComprobanteOrigenModal")
 @await Html.PartialAsync("_SeleccionComprobanteRepetidoModal")
 @await Html.PartialAsync("_ProductoDevolucion")
+@await Html.PartialAsync("_ResumenConfirmacion")
 
 @section Scripts {
     <script>
@@ -188,6 +189,9 @@
             asp-append-version="true">
     </script>
     <script src="~/js/app/ncDevolucionProductos.js"
+            asp-append-version="true">
+    </script>
+    <script src="~/js/app/reportes.js"
             asp-append-version="true">
     </script>
 }

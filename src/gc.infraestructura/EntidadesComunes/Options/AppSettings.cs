@@ -46,6 +46,7 @@ namespace gc.infraestructura.Core.EntidadesComunes.Options
         public string TipoCuil { get; set; } = "80";
         public string NotaCreditoDevolucionAfipId { get; set; } = "%";
         public string NotaCreditoDevolucionOptId { get; set; } = "VE";
+        public string NotaCreditoReporteModo { get; set; } = "PANTALLA";
     }
     
 }
