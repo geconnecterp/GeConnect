@@ -51,7 +51,7 @@ namespace gc.api.core.Servicios.LineaCaja
                 new SqlParameter("@caja_nro_proceso", req.caja_nro_proceso),
                 new SqlParameter("@caja_nro_cierre", req.caja_nro_cierre),
 
-                new SqlParameter("@usu_id_autoriza", req.caja_nro_cierre),
+                new SqlParameter("@usu_id_autoriza", (object?)req.usu_id_autoriza ?? DBNull.Value),
 
                 new SqlParameter("@cta_id", req.cta_id),
                 new SqlParameter("@ctac_dto", req.ctac_dto),
@@ -60,6 +60,7 @@ namespace gc.api.core.Servicios.LineaCaja
                 new SqlParameter("@tco_letra", req.tco_letra),
                 new SqlParameter("@tco_id_ori", req.tco_id_ori),
                 new SqlParameter("@cm_compte_ori", req.cm_compte_ori),
+                new SqlParameter("@cm_repetido_ori", req.cm_repetido_ori),
                 new SqlParameter("@afip_id", req.afip_id),
                 new SqlParameter("@tdoc_id", req.tdoc_id),
                 new SqlParameter("@cta_documento", req.cta_documento),
@@ -71,7 +72,10 @@ namespace gc.api.core.Servicios.LineaCaja
                 new SqlParameter("@json_cancela", json_cancela),
                 new SqlParameter("@json_union", json_union),
                 new SqlParameter("@json_subtotal", json_subtotal),
-                new SqlParameter("@json_sorteo", json_sorteo)
+                new SqlParameter("@json_sorteo", json_sorteo),
+                new SqlParameter("@caeA", req.caea),
+
+
             };
 
             var res = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);

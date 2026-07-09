@@ -313,11 +313,17 @@ const ModuloReportes = (function () {
      * ✅ ACTUALIZADO v11.2: Genera un reporte de comprobante y lo visualiza
      * Sin cambios en esta función
      */
-    async function generarYVisualizarReporte(datosComprobante) {
+    async function generarYVisualizarReporte(datosComprobante, opciones) {
+        const configuracion = opciones || {};
+        const modo = String(configuracion.modo || 'PANTALLA')
+            .trim()
+            .toUpperCase();
+
         console.log('═══════════════════════════════════════════════════');
         console.log('📄 GENERAR Y VISUALIZAR REPORTE DE COMPROBANTE v11.2');
         console.log('═══════════════════════════════════════════════════');
         console.log('Datos del comprobante:', datosComprobante);
+        console.log('Modo de salida:', modo);
 
         try {
             // ❶ Validar entrada
@@ -417,8 +423,10 @@ const ModuloReportes = (function () {
             console.log(`✅ PDF recibido: ${response.base64.length} caracteres Base64`);
             console.log(`   Nombre archivo: ${response.resultado_msj}`);
 
-            // ❻ Visualizar PDF en nueva pestaña
-            visualizarPdfEnNuevaVentana(response.base64, response.resultado_msj);
+            // ❻ Visualizar o imprimir PDF según configuración
+            visualizarPdfEnNuevaVentana(response.base64, response.resultado_msj, {
+                modo: modo
+            });
 
             console.log('═══════════════════════════════════════════════════');
             console.log('✅ REPORTE GENERADO Y VISUALIZADO EXITOSAMENTE');
@@ -485,12 +493,18 @@ const ModuloReportes = (function () {
      * ✅ Visualiza un PDF en una nueva pestaña del navegador
      * Sin cambios
      */
-    function visualizarPdfEnNuevaVentana(base64, nombreArchivo) {
+    function visualizarPdfEnNuevaVentana(base64, nombreArchivo, opciones) {
+        const configuracion = opciones || {};
+        const modo = String(configuracion.modo || 'PANTALLA')
+            .trim()
+            .toUpperCase();
+
         console.log('═══════════════════════════════════════════════════');
         console.log('🖥️ VISUALIZAR PDF EN NUEVA VENTANA');
         console.log('═══════════════════════════════════════════════════');
         console.log(`   Tamaño Base64: ${base64.length} caracteres`);
         console.log(`   Nombre archivo: ${nombreArchivo || 'comprobante.pdf'}`);
+        console.log(`   Modo: ${modo}`);
 
         try {
             // ❶ Convertir Base64 a Blob
@@ -519,6 +533,17 @@ const ModuloReportes = (function () {
             }
 
             console.log('✅ Nueva ventana abierta exitosamente');
+
+            if (modo === 'IMPRESORA') {
+                nuevaVentana.addEventListener('load', function () {
+                    try {
+                        nuevaVentana.focus();
+                        nuevaVentana.print();
+                    } catch (errorPrint) {
+                        console.error('❌ No se pudo enviar el PDF a impresión:', errorPrint);
+                    }
+                });
+            }
 
             // ❹ Limpiar URL temporal después de 30 segundos
             setTimeout(function () {

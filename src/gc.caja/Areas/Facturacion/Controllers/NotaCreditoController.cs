@@ -819,7 +819,6 @@ namespace gc.caja.Areas.Facturacion.Controllers
                 var productosAceptados = new List<NCProductoBuscarResponseDto>();
                 var advertencias = new List<object>();
                 var rechazos = new List<object>();
-
                 foreach (var producto in respuestaSp)
                 {
                     if (producto.respuesta.HasValue &&
@@ -849,6 +848,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
                 }
 
                 // La carga total reemplaza el detalle anterior para evitar duplicados.
+                RenumerarProductosDevolucion(productosAceptados);
                 contexto.ProductosDevolucion = productosAceptados;
                 contexto.FechaUltimaCargaProductosUtc = DateTime.UtcNow;
 
@@ -935,6 +935,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
 
                 var productos = contexto.ProductosDevolucion
                     ?? new List<NCProductoBuscarResponseDto>();
+                RenumerarProductosDevolucion(productos);
 
                 return Json(new
                 {
@@ -1054,6 +1055,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
 
                 var productoQuitado = productos[request.Indice];
                 productos.RemoveAt(request.Indice);
+                RenumerarProductosDevolucion(productos);
 
                 contexto.ProductosDevolucion = productos;
                 contexto.CoTipo = string.Empty;
@@ -1434,6 +1436,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
 
                 if (productosAceptados.Count > 0)
                 {
+                    RenumerarProductosDevolucion(contexto.ProductosDevolucion);
                     contexto.FechaUltimaCargaProductosUtc = DateTime.UtcNow;
 
                     GuardarContextoDevolucion(contexto);
@@ -1567,6 +1570,23 @@ namespace gc.caja.Areas.Facturacion.Controllers
                 }
 
                 var comprobante = contexto!.ComprobanteOrigen;
+                if (comprobante == null)
+                {
+                    stopwatch.Stop();
+                    _logger?.LogWarning(
+                        "NC Devolución Seguir: contexto sin comprobante origen. CorrelationId={CorrelationId}. Tiempo={Elapsed}ms",
+                        correlationId,
+                        stopwatch.ElapsedMilliseconds
+                    );
+
+                    return Json(new
+                    {
+                        ok = false,
+                        codigo = "CONTEXTO_SIN_COMPROBANTE",
+                        mensaje = "No se encontró el comprobante origen de la Nota de Crédito. Vuelva a iniciar la operación."
+                    });
+                }
+
                 var requiereDecisionCtaCte = RequiereDecisionCuentaCorriente(comprobante);
 
                 _logger?.LogInformation("═══════════════════════════════════════════════════");
@@ -1636,7 +1656,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
                     });
                 }
 
-                var coTipo = DeterminarCoTipo(comprobante, request);
+                var coTipo = DeterminarCoTipo(comprobante!, request);
                 var token = TokenCookie;
 
                 _logger?.LogInformation("═══════════════════════════════════════════════════");
@@ -1723,7 +1743,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
 
                 contexto.CoTipo = coTipo;
                 contexto.JsonProductosCalculado = string.IsNullOrWhiteSpace(resultado.Entidad.json_p)
-                    ? requestCalculo.json_p
+                    ? requestCalculo.json_p ?? "[]"
                     : resultado.Entidad.json_p;
                 contexto.JsonSubtotal = string.IsNullOrWhiteSpace(resultado.Entidad.json_subtotal)
                     ? "[]"
@@ -1838,7 +1858,71 @@ namespace gc.caja.Areas.Facturacion.Controllers
                     });
                 }
 
+                var cajaActual = CajaActual;
+                if (cajaActual?.Caja == null)
+                {
+                    return Json(new
+                    {
+                        ok = false,
+                        codigo = "CAJA_INVALIDA",
+                        mensaje = "No se encontraron datos válidos de caja para finalizar la Nota de Crédito."
+                    });
+                }
+
                 var requestConfirmacion = CrearRequestConfirmacion(contexto);
+
+                _logger?.LogInformation("═══════════════════════════════════════════════════");
+                _logger?.LogInformation("🔍 NC DEVOLUCIÓN - VALIDANDO ESTADO DEL PUNTO DE VENTA");
+                _logger?.LogInformation("═══════════════════════════════════════════════════");
+
+                var validacionPV = await ValidarEstadoPuntoVenta(
+                    cajaServicio: _cajaServicio,
+                    cajaId: cajaActual.CajaId ?? string.Empty,
+                    ctrlId: cajaActual.Caja.ctrl_id ?? string.Empty,
+                    nroProceso: requestConfirmacion.caja_nro_proceso,
+                    nroCierre: requestConfirmacion.caja_nro_cierre,
+                    tipoLlamada: "F"
+                );
+
+                if (!validacionPV.PuedeContinuar)
+                {
+                    _logger?.LogError("❌ NC Devolución: validación de PV falló - Operación bloqueada");
+                    _logger?.LogError("   Resultado: {Resultado}", validacionPV.Resultado);
+                    _logger?.LogError("   Mensaje: {Mensaje}", validacionPV.Mensaje);
+
+                    return Json(new
+                    {
+                        ok = false,
+                        codigo = "ESTADO_PV_INVALIDO",
+                        mensaje = validacionPV.Mensaje,
+                        error_tipo = "estado_pv",
+                        ctrl_id = validacionPV.CtrlId,
+                        resultado_pv = validacionPV.Resultado
+                    });
+                }
+
+                if (validacionPV.EsAdvertencia)
+                {
+                    _logger?.LogWarning("⚠️ NC Devolución: validación de PV con advertencia - Operación continúa");
+                    _logger?.LogWarning("   Resultado: {Resultado}", validacionPV.Resultado);
+                    _logger?.LogWarning("   Mensaje: {Mensaje}", validacionPV.Mensaje);
+                }
+                else
+                {
+                    _logger?.LogInformation("✅ NC Devolución: validación de PV exitosa - Operación autorizada");
+                }
+
+                requestConfirmacion.caea =
+                    cajaActual.Caja.ctrl_id == "-1" &&
+                    validacionPV.Resultado == 1;
+
+                _logger?.LogInformation(
+                    "NC Devolución: FormaPago={CtrlId} - ResultadoPV={ResultadoPV} - CAEA={Caea}",
+                    cajaActual.Caja.ctrl_id,
+                    validacionPV.Resultado,
+                    requestConfirmacion.caea
+                );
+
                 var resultado = await _ncServicio.ConfirmarOperacionCaja(requestConfirmacion, token);
 
                 if (resultado == null || !resultado.Ok || resultado.Entidad == null)
@@ -1875,7 +1959,15 @@ namespace gc.caja.Areas.Facturacion.Controllers
                     });
                 }
 
-                var mensajeStock = await RegistrarStockNotaCredito(comprobanteEmitido, token);
+                var resultadoStock = await RegistrarStockNotaCredito(comprobanteEmitido, token);
+                var debeImprimir = DebeImprimirComprobanteElectronico();
+                var reporteModo = NormalizarModoReporteNC(_appSettings.NotaCreditoReporteModo);
+                var mensajeFinal = $"Nota de Crédito {comprobanteEmitido.tco_letra} Nro {comprobanteEmitido.cm_compte} emitida correctamente.";
+
+                if (!resultadoStock.Ok)
+                {
+                    mensajeFinal = $"{mensajeFinal} {resultadoStock.Mensaje}";
+                }
 
                 LimpiarEstadoTemporalDevolucion();
 
@@ -1883,10 +1975,24 @@ namespace gc.caja.Areas.Facturacion.Controllers
                 {
                     ok = true,
                     codigo = "NC_EMITIDA",
-                    mensaje = $"Nota de Crédito {comprobanteEmitido.tco_letra} Nro {comprobanteEmitido.cm_compte} emitida correctamente.",
+                    mensaje = mensajeFinal,
                     resultado_completo = respuestaDto.resultado_msj,
-                    stock = mensajeStock,
-                    debe_imprimir = true,
+                    stock = new
+                    {
+                        ok = resultadoStock.Ok,
+                        mensaje = resultadoStock.Mensaje,
+                        id = resultadoStock.Id
+                    },
+                    debe_imprimir = debeImprimir,
+                    reporte_modo = reporteModo,
+                    reporte = new
+                    {
+                        habilitado = debeImprimir,
+                        modo = reporteModo,
+                        motivo = debeImprimir
+                            ? "Caja configurada para Factura Electrónica."
+                            : "La caja no está configurada para Factura Electrónica."
+                    },
                     data = new[]
                     {
                         new
@@ -1895,7 +2001,9 @@ namespace gc.caja.Areas.Facturacion.Controllers
                             tco_id = comprobanteEmitido.tco_id,
                             cm_compte = comprobanteEmitido.cm_compte,
                             cm_repetido = comprobanteEmitido.cm_repetido,
-                            co_tipo = contexto.CoTipo
+                            co_tipo = contexto.CoTipo,
+                            debe_imprimir = debeImprimir,
+                            reporte_modo = reporteModo
                         }
                     }
                 });
@@ -2386,6 +2494,8 @@ namespace gc.caja.Areas.Facturacion.Controllers
         private string CrearJsonProductosDevolucion(
             NCDevolucionContextoSesion contexto)
         {
+            RenumerarProductosDevolucion(contexto.ProductosDevolucion);
+
             List<ProductoFactJsonDto> productos = MapearProductosModeloNC_aModeloFact(contexto.ProductosDevolucion);
 
             return JsonConvert.SerializeObject(
@@ -2440,6 +2550,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
             p.p_unidad_pres = item.p_unidad_pres;
             p.p_peso = item.p_peso ?? 0m;
             p.cpf_nro = null;
+            p.item = item.item;
 
             return p;
         }
@@ -2510,6 +2621,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
                 tco_letra = comprobante.nc_tco_letra ?? string.Empty,
                 tco_id_ori = comprobante.tco_id ?? string.Empty,
                 cm_compte_ori = comprobante.cm_compte ?? string.Empty,
+                cm_repetido_ori = comprobante.cm_repetido?.ToString(CultureInfo.InvariantCulture) ?? string.Empty,
 
                 afip_id = comprobante.afip_id ?? string.Empty,
                 tdoc_id = comprobante.tdoc_id ?? string.Empty,
@@ -2520,7 +2632,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
 
                 json_p = contexto.JsonProductosCalculado,
                 json_subtotal = contexto.JsonSubtotal,
-                json_sorteo = string.Empty,
+                json_sorteo = "[]",
                 json_valores = "[]",
                 json_cancela = "[]",
                 json_union = "[]"
@@ -2559,7 +2671,25 @@ namespace gc.caja.Areas.Facturacion.Controllers
             }
         }
 
-        private async Task<object> RegistrarStockNotaCredito(
+        private bool DebeImprimirComprobanteElectronico()
+        {
+            return string.Equals(
+                CajaActual?.Facturacion.ToString(),
+                "FE",
+                StringComparison.OrdinalIgnoreCase
+            );
+        }
+
+        private static string NormalizarModoReporteNC(string? modo)
+        {
+            var valor = (modo ?? string.Empty).Trim().ToUpperInvariant();
+
+            return valor == "IMPRESORA"
+                ? "IMPRESORA"
+                : "PANTALLA";
+        }
+
+        private async Task<StockNotaCreditoResultado> RegistrarStockNotaCredito(
             ComprobanteInfoDto comprobante,
             string token)
         {
@@ -2573,10 +2703,10 @@ namespace gc.caja.Areas.Facturacion.Controllers
                         "NC Devolución: no se encontró depo_id para cargar stock."
                     );
 
-                    return new
+                    return new StockNotaCreditoResultado
                     {
-                        ok = false,
-                        mensaje = "La Nota de Crédito fue emitida, pero no se encontró depósito para actualizar stock."
+                        Ok = false,
+                        Mensaje = "La Nota de Crédito fue emitida, pero no se encontró depósito para actualizar stock."
                     };
                 }
 
@@ -2597,18 +2727,18 @@ namespace gc.caja.Areas.Facturacion.Controllers
                         stockResult?.Mensaje ?? "Respuesta nula del servicio."
                     );
 
-                    return new
+                    return new StockNotaCreditoResultado
                     {
-                        ok = false,
-                        mensaje = stockResult?.Mensaje ?? "La Nota de Crédito fue emitida, pero no se pudo actualizar stock."
+                        Ok = false,
+                        Mensaje = stockResult?.Mensaje ?? "La Nota de Crédito fue emitida, pero no se pudo actualizar stock."
                     };
                 }
 
-                return new
+                return new StockNotaCreditoResultado
                 {
-                    ok = true,
-                    mensaje = "Stock actualizado correctamente.",
-                    id = stockId
+                    Ok = true,
+                    Mensaje = "Stock actualizado correctamente.",
+                    Id = stockId
                 };
             }
             catch (Exception ex)
@@ -2618,12 +2748,19 @@ namespace gc.caja.Areas.Facturacion.Controllers
                     "NC Devolución: excepción al actualizar stock."
                 );
 
-                return new
+                return new StockNotaCreditoResultado
                 {
-                    ok = false,
-                    mensaje = "La Nota de Crédito fue emitida, pero ocurrió un error al actualizar stock."
+                    Ok = false,
+                    Mensaje = "La Nota de Crédito fue emitida, pero ocurrió un error al actualizar stock."
                 };
             }
+        }
+
+        private sealed class StockNotaCreditoResultado
+        {
+            public bool Ok { get; init; }
+            public string Mensaje { get; init; } = string.Empty;
+            public string Id { get; init; } = string.Empty;
         }
 
         private static object CrearResultadoProductoMensaje(
@@ -2650,6 +2787,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
                 p_id = producto.p_id,
                 p_id_barrado = producto.p_id_barrado,
                 p_desc = producto.p_desc,
+                item = producto.item,
 
                 cantidad_tot = producto.cantidad_tot ?? 0m,
                 bultos = producto.bultos,
@@ -2668,6 +2806,20 @@ namespace gc.caja.Areas.Facturacion.Controllers
                 respuesta = producto.respuesta,
                 respuesta_msj = producto.respuesta_msj
             };
+        }
+
+        private static void RenumerarProductosDevolucion(
+            IList<NCProductoBuscarResponseDto>? productos)
+        {
+            if (productos == null)
+            {
+                return;
+            }
+
+            for (var indice = 0; indice < productos.Count; indice++)
+            {
+                productos[indice].item = indice + 1;
+            }
         }
 
         private static bool TieneMasDeTresDecimales(decimal valor)

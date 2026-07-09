@@ -19,6 +19,7 @@
         public string tco_letra { get; set; } = string.Empty;
         public string tco_id_ori { get; set; } = string.Empty;
         public string cm_compte_ori { get; set; } = string.Empty;
+        public string cm_repetido_ori { get; set; } = string.Empty;
 
         public string afip_id { get; set; } = string.Empty;
         public string tdoc_id { get; set; } = string.Empty;

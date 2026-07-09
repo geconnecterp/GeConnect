@@ -19,6 +19,7 @@ window.NCDevolucion = window.NCDevolucion || {};
 
     let modalProductos = null;
     let modalCalculo = null;
+    let modalResumenFinal = null;
     let comprobanteOrigen = null;
     let modalidadActual = null;
 
@@ -33,6 +34,7 @@ window.NCDevolucion = window.NCDevolucion || {};
     const SELECTORES = {
         modal: '#modalProductoDevolucion',
         modalCalculo: '#modalNcDevolucionCalculo',
+        modalResumenFinal: '#modalNcDevolucionResumenFinal',
 
         modalidadBadge: '#ncDevolucionModalidadBadge',
         cantidadProductos: '#ncDevolucionCantidadProductos',
@@ -94,9 +96,21 @@ window.NCDevolucion = window.NCDevolucion || {};
         spinnerSeguir: '#spnNcDevolucionSeguir',
         iconoSeguir: '#icoNcDevolucionSeguir',
         btnVolverCalculo: '#btnVolverNcDevolucionCalculo',
+        btnContinuarResumen: '#btnNcDevolucionContinuarResumen',
+        spinnerContinuarResumen: '#spnNcDevolucionContinuarResumen',
+        iconoContinuarResumen: '#icoNcDevolucionContinuarResumen',
+        btnVolverResumenFinal: '#btnVolverNcDevolucionResumenFinal',
         btnFinalizar: '#btnNcDevolucionFinalizar',
         spinnerFinalizar: '#spnNcDevolucionFinalizar',
-        iconoFinalizar: '#icoNcDevolucionFinalizar'
+        iconoFinalizar: '#icoNcDevolucionFinalizar',
+        resumenDestinoBadge: '#ncDevolucionResumenDestinoBadge',
+        resumenDestinoPanel: '#ncDevolucionResumenDestinoPanel',
+        resumenFinalOrigen: '#ncDevolucionResumenFinalOrigen',
+        resumenFinalNc: '#ncDevolucionResumenFinalNc',
+        resumenDecisiones: '#ncDevolucionResumenDecisiones',
+        resumenMontoLabel: '#ncDevolucionResumenMontoLabel',
+        resumenMonto: '#ncDevolucionResumenMonto',
+        resumenMontoDetalle: '#ncDevolucionResumenMontoDetalle'
     };
 
     $(function () {
@@ -135,6 +149,9 @@ window.NCDevolucion = window.NCDevolucion || {};
         const elementoModalCalculo = document.querySelector(
             SELECTORES.modalCalculo
         );
+        const elementoModalResumenFinal = document.querySelector(
+            SELECTORES.modalResumenFinal
+        );
 
         if (elementoModalCalculo) {
             modalCalculo = bootstrap.Modal.getOrCreateInstance(
@@ -144,6 +161,17 @@ window.NCDevolucion = window.NCDevolucion || {};
             logAdvertencia('PRODUCTOS - INICIALIZACIÓN', {
                 mensaje: 'No se encontró el modal de cálculo de NC.',
                 selector: SELECTORES.modalCalculo
+            });
+        }
+
+        if (elementoModalResumenFinal) {
+            modalResumenFinal = bootstrap.Modal.getOrCreateInstance(
+                elementoModalResumenFinal
+            );
+        } else {
+            logAdvertencia('PRODUCTOS - INICIALIZACIÓN', {
+                mensaje: 'No se encontró el modal final de resumen de NC.',
+                selector: SELECTORES.modalResumenFinal
             });
         }
 
@@ -171,6 +199,13 @@ window.NCDevolucion = window.NCDevolucion || {};
         );
 
         $(elementoModalCalculo).on(
+            'hidden.bs.modal',
+            function () {
+                ocultarTecladoNc();
+            }
+        );
+
+        $(elementoModalResumenFinal).on(
             'hidden.bs.modal',
             function () {
                 ocultarTecladoNc();
@@ -268,6 +303,22 @@ window.NCDevolucion = window.NCDevolucion || {};
             SELECTORES.btnSeguir,
             function () {
                 iniciarDefinicionDestino();
+            }
+        );
+
+        $(document).on(
+            'click',
+            SELECTORES.btnContinuarResumen,
+            function () {
+                abrirResumenFinal();
+            }
+        );
+
+        $(document).on(
+            'click',
+            SELECTORES.btnVolverResumenFinal,
+            function () {
+                volverACalculoDesdeResumenFinal();
             }
         );
 
@@ -1465,7 +1516,7 @@ window.NCDevolucion = window.NCDevolucion || {};
         if (!productos.length) {
             $tbody.html(`
                 <tr>
-                    <td colspan="7"
+                    <td colspan="8"
                          class="text-center text-muted py-4 td-compact">
                         No hay productos cargados para esta devolución.
                     </td>
@@ -1477,6 +1528,10 @@ window.NCDevolucion = window.NCDevolucion || {};
 
         $tbody.html(
             productos.map(function (producto, indice) {
+                const item = Number(producto.item) > 0
+                    ? Number(producto.item)
+                    : indice + 1;
+
                 const codigo = producto.p_id_barrado ||
                     producto.p_id ||
                     '-';
@@ -1509,6 +1564,10 @@ window.NCDevolucion = window.NCDevolucion || {};
 
                 return `
                     <tr class="ncdev-producto-row ${tieneAdvertencia ? 'ncdev-producto-con-advertencia' : ''}">
+                        <td class="text-center td-compact">
+                            <strong>${item}</strong>
+                        </td>
+
                         <td class="text-center td-compact">
                             <strong>${escaparHtml(codigo)}</strong>
                         </td>
@@ -1665,7 +1724,8 @@ window.NCDevolucion = window.NCDevolucion || {};
         $(SELECTORES.destinoOperacion).empty();
         $(SELECTORES.conceptosCalculo).empty();
         $(SELECTORES.totalFinalCalculo).text('$ 0,00');
-        $(SELECTORES.btnFinalizar).addClass('d-none').prop('disabled', true);
+        $(SELECTORES.btnContinuarResumen).prop('disabled', true);
+        $(SELECTORES.btnFinalizar).prop('disabled', true);
         $(SELECTORES.btnSeguir).prop('disabled', true);
 
         $(SELECTORES.advertencias).addClass('d-none');
@@ -1676,7 +1736,7 @@ window.NCDevolucion = window.NCDevolucion || {};
 
         $(SELECTORES.tablaProductos).html(`
             <tr>
-                <td colspan="7"
+                <td colspan="8"
                     class="text-center text-muted py-4">
                     No hay productos cargados.
                 </td>
@@ -1696,7 +1756,8 @@ window.NCDevolucion = window.NCDevolucion || {};
         $(SELECTORES.destinoOperacion).empty();
         $(SELECTORES.conceptosCalculo).empty();
         $(SELECTORES.totalFinalCalculo).text('$ 0,00');
-        $(SELECTORES.btnFinalizar).addClass('d-none').prop('disabled', true);
+        $(SELECTORES.btnContinuarResumen).prop('disabled', true);
+        $(SELECTORES.btnFinalizar).prop('disabled', true);
         $(SELECTORES.btnSeguir).prop('disabled', productosActuales.length === 0);
 
         bloquearEntradaManual(false);
@@ -2080,9 +2141,9 @@ window.NCDevolucion = window.NCDevolucion || {};
         renderizarConceptosCalculo(subtotales);
         $(SELECTORES.totalFinalCalculo).text(`$ ${formatearImporte(total)}`);
         $(SELECTORES.btnSeguir).prop('disabled', true);
-        $(SELECTORES.btnFinalizar)
-            .removeClass('d-none')
+        $(SELECTORES.btnContinuarResumen)
             .prop('disabled', false);
+        $(SELECTORES.btnFinalizar).prop('disabled', false);
 
         bloquearEntradaManual(true);
 
@@ -2091,7 +2152,7 @@ window.NCDevolucion = window.NCDevolucion || {};
             .addClass('alert-success')
             .html(
                 '<i class="bx bx-check-circle me-1"></i>' +
-                'Totales calculados. Verifique la información y finalice la Nota de Crédito.'
+                'Totales calculados. Verifique la información y continúe al resumen final.'
             );
 
         abrirModalCalculo();
@@ -2146,15 +2207,13 @@ window.NCDevolucion = window.NCDevolucion || {};
     }
 
     function obtenerTotalCalculo(subtotales) {
-        const filaTotal = subtotales.find(esFilaTotal);
-
-        if (filaTotal) {
-            return Number(filaTotal.importe) || 0;
+        if (!Array.isArray(subtotales)) {
+            return 0;
         }
 
-        const ultimaFila = subtotales[subtotales.length - 1] || {};
-
-        return Number(ultimaFila.importe) || 0;
+        return subtotales.reduce(function (acumulado, item) {
+            return acumulado + (Number(item?.importe) || 0);
+        }, 0);
     }
 
     function esFilaTotal(item) {
@@ -2204,6 +2263,197 @@ window.NCDevolucion = window.NCDevolucion || {};
         });
 
         modalProductos.hide();
+    }
+
+    function abrirResumenFinal() {
+        if (!calculoActual) {
+            mostrarMensaje(
+                'Atención',
+                'Debe calcular los totales antes de continuar al resumen final.',
+                'warn!'
+            );
+
+            return;
+        }
+
+        if (!modalResumenFinal) {
+            mostrarMensaje(
+                'Error',
+                'No se encontró la pantalla de resumen final de la Nota de Crédito.',
+                'error!'
+            );
+
+            return;
+        }
+
+        renderizarResumenFinal();
+
+        const $modalCalculo = $(SELECTORES.modalCalculo);
+
+        if (!$modalCalculo.hasClass('show')) {
+            modalResumenFinal.show();
+            return;
+        }
+
+        $modalCalculo.one('hidden.bs.modal', function () {
+            modalResumenFinal.show();
+        });
+
+        modalCalculo.hide();
+    }
+
+    function volverACalculoDesdeResumenFinal() {
+        if (!modalResumenFinal || !modalCalculo) {
+            return;
+        }
+
+        $(SELECTORES.modalResumenFinal).one('hidden.bs.modal', function () {
+            modalCalculo.show();
+        });
+
+        modalResumenFinal.hide();
+    }
+
+    function renderizarResumenFinal() {
+        const origen = comprobanteOrigen || {};
+        const coTipo = calculoActual?.co_tipo || '';
+        const subtotales = Array.isArray(calculoActual?.subtotales)
+            ? calculoActual.subtotales
+            : [];
+        const total = obtenerTotalCalculo(subtotales);
+        const esCuentaCorriente = coTipo === 'DV';
+        const destino = esCuentaCorriente
+            ? 'Cuenta Corriente'
+            : 'Devolución de dinero';
+
+        $(SELECTORES.resumenDestinoBadge)
+            .removeClass('bg-white text-golden-dark bg-info bg-success')
+            .addClass(esCuentaCorriente ? 'bg-info' : 'bg-success')
+            .text(destino);
+
+        $(SELECTORES.resumenDestinoPanel)
+            .removeClass('alert-info alert-success alert-warning')
+            .addClass(esCuentaCorriente ? 'alert-info' : 'alert-success')
+            .html(crearHtmlDestinoFinal(origen, coTipo, total));
+
+        $(SELECTORES.resumenFinalOrigen).html(crearHtmlResumenOrigen(origen));
+        $(SELECTORES.resumenFinalNc).html(crearHtmlResumenNc(origen));
+        $(SELECTORES.resumenDecisiones).html(crearHtmlDecisionesFinal(origen, coTipo));
+
+        $(SELECTORES.resumenMontoLabel).text(
+            esCuentaCorriente
+                ? 'Importe que quedará a favor'
+                : 'Monto a devolver al cliente'
+        );
+
+        $(SELECTORES.resumenMonto)
+            .toggleClass('text-info', esCuentaCorriente)
+            .toggleClass('text-success', !esCuentaCorriente)
+            .text(`$ ${formatearImporte(total)}`);
+
+        $(SELECTORES.resumenMontoDetalle).text(
+            esCuentaCorriente
+                ? 'La Nota de Crédito se registrará en la cuenta corriente del cliente.'
+                : 'El cajero deberá entregar este importe como devolución física de dinero.'
+        );
+    }
+
+    function crearHtmlDestinoFinal(origen, coTipo, total) {
+        if (coTipo === 'DV') {
+            return `
+                <div class="d-flex align-items-start">
+                    <i class="bx bx-credit-card-front fs-3 me-3"></i>
+                    <div>
+                        <strong>Destino confirmado: Cuenta Corriente.</strong>
+                        <div class="small mt-1">
+                            La NC se emitirá por $ ${formatearImporte(total)} y quedará a favor del cliente
+                            ${escaparHtml(origen.cm_nombre || 'Consumidor Final')}.
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        return `
+            <div class="d-flex align-items-start">
+                <i class="bx bx-money fs-3 me-3"></i>
+                <div>
+                    <strong>Destino confirmado: devolución de dinero.</strong>
+                    <div class="small mt-1">
+                        La NC se emitirá por $ ${formatearImporte(total)} y el importe deberá devolverse físicamente.
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    function crearHtmlDecisionesFinal(origen, coTipo) {
+        const decisiones = [];
+        const modalidad = modalidadActual?.cargarTodoDetalle === true
+            ? 'Se cargó todo el detalle del comprobante original.'
+            : 'El cajero realizó carga manual de productos.';
+
+        decisiones.push({
+            icono: 'bx-receipt',
+            titulo: 'Comprobante origen validado',
+            texto: `${origen.tco_id || ''} ${origen.cm_compte || ''}`.trim()
+        });
+
+        decisiones.push({
+            icono: 'bx-package',
+            titulo: 'Modalidad de productos',
+            texto: modalidad
+        });
+
+        if (Number(origen.nc_dv_dist) === 1) {
+            decisiones.push({
+                icono: 'bx-buildings',
+                titulo: 'Destino forzado',
+                texto: 'Factura de distribuidora: la NC queda en Cuenta Corriente.'
+            });
+        } else if (Number(origen.nc_dv_pago_diferido) === 1) {
+            decisiones.push({
+                icono: 'bx-time-five',
+                titulo: 'Destino forzado',
+                texto: 'Factura con pago diferido: la NC queda en Cuenta Corriente.'
+            });
+        } else if (Number(origen.nc_ctacte) === 1) {
+            decisiones.push({
+                icono: coTipo === 'DV' ? 'bx-check-circle' : 'bx-money',
+                titulo: 'Decisión de Cuenta Corriente',
+                texto: coTipo === 'DV'
+                    ? 'El cajero confirmó dejar el saldo en Cuenta Corriente.'
+                    : 'El cajero decidió realizar devolución de dinero.'
+            });
+        } else {
+            decisiones.push({
+                icono: 'bx-money',
+                titulo: 'Destino automático',
+                texto: 'La operación continúa como devolución de dinero.'
+            });
+        }
+
+        decisiones.push({
+            icono: 'bx-file',
+            titulo: 'Tipo de NC resultante',
+            texto: `${origen.nc_tco_id || ''} ${origen.nc_tco_desc || ''}`.trim() || 'Nota de Crédito'
+        });
+
+        return `
+            <ul class="list-unstyled mb-0">
+                ${decisiones.map(function (item) {
+                    return `
+                        <li class="d-flex mb-3">
+                            <i class="bx ${item.icono} fs-4 text-golden-dark me-2"></i>
+                            <div>
+                                <div class="fw-semibold">${escaparHtml(item.titulo)}</div>
+                                <div class="small text-muted">${escaparHtml(item.texto)}</div>
+                            </div>
+                        </li>
+                    `;
+                }).join('')}
+            </ul>
+        `;
     }
 
     function confirmarFinalizacion() {
@@ -2284,18 +2534,7 @@ window.NCDevolucion = window.NCDevolucion || {};
                     return;
                 }
 
-                mostrarMensaje(
-                    'Nota de Crédito emitida',
-                    response.mensaje ||
-                    'La Nota de Crédito fue emitida correctamente.',
-                    'succ!',
-                    function () {
-                        window.location.href =
-                            window.ncDevolucionIndexUrl ||
-                            window.ncDevolucionMenuCajaUrl ||
-                            window.location.href;
-                    }
-                );
+                procesarFinalizacionExitosa(response);
             })
             .fail(function (xhr, status, error) {
                 logError('PRODUCTOS - FINALIZAR', {
@@ -2317,6 +2556,85 @@ window.NCDevolucion = window.NCDevolucion || {};
                 finalizacionEnCurso = false;
                 bloquearAccionFinalizar(false);
             });
+    }
+
+    function procesarFinalizacionExitosa(response) {
+        const comprobante = Array.isArray(response?.data)
+            ? response.data[0]
+            : null;
+        const debeImprimir = response?.debe_imprimir === true;
+        const modoReporte = String(response?.reporte_modo || 'PANTALLA')
+            .trim()
+            .toUpperCase();
+
+        const cerrarConExito = function () {
+            mostrarMensaje(
+                'Nota de Crédito emitida',
+                response.mensaje ||
+                'La Nota de Crédito fue emitida correctamente.',
+                'succ!',
+                function () {
+                    window.location.href =
+                        window.ncDevolucionIndexUrl ||
+                        window.ncDevolucionMenuCajaUrl ||
+                        window.location.href;
+                }
+            );
+        };
+
+        if (!debeImprimir) {
+            cerrarConExito();
+            return;
+        }
+
+        if (!comprobante) {
+            mostrarMensaje(
+                'Nota de Crédito emitida',
+                `${response.mensaje || 'La Nota de Crédito fue emitida correctamente.'}<br>` +
+                'No se recibieron datos suficientes para generar el comprobante en pantalla.',
+                'warn!',
+                function () {
+                    window.location.href =
+                        window.ncDevolucionIndexUrl ||
+                        window.ncDevolucionMenuCajaUrl ||
+                        window.location.href;
+                }
+            );
+            return;
+        }
+
+        if (typeof ModuloReportes === 'undefined') {
+            mostrarMensaje(
+                'Nota de Crédito emitida',
+                `${response.mensaje || 'La Nota de Crédito fue emitida correctamente.'}<br>` +
+                'No se encontró el módulo de reportes para presentar la NC.',
+                'warn!',
+                function () {
+                    window.location.href =
+                        window.ncDevolucionIndexUrl ||
+                        window.ncDevolucionMenuCajaUrl ||
+                        window.location.href;
+                }
+            );
+            return;
+        }
+
+        ModuloReportes.generarYVisualizarReporte(
+            {
+                tco_letra: comprobante.tco_letra,
+                tco_id: comprobante.tco_id,
+                cm_compte: comprobante.cm_compte,
+                cm_repetido: comprobante.cm_repetido
+            },
+            {
+                modo: modoReporte,
+                titulo: 'Nota de Crédito emitida'
+            }
+        ).then(function () {
+            cerrarConExito();
+        }).catch(function () {
+            cerrarConExito();
+        });
     }
 
     function bloquearAccionSeguir(bloquear) {

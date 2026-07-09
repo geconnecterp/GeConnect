@@ -1,0 +1,141 @@
+<div class="modal fade modal-golden"
+     id="modalNcDevolucionResumenFinal"
+     tabindex="-1"
+     aria-labelledby="modalNcDevolucionResumenFinalLabel"
+     aria-hidden="true"
+     data-bs-backdrop="static"
+     data-bs-keyboard="false">
+
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+
+        <div class="modal-content">
+
+            <div class="modal-header bg-gradient-golden ncdev-modal-header-compact">
+                <div>
+                    <h5 id="modalNcDevolucionResumenFinalLabel"
+                        class="modal-title">
+                        <i class="bx bx-check-shield me-1"></i>
+                        Confirmación de Nota de Crédito
+                    </h5>
+
+                    <small>
+                        Revise la dirección tomada antes de emitir la NC.
+                    </small>
+                </div>
+
+                <span id="ncDevolucionResumenDestinoBadge"
+                      class="badge bg-white text-golden-dark ncdev-badge-compact">
+                </span>
+            </div>
+
+            <div class="modal-body bg-light p-4">
+
+                <div id="ncDevolucionResumenDestinoPanel"
+                     class="alert mb-3"
+                     role="status">
+                </div>
+
+                <div class="row g-3 mb-3">
+                    <div class="col-lg-6">
+                        <div class="card card-golden card-golden-bordered golden-summary-compact h-100">
+                            <div class="card-header">
+                                <strong>
+                                    <i class="bx bx-receipt me-1"></i>
+                                    Comprobante Original
+                                </strong>
+                            </div>
+                            <div id="ncDevolucionResumenFinalOrigen"
+                                 class="card-body">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-6">
+                        <div class="card card-golden card-golden-bordered golden-summary-compact h-100">
+                            <div class="card-header">
+                                <strong>
+                                    <i class="bx bx-file me-1"></i>
+                                    Nota de Crédito a Emitir
+                                </strong>
+                            </div>
+                            <div id="ncDevolucionResumenFinalNc"
+                                 class="card-body">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row g-3">
+                    <div class="col-lg-7">
+                        <div class="card card-golden shadow-sm h-100">
+                            <div class="card-header">
+                                <h6 class="mb-0">
+                                    <i class="bx bx-list-check me-1"></i>
+                                    Decisiones del Proceso
+                                </h6>
+                            </div>
+
+                            <div class="card-body">
+                                <div id="ncDevolucionResumenDecisiones">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-5">
+                        <div class="card card-golden shadow-sm h-100">
+                            <div class="card-header">
+                                <h6 class="mb-0">
+                                    <i class="bx bx-money-withdraw me-1"></i>
+                                    Importe Final
+                                </h6>
+                            </div>
+
+                            <div class="card-body text-center">
+                                <div id="ncDevolucionResumenMontoLabel"
+                                     class="text-muted fw-semibold mb-1">
+                                </div>
+
+                                <div id="ncDevolucionResumenMonto"
+                                     class="ncdev-resumen-monto">
+                                    $ 0,00
+                                </div>
+
+                                <div id="ncDevolucionResumenMontoDetalle"
+                                     class="small text-muted mt-2">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="modal-footer bg-golden-light border-top border-golden">
+                <button type="button"
+                        id="btnVolverNcDevolucionResumenFinal"
+                        class="btn btn-outline-secondary btn-lg">
+                    <i class="bx bx-arrow-back"></i>
+                    VOLVER
+                </button>
+
+                <button type="button"
+                        id="btnNcDevolucionFinalizar"
+                        class="btn btn-success btn-lg px-5">
+                    <span id="spnNcDevolucionFinalizar"
+                          class="spinner-border spinner-border-sm d-none me-2"
+                          role="status"
+                          aria-hidden="true">
+                    </span>
+
+                    <i id="icoNcDevolucionFinalizar"
+                       class="bx bx-check-circle me-1">
+                    </i>
+
+                    FINALIZAR NC
+                </button>
+            </div>
+
+        </div>
+    </div>
+</div>
