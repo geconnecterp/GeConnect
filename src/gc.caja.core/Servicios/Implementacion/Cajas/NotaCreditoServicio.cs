@@ -25,9 +25,13 @@ namespace gc.caja.core.Servicios.Implementacion.Cajas
     public class NotaCreditoServicio : Servicio<Dto>, INotaCreditoServicio
     {
         private const string RutaAPI = "/api/ApiNotaCredito";
+        private const string RutaAPIProductoFact = "/api/ApiProductoFact";
+        private const string RutaAPIPagoFactura = "/api/ApiPagoFactura";
 
         private const string POST_VALIDAR_NC = "/ValidarNC";
         private const string POST_BUSCAR_PRODUCTO = "/BuscarProducto";
+        private const string POST_CALCULAR_FILAS = "/CalcularFilas";
+        private const string POST_CONFIRMAR_OPERACION = "/ConfirmarOperacionCaja";
         
         private const string RutaAPI_TC = "/api/tipocomprobante";
         
@@ -413,6 +417,127 @@ namespace gc.caja.core.Servicios.Implementacion.Cajas
                     Mensaje = "Ocurrió un error al buscar el producto para la devolución."
                 };
             }
-        }     
+        }
+
+        public async Task<RespuestaGenerica<CalculaFilasResDto>> CalcularFilas(CalcularFilasReqDto request, string token)
+        {
+            try
+            {
+                var helper = new HelperAPI();
+                var client = helper.InicializaCliente(request, token, out StringContent contentData);
+                var link = $"{_appSettings.RutaBase}{RutaAPIProductoFact}{POST_CALCULAR_FILAS}";
+
+                using var response = await client.PostAsync(link, contentData);
+
+                if (response.StatusCode != HttpStatusCode.OK)
+                {
+                    var mensaje = await ReadApiErrorAsync(response);
+                    return new RespuestaGenerica<CalculaFilasResDto> { Ok = false, Mensaje = mensaje };
+                }
+
+                var stringData = await response.Content.ReadAsStringAsync();
+                if (string.IsNullOrWhiteSpace(stringData))
+                {
+                    return new RespuestaGenerica<CalculaFilasResDto>
+                    {
+                        Ok = false,
+                        Mensaje = "No se recibió una respuesta válida al calcular la Nota de Crédito."
+                    };
+                }
+
+                var apiResponse = JsonConvert.DeserializeObject<ApiResponse<CalculaFilasResDto>>(stringData);
+                if (apiResponse?.Data == null)
+                {
+                    return new RespuestaGenerica<CalculaFilasResDto>
+                    {
+                        Ok = false,
+                        Mensaje = "No fue posible interpretar el cálculo de la Nota de Crédito."
+                    };
+                }
+
+                return new RespuestaGenerica<CalculaFilasResDto>
+                {
+                    Ok = true,
+                    Mensaje = "OK",
+                    Entidad = apiResponse.Data
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "{Servicio}-{Metodo}: error calculando filas de NC.", GetType().Name, MethodBase.GetCurrentMethod()?.Name);
+                return new RespuestaGenerica<CalculaFilasResDto>
+                {
+                    Ok = false,
+                    Mensaje = "Ocurrió un error al calcular la Nota de Crédito."
+                };
+            }
+        }
+
+        public async Task<RespuestaGenerica<RespuestaDto>> ConfirmarOperacionCaja(CajaOpeConfirmarReq request, string token)
+        {
+            try
+            {
+                var helper = new HelperAPI();
+                var client = helper.InicializaCliente(request, token, out StringContent contentData);
+                var link = $"{_appSettings.RutaBase}{RutaAPIPagoFactura}{POST_CONFIRMAR_OPERACION}";
+
+                using var response = await client.PostAsync(link, contentData);
+
+                if (response.StatusCode != HttpStatusCode.OK)
+                {
+                    var mensaje = await ReadApiErrorAsync(response);
+                    return new RespuestaGenerica<RespuestaDto> { Ok = false, Mensaje = mensaje };
+                }
+
+                var stringData = await response.Content.ReadAsStringAsync();
+                if (string.IsNullOrWhiteSpace(stringData))
+                {
+                    return new RespuestaGenerica<RespuestaDto>
+                    {
+                        Ok = false,
+                        Mensaje = "No se recibió una respuesta válida al confirmar la Nota de Crédito."
+                    };
+                }
+
+                var apiResponse = JsonConvert.DeserializeObject<ApiResponse<RespuestaDto>>(stringData);
+                if (apiResponse?.Data == null)
+                {
+                    return new RespuestaGenerica<RespuestaDto>
+                    {
+                        Ok = false,
+                        Mensaje = "No fue posible interpretar la confirmación de la Nota de Crédito."
+                    };
+                }
+
+                var respuesta = apiResponse.Data;
+                if (respuesta.resultado == 0)
+                {
+                    return new RespuestaGenerica<RespuestaDto>
+                    {
+                        Ok = true,
+                        Mensaje = "OK",
+                        Entidad = respuesta
+                    };
+                }
+
+                return new RespuestaGenerica<RespuestaDto>
+                {
+                    Ok = false,
+                    EsWarn = respuesta.resultado > 0,
+                    EsError = respuesta.resultado < 0,
+                    Mensaje = respuesta.resultado_msj,
+                    Entidad = respuesta
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "{Servicio}-{Metodo}: error confirmando NC.", GetType().Name, MethodBase.GetCurrentMethod()?.Name);
+                return new RespuestaGenerica<RespuestaDto>
+                {
+                    Ok = false,
+                    Mensaje = "Ocurrió un error al confirmar la Nota de Crédito."
+                };
+            }
+        }
     }
 }

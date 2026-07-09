@@ -18,21 +18,35 @@ window.NCDevolucion = window.NCDevolucion || {};
         /^(\d+(?:\.\d{1,3})?)\+(.+)$/;
 
     let modalProductos = null;
+    let modalCalculo = null;
     let comprobanteOrigen = null;
     let modalidadActual = null;
 
     let cargaDetalleEnCurso = false;
     let cargaDetalleEjecutada = false;
     let cargaManualEnCurso = false;
+    let calculoEnCurso = false;
+    let finalizacionEnCurso = false;
+    let productosActuales = [];
+    let calculoActual = null;
 
     const SELECTORES = {
         modal: '#modalProductoDevolucion',
+        modalCalculo: '#modalNcDevolucionCalculo',
 
         modalidadBadge: '#ncDevolucionModalidadBadge',
         cantidadProductos: '#ncDevolucionCantidadProductos',
 
         resumenOrigen: '#ncDevolucionProductoResumenOrigen',
         resumenNc: '#ncDevolucionProductoResumenNc',
+        tipoComprobanteBadge: '#ncDevolucionTipoComprobanteBadge',
+        clienteNombreProd: '#txtNcClienteNombreProd',
+        clienteIdProd: '#txtNcClienteIdProd',
+        clienteDomicilioProd: '#txtNcClienteDomicilioProd',
+        condicionAfipProd: '#txtNcCondicionAfipProd',
+        clienteCuitProd: '#txtNcClienteCuitProd',
+        clienteEmailProd: '#txtNcClienteEmailProd',
+        clienteMovilProd: '#txtNcClienteMovilProd',
 
         estado: '#ncDevolucionProductosEstado',
         cargando: '#ncDevolucionProductosCargando',
@@ -40,6 +54,7 @@ window.NCDevolucion = window.NCDevolucion || {};
         manual: '#ncDevolucionProductosManual',
 
         inputManual: '#txtNcDevolucionCodigoProducto',
+        tecladoAnclaProductos: '#ncDevolucionTecladoAnclaProductos',
         btnAgregarManual: '#btnNcDevolucionAgregarProducto',
         spinnerAgregarManual: '#spnNcDevolucionAgregarProducto',
         iconoAgregarManual: '#icoNcDevolucionAgregarProducto',
@@ -48,6 +63,10 @@ window.NCDevolucion = window.NCDevolucion || {};
         resultado: '#ncDevolucionProductosResultado',
 
         tablaProductos: '#ncDevolucionTablaProductos',
+        btnEliminarProducto:
+            '.btn-ncdev-eliminar-producto',
+        btnVerAdvertenciaProducto:
+            '.btn-ncdev-ver-advertencia-producto',
 
         advertencias: '#ncDevolucionAdvertenciasProductos',
         listaAdvertencias: '#ncDevolucionListaAdvertenciasProductos',
@@ -55,7 +74,29 @@ window.NCDevolucion = window.NCDevolucion || {};
         rechazos: '#ncDevolucionRechazosProductos',
         listaRechazos: '#ncDevolucionListaRechazosProductos',
 
-        btnCancelar: '#btnCancelarNcDevolucionProductos'
+        destinoOperacion: '#ncDevolucionDestinoOperacion',
+        conceptosCalculo: '#tbodyNcDevolucionConceptosCalculo',
+        totalFinalCalculo: '#tdNcDevolucionTotalFinal',
+        calculoResumenOrigen: '#ncDevolucionCalculoResumenOrigen',
+        calculoResumenNc: '#ncDevolucionCalculoResumenNc',
+        calcClienteNombre: '#txtNcCalcClienteNombre',
+        calcClienteId: '#txtNcCalcClienteId',
+        calcClienteDomicilio: '#txtNcCalcClienteDomicilio',
+        calcComprobanteOrigen: '#txtNcCalcComprobanteOrigen',
+        calcTipoNc: '#txtNcCalcTipoNc',
+        calcCondicionAfip: '#txtNcCalcCondicionAfip',
+        calcDocumento: '#txtNcCalcDocumento',
+        calcEmail: '#txtNcCalcEmail',
+        calcMovil: '#txtNcCalcMovil',
+
+        btnCancelar: '#btnCancelarNcDevolucionProductos',
+        btnSeguir: '#btnNcDevolucionSeguir',
+        spinnerSeguir: '#spnNcDevolucionSeguir',
+        iconoSeguir: '#icoNcDevolucionSeguir',
+        btnVolverCalculo: '#btnVolverNcDevolucionCalculo',
+        btnFinalizar: '#btnNcDevolucionFinalizar',
+        spinnerFinalizar: '#spnNcDevolucionFinalizar',
+        iconoFinalizar: '#icoNcDevolucionFinalizar'
     };
 
     $(function () {
@@ -91,6 +132,21 @@ window.NCDevolucion = window.NCDevolucion || {};
             elementoModal
         );
 
+        const elementoModalCalculo = document.querySelector(
+            SELECTORES.modalCalculo
+        );
+
+        if (elementoModalCalculo) {
+            modalCalculo = bootstrap.Modal.getOrCreateInstance(
+                elementoModalCalculo
+            );
+        } else {
+            logAdvertencia('PRODUCTOS - INICIALIZACIÓN', {
+                mensaje: 'No se encontró el modal de cálculo de NC.',
+                selector: SELECTORES.modalCalculo
+            });
+        }
+
         $(elementoModal).on(
             'shown.bs.modal',
             function () {
@@ -109,6 +165,15 @@ window.NCDevolucion = window.NCDevolucion || {};
                 logInfo('PRODUCTOS - MODAL', {
                     accion: 'Modal de productos cerrado.'
                 });
+
+                ocultarTecladoNc();
+            }
+        );
+
+        $(elementoModalCalculo).on(
+            'hidden.bs.modal',
+            function () {
+                ocultarTecladoNc();
             }
         );
     }
@@ -179,6 +244,62 @@ window.NCDevolucion = window.NCDevolucion || {};
         );
 
         $(document).on(
+            'click',
+            SELECTORES.btnEliminarProducto,
+            function () {
+                const indice = Number($(this).data('index'));
+
+                solicitarQuitarProducto(indice);
+            }
+        );
+
+        $(document).on(
+            'click',
+            SELECTORES.btnVerAdvertenciaProducto,
+            function () {
+                const indice = Number($(this).data('index'));
+
+                mostrarAdvertenciaProducto(indice);
+            }
+        );
+
+        $(document).on(
+            'click',
+            SELECTORES.btnSeguir,
+            function () {
+                iniciarDefinicionDestino();
+            }
+        );
+
+        $(document).on(
+            'click',
+            SELECTORES.btnFinalizar,
+            function () {
+                confirmarFinalizacion();
+            }
+        );
+
+        $(document).on(
+            'click',
+            SELECTORES.btnVolverCalculo,
+            function () {
+                volverACargaProductos();
+            }
+        );
+
+        $(document).on(
+            'focus',
+            SELECTORES.inputManual,
+            function () {
+                posicionarTecladoNc(
+                    SELECTORES.inputManual,
+                    null,
+                    'right'
+                );
+            }
+        );
+
+        $(document).on(
             'keydown',
             SELECTORES.inputManual,
             function (event) {
@@ -220,6 +341,10 @@ window.NCDevolucion = window.NCDevolucion || {};
 
         cargaDetalleEnCurso = false;
         cargaDetalleEjecutada = false;
+        calculoEnCurso = false;
+        finalizacionEnCurso = false;
+        productosActuales = [];
+        calculoActual = null;
 
         limpiarEstadoVisual();
         renderizarResumenOperacion();
@@ -370,6 +495,15 @@ window.NCDevolucion = window.NCDevolucion || {};
     }
 
     function procesarEntradaManual() {
+        if (calculoActual) {
+            mostrarEstadoEntradaManual(
+                'La Nota de Crédito ya fue calculada. Cancele la operación para modificar productos.',
+                'warning'
+            );
+
+            return;
+        }
+
         if (cargaManualEnCurso) {
             logAdvertencia('PRODUCTOS - MANUAL', {
                 accion: 'Se ignoró la entrada porque existe una carga manual en curso.'
@@ -738,9 +872,9 @@ window.NCDevolucion = window.NCDevolucion || {};
 
                 renderizarProductos(
                     productos,
+                    obtenerAdvertenciasDesdeProductos(productos),
                     [],
-                    [],
-                    'MANUAL'
+                    obtenerOrigenCargaActual()
                 );
 
                 callback?.(true);
@@ -767,18 +901,244 @@ window.NCDevolucion = window.NCDevolucion || {};
             });
     }
 
+    function solicitarQuitarProducto(indice) {
+        const producto = obtenerProductoPorIndice(indice);
+
+        if (!producto) {
+            mostrarMensaje(
+                'Atención',
+                'No se pudo identificar el producto seleccionado.',
+                'warn!'
+            );
+
+            return;
+        }
+
+        if (calculoActual) {
+            mostrarMensaje(
+                'Atención',
+                'La Nota de Crédito ya fue calculada. Vuelva a la carga para modificar productos.',
+                'warn!'
+            );
+
+            return;
+        }
+
+        const descripcion = producto.p_desc ||
+            producto.p_id_barrado ||
+            producto.p_id ||
+            'este producto';
+
+        AbrirMensaje(
+            'Quitar producto',
+            `¿Desea quitar "${descripcion}" de la Nota de Crédito?`,
+            function (respuesta) {
+                $('#msjModal').modal('hide');
+
+                if (respuesta !== 'SI') {
+                    return;
+                }
+
+                quitarProducto(indice);
+            },
+            true,
+            ['Sí', 'No'],
+            'warn!'
+        );
+    }
+
+    function quitarProducto(indice) {
+        const url = String(
+            window.ncDevolucionQuitarProductoUrl || ''
+        ).trim();
+
+        if (!url) {
+            mostrarMensaje(
+                'Error',
+                'No se encontró la URL para quitar productos de la devolución.',
+                'error!'
+            );
+
+            logError('PRODUCTOS - QUITAR', {
+                accion: 'URL QuitarProductoDevolucion no disponible.'
+            });
+
+            return;
+        }
+
+        bloquearAccionSeguir(true);
+        bloquearEntradaManual(true);
+
+        logInfo('PRODUCTOS - QUITAR', {
+            accion: 'Invocando QuitarProductoDevolucion.',
+            url: url,
+            indice: indice
+        });
+
+        $.ajax({
+            url: url,
+            type: 'POST',
+            contentType: 'application/json; charset=utf-8',
+            dataType: 'json',
+            timeout: 20000,
+            data: JSON.stringify({
+                indice: indice
+            })
+        })
+            .done(function (response) {
+                logInfo('PRODUCTOS - QUITAR', {
+                    accion: 'Respuesta recibida desde QuitarProductoDevolucion.',
+                    respuesta: resumirRespuestaManual(response)
+                });
+
+                if (!response || response.ok !== true) {
+                    mostrarMensaje(
+                        'Atención',
+                        response?.mensaje ||
+                        'No fue posible quitar el producto de la devolución.',
+                        'warn!'
+                    );
+
+                    return;
+                }
+
+                const productos = Array.isArray(response.productos)
+                    ? response.productos
+                    : [];
+
+                renderizarProductos(
+                    productos,
+                    obtenerAdvertenciasDesdeProductos(productos),
+                    [],
+                    obtenerOrigenCargaActual()
+                );
+
+                mostrarEstadoEntradaManual(
+                    response.mensaje ||
+                    'Producto quitado de la Nota de Crédito.',
+                    'success'
+                );
+            })
+            .fail(function (xhr, status, error) {
+                logError('PRODUCTOS - QUITAR', {
+                    accion: 'Error HTTP o de red al quitar producto.',
+                    httpStatus: xhr?.status || 0,
+                    textStatus: status || '',
+                    error: String(error || ''),
+                    mensajeApi: xhr?.responseJSON?.mensaje || '',
+                    respuestaTexto: String(
+                        xhr?.responseText || ''
+                    ).substring(0, 500)
+                });
+
+                mostrarMensaje(
+                    'Error de Comunicación',
+                    xhr?.responseJSON?.mensaje ||
+                    'Ocurrió un error al quitar el producto de la devolución.',
+                    'error!'
+                );
+            })
+            .always(function () {
+                bloquearEntradaManual(false);
+                actualizarAccionesProductos(productosActuales.length > 0);
+            });
+    }
+
+    function mostrarAdvertenciaProducto(indice) {
+        const producto = obtenerProductoPorIndice(indice);
+
+        if (!producto || !tieneAdvertenciaProducto(producto)) {
+            mostrarMensaje(
+                'Advertencia',
+                'El producto seleccionado no tiene un mensaje de advertencia disponible.',
+                'info!'
+            );
+
+            return;
+        }
+
+        const codigo = producto.p_id_barrado ||
+            producto.p_id ||
+            'Sin código';
+
+        const descripcion = producto.p_desc ||
+            'Producto sin descripción';
+
+        const mensaje = producto.respuesta_msj ||
+            producto.mensaje ||
+            'El producto fue incorporado con advertencia.';
+
+        AbrirMensaje(
+            'Advertencia del producto',
+            `${codigo} - ${descripcion}\n\n${mensaje}`,
+            function () {
+                $('#msjModal').modal('hide');
+            },
+            false,
+            ['Aceptar'],
+            'warn!'
+        );
+    }
+
+    function obtenerProductoPorIndice(indice) {
+        const posicion = Number(indice);
+
+        if (!Number.isInteger(posicion) ||
+            posicion < 0 ||
+            posicion >= productosActuales.length) {
+            return null;
+        }
+
+        return productosActuales[posicion] || null;
+    }
+
+    function tieneAdvertenciaProducto(producto) {
+        return Number(producto?.respuesta || 0) > 0;
+    }
+
+    function obtenerAdvertenciasDesdeProductos(productos) {
+        return (Array.isArray(productos) ? productos : [])
+            .filter(tieneAdvertenciaProducto)
+            .map(function (producto) {
+                return {
+                    p_id: producto.p_id,
+                    p_id_barrado: producto.p_id_barrado,
+                    p_desc: producto.p_desc,
+                    respuesta: producto.respuesta,
+                    mensaje: producto.respuesta_msj ||
+                        producto.mensaje ||
+                        'El producto fue incorporado con advertencia.'
+                };
+            });
+    }
+
+    function obtenerOrigenCargaActual() {
+        return modalidadActual?.cargarTodoDetalle === true
+            ? 'TODOS'
+            : 'MANUAL';
+    }
+
     function bloquearEntradaManual(bloquear) {
-        $(SELECTORES.inputManual).prop('disabled', bloquear);
-        $(SELECTORES.btnAgregarManual).prop('disabled', bloquear);
+        const bloquearPorCalculo = calculoActual !== null;
+
+        $(SELECTORES.inputManual).prop(
+            'disabled',
+            bloquear || bloquearPorCalculo
+        );
+
+        $(SELECTORES.btnAgregarManual).prop(
+            'disabled',
+            bloquear || bloquearPorCalculo
+        );
 
         $(SELECTORES.spinnerAgregarManual).toggleClass(
             'd-none',
-            !bloquear
+            !(bloquear && cargaManualEnCurso)
         );
 
         $(SELECTORES.iconoAgregarManual).toggleClass(
             'd-none',
-            bloquear
+            bloquear && cargaManualEnCurso
         );
     }
 
@@ -837,9 +1197,41 @@ window.NCDevolucion = window.NCDevolucion || {};
                 return;
             }
 
-            $(SELECTORES.inputManual).trigger('focus');
-            $(SELECTORES.inputManual).select();
+            enfocarEntradaManualConTeclado();
         }, 120);
+    }
+
+    function enfocarEntradaManualConTeclado() {
+        if (typeof activarTecladoParaInput === 'function') {
+            activarTecladoParaInput(SELECTORES.inputManual, {
+                anchorSelector: SELECTORES.inputManual,
+                preferredSide: 'right'
+            });
+
+            return;
+        }
+
+        $(SELECTORES.inputManual).trigger('focus').trigger('select');
+    }
+
+    function posicionarTecladoNc(selectorInput, selectorAncla, ladoPreferido) {
+        setTimeout(function () {
+            if (typeof posicionarTecladoVirtual === 'function') {
+                posicionarTecladoVirtual(
+                    selectorInput,
+                    selectorAncla || selectorInput,
+                    {
+                        preferredSide: ladoPreferido || 'right'
+                    }
+                );
+            }
+        }, 170);
+    }
+
+    function ocultarTecladoNc() {
+        if (typeof ocultarTecladoVirtual === 'function') {
+            ocultarTecladoVirtual();
+        }
     }
 
     function obtenerMensajeOperacion(items, mensajePredeterminado) {
@@ -880,10 +1272,8 @@ window.NCDevolucion = window.NCDevolucion || {};
         };
     }
 
-    function renderizarResumenOperacion() {
-        const origen = comprobanteOrigen || {};
-
-        const origenHtml = `
+    function crearHtmlResumenOrigen(origen) {
+        return `
             <dl class="row mb-0">
                 <dt class="col-sm-5">Tipo</dt>
                 <dd class="col-sm-7">
@@ -904,9 +1294,7 @@ window.NCDevolucion = window.NCDevolucion || {};
 
                 <dt class="col-sm-5">Cliente</dt>
                 <dd class="col-sm-7">
-                    ${escaparHtml(
-            origen.cm_nombre || 'Consumidor Final'
-        )}
+                    ${escaparHtml(origen.cm_nombre || 'Consumidor Final')}
                 </dd>
 
                 <dt class="col-sm-5">Documento</dt>
@@ -922,7 +1310,9 @@ window.NCDevolucion = window.NCDevolucion || {};
                 </dd>
             </dl>
         `;
+    }
 
+    function crearHtmlResumenNc(origen) {
         const modalidad = modalidadActual?.cargarTodoDetalle === true
             ? 'Carga total'
             : 'Carga manual';
@@ -931,7 +1321,7 @@ window.NCDevolucion = window.NCDevolucion || {};
             ? 'bg-success'
             : 'bg-info';
 
-        const ncHtml = `
+        return `
             <dl class="row mb-0">
                 <dt class="col-sm-5">Tipo NC</dt>
                 <dd class="col-sm-7">
@@ -960,9 +1350,15 @@ window.NCDevolucion = window.NCDevolucion || {};
                 </dd>
             </dl>
         `;
+    }
 
-        $(SELECTORES.resumenOrigen).html(origenHtml);
-        $(SELECTORES.resumenNc).html(ncHtml);
+    function renderizarResumenOperacion() {
+        const origen = comprobanteOrigen || {};
+
+        poblarDatosClienteProductos(origen);
+
+        $(SELECTORES.resumenOrigen).html(crearHtmlResumenOrigen(origen));
+        $(SELECTORES.resumenNc).html(crearHtmlResumenNc(origen));
 
         $(SELECTORES.modalidadBadge)
             .removeClass(
@@ -980,12 +1376,38 @@ window.NCDevolucion = window.NCDevolucion || {};
             );
     }
 
+    function poblarDatosClienteProductos(origen) {
+        const tipoNc = `${origen.nc_tco_id || ''} ${origen.nc_tco_desc || ''}`.trim();
+
+        $(SELECTORES.clienteNombreProd).val(
+            origen.cm_nombre || 'Consumidor Final'
+        );
+        $(SELECTORES.clienteIdProd).val(origen.cta_id || 'N/A');
+        $(SELECTORES.clienteDomicilioProd).val(origen.cm_domicilio || '');
+        $(SELECTORES.condicionAfipProd).val(origen.afip_desc || '');
+        $(SELECTORES.clienteCuitProd).val(origen.cm_cuit || '');
+        $(SELECTORES.clienteEmailProd).val(origen.cm_email || '');
+        $(SELECTORES.clienteMovilProd).val(origen.cm_movil || '');
+
+        $(SELECTORES.tipoComprobanteBadge)
+            .html(
+                '<i class="bx bx-file"></i> ' +
+                escaparHtml(tipoNc || 'NC')
+            );
+    }
+
     function renderizarProductos(
         productos,
         advertencias,
         rechazos,
         origenCarga = 'TODOS'
     ) {
+        productosActuales = Array.isArray(productos)
+            ? productos
+            : [];
+
+        limpiarCalculoActual();
+
         actualizarCantidadProductos(productos.length);
         renderizarTablaProductos(productos);
         renderizarMensajesProductos(advertencias, rechazos);
@@ -1027,6 +1449,7 @@ window.NCDevolucion = window.NCDevolucion || {};
             );
 
         $(SELECTORES.resultado).removeClass('d-none');
+        actualizarAccionesProductos(tieneProductos);
 
         logInfo('PRODUCTOS - RENDER', {
             accion: 'Productos renderizados.',
@@ -1042,7 +1465,7 @@ window.NCDevolucion = window.NCDevolucion || {};
         if (!productos.length) {
             $tbody.html(`
                 <tr>
-                    <td colspan="6"
+                    <td colspan="7"
                          class="text-center text-muted py-4 td-compact">
                         No hay productos cargados para esta devolución.
                     </td>
@@ -1053,10 +1476,13 @@ window.NCDevolucion = window.NCDevolucion || {};
         }
 
         $tbody.html(
-            productos.map(function (producto) {
+            productos.map(function (producto, indice) {
                 const codigo = producto.p_id_barrado ||
                     producto.p_id ||
                     '-';
+
+                const tieneAdvertencia =
+                    tieneAdvertenciaProducto(producto);
 
                 const combo = String(
                     producto.cmd_cmb_desc || ''
@@ -1070,8 +1496,19 @@ window.NCDevolucion = window.NCDevolucion || {};
                        </div>`
                     : escaparHtml(producto.p_desc || '');
 
+                const botonAdvertencia = tieneAdvertencia
+                    ? `
+                        <button type="button"
+                                class="btn btn-warning btn-sm btn-ncdev-ver-advertencia-producto"
+                                data-index="${indice}"
+                                title="Ver advertencia"
+                                aria-label="Ver advertencia del producto">
+                            <i class="bx bx-message-error"></i>
+                        </button>`
+                    : '';
+
                 return `
-                    <tr class="ncdev-producto-row">
+                    <tr class="ncdev-producto-row ${tieneAdvertencia ? 'ncdev-producto-con-advertencia' : ''}">
                         <td class="text-center td-compact">
                             <strong>${escaparHtml(codigo)}</strong>
                         </td>
@@ -1092,6 +1529,20 @@ window.NCDevolucion = window.NCDevolucion || {};
 
                         <td class="text-end td-compact">
                             $ ${formatearImporte(producto.p_iva)}
+                        </td>
+
+                        <td class="text-center td-compact">
+                            <div class="ncdev-producto-acciones">
+                                ${botonAdvertencia}
+
+                                <button type="button"
+                                        class="btn btn-outline-danger btn-sm btn-ncdev-eliminar-producto"
+                                        data-index="${indice}"
+                                        title="Quitar producto de la Nota de Crédito"
+                                        aria-label="Quitar producto de la Nota de Crédito">
+                                    <i class="bx bx-trash"></i>
+                                </button>
+                            </div>
                         </td>
                     </tr>
                 `;
@@ -1204,10 +1655,18 @@ window.NCDevolucion = window.NCDevolucion || {};
     }
 
     function limpiarEstadoVisual() {
+        productosActuales = [];
+        calculoActual = null;
+
         $(SELECTORES.cargando).addClass('d-none');
         $(SELECTORES.error).addClass('d-none').empty();
         $(SELECTORES.manual).addClass('d-none');
         $(SELECTORES.resultado).addClass('d-none');
+        $(SELECTORES.destinoOperacion).empty();
+        $(SELECTORES.conceptosCalculo).empty();
+        $(SELECTORES.totalFinalCalculo).text('$ 0,00');
+        $(SELECTORES.btnFinalizar).addClass('d-none').prop('disabled', true);
+        $(SELECTORES.btnSeguir).prop('disabled', true);
 
         $(SELECTORES.advertencias).addClass('d-none');
         $(SELECTORES.listaAdvertencias).empty();
@@ -1217,7 +1676,7 @@ window.NCDevolucion = window.NCDevolucion || {};
 
         $(SELECTORES.tablaProductos).html(`
             <tr>
-                <td colspan="6"
+                <td colspan="7"
                     class="text-center text-muted py-4">
                     No hay productos cargados.
                 </td>
@@ -1229,6 +1688,664 @@ window.NCDevolucion = window.NCDevolucion || {};
         $(SELECTORES.inputManual).val('');
         bloquearEntradaManual(false);
         limpiarEstadoEntradaManual();
+    }
+
+    function limpiarCalculoActual() {
+        calculoActual = null;
+
+        $(SELECTORES.destinoOperacion).empty();
+        $(SELECTORES.conceptosCalculo).empty();
+        $(SELECTORES.totalFinalCalculo).text('$ 0,00');
+        $(SELECTORES.btnFinalizar).addClass('d-none').prop('disabled', true);
+        $(SELECTORES.btnSeguir).prop('disabled', productosActuales.length === 0);
+
+        bloquearEntradaManual(false);
+    }
+
+    function actualizarAccionesProductos(tieneProductos) {
+        const puedeSeguir = tieneProductos === true &&
+            !calculoEnCurso &&
+            !finalizacionEnCurso &&
+            calculoActual === null;
+
+        $(SELECTORES.btnSeguir).prop('disabled', !puedeSeguir);
+    }
+
+    function iniciarDefinicionDestino() {
+        if (calculoEnCurso || finalizacionEnCurso) {
+            return;
+        }
+
+        if (!productosActuales.length) {
+            mostrarMensaje(
+                'Atención',
+                'Debe cargar al menos un producto para continuar.',
+                'warn!'
+            );
+
+            return;
+        }
+
+        const origen = comprobanteOrigen || {};
+        const esForzadoCuentaCorriente =
+            Number(origen.nc_dv_dist) === 1 ||
+            Number(origen.nc_dv_pago_diferido) === 1;
+
+        if (esForzadoCuentaCorriente) {
+            ejecutarSeguir({});
+            return;
+        }
+
+        const requierePregunta =
+            Number(origen.nc_ctacte) === 1 &&
+            Number(origen.nc_dv_dist) === 0 &&
+            Number(origen.nc_dv_pago_diferido) === 0;
+
+        if (!requierePregunta) {
+            ejecutarSeguir({
+                dejarEnCuentaCorriente: false,
+                confirmacionCuentaCorriente: false
+            });
+
+            return;
+        }
+
+        preguntarCuentaCorriente();
+    }
+
+    function preguntarCuentaCorriente() {
+        AbrirMensaje(
+            'Cuenta Corriente',
+            '¿Desea dejar el saldo de la Nota de Crédito en Cuenta Corriente?',
+            function (respuesta) {
+                $('#msjModal').modal('hide');
+
+                if (respuesta !== 'SI') {
+                    ejecutarSeguir({
+                        dejarEnCuentaCorriente: false,
+                        confirmacionCuentaCorriente: false
+                    });
+
+                    return;
+                }
+
+                preguntarConfirmacionCuentaCorriente();
+            },
+            true,
+            ['Sí', 'No'],
+            'info!'
+        );
+    }
+
+    function preguntarConfirmacionCuentaCorriente() {
+        AbrirMensaje(
+            'Confirmar Cuenta Corriente',
+            'Confirme que el saldo quedará a favor del cliente en Cuenta Corriente.',
+            function (respuesta) {
+                $('#msjModal').modal('hide');
+
+                if (respuesta !== 'SI') {
+                    ejecutarSeguir({
+                        dejarEnCuentaCorriente: false,
+                        confirmacionCuentaCorriente: false
+                    });
+
+                    return;
+                }
+
+                ejecutarSeguir({
+                    dejarEnCuentaCorriente: true,
+                    confirmacionCuentaCorriente: true
+                });
+            },
+            true,
+            ['Confirmar', 'Volver'],
+            'warn!'
+        );
+    }
+
+    function ejecutarSeguir(payload) {
+        const url = String(window.ncDevolucionSeguirUrl || '').trim();
+
+        if (!url) {
+            mostrarMensaje(
+                'Error',
+                'No se encontró la URL para calcular la Nota de Crédito.',
+                'error!'
+            );
+
+            return;
+        }
+
+        calculoEnCurso = true;
+        bloquearAccionSeguir(true);
+        bloquearEntradaManual(true);
+
+        logInfo('PRODUCTOS - SEGUIR', {
+            accion: 'Invocando cálculo de filas para NC.',
+            payload: payload
+        });
+
+        $.ajax({
+            url: url,
+            type: 'POST',
+            contentType: 'application/json; charset=utf-8',
+            dataType: 'json',
+            timeout: 30000,
+            data: JSON.stringify(payload || {})
+        })
+            .done(function (response) {
+                logInfo('PRODUCTOS - SEGUIR', {
+                    accion: 'Respuesta recibida desde Seguir.',
+                    respuesta: response
+                });
+
+                if (!response || response.ok !== true) {
+                    mostrarMensaje(
+                        'Atención',
+                        response?.mensaje ||
+                        'No fue posible calcular la Nota de Crédito.',
+                        'warn!'
+                    );
+
+                    return;
+                }
+
+                const subtotales = obtenerSubtotalesDesdeRespuesta(response);
+
+                if (!Array.isArray(subtotales) ||
+                    subtotales.length === 0) {
+                    logAdvertencia('PRODUCTOS - SEGUIR', {
+                        accion: 'La respuesta no contiene subtotales normalizables.',
+                        subtotales: response?.subtotales || null,
+                        jsonSubtotal: response?.calculo?.json_subtotal || ''
+                    });
+
+                    mostrarMensaje(
+                        'Atención',
+                        'El cálculo no devolvió subtotales. No se puede continuar con la Nota de Crédito.',
+                        'warn!'
+                    );
+
+                    return;
+                }
+
+                response.subtotales = subtotales;
+                calculoActual = response;
+                renderizarCalculo(response);
+            })
+            .fail(function (xhr, status, error) {
+                logError('PRODUCTOS - SEGUIR', {
+                    accion: 'Error HTTP o de red al calcular NC.',
+                    httpStatus: xhr?.status || 0,
+                    textStatus: status || '',
+                    error: String(error || ''),
+                    mensajeApi: xhr?.responseJSON?.mensaje || ''
+                });
+
+                mostrarMensaje(
+                    'Error de Comunicación',
+                    xhr?.responseJSON?.mensaje ||
+                    'Ocurrió un error al calcular la Nota de Crédito.',
+                    'error!'
+                );
+            })
+            .always(function () {
+                calculoEnCurso = false;
+                bloquearAccionSeguir(false);
+                if (!calculoActual) {
+                    bloquearEntradaManual(false);
+                }
+                actualizarAccionesProductos(productosActuales.length > 0);
+            });
+    }
+
+    function obtenerSubtotalesDesdeRespuesta(response) {
+        const subtotalesDirectos = normalizarSubtotales(
+            response?.subtotales
+        );
+
+        if (subtotalesDirectos.length > 0) {
+            return subtotalesDirectos;
+        }
+
+        const jsonSubtotal =
+            response?.calculo?.json_subtotal ||
+            response?.calculo?.jsonSubtotal ||
+            response?.json_subtotal ||
+            response?.jsonSubtotal ||
+            '';
+
+        return normalizarSubtotales(parsearJsonSeguro(jsonSubtotal));
+    }
+
+    function parsearJsonSeguro(valor) {
+        if (!valor) {
+            return [];
+        }
+
+        if (Array.isArray(valor) || typeof valor === 'object') {
+            return valor;
+        }
+
+        if (typeof valor !== 'string') {
+            return [];
+        }
+
+        try {
+            const parseado = JSON.parse(valor);
+
+            return typeof parseado === 'string'
+                ? parsearJsonSeguro(parseado)
+                : parseado;
+        } catch (error) {
+            logAdvertencia('PRODUCTOS - SEGUIR', {
+                accion: 'No se pudo parsear json_subtotal.',
+                error: String(error || ''),
+                jsonSubtotal: valor
+            });
+
+            return [];
+        }
+    }
+
+    function normalizarSubtotales(origen) {
+        const filas = extraerFilasSubtotales(origen);
+
+        return filas
+            .map(normalizarFilaSubtotal)
+            .filter(function (item) {
+                return item.concepto || item.tipo || item.id_aux || item.importe !== 0;
+            });
+    }
+
+    function extraerFilasSubtotales(origen) {
+        if (Array.isArray(origen)) {
+            return origen;
+        }
+
+        if (!origen || typeof origen !== 'object') {
+            return [];
+        }
+
+        const posiblesColecciones = [
+            origen.subtotales,
+            origen.Subtotales,
+            origen.data,
+            origen.Data,
+            origen.rows,
+            origen.Rows,
+            origen.items,
+            origen.Items
+        ];
+
+        for (const coleccion of posiblesColecciones) {
+            if (Array.isArray(coleccion)) {
+                return coleccion;
+            }
+        }
+
+        return [origen];
+    }
+
+    function normalizarFilaSubtotal(item) {
+        const fila = item || {};
+
+        return {
+            orden: obtenerValor(fila, ['orden', 'Orden']) || 0,
+            tipo: String(obtenerValor(fila, ['tipo', 'Tipo', 'id', 'ID']) || ''),
+            concepto: String(
+                obtenerValor(
+                    fila,
+                    [
+                        'concepto',
+                        'Concepto',
+                        'descripcion',
+                        'Descripcion',
+                        'detalle',
+                        'Detalle'
+                    ]
+                ) || ''
+            ),
+            base: normalizarNumero(
+                obtenerValor(fila, ['base', 'Base', 'BaseImponible'])
+            ),
+            alicuota: normalizarNumero(
+                obtenerValor(fila, ['alicuota', 'Alicuota'])
+            ),
+            importe: normalizarNumero(
+                obtenerValor(
+                    fila,
+                    [
+                        'importe',
+                        'Importe',
+                        'total',
+                        'Total',
+                        'monto',
+                        'Monto',
+                        'valor',
+                        'Valor'
+                    ]
+                )
+            ),
+            id_aux: obtenerValor(fila, ['id_aux', 'IdAux', 'idAux']) || ''
+        };
+    }
+
+    function obtenerValor(origen, nombres) {
+        for (const nombre of nombres) {
+            if (Object.prototype.hasOwnProperty.call(origen, nombre)) {
+                return origen[nombre];
+            }
+        }
+
+        return null;
+    }
+
+    function normalizarNumero(valor) {
+        if (typeof valor === 'number') {
+            return Number.isFinite(valor) ? valor : 0;
+        }
+
+        const texto = String(valor ?? '').trim();
+
+        if (!texto) {
+            return 0;
+        }
+
+        const sinSeparadoresMiles = texto
+            .replace(/\s/g, '')
+            .replace(/\.(?=\d{3}(?:\D|$))/g, '')
+            .replace(',', '.');
+
+        const numero = Number(sinSeparadoresMiles);
+
+        return Number.isFinite(numero) ? numero : 0;
+    }
+
+    function renderizarCalculo(response) {
+        const destino = response?.destino || '';
+        const coTipo = response?.co_tipo || '';
+        const subtotales = Array.isArray(response?.subtotales)
+            ? response.subtotales
+            : [];
+        const total = obtenerTotalCalculo(subtotales);
+
+        $(SELECTORES.destinoOperacion)
+            .removeClass('bg-light text-dark bg-success bg-info')
+            .addClass(coTipo === 'DV' ? 'bg-info' : 'bg-success')
+            .text(destino || coTipo);
+
+        renderizarDatosCalculo();
+        renderizarConceptosCalculo(subtotales);
+        $(SELECTORES.totalFinalCalculo).text(`$ ${formatearImporte(total)}`);
+        $(SELECTORES.btnSeguir).prop('disabled', true);
+        $(SELECTORES.btnFinalizar)
+            .removeClass('d-none')
+            .prop('disabled', false);
+
+        bloquearEntradaManual(true);
+
+        $(SELECTORES.estado)
+            .removeClass('d-none alert-info alert-warning alert-danger')
+            .addClass('alert-success')
+            .html(
+                '<i class="bx bx-check-circle me-1"></i>' +
+                'Totales calculados. Verifique la información y finalice la Nota de Crédito.'
+            );
+
+        abrirModalCalculo();
+    }
+
+    function renderizarDatosCalculo() {
+        const origen = comprobanteOrigen || {};
+
+        $(SELECTORES.calcClienteNombre).val(
+            origen.cm_nombre || 'Consumidor Final'
+        );
+        $(SELECTORES.calcClienteId).val(origen.cta_id || '');
+        $(SELECTORES.calcClienteDomicilio).val(origen.cm_domicilio || '');
+        $(SELECTORES.calcComprobanteOrigen).val(
+            `${origen.tco_id || ''} ${origen.cm_compte || ''}`.trim()
+        );
+        $(SELECTORES.calcTipoNc).val(
+            `${origen.nc_tco_id || ''} ${origen.nc_tco_desc || ''}`.trim()
+        );
+        $(SELECTORES.calcCondicionAfip).val(origen.afip_desc || '');
+        $(SELECTORES.calcDocumento).val(origen.cm_cuit || '');
+        $(SELECTORES.calcEmail).val(origen.cm_email || '');
+        $(SELECTORES.calcMovil).val(origen.cm_movil || '');
+
+        const resumenOrigenHtml = crearHtmlResumenOrigen(origen);
+        const resumenNcHtml = crearHtmlResumenNc(origen);
+
+        $(SELECTORES.calculoResumenOrigen).html(resumenOrigenHtml);
+        $(SELECTORES.calculoResumenNc).html(resumenNcHtml);
+    }
+
+    function renderizarConceptosCalculo(subtotales) {
+        $(SELECTORES.conceptosCalculo).html(
+            subtotales.map(function (item) {
+                const concepto = item.concepto || item.tipo || '-';
+                const claseTotal = esFilaTotal(item)
+                    ? 'fw-bold text-success'
+                    : '';
+
+                return `
+                    <tr>
+                        <td class="text-start ${claseTotal}">
+                            ${escaparHtml(concepto)}
+                        </td>
+                        <td class="text-end ${claseTotal}">
+                            $ ${formatearImporte(item.importe)}
+                        </td>
+                    </tr>
+                `;
+            }).join('')
+        );
+    }
+
+    function obtenerTotalCalculo(subtotales) {
+        const filaTotal = subtotales.find(esFilaTotal);
+
+        if (filaTotal) {
+            return Number(filaTotal.importe) || 0;
+        }
+
+        const ultimaFila = subtotales[subtotales.length - 1] || {};
+
+        return Number(ultimaFila.importe) || 0;
+    }
+
+    function esFilaTotal(item) {
+        const concepto = String(item?.concepto || '').trim().toUpperCase();
+        const tipo = String(item?.tipo || '').trim().toUpperCase();
+
+        return concepto === 'TOTAL' || tipo === 'TOTAL';
+    }
+
+    function volverACargaProductos() {
+        if (!modalCalculo || !modalProductos) {
+            return;
+        }
+
+        $(SELECTORES.modalCalculo).one('hidden.bs.modal', function () {
+            modalProductos.show();
+        });
+
+        modalCalculo.hide();
+    }
+
+    function abrirModalCalculo() {
+        if (!modalCalculo) {
+            mostrarMensaje(
+                'Error',
+                'No se encontró la pantalla de cálculo de la Nota de Crédito.',
+                'error!'
+            );
+
+            return;
+        }
+
+        if (!modalProductos) {
+            modalCalculo.show();
+            return;
+        }
+
+        const $modalProductos = $(SELECTORES.modal);
+
+        if (!$modalProductos.hasClass('show')) {
+            modalCalculo.show();
+            return;
+        }
+
+        $(SELECTORES.modal).one('hidden.bs.modal', function () {
+            modalCalculo.show();
+        });
+
+        modalProductos.hide();
+    }
+
+    function confirmarFinalizacion() {
+        if (finalizacionEnCurso) {
+            return;
+        }
+
+        if (!calculoActual) {
+            mostrarMensaje(
+                'Atención',
+                'Debe presionar Seguir y calcular los totales antes de finalizar.',
+                'warn!'
+            );
+
+            return;
+        }
+
+        AbrirMensaje(
+            'Finalizar Nota de Crédito',
+            '¿Confirma la emisión de la Nota de Crédito por Devolución?',
+            function (respuesta) {
+                $('#msjModal').modal('hide');
+
+                if (respuesta !== 'SI') {
+                    return;
+                }
+
+                ejecutarFinalizar();
+            },
+            true,
+            ['Confirmar', 'Cancelar'],
+            'warn!'
+        );
+    }
+
+    function ejecutarFinalizar() {
+        const url = String(window.ncDevolucionFinalizarUrl || '').trim();
+
+        if (!url) {
+            mostrarMensaje(
+                'Error',
+                'No se encontró la URL para finalizar la Nota de Crédito.',
+                'error!'
+            );
+
+            return;
+        }
+
+        finalizacionEnCurso = true;
+        bloquearAccionFinalizar(true);
+        bloquearAccionSeguir(true);
+        bloquearEntradaManual(true);
+
+        logInfo('PRODUCTOS - FINALIZAR', {
+            accion: 'Invocando confirmación de NC.'
+        });
+
+        $.ajax({
+            url: url,
+            type: 'POST',
+            dataType: 'json',
+            timeout: 45000
+        })
+            .done(function (response) {
+                logInfo('PRODUCTOS - FINALIZAR', {
+                    accion: 'Respuesta recibida desde Finalizar.',
+                    respuesta: response
+                });
+
+                if (!response || response.ok !== true) {
+                    mostrarMensaje(
+                        'Atención',
+                        response?.mensaje ||
+                        'No fue posible emitir la Nota de Crédito.',
+                        'warn!'
+                    );
+
+                    return;
+                }
+
+                mostrarMensaje(
+                    'Nota de Crédito emitida',
+                    response.mensaje ||
+                    'La Nota de Crédito fue emitida correctamente.',
+                    'succ!',
+                    function () {
+                        window.location.href =
+                            window.ncDevolucionIndexUrl ||
+                            window.ncDevolucionMenuCajaUrl ||
+                            window.location.href;
+                    }
+                );
+            })
+            .fail(function (xhr, status, error) {
+                logError('PRODUCTOS - FINALIZAR', {
+                    accion: 'Error HTTP o de red al finalizar NC.',
+                    httpStatus: xhr?.status || 0,
+                    textStatus: status || '',
+                    error: String(error || ''),
+                    mensajeApi: xhr?.responseJSON?.mensaje || ''
+                });
+
+                mostrarMensaje(
+                    'Error de Comunicación',
+                    xhr?.responseJSON?.mensaje ||
+                    'Ocurrió un error al emitir la Nota de Crédito.',
+                    'error!'
+                );
+            })
+            .always(function () {
+                finalizacionEnCurso = false;
+                bloquearAccionFinalizar(false);
+            });
+    }
+
+    function bloquearAccionSeguir(bloquear) {
+        $(SELECTORES.btnSeguir).prop('disabled', bloquear);
+        $(SELECTORES.spinnerSeguir).toggleClass('d-none', !bloquear);
+        $(SELECTORES.iconoSeguir).toggleClass('d-none', bloquear);
+    }
+
+    function bloquearAccionFinalizar(bloquear) {
+        $(SELECTORES.btnFinalizar).prop('disabled', bloquear);
+        $(SELECTORES.spinnerFinalizar).toggleClass('d-none', !bloquear);
+        $(SELECTORES.iconoFinalizar).toggleClass('d-none', bloquear);
+    }
+
+    function mostrarMensaje(titulo, mensaje, tipo, callback) {
+        AbrirMensaje(
+            titulo,
+            mensaje,
+            function () {
+                $('#msjModal').modal('hide');
+
+                if (typeof callback === 'function') {
+                    callback();
+                }
+            },
+            false,
+            ['Aceptar'],
+            tipo || 'info!'
+        );
     }
 
     function actualizarCantidadProductos(cantidad) {

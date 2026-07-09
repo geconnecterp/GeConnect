@@ -10,7 +10,7 @@
 
         <div class="modal-content">
 
-            <div class="modal-header ncdev-modal-header-compact">
+            <div class="modal-header bg-gradient-golden ncdev-modal-header-compact">
 
                 <div>
                     <h5 id="modalProductoDevolucionLabel"
@@ -26,20 +26,24 @@
                 </div>
 
                 <div class="d-flex align-items-center ms-3">
+                    <span id="ncDevolucionTecladoAnclaProductos"
+                          data-teclado-ancla
+                          class="ncdev-teclado-ancla">
+                    </span>
 
                     <span id="ncDevolucionModalidadBadge"
-                          class="badge bg-primary me-2 ncdev-badge-compact">
+                          class="badge bg-white text-golden-dark me-2 ncdev-badge-compact">
                         Sin definir
                     </span>
 
                     <span id="ncDevolucionCantidadProductos"
-                          class="badge bg-white text-dark ncdev-badge-compact">
+                          class="badge bg-golden-light text-golden-dark ncdev-badge-compact">
                         0 productos
                     </span>
                 </div>
             </div>
 
-            <div class="modal-body ncdev-productos-modal-body">
+            <div class="modal-body bg-light ncdev-productos-modal-body">
 
                 <div class="ncdev-productos-layout">
 
@@ -61,7 +65,7 @@
                                         Carga Manual de Productos
                                     </strong>
 
-                                    <span class="badge bg-light text-dark ncdev-badge-compact">
+                                    <span class="badge bg-golden-light text-golden-dark ncdev-badge-compact">
                                         Código o cantidad+código
                                     </span>
                                 </div>
@@ -80,7 +84,7 @@
 
                                             <input type="text"
                                                    id="txtNcDevolucionCodigoProducto"
-                                                   class="form-control"
+                                                   class="form-control jsteclado"
                                                    maxlength="36"
                                                    autocomplete="off"
                                                    inputmode="text"
@@ -185,6 +189,118 @@
                             </div>
                         </div>
 
+                        <div class="card card-golden card-golden-bordered golden-summary-compact mb-3">
+
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <strong>
+                                    <i class="bx bx-user me-1"></i>
+                                    Datos del Cliente
+                                </strong>
+
+                                <span id="ncDevolucionTipoComprobanteBadge"
+                                      class="badge bg-golden-light text-golden-dark ncdev-badge-compact">
+                                </span>
+                            </div>
+
+                            <div class="card-body">
+
+                                <div class="row g-2 mb-2">
+                                    <div class="col-md-5">
+                                        <div class="input-group input-group-sm">
+                                            <span class="input-group-text bg-golden text-white fw-semibold border-0">
+                                                <i class="bx bx-user"></i>
+                                                Cliente
+                                            </span>
+                                            <input type="text"
+                                                   class="form-control form-control-sm fw-bold bg-white"
+                                                   id="txtNcClienteNombreProd"
+                                                   readonly />
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-2">
+                                        <div class="input-group input-group-sm">
+                                            <span class="input-group-text bg-golden text-white fw-semibold border-0">
+                                                <i class="bx bx-id-card"></i>
+                                                ID
+                                            </span>
+                                            <input type="text"
+                                                   class="form-control form-control-sm text-center fw-bold bg-white"
+                                                   id="txtNcClienteIdProd"
+                                                   readonly />
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-5">
+                                        <div class="input-group input-group-sm">
+                                            <span class="input-group-text bg-golden text-white fw-semibold border-0">
+                                                <i class="bx bx-map"></i>
+                                                Domicilio
+                                            </span>
+                                            <input type="text"
+                                                   class="form-control form-control-sm bg-white"
+                                                   id="txtNcClienteDomicilioProd"
+                                                   readonly />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row g-2">
+                                    <div class="col-md-3">
+                                        <div class="input-group input-group-sm">
+                                            <span class="input-group-text bg-golden text-white fw-semibold border-0">
+                                                <i class="bx bx-receipt"></i>
+                                                AFIP
+                                            </span>
+                                            <input type="text"
+                                                   class="form-control form-control-sm bg-white"
+                                                   id="txtNcCondicionAfipProd"
+                                                   readonly />
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-3">
+                                        <div class="input-group input-group-sm">
+                                            <span class="input-group-text bg-golden text-white fw-semibold border-0">
+                                                <i class="bx bx-file"></i>
+                                                CUIT
+                                            </span>
+                                            <input type="text"
+                                                   class="form-control form-control-sm bg-white"
+                                                   id="txtNcClienteCuitProd"
+                                                   readonly />
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-3">
+                                        <div class="input-group input-group-sm">
+                                            <span class="input-group-text bg-golden text-white fw-semibold border-0">
+                                                <i class="bx bx-envelope"></i>
+                                                Email
+                                            </span>
+                                            <input type="text"
+                                                   class="form-control form-control-sm bg-white"
+                                                   id="txtNcClienteEmailProd"
+                                                   readonly />
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-3">
+                                        <div class="input-group input-group-sm">
+                                            <span class="input-group-text bg-golden text-white fw-semibold border-0">
+                                                <i class="bx bx-phone"></i>
+                                                Móvil
+                                            </span>
+                                            <input type="text"
+                                                   class="form-control form-control-sm bg-white"
+                                                   id="txtNcClienteMovilProd"
+                                                   readonly />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                         <div id="ncDevolucionProductosResultado"
                              class="d-none">
 
@@ -228,13 +344,18 @@
                                                         style="width: 12%;">
                                                         IVA
                                                     </th>
+
+                                                    <th class="text-center th-compact"
+                                                        style="width: 9%;">
+                                                        Acciones
+                                                    </th>
                                                 </tr>
                                             </thead>
 
                                             <tbody id="ncDevolucionTablaProductos">
 
                                                 <tr>
-                                                    <td colspan="6"
+                                                    <td colspan="7"
                                                         class="text-center text-muted py-4 td-compact">
 
                                                         No hay productos cargados para esta devolución.
@@ -246,6 +367,7 @@
                                 </div>
                             </div>
                         </div>
+
                     </section>
 
                     @* ======================================================
@@ -288,16 +410,316 @@
                 </div>
             </div>
 
-            <div class="modal-footer ncdev-modal-footer-compact">
+            <div class="modal-footer bg-golden-light border-top border-golden ncdev-modal-footer-compact">
 
                 <button type="button"
                         id="btnCancelarNcDevolucionProductos"
-                        class="btn btn-outline-secondary">
+                        class="btn btn-outline-secondary btn-lg">
 
                     <i class="bx bx-x-circle me-1"></i>
                     Cancelar operación
                 </button>
+
+                <button type="button"
+                        id="btnNcDevolucionSeguir"
+                        class="btn btn-golden btn-lg"
+                        disabled>
+
+                    <span id="spnNcDevolucionSeguir"
+                          class="spinner-border spinner-border-sm d-none me-2"
+                          role="status"
+                          aria-hidden="true">
+                    </span>
+
+                    <i id="icoNcDevolucionSeguir"
+                       class="bx bx-right-arrow-circle me-1">
+                    </i>
+
+                    Seguir
+                </button>
+
             </div>
         </div>
     </div>
 </div>
+
+<div class="modal fade modal-golden"
+     id="modalNcDevolucionCalculo"
+     tabindex="-1"
+     aria-labelledby="modalNcDevolucionCalculoLabel"
+     aria-hidden="true"
+     data-bs-backdrop="static"
+     data-bs-keyboard="false">
+
+    <div class="modal-dialog modal-fullscreen">
+
+        <div class="modal-content">
+
+            <div class="modal-header bg-gradient-golden ncdev-modal-header-compact">
+
+                <div>
+                    <h5 id="modalNcDevolucionCalculoLabel"
+                        class="modal-title">
+
+                        <i class="bx bx-calculator me-1"></i>
+                        Nota de Crédito por Devolución
+                    </h5>
+
+                    <small>
+                        Subtotales calculados para la emisión de la Nota de Crédito.
+                    </small>
+                </div>
+
+                <div class="d-flex align-items-center ms-3">
+                    <span id="ncDevolucionTecladoAnclaCalculo"
+                          data-teclado-ancla
+                          class="ncdev-teclado-ancla">
+                    </span>
+
+                    <span id="ncDevolucionDestinoOperacion"
+                          class="badge bg-white text-golden-dark ncdev-badge-compact">
+                    </span>
+                </div>
+            </div>
+
+            <div class="modal-body bg-light p-4">
+
+                <div class="card card-golden card-golden-bordered golden-summary-compact mb-3">
+
+                    <div class="card-header">
+                        <strong>
+                            <i class="bx bx-user me-1"></i>
+                            Cliente y comprobante original
+                        </strong>
+                    </div>
+
+                    <div class="card-body">
+
+                        <div class="row g-3">
+
+                            <div class="col-lg-3 col-md-6">
+                                <label class="form-label small fw-semibold mb-1">
+                                    Nombre
+                                </label>
+                                <input id="txtNcCalcClienteNombre"
+                                       type="text"
+                                       class="form-control"
+                                       readonly />
+                            </div>
+
+                            <div class="col-lg-2 col-md-6">
+                                <label class="form-label small fw-semibold mb-1">
+                                    ID
+                                </label>
+                                <input id="txtNcCalcClienteId"
+                                       type="text"
+                                       class="form-control"
+                                       readonly />
+                            </div>
+
+                            <div class="col-lg-3 col-md-6">
+                                <label class="form-label small fw-semibold mb-1">
+                                    Domicilio
+                                </label>
+                                <input id="txtNcCalcClienteDomicilio"
+                                       type="text"
+                                       class="form-control"
+                                       readonly />
+                            </div>
+
+                            <div class="col-lg-2 col-md-6">
+                                <label class="form-label small fw-semibold mb-1">
+                                    Tipo/N°
+                                </label>
+                                <input id="txtNcCalcComprobanteOrigen"
+                                       type="text"
+                                       class="form-control"
+                                       readonly />
+                            </div>
+
+                            <div class="col-lg-2 col-md-6">
+                                <label class="form-label small fw-semibold mb-1">
+                                    Emite
+                                </label>
+                                <input id="txtNcCalcTipoNc"
+                                       type="text"
+                                       class="form-control"
+                                       readonly />
+                            </div>
+
+                            <div class="col-lg-3 col-md-6">
+                                <label class="form-label small fw-semibold mb-1">
+                                    Condición AFIP
+                                </label>
+                                <input id="txtNcCalcCondicionAfip"
+                                       type="text"
+                                       class="form-control"
+                                       readonly />
+                            </div>
+
+                            <div class="col-lg-3 col-md-6">
+                                <label class="form-label small fw-semibold mb-1">
+                                    Documento
+                                </label>
+                                <input id="txtNcCalcDocumento"
+                                       type="text"
+                                       class="form-control"
+                                       readonly />
+                            </div>
+
+                            <div class="col-lg-3 col-md-6">
+                                <label class="form-label small fw-semibold mb-1">
+                                    Email
+                                </label>
+                                <input id="txtNcCalcEmail"
+                                       type="text"
+                                       class="form-control"
+                                       readonly />
+                            </div>
+
+                            <div class="col-lg-3 col-md-6">
+                                <label class="form-label small fw-semibold mb-1">
+                                    Móvil
+                                </label>
+                                <input id="txtNcCalcMovil"
+                                       type="text"
+                                       class="form-control"
+                                       readonly />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row g-3">
+
+                    <div class="col-lg-8">
+
+                        <div class="card card-golden shadow-sm h-100">
+
+                            <div class="card-header">
+                                <h6 class="mb-0">
+                                    <i class="bx bx-list-ul"></i>
+                                    Detalle de Conceptos
+                                </h6>
+                            </div>
+
+                            <div class="card-body p-0">
+
+                                <div class="table-responsive table-calc-conceptos">
+
+                                    <table class="table table-golden table-hover mb-0"
+                                           id="tbNcDevolucionConceptosCalculo">
+
+                                        <thead class="table-golden-header sticky-top-modal-calc">
+                                            <tr>
+                                                <th class="text-start"
+                                                    style="width: 65%;">
+                                                    Concepto
+                                                </th>
+
+                                                <th class="text-end"
+                                                    style="width: 35%;">
+                                                    Total
+                                                </th>
+                                            </tr>
+                                        </thead>
+
+                                        <tbody id="tbodyNcDevolucionConceptosCalculo">
+                                            <tr>
+                                                <td colspan="2"
+                                                    class="text-center text-muted py-4">
+                                                    <i class="bx bx-loader-alt bx-spin"></i>
+                                                    Cargando conceptos...
+                                                </td>
+                                            </tr>
+                                        </tbody>
+
+                                        <tfoot class="table-golden-footer fw-bold">
+                                            <tr class="total-row-golden">
+                                                <td class="text-start fs-4 fw-bold">
+                                                    TOTAL
+                                                </td>
+
+                                                <td id="tdNcDevolucionTotalFinal"
+                                                    class="text-end text-success fw-bold total-final-calc">
+                                                    $ 0,00
+                                                </td>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-4">
+
+                        <div class="card card-golden card-golden-bordered golden-summary-compact ncdev-sidebar-card mb-3">
+
+                            <div class="card-header">
+                                <strong>
+                                    <i class="bx bx-receipt me-1"></i>
+                                    Comprobante Original
+                                </strong>
+                            </div>
+
+                            <div id="ncDevolucionCalculoResumenOrigen"
+                                 class="card-body">
+                            </div>
+                        </div>
+
+                        <div class="card card-golden card-golden-bordered golden-summary-compact ncdev-sidebar-card">
+
+                            <div class="card-header">
+                                <strong>
+                                    <i class="bx bx-file me-1"></i>
+                                    Nota de Crédito a Emitir
+                                </strong>
+                            </div>
+
+                            <div id="ncDevolucionCalculoResumenNc"
+                                 class="card-body">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer bg-golden-light border-top border-golden footer-calc-factura">
+
+                <div class="d-flex justify-content-between align-items-center w-100">
+
+                    <div class="footer-section-left">
+                        <button type="button"
+                                id="btnVolverNcDevolucionCalculo"
+                                class="btn btn-outline-secondary btn-lg">
+
+                            <i class="bx bx-arrow-back"></i>
+                            VOLVER
+                        </button>
+                    </div>
+
+                    <div class="footer-section-right">
+                        <button type="button"
+                                id="btnNcDevolucionFinalizar"
+                                class="btn btn-success btn-lg px-5">
+
+                            <span id="spnNcDevolucionFinalizar"
+                                  class="spinner-border spinner-border-sm d-none me-2"
+                                  role="status"
+                                  aria-hidden="true">
+                            </span>
+
+                            <i id="icoNcDevolucionFinalizar"
+                               class="bx bx-check-circle me-1">
+                            </i>
+
+                            FINALIZAR NC
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

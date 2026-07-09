@@ -2,11 +2,13 @@
 using gc.caja.core.Servicios.Contratos.Cajas;
 using gc.caja.Models.NotaCredito;
 using gc.infraestructura.Core.EntidadesComunes.Options;
+using gc.infraestructura.Dtos.Cajas;
 using gc.infraestructura.Dtos.Cajas.Request;
 using gc.infraestructura.Dtos.Cajas.Response;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using System.Diagnostics;
 using System.Globalization;
 
 namespace gc.caja.Areas.Facturacion.Controllers
@@ -17,6 +19,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
     {
         private readonly INotaCreditoServicio _ncServicio;
         private readonly ICajaInitServicio _cajaInitServicio;
+        private readonly ICajaServicio _cajaServicio;
         private readonly AppSettings _appSettings;
 
         private const string SessionKeyNcDevolucionCandidatos = "NCDEV_CANDIDATOS_COMPROBANTE";
@@ -28,12 +31,14 @@ namespace gc.caja.Areas.Facturacion.Controllers
             ILogger<NotaCreditoController> logger,
             IHttpContextAccessor httpContext,
             INotaCreditoServicio ncServicio,
-            ICajaInitServicio cajaInitServicio)
+            ICajaInitServicio cajaInitServicio,
+            ICajaServicio cajaServicio)
             : base(options, httpContext, logger)
         {
             _ncServicio = ncServicio;
             _appSettings = options.Value;
             _cajaInitServicio = cajaInitServicio;
+            _cajaServicio = cajaServicio;
         }
 
         [HttpGet]
@@ -576,7 +581,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
                     string.IsNullOrWhiteSpace(contexto.ComprobanteOrigen.tco_id) ||
                     string.IsNullOrWhiteSpace(contexto.ComprobanteOrigen.cm_compte))
                 {
-                    _logger.LogWarning(
+                    _logger?.LogWarning(
                         "NC Devolución: no existe contexto válido al definir modalidad de carga. Usuario={Usuario}",
                         UserName
                     );
@@ -598,7 +603,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
                     ? "TODOS"
                     : "MANUAL";
 
-                _logger.LogInformation(
+                _logger?.LogInformation(
                     "NC Devolución: modalidad inicial definida. Modalidad={Modalidad}, Tipo={Tipo}, Comprobante={Comprobante}, Repetido={Repetido}, Usuario={Usuario}",
                     modalidad,
                     contexto.ComprobanteOrigen.tco_id,
@@ -619,7 +624,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(
+                _logger?.LogError(
                     ex,
                     "NC Devolución: error al definir modalidad inicial de carga. Usuario={Usuario}",
                     UserName
@@ -650,7 +655,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
 
             if (!VerificarAutenticacion(out IActionResult redirectResult))
             {
-                _logger.LogWarning(
+                _logger?.LogWarning(
                     "NC Devolución: sesión expirada al cargar detalle completo. CorrelationId={CorrelationId}",
                     correlationId
                 );
@@ -672,7 +677,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
                     string.IsNullOrWhiteSpace(contexto.ComprobanteOrigen.tco_id) ||
                     string.IsNullOrWhiteSpace(contexto.ComprobanteOrigen.cm_compte))
                 {
-                    _logger.LogWarning(
+                    _logger?.LogWarning(
                         "NC Devolución: no existe contexto válido para carga total. Usuario={Usuario}, CorrelationId={CorrelationId}",
                         UserName,
                         correlationId
@@ -689,7 +694,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
 
                 if (!contexto.CargarTodoDetalle.HasValue)
                 {
-                    _logger.LogWarning(
+                    _logger?.LogWarning(
                         "NC Devolución: modalidad de carga no definida. Tipo={Tipo}, Comprobante={Comprobante}, CorrelationId={CorrelationId}",
                         contexto.ComprobanteOrigen.tco_id,
                         contexto.ComprobanteOrigen.cm_compte,
@@ -707,7 +712,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
 
                 if (contexto.CargarTodoDetalle != true)
                 {
-                    _logger.LogWarning(
+                    _logger?.LogWarning(
                         "NC Devolución: se intentó carga total con modalidad manual. Tipo={Tipo}, Comprobante={Comprobante}, CorrelationId={CorrelationId}",
                         contexto.ComprobanteOrigen.tco_id,
                         contexto.ComprobanteOrigen.cm_compte,
@@ -727,7 +732,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
 
                 if (string.IsNullOrWhiteSpace(token))
                 {
-                    _logger.LogWarning(
+                    _logger?.LogWarning(
                         "NC Devolución: token inexistente al cargar detalle completo. CorrelationId={CorrelationId}",
                         correlationId
                     );
@@ -746,7 +751,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
 
                 if (string.IsNullOrWhiteSpace(admId))
                 {
-                    _logger.LogWarning(
+                    _logger?.LogWarning(
                         "NC Devolución: comprobante origen sin adm_id. Tipo={Tipo}, Comprobante={Comprobante}, CorrelationId={CorrelationId}",
                         comprobante.tco_id,
                         comprobante.cm_compte,
@@ -774,7 +779,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
                     json_p = "[]"
                 };
 
-                _logger.LogInformation(
+                _logger?.LogInformation(
                     "NC Devolución: iniciando carga total de detalle. Tipo={Tipo}, Comprobante={Comprobante}, Repetido={Repetido}, Adm={AdmId}, Valor={Valor}, CorrelationId={CorrelationId}",
                     requestApi.tco_id,
                     requestApi.cm_compte,
@@ -794,7 +799,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
                     var mensaje = resultado?.Mensaje
                         ?? "No fue posible cargar el detalle del comprobante original.";
 
-                    _logger.LogWarning(
+                    _logger?.LogWarning(
                         "NC Devolución: error de servicio al cargar detalle completo. Mensaje={Mensaje}, CorrelationId={CorrelationId}",
                         mensaje,
                         correlationId
@@ -849,7 +854,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
 
                 GuardarContextoDevolucion(contexto);
 
-                _logger.LogInformation(
+                _logger?.LogInformation(
                     "NC Devolución: carga total finalizada. Tipo={Tipo}, Comprobante={Comprobante}, RegistrosSP={RegistrosSP}, ProductosAceptados={ProductosAceptados}, Advertencias={Advertencias}, Rechazos={Rechazos}, CorrelationId={CorrelationId}",
                     comprobante.tco_id,
                     comprobante.cm_compte,
@@ -878,7 +883,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(
+                _logger?.LogError(
                     ex,
                     "NC Devolución: error inesperado al cargar detalle completo. CorrelationId={CorrelationId}",
                     correlationId
@@ -948,7 +953,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(
+                _logger?.LogError(
                     ex,
                     "NC Devolución: error al obtener productos de devolución."
                 );
@@ -959,6 +964,141 @@ namespace gc.caja.Areas.Facturacion.Controllers
                     codigo = "ERROR_OBTENER_PRODUCTOS",
                     mensaje =
                         "No fue posible obtener los productos de la devolución."
+                });
+            }
+        }
+
+        /// <summary>
+        /// Quita un producto de la grilla de devolucion actual.
+        /// La lista se actualiza en el contexto aislado de sesion para que
+        /// el calculo y la confirmacion trabajen con el mismo detalle.
+        /// </summary>
+        [HttpPost]
+        public IActionResult QuitarProductoDevolucion(
+            [FromBody] QuitarProductoDevolucionRequest request)
+        {
+            var correlationId = Guid.NewGuid().ToString("N");
+
+            if (!VerificarAutenticacion(out IActionResult redirectResult))
+            {
+                _logger?.LogWarning(
+                    "NC Devolución: sesión expirada al quitar producto. CorrelationId={CorrelationId}",
+                    correlationId
+                );
+
+                return Json(new
+                {
+                    ok = false,
+                    codigo = "SESION_EXPIRADA",
+                    mensaje = "La sesión ha expirado. Vuelva a iniciar sesión."
+                });
+            }
+
+            if (request == null || request.Indice < 0)
+            {
+                _logger?.LogWarning(
+                    "NC Devolución: request inválido al quitar producto. Indice={Indice}, CorrelationId={CorrelationId}",
+                    request?.Indice,
+                    correlationId
+                );
+
+                return Json(new
+                {
+                    ok = false,
+                    codigo = "REQUEST_INVALIDO",
+                    mensaje = "No se recibió un producto válido para quitar."
+                });
+            }
+
+            try
+            {
+                var contexto = ObtenerContextoDevolucion();
+                var validacion = ValidarContextoConProductos(contexto);
+
+                if (!validacion.Ok)
+                {
+                    _logger?.LogWarning(
+                        "NC Devolución: no se pudo quitar producto por contexto inválido. Codigo={Codigo}, Mensaje={Mensaje}, CorrelationId={CorrelationId}",
+                        validacion.Codigo,
+                        validacion.Mensaje,
+                        correlationId
+                    );
+
+                    return Json(new
+                    {
+                        ok = false,
+                        codigo = validacion.Codigo,
+                        mensaje = validacion.Mensaje
+                    });
+                }
+
+                var productos = contexto!.ProductosDevolucion
+                    ?? new List<NCProductoBuscarResponseDto>();
+
+                if (request.Indice >= productos.Count)
+                {
+                    _logger?.LogWarning(
+                        "NC Devolución: índice fuera de rango al quitar producto. Indice={Indice}, Productos={Productos}, CorrelationId={CorrelationId}",
+                        request.Indice,
+                        productos.Count,
+                        correlationId
+                    );
+
+                    return Json(new
+                    {
+                        ok = false,
+                        codigo = "INDICE_INVALIDO",
+                        mensaje = "El producto seleccionado ya no se encuentra en la grilla."
+                    });
+                }
+
+                var productoQuitado = productos[request.Indice];
+                productos.RemoveAt(request.Indice);
+
+                contexto.ProductosDevolucion = productos;
+                contexto.CoTipo = string.Empty;
+                contexto.JsonProductosCalculado = string.Empty;
+                contexto.JsonSubtotal = string.Empty;
+                contexto.JsonSorteo = string.Empty;
+                contexto.FechaUltimoCalculoUtc = null;
+                contexto.FechaUltimaCargaProductosUtc = DateTime.UtcNow;
+
+                GuardarContextoDevolucion(contexto);
+
+                _logger?.LogInformation(
+                    "NC Devolución: producto quitado de la grilla. Producto={Producto}, CodigoBarra={CodigoBarra}, Indice={Indice}, ProductosRestantes={ProductosRestantes}, CorrelationId={CorrelationId}",
+                    productoQuitado.p_id,
+                    productoQuitado.p_id_barrado,
+                    request.Indice,
+                    productos.Count,
+                    correlationId
+                );
+
+                return Json(new
+                {
+                    ok = true,
+                    codigo = "PRODUCTO_QUITADO",
+                    mensaje = "El producto fue quitado de la Nota de Crédito.",
+                    productosCargados = productos.Count,
+                    productoQuitado = CrearResumenProductoDevolucion(productoQuitado),
+                    productos = productos
+                        .Select(CrearResumenProductoDevolucion)
+                        .ToList()
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(
+                    ex,
+                    "NC Devolución: error inesperado al quitar producto. CorrelationId={CorrelationId}",
+                    correlationId
+                );
+
+                return Json(new
+                {
+                    ok = false,
+                    codigo = "ERROR_INTERNO_QUITAR_PRODUCTO",
+                    mensaje = "No fue posible quitar el producto de la devolución."
                 });
             }
         }
@@ -978,7 +1118,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
 
             if (!VerificarAutenticacion(out IActionResult redirectResult))
             {
-                _logger.LogWarning(
+                _logger?.LogWarning(
                     "NC Devolución: sesión expirada al agregar producto manual. CorrelationId={CorrelationId}",
                     correlationId
                 );
@@ -993,7 +1133,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
 
             if (!ModelState.IsValid)
             {
-                _logger.LogWarning(
+                _logger?.LogWarning(
                     "NC Devolución: request inválido al agregar producto manual. CorrelationId={CorrelationId}",
                     correlationId
                 );
@@ -1025,7 +1165,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
                     string.IsNullOrWhiteSpace(contexto.ComprobanteOrigen.tco_id) ||
                     string.IsNullOrWhiteSpace(contexto.ComprobanteOrigen.cm_compte))
                 {
-                    _logger.LogWarning(
+                    _logger?.LogWarning(
                         "NC Devolución: contexto inexistente al agregar producto manual. Usuario={Usuario}, CorrelationId={CorrelationId}",
                         UserName,
                         correlationId
@@ -1042,7 +1182,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
 
                 if (contexto.CargarTodoDetalle != false)
                 {
-                    _logger.LogWarning(
+                    _logger?.LogWarning(
                         "NC Devolución: intento de agregar producto manual fuera de modalidad manual. " +
                         "Modalidad={Modalidad}, CorrelationId={CorrelationId}",
                         contexto.CargarTodoDetalle.HasValue
@@ -1079,7 +1219,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
                     "T",
                     StringComparison.OrdinalIgnoreCase))
                 {
-                    _logger.LogWarning(
+                    _logger?.LogWarning(
                         "NC Devolución: intento de usar valor reservado T en carga manual. CorrelationId={CorrelationId}",
                         correlationId
                     );
@@ -1169,7 +1309,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
                     json_p = jsonProductosActuales
                 };
 
-                _logger.LogInformation(
+                _logger?.LogInformation(
                     "NC Devolución: agregando producto manual. " +
                     "Tipo={Tipo}, Comprobante={Comprobante}, Repetido={Repetido}, " +
                     "Adm={Adm}, Valor={Valor}, Cantidad={Cantidad}, ProductosActuales={ProductosActuales}, " +
@@ -1196,7 +1336,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
                         ? resultado.Mensaje.Trim()
                         : "No fue posible consultar el producto para la devolución.";
 
-                    _logger.LogWarning(
+                    _logger?.LogWarning(
                         "NC Devolución: error de servicio al agregar producto manual. " +
                         "Mensaje={Mensaje}, CorrelationId={CorrelationId}",
                         mensaje,
@@ -1331,7 +1471,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
                     Formatting.None
                 );
 
-                _logger.LogInformation(
+                _logger?.LogInformation(
                     "NC Devolución: respuesta manual preparada. " +
                     "Codigo={Codigo}, ProductosAgregados={ProductosAgregados}, " +
                     "Advertencias={Advertencias}, Rechazos={Rechazos}, " +
@@ -1365,6 +1505,410 @@ namespace gc.caja.Areas.Facturacion.Controllers
                     codigo = "ERROR_INTERNO_AGREGAR_PRODUCTO",
                     mensaje =
                         "Ocurrió un error al agregar el producto a la devolución."
+                });
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> SeguirCalculo(
+            [FromBody] SeguirNotaCreditoRequest request)
+        {
+            var stopwatch = Stopwatch.StartNew();
+            var correlationId = HttpContext?.TraceIdentifier ?? Guid.NewGuid().ToString("N");
+
+            _logger?.LogInformation("═══════════════════════════════════════════════════");
+            _logger?.LogInformation("➡️ NC DEVOLUCIÓN - SEGUIR / CÁLCULO DE FILAS - INICIO");
+            _logger?.LogInformation("   CorrelationId: {CorrelationId}", correlationId);
+            _logger?.LogInformation(
+                "   Request recibido: {Request}",
+                JsonConvert.SerializeObject(request)
+            );
+            _logger?.LogInformation("═══════════════════════════════════════════════════");
+
+            if (!VerificarAutenticacion(out IActionResult redirectResult))
+            {
+                stopwatch.Stop();
+                _logger?.LogWarning(
+                    "⚠️ NC Devolución Seguir: sesión expirada. CorrelationId={CorrelationId}. Tiempo={Elapsed}ms",
+                    correlationId,
+                    stopwatch.ElapsedMilliseconds
+                );
+
+                return Json(new
+                {
+                    ok = false,
+                    codigo = "SESION_EXPIRADA",
+                    mensaje = "La sesión ha expirado. Vuelva a iniciar sesión."
+                });
+            }
+
+            try
+            {
+                var contexto = ObtenerContextoDevolucion();
+                var validacion = ValidarContextoConProductos(contexto);
+
+                if (!validacion.Ok)
+                {
+                    stopwatch.Stop();
+                    _logger?.LogWarning("═══════════════════════════════════════════════════");
+                    _logger?.LogWarning("⚠️ NC DEVOLUCIÓN - SEGUIR BLOQUEADO POR CONTEXTO");
+                    _logger?.LogWarning("   CorrelationId: {CorrelationId}", correlationId);
+                    _logger?.LogWarning("   Código: {Codigo}", validacion.Codigo);
+                    _logger?.LogWarning("   Mensaje: {Mensaje}", validacion.Mensaje);
+                    _logger?.LogWarning("   Tiempo: {Elapsed}ms", stopwatch.ElapsedMilliseconds);
+                    _logger?.LogWarning("═══════════════════════════════════════════════════");
+
+                    return Json(new
+                    {
+                        ok = false,
+                        codigo = validacion.Codigo,
+                        mensaje = validacion.Mensaje
+                    });
+                }
+
+                var comprobante = contexto!.ComprobanteOrigen;
+                var requiereDecisionCtaCte = RequiereDecisionCuentaCorriente(comprobante);
+
+                _logger?.LogInformation("═══════════════════════════════════════════════════");
+                _logger?.LogInformation("📋 NC DEVOLUCIÓN - CONTEXTO RECUPERADO");
+                _logger?.LogInformation("   CorrelationId: {CorrelationId}", correlationId);
+                _logger?.LogInformation(
+                    "   Comprobante origen: {TcoId} {CmCompte}",
+                    comprobante?.tco_id,
+                    comprobante?.cm_compte
+                );
+                _logger?.LogInformation(
+                    "   Cliente: {CtaId} - {Cliente}",
+                    comprobante?.cta_id,
+                    comprobante?.cm_nombre
+                );
+                _logger?.LogInformation(
+                    "   Flags destino: nc_ctacte={NcCtaCte}, nc_dv_dist={NcDvDist}, nc_dv_pago_diferido={NcDvPagoDiferido}",
+                    comprobante?.nc_ctacte,
+                    comprobante?.nc_dv_dist,
+                    comprobante?.nc_dv_pago_diferido
+                );
+                _logger?.LogInformation(
+                    "   NC a emitir: {NcTcoLetra} {NcTcoId} - {NcTcoDesc}",
+                    comprobante?.nc_tco_letra,
+                    comprobante?.nc_tco_id,
+                    comprobante?.nc_tco_desc
+                );
+                _logger?.LogInformation("   Requiere decisión CtaCte: {RequiereDecision}", requiereDecisionCtaCte);
+                _logger?.LogInformation("   Productos en contexto: {CantidadProductos}", contexto.ProductosDevolucion?.Count ?? 0);
+                _logger?.LogInformation("   json_p calculado previo longitud: {JsonProductosLength}", contexto.JsonProductosCalculado?.Length ?? 0);
+                _logger?.LogInformation("═══════════════════════════════════════════════════");
+
+                if (requiereDecisionCtaCte &&
+                    request?.DejarEnCuentaCorriente == null)
+                {
+                    stopwatch.Stop();
+                    _logger?.LogWarning(
+                        "⚠️ NC Devolución Seguir: falta decisión de CtaCte. CorrelationId={CorrelationId}. Tiempo={Elapsed}ms",
+                        correlationId,
+                        stopwatch.ElapsedMilliseconds
+                    );
+
+                    return Json(new
+                    {
+                        ok = true,
+                        requiereDecisionCtaCte = true,
+                        mensaje = "Debe indicar el destino del saldo de la Nota de Crédito."
+                    });
+                }
+
+                if (requiereDecisionCtaCte &&
+                    request?.DejarEnCuentaCorriente == true &&
+                    request.ConfirmacionCuentaCorriente != true)
+                {
+                    stopwatch.Stop();
+                    _logger?.LogWarning(
+                        "⚠️ NC Devolución Seguir: falta confirmación de CtaCte. CorrelationId={CorrelationId}. Tiempo={Elapsed}ms",
+                        correlationId,
+                        stopwatch.ElapsedMilliseconds
+                    );
+
+                    return Json(new
+                    {
+                        ok = false,
+                        codigo = "CONFIRMACION_CTACTE_REQUERIDA",
+                        mensaje = "Debe confirmar que la Nota de Crédito quedará en Cuenta Corriente."
+                    });
+                }
+
+                var coTipo = DeterminarCoTipo(comprobante, request);
+                var token = TokenCookie;
+
+                _logger?.LogInformation("═══════════════════════════════════════════════════");
+                _logger?.LogInformation("🧭 NC DEVOLUCIÓN - DESTINO DEFINIDO");
+                _logger?.LogInformation("   CorrelationId: {CorrelationId}", correlationId);
+                _logger?.LogInformation("   DejarEnCuentaCorriente request: {DejarEnCuentaCorriente}", request?.DejarEnCuentaCorriente);
+                _logger?.LogInformation("   Confirmación CtaCte request: {ConfirmacionCuentaCorriente}", request?.ConfirmacionCuentaCorriente);
+                _logger?.LogInformation("   co_tipo calculado: {CoTipo}", coTipo);
+                _logger?.LogInformation("═══════════════════════════════════════════════════");
+
+                if (string.IsNullOrWhiteSpace(token))
+                {
+                    stopwatch.Stop();
+                    _logger?.LogError(
+                        "❌ NC Devolución Seguir: token inválido. CorrelationId={CorrelationId}. Tiempo={Elapsed}ms",
+                        correlationId,
+                        stopwatch.ElapsedMilliseconds
+                    );
+
+                    return Json(new
+                    {
+                        ok = false,
+                        codigo = "TOKEN_INVALIDO",
+                        mensaje = "La sesión actual no posee un token válido."
+                    });
+                }
+
+                var requestCalculo = CrearRequestCalculo(contexto, coTipo);
+
+                _logger?.LogInformation("═══════════════════════════════════════════════════");
+                _logger?.LogInformation("📦 NC DEVOLUCIÓN - REQUEST CALCULAR FILAS CONSTRUIDO");
+                _logger?.LogInformation("   CorrelationId: {CorrelationId}", correlationId);
+                _logger?.LogInformation("   co_tipo definido para el flujo: {CoTipo}", coTipo);
+                _logger?.LogInformation("   cta_id: {CtaId}", requestCalculo.cta_id);
+                _logger?.LogInformation("   tco_id: {TcoId}", requestCalculo.tco_id);
+                _logger?.LogInformation("   tco_id_ori: {TcoIdOri}", requestCalculo.tco_id_ori);
+                _logger?.LogInformation("   cm_compte_ori: {CmCompteOri}", requestCalculo.cm_compte_ori);
+                _logger?.LogInformation("   json_p longitud: {JsonProductosLength}", requestCalculo.json_p?.Length ?? 0);
+                _logger?.LogInformation("   json_p: {JsonProductos}", requestCalculo.json_p);
+                _logger?.LogInformation(
+                    "   Request CalcularFilas: {RequestCalculo}",
+                    JsonConvert.SerializeObject(requestCalculo)
+                );
+                _logger?.LogInformation("═══════════════════════════════════════════════════");
+
+                _logger?.LogInformation(
+                    "📡 NC Devolución: invocando servicio NotaCreditoServicio.CalcularFilas. CorrelationId={CorrelationId}",
+                    correlationId
+                );
+                var resultado = await _ncServicio.CalcularFilas(requestCalculo, token);
+
+                _logger?.LogInformation("═══════════════════════════════════════════════════");
+                _logger?.LogInformation("📥 NC DEVOLUCIÓN - RESPONSE CALCULAR FILAS");
+                _logger?.LogInformation("   CorrelationId: {CorrelationId}", correlationId);
+                _logger?.LogInformation("   Resultado null: {ResultadoNull}", resultado == null);
+                _logger?.LogInformation("   Ok: {Ok}", resultado?.Ok);
+                _logger?.LogInformation("   Mensaje: {Mensaje}", resultado?.Mensaje);
+                _logger?.LogInformation("   Entidad null: {EntidadNull}", resultado?.Entidad == null);
+                _logger?.LogInformation("   json_subtotal longitud: {JsonSubtotalLength}", resultado?.Entidad?.json_subtotal?.Length ?? 0);
+                _logger?.LogInformation("   json_p respuesta longitud: {JsonProductosLength}", resultado?.Entidad?.json_p?.Length ?? 0);
+                _logger?.LogInformation(
+                    "   Response CalcularFilas: {ResponseCalculo}",
+                    JsonConvert.SerializeObject(resultado)
+                );
+                _logger?.LogInformation("═══════════════════════════════════════════════════");
+
+                if (resultado == null || !resultado.Ok || resultado.Entidad == null)
+                {
+                    stopwatch.Stop();
+                    _logger?.LogWarning("═══════════════════════════════════════════════════");
+                    _logger?.LogWarning("⚠️ NC DEVOLUCIÓN - CÁLCULO DE FILAS RECHAZADO");
+                    _logger?.LogWarning("   CorrelationId: {CorrelationId}", correlationId);
+                    _logger?.LogWarning("   Mensaje servicio: {Mensaje}", resultado?.Mensaje);
+                    _logger?.LogWarning("   Tiempo: {Elapsed}ms", stopwatch.ElapsedMilliseconds);
+                    _logger?.LogWarning("═══════════════════════════════════════════════════");
+
+                    return Json(new
+                    {
+                        ok = false,
+                        codigo = "ERROR_CALCULO_FILAS",
+                        mensaje = resultado?.Mensaje ?? "No fue posible calcular los totales de la Nota de Crédito."
+                    });
+                }
+
+                contexto.CoTipo = coTipo;
+                contexto.JsonProductosCalculado = string.IsNullOrWhiteSpace(resultado.Entidad.json_p)
+                    ? requestCalculo.json_p
+                    : resultado.Entidad.json_p;
+                contexto.JsonSubtotal = string.IsNullOrWhiteSpace(resultado.Entidad.json_subtotal)
+                    ? "[]"
+                    : resultado.Entidad.json_subtotal;
+                contexto.JsonSorteo = string.Empty;
+                contexto.FechaUltimoCalculoUtc = DateTime.UtcNow;
+
+                GuardarContextoDevolucion(contexto);
+
+                var subtotales = CrearResumenSubtotales(contexto.JsonSubtotal);
+                var responseFinal = new
+                {
+                    ok = true,
+                    codigo = "NC_CALCULADA",
+                    mensaje = "Totales calculados correctamente.",
+                    co_tipo = coTipo,
+                    destino = coTipo == "DV"
+                        ? "Cuenta Corriente"
+                        : "Devolución de dinero",
+                    calculo = new
+                    {
+                        json_subtotal = contexto.JsonSubtotal,
+                        json_p = contexto.JsonProductosCalculado
+                    },
+                    subtotales
+                };
+
+                stopwatch.Stop();
+                _logger?.LogInformation("═══════════════════════════════════════════════════");
+                _logger?.LogInformation("✅ NC DEVOLUCIÓN - SEGUIR FINALIZADO CORRECTAMENTE");
+                _logger?.LogInformation("   CorrelationId: {CorrelationId}", correlationId);
+                _logger?.LogInformation("   co_tipo: {CoTipo}", coTipo);
+                _logger?.LogInformation("   destino: {Destino}", responseFinal.destino);
+                _logger?.LogInformation("   json_subtotal final longitud: {JsonSubtotalLength}", contexto.JsonSubtotal?.Length ?? 0);
+                _logger?.LogInformation("   json_p final longitud: {JsonProductosLength}", contexto.JsonProductosCalculado?.Length ?? 0);
+                _logger?.LogInformation("   subtotales resumidos: {CantidadSubtotales}", subtotales.Count);
+                _logger?.LogInformation("   Response frontend: {ResponseFinal}", JsonConvert.SerializeObject(responseFinal));
+                _logger?.LogInformation("   Tiempo total: {Elapsed}ms", stopwatch.ElapsedMilliseconds);
+                _logger?.LogInformation("═══════════════════════════════════════════════════");
+
+                return Json(responseFinal);
+            }
+            catch (Exception ex)
+            {
+                stopwatch.Stop();
+                _logger?.LogError(
+                    ex,
+                    "❌ NC Devolución: error al avanzar a cálculo. CorrelationId={CorrelationId}. Request={Request}. Tiempo={Elapsed}ms",
+                    correlationId,
+                    JsonConvert.SerializeObject(request),
+                    stopwatch.ElapsedMilliseconds
+                );
+
+                return Json(new
+                {
+                    ok = false,
+                    codigo = "ERROR_INTERNO_SEGUIR",
+                    mensaje = "Ocurrió un error al calcular la Nota de Crédito."
+                });
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Finalizar()
+        {
+            if (!VerificarAutenticacion(out IActionResult redirectResult))
+            {
+                return Json(new
+                {
+                    ok = false,
+                    codigo = "SESION_EXPIRADA",
+                    mensaje = "La sesión ha expirado. Vuelva a iniciar sesión."
+                });
+            }
+
+            try
+            {
+                var contexto = ObtenerContextoDevolucion();
+                var validacion = ValidarContextoConProductos(contexto);
+
+                if (!validacion.Ok)
+                {
+                    return Json(new
+                    {
+                        ok = false,
+                        codigo = validacion.Codigo,
+                        mensaje = validacion.Mensaje
+                    });
+                }
+
+                if (string.IsNullOrWhiteSpace(contexto!.CoTipo) ||
+                    string.IsNullOrWhiteSpace(contexto.JsonProductosCalculado) ||
+                    string.IsNullOrWhiteSpace(contexto.JsonSubtotal))
+                {
+                    return Json(new
+                    {
+                        ok = false,
+                        codigo = "NC_SIN_CALCULO",
+                        mensaje = "Debe presionar Seguir y calcular los totales antes de finalizar."
+                    });
+                }
+
+                var token = TokenCookie;
+
+                if (string.IsNullOrWhiteSpace(token))
+                {
+                    return Json(new
+                    {
+                        ok = false,
+                        codigo = "TOKEN_INVALIDO",
+                        mensaje = "La sesión actual no posee un token válido."
+                    });
+                }
+
+                var requestConfirmacion = CrearRequestConfirmacion(contexto);
+                var resultado = await _ncServicio.ConfirmarOperacionCaja(requestConfirmacion, token);
+
+                if (resultado == null || !resultado.Ok || resultado.Entidad == null)
+                {
+                    return Json(new
+                    {
+                        ok = false,
+                        codigo = "ERROR_CONFIRMAR_NC",
+                        mensaje = resultado?.Mensaje ?? "No fue posible confirmar la Nota de Crédito."
+                    });
+                }
+
+                var respuestaDto = resultado.Entidad;
+
+                if (respuestaDto.resultado != 0)
+                {
+                    return Json(new
+                    {
+                        ok = false,
+                        codigo = "SP_CONFIRMAR_NC_RECHAZO",
+                        mensaje = respuestaDto.resultado_msj ?? "La Nota de Crédito no pudo emitirse."
+                    });
+                }
+
+                if (!TryParsearComprobanteJson(respuestaDto.resultado_id, out var comprobanteEmitido) ||
+                    comprobanteEmitido == null)
+                {
+                    return Json(new
+                    {
+                        ok = false,
+                        codigo = "COMPROBANTE_EMITIDO_INVALIDO",
+                        mensaje = "La Nota de Crédito fue procesada, pero no se pudo interpretar el comprobante emitido.",
+                        debug_resultado_id = respuestaDto.resultado_id
+                    });
+                }
+
+                var mensajeStock = await RegistrarStockNotaCredito(comprobanteEmitido, token);
+
+                LimpiarEstadoTemporalDevolucion();
+
+                return Json(new
+                {
+                    ok = true,
+                    codigo = "NC_EMITIDA",
+                    mensaje = $"Nota de Crédito {comprobanteEmitido.tco_letra} Nro {comprobanteEmitido.cm_compte} emitida correctamente.",
+                    resultado_completo = respuestaDto.resultado_msj,
+                    stock = mensajeStock,
+                    debe_imprimir = true,
+                    data = new[]
+                    {
+                        new
+                        {
+                            tco_letra = comprobanteEmitido.tco_letra,
+                            tco_id = comprobanteEmitido.tco_id,
+                            cm_compte = comprobanteEmitido.cm_compte,
+                            cm_repetido = comprobanteEmitido.cm_repetido,
+                            co_tipo = contexto.CoTipo
+                        }
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, "NC Devolución: error al finalizar.");
+
+                return Json(new
+                {
+                    ok = false,
+                    codigo = "ERROR_INTERNO_FINALIZAR",
+                    mensaje = "Ocurrió un error al finalizar la Nota de Crédito."
                 });
             }
         }
@@ -1542,6 +2086,8 @@ namespace gc.caja.Areas.Facturacion.Controllers
                 cm_nombre = comprobante.cm_nombre,
                 cm_cuit = comprobante.cm_cuit,
                 cm_domicilio = comprobante.cm_domicilio,
+                cm_email = comprobante.cm_email,
+                cm_movil = comprobante.cm_movil,
                 cm_total = comprobante.cm_total ?? 0m,
 
                 nc_tco_letra = comprobante.nc_tco_letra,
@@ -1753,6 +2299,331 @@ namespace gc.caja.Areas.Facturacion.Controllers
             HttpContext.Session.Remove(
                 SessionKeyNcDevolucionContexto
             );
+        }
+
+        private sealed class ValidacionContextoNcResult
+        {
+            public bool Ok { get; init; }
+            public string Codigo { get; init; } = string.Empty;
+            public string Mensaje { get; init; } = string.Empty;
+        }
+
+        private ValidacionContextoNcResult ValidarContextoConProductos(
+            NCDevolucionContextoSesion? contexto)
+        {
+            if (contexto == null ||
+                contexto.ComprobanteOrigen == null ||
+                string.IsNullOrWhiteSpace(contexto.ComprobanteOrigen.tco_id) ||
+                string.IsNullOrWhiteSpace(contexto.ComprobanteOrigen.cm_compte))
+            {
+                return new ValidacionContextoNcResult
+                {
+                    Ok = false,
+                    Codigo = "CONTEXTO_NO_DISPONIBLE",
+                    Mensaje = "No existe un comprobante original validado. Vuelva a realizar la búsqueda."
+                };
+            }
+
+            if (contexto.ProductosDevolucion == null ||
+                contexto.ProductosDevolucion.Count == 0)
+            {
+                return new ValidacionContextoNcResult
+                {
+                    Ok = false,
+                    Codigo = "SIN_PRODUCTOS",
+                    Mensaje = "Debe cargar al menos un producto para generar la Nota de Crédito."
+                };
+            }
+
+            var cajaActual = CajaActual;
+
+            if (cajaActual?.Caja == null ||
+                string.IsNullOrWhiteSpace(cajaActual.CajaId))
+            {
+                return new ValidacionContextoNcResult
+                {
+                    Ok = false,
+                    Codigo = "CAJA_NO_DISPONIBLE",
+                    Mensaje = "No se encontraron datos válidos de caja para continuar."
+                };
+            }
+
+            return new ValidacionContextoNcResult
+            {
+                Ok = true,
+                Codigo = "OK",
+                Mensaje = "OK"
+            };
+        }
+
+        private static bool RequiereDecisionCuentaCorriente(
+            NCValidaResponseDto comprobante)
+        {
+            return comprobante.nc_ctacte == 1 &&
+                   comprobante.nc_dv_dist == 0 &&
+                   comprobante.nc_dv_pago_diferido == 0;
+        }
+
+        private static string DeterminarCoTipo(
+            NCValidaResponseDto comprobante,
+            SeguirNotaCreditoRequest? request)
+        {
+            if (comprobante.nc_dv_dist == 1 ||
+                comprobante.nc_dv_pago_diferido == 1)
+            {
+                return "DV";
+            }
+
+            if (RequiereDecisionCuentaCorriente(comprobante) &&
+                request?.DejarEnCuentaCorriente == true)
+            {
+                return "DV";
+            }
+
+            return "AA";
+        }
+
+        private string CrearJsonProductosDevolucion(
+            NCDevolucionContextoSesion contexto)
+        {
+            List<ProductoFactJsonDto> productos = MapearProductosModeloNC_aModeloFact(contexto.ProductosDevolucion);
+
+            return JsonConvert.SerializeObject(
+                productos ?? [],
+                Formatting.None
+            );
+        }
+
+        private List<ProductoFactJsonDto> MapearProductosModeloNC_aModeloFact(List<NCProductoBuscarResponseDto> pdev)
+        {
+            //realiza el mapeo campo a campo del modelo NCProductoBuscarResponseDto => ProductoFactJsonDto
+            var prods = new List<ProductoFactJsonDto>();
+            foreach (var item in pdev)
+            {
+                var p = new ProductoFactJsonDto(MapeaProdNC(item));
+                prods.Add(p);
+            }
+
+            return prods;
+        }
+
+        private ProductoDatosResponseDto MapeaProdNC(NCProductoBuscarResponseDto item)
+        {
+            //traspasar los valores de item al tipo de dato resultante
+            var p = new ProductoDatosResponseDto();
+            p.p_id = item.p_id;
+            p.p_id_barrado = item.p_id_barrado;
+            //p.sin_scan_con_barrado = item.sin_scan_con_barrado;
+            p.p_desc = item.p_desc;
+            p.p_pcosto = item.p_pcosto ?? 0m;
+            p.p_pcosto_repo = item.p_pcosto_repo ?? 0m;
+            p.in_alicuota = item.in_alicuota ?? 0m;
+            p.p_in = item.p_in ?? 0m;
+            p.p_pvta = item.p_pvta ?? 0m;
+            p.iva_situacion = item.iva_situacion;
+            p.iva_alicuota= item.iva_alicuota ?? 0m;
+            p.p_iva = item.p_iva ?? 0m;
+            p.p_pneto= item.p_pneto ?? 0m;
+            p.po = item.po;
+            p.po_limite =  0;
+            p.p_pvta = item.p_pvta ?? 0m;
+            p.cantidad_tot = item.cantidad_tot ?? 0m;
+            p.bultos = item.bultos ;
+            p.p_activo = item.p_activo;
+            p.rub_id = item.rub_id;
+            p.rub_desc = item.rub_desc;
+            p.cta_id = item.cta_id;
+            p.pg_id = item.pg_id;
+            p.up_id = item.up_id;
+            p.up_tipo = item.up_tipo;
+            p.up_desc = item.up_desc;
+            p.p_unidad_pres = item.p_unidad_pres;
+            p.p_peso = item.p_peso ?? 0m;
+            p.cpf_nro = null;
+
+            return p;
+        }
+
+        private CalcularFilasReqDto CrearRequestCalculo(
+            NCDevolucionContextoSesion contexto,
+            string coTipo)
+        {
+            var comprobante = contexto.ComprobanteOrigen;
+            var cajaActual = CajaActual;
+            var productos = contexto.ProductosDevolucion ?? [];
+
+            return new CalcularFilasReqDto
+            {
+                caja_id = cajaActual?.CajaId ?? string.Empty,
+                usu_id = UserName ?? string.Empty,
+                adm_id = comprobante.adm_id ?? AdministracionId,
+                lp_id = !string.IsNullOrWhiteSpace(comprobante.lp_id)
+                    ? comprobante.lp_id
+                    : cajaActual?.Caja?.lp_id_min ?? string.Empty,
+                caja_nro_proceso = cajaActual?.Caja?.caja_nro_proceso ?? string.Empty,
+                caja_nro_cierre = cajaActual?.Caja?.caja_nro_cierre ?? string.Empty,
+
+                cta_id = comprobante.cta_id ?? string.Empty,
+                ctac_dto = comprobante.cm_dto_porc ?? 0m,
+                ctc_id = string.Empty,
+
+                tco_letra = comprobante.nc_tco_letra ?? string.Empty,
+                tco_id = comprobante.nc_tco_id ?? string.Empty,
+                tco_id_ori = comprobante.tco_id ?? string.Empty,
+                cm_compte_ori = comprobante.cm_compte ?? string.Empty,
+
+                afip_id = comprobante.afip_id ?? string.Empty,
+                afip_desc = comprobante.afip_desc ?? string.Empty,
+
+                tot_rows = productos.Count > short.MaxValue
+                    ? short.MaxValue
+                    : (short)productos.Count,
+                tot_cantidad = productos.Sum(x => x.cantidad_tot ?? 0m),
+                tot_pvta = productos.Sum(x => (x.p_pvta ?? 0m) * (x.cantidad_tot ?? 0m)),
+
+                json_p = CrearJsonProductosDevolucion(contexto)
+            };
+        }
+
+        private CajaOpeConfirmarReq CrearRequestConfirmacion(
+            NCDevolucionContextoSesion contexto)
+        {
+            var comprobante = contexto.ComprobanteOrigen;
+            var cajaActual = CajaActual;
+
+            return new CajaOpeConfirmarReq
+            {
+                caja_id = cajaActual?.CajaId ?? string.Empty,
+                usu_id = UserName ?? string.Empty,
+                adm_id = comprobante.adm_id ?? AdministracionId,
+                lp_id = !string.IsNullOrWhiteSpace(comprobante.lp_id)
+                    ? comprobante.lp_id
+                    : cajaActual?.Caja?.lp_id_min ?? string.Empty,
+                caja_nro_proceso = cajaActual?.Caja?.caja_nro_proceso ?? string.Empty,
+                caja_nro_cierre = cajaActual?.Caja?.caja_nro_cierre,
+
+                cta_id = comprobante.cta_id,
+                ctac_dto = comprobante.cm_dto_porc ?? 0m,
+                co_tipo = contexto.CoTipo,
+                ctc_id = string.Empty,
+
+                tco_letra = comprobante.nc_tco_letra ?? string.Empty,
+                tco_id_ori = comprobante.tco_id ?? string.Empty,
+                cm_compte_ori = comprobante.cm_compte ?? string.Empty,
+
+                afip_id = comprobante.afip_id ?? string.Empty,
+                tdoc_id = comprobante.tdoc_id ?? string.Empty,
+                cta_documento = comprobante.cm_cuit ?? string.Empty,
+                cta_denominacion = comprobante.cm_nombre ?? string.Empty,
+                cta_domicilio = comprobante.cm_domicilio ?? string.Empty,
+                ve_id = comprobante.ve_id ?? string.Empty,
+
+                json_p = contexto.JsonProductosCalculado,
+                json_subtotal = contexto.JsonSubtotal,
+                json_sorteo = string.Empty,
+                json_valores = "[]",
+                json_cancela = "[]",
+                json_union = "[]"
+            };
+        }
+
+        private static List<object> CrearResumenSubtotales(string jsonSubtotal)
+        {
+            if (string.IsNullOrWhiteSpace(jsonSubtotal))
+            {
+                return [];
+            }
+
+            try
+            {
+                var subtotales = JsonConvert.DeserializeObject<List<FactSubtotalJsonDto>>(jsonSubtotal)
+                    ?? [];
+
+                return subtotales
+                    .Select(x => new
+                    {
+                        orden = x.orden,
+                        tipo = x.tipo,
+                        concepto = x.concepto,
+                        @base = x.@base,
+                        alicuota = x.alicuota,
+                        importe = x.importe,
+                        id_aux = x.id_aux
+                    })
+                    .Cast<object>()
+                    .ToList();
+            }
+            catch
+            {
+                return [];
+            }
+        }
+
+        private async Task<object> RegistrarStockNotaCredito(
+            ComprobanteInfoDto comprobante,
+            string token)
+        {
+            try
+            {
+                var depoId = CajaActual?.Caja?.depo_id ?? string.Empty;
+
+                if (string.IsNullOrWhiteSpace(depoId))
+                {
+                    _logger?.LogWarning(
+                        "NC Devolución: no se encontró depo_id para cargar stock."
+                    );
+
+                    return new
+                    {
+                        ok = false,
+                        mensaje = "La Nota de Crédito fue emitida, pero no se encontró depósito para actualizar stock."
+                    };
+                }
+
+                var stockId = $"{comprobante.tco_id}{comprobante.cm_compte}{comprobante.cm_repetido}";
+                var stockRequest = new CargaStkDto
+                {
+                    box_id = depoId,
+                    tipo = "FV",
+                    id = stockId
+                };
+
+                var stockResult = await _cajaServicio.CargaStkDeFactura(stockRequest, token);
+
+                if (stockResult == null || !stockResult.Ok)
+                {
+                    _logger?.LogError(
+                        "NC Devolución: error al actualizar stock. Mensaje={Mensaje}",
+                        stockResult?.Mensaje ?? "Respuesta nula del servicio."
+                    );
+
+                    return new
+                    {
+                        ok = false,
+                        mensaje = stockResult?.Mensaje ?? "La Nota de Crédito fue emitida, pero no se pudo actualizar stock."
+                    };
+                }
+
+                return new
+                {
+                    ok = true,
+                    mensaje = "Stock actualizado correctamente.",
+                    id = stockId
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(
+                    ex,
+                    "NC Devolución: excepción al actualizar stock."
+                );
+
+                return new
+                {
+                    ok = false,
+                    mensaje = "La Nota de Crédito fue emitida, pero ocurrió un error al actualizar stock."
+                };
+            }
         }
 
         private static object CrearResultadoProductoMensaje(

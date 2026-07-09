@@ -18,7 +18,7 @@
 
         public decimal? p_pneto { get; set; }
 
-        public int po { get; set; }
+        public bool po { get; set; }
 
         public decimal? p_pvta { get; set; }
         public decimal? cantidad_tot { get; set; }
@@ -42,7 +42,7 @@
         public string up_tipo { get; set; } = string.Empty;
         public string up_desc { get; set; } = string.Empty;
 
-        public int? p_unidad_pres { get; set; }
+        public int p_unidad_pres { get; set; }
         public decimal? p_peso { get; set; }
 
         public short? respuesta { get; set; }

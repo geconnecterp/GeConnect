@@ -467,6 +467,7 @@ window.NCDevolucion = window.NCDevolucion || {};
         tipoComprobante: '#ddlTipoComprobanteOrigen',
         puntoVenta: '#txtPuntoVentaOrigen',
         numeroComprobante: '#txtNumeroComprobanteOrigen',
+        tecladoAnclaIdentificacion: '#ncDevolucionTecladoAnclaIdentificacion',
 
         btnValidar: '#btnValidarComprobanteOrigen',
         btnCancelar: '#btnCancelarNcDevolucion',
@@ -556,6 +557,10 @@ window.NCDevolucion = window.NCDevolucion || {};
             }, 150);
         });
 
+        $(elementoIdentificacion).on('hidden.bs.modal', function () {
+            ocultarTecladoNc();
+        });
+
         $(elementoRepetidos).on('shown.bs.modal', function () {
             logInfo('UI → Modal de identificación visible', {
                 focoEsperado: 'ddlTipoComprobanteOrigen'
@@ -567,6 +572,10 @@ window.NCDevolucion = window.NCDevolucion || {};
                     .trigger('focus');
             }, 150);
         });
+
+        $(elementoRepetidos).on('hidden.bs.modal', function () {
+            ocultarTecladoNc();
+        });
     }
 
     function inicializarEventos() {
@@ -574,16 +583,34 @@ window.NCDevolucion = window.NCDevolucion || {};
             .on('input', function () {
                 normalizarSoloDigitos($(this), 4);
             })
+            .on('focus', function () {
+                posicionarTecladoNc(
+                    SELECTORES.puntoVenta,
+                    null,
+                    'right'
+                );
+            })
             .on('keydown', function (event) {
                 if (event.key === 'Enter') {
                     event.preventDefault();
-                    $(SELECTORES.numeroComprobante).trigger('focus');
+                    enfocarInputConTeclado(
+                        SELECTORES.numeroComprobante,
+                        null,
+                        'right'
+                    );
                 }
             });
 
         $(SELECTORES.numeroComprobante)
             .on('input', function () {
                 normalizarSoloDigitos($(this), 8);
+            })
+            .on('focus', function () {
+                posicionarTecladoNc(
+                    SELECTORES.numeroComprobante,
+                    null,
+                    'right'
+                );
             })
             .on('keydown', function (event) {
                 if (event.key === 'Enter') {
@@ -594,6 +621,14 @@ window.NCDevolucion = window.NCDevolucion || {};
 
         $(SELECTORES.tipoComprobante).on('change', function () {
             limpiarAlertaInline();
+
+            if ($(this).val()) {
+                enfocarInputConTeclado(
+                    SELECTORES.puntoVenta,
+                    null,
+                    'right'
+                );
+            }
         });
 
         $(SELECTORES.btnValidar).on('click', function () {
@@ -1715,11 +1750,52 @@ window.NCDevolucion = window.NCDevolucion || {};
         }
 
         if (!puntoVenta) {
-            $(SELECTORES.puntoVenta).trigger('focus');
+            enfocarInputConTeclado(
+                SELECTORES.puntoVenta,
+                null,
+                'right'
+            );
             return;
         }
 
-        $(SELECTORES.numeroComprobante).trigger('focus');
+        enfocarInputConTeclado(
+            SELECTORES.numeroComprobante,
+            null,
+            'right'
+        );
+    }
+
+    function enfocarInputConTeclado(selectorInput, selectorAncla, ladoPreferido) {
+        if (typeof activarTecladoParaInput === 'function') {
+            activarTecladoParaInput(selectorInput, {
+                anchorSelector: selectorAncla || selectorInput,
+                preferredSide: ladoPreferido || 'right'
+            });
+
+            return;
+        }
+
+        $(selectorInput).trigger('focus').trigger('select');
+    }
+
+    function posicionarTecladoNc(selectorInput, selectorAncla, ladoPreferido) {
+        setTimeout(function () {
+            if (typeof posicionarTecladoVirtual === 'function') {
+                posicionarTecladoVirtual(
+                    selectorInput,
+                    selectorAncla || selectorInput,
+                    {
+                        preferredSide: ladoPreferido || 'right'
+                    }
+                );
+            }
+        }, 170);
+    }
+
+    function ocultarTecladoNc() {
+        if (typeof ocultarTecladoVirtual === 'function') {
+            ocultarTecladoVirtual();
+        }
     }
 
     function normalizarSoloDigitos($input, maximo) {

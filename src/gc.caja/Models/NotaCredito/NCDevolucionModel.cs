@@ -61,6 +61,21 @@ namespace gc.caja.Models.NotaCredito
     }
 
     /// <summary>
+    /// Producto que el cajero decide excluir de la Nota de Credito.
+    /// El indice corresponde a la grilla vigente guardada en sesion.
+    /// </summary>
+    public sealed class QuitarProductoDevolucionRequest
+    {
+        public int Indice { get; set; } = -1;
+    }
+
+    public sealed class SeguirNotaCreditoRequest
+    {
+        public bool? DejarEnCuentaCorriente { get; set; }
+        public bool ConfirmacionCuentaCorriente { get; set; }
+    }
+
+    /// <summary>
     /// Contexto aislado de una NC por Devolución en curso.
     ///
     /// No utiliza ClienteActual, FacturaProductos ni FacturaSubtotales,
@@ -86,6 +101,16 @@ namespace gc.caja.Models.NotaCredito
         /// No utiliza FacturaProductos.
         /// </summary>
         public List<NCProductoBuscarResponseDto> ProductosDevolucion { get; set; } = new();
+
+        public string CoTipo { get; set; } = string.Empty;
+
+        public string JsonProductosCalculado { get; set; } = string.Empty;
+
+        public string JsonSubtotal { get; set; } = string.Empty;
+
+        public string JsonSorteo { get; set; } = string.Empty;
+
+        public DateTime? FechaUltimoCalculoUtc { get; set; }
 
         /// <summary>
         /// Fecha de la última actualización de productos de devolución.

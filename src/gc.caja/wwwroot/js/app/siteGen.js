@@ -1591,8 +1591,18 @@ function cerrarTecladoDigitalConRetraso(delay = 100) {
  * ✅ NUEVO v25.0: Posiciona el teclado virtual junto al ancla.
  * Se asegura de que el teclado esté visible y alineado a la izquierda.
  */
-function posicionarTecladoVirtual(inputSelector, anchorSelector) {
+function posicionarTecladoVirtual(inputSelector, anchorSelector, opciones = {}) {
     console.log('📍 Posicionando teclado virtual...');
+
+    const configuracion = typeof opciones === 'string'
+        ? { preferredSide: opciones }
+        : (opciones || {});
+
+    const ladoPreferido = String(
+        configuracion.preferredSide ||
+        configuracion.ladoPreferido ||
+        ''
+    ).toLowerCase();
 
     const teclado = document.getElementById('virtual-keyboard');
 
@@ -1640,7 +1650,9 @@ function posicionarTecladoVirtual(inputSelector, anchorSelector) {
     teclado.style.display = 'flex';
     teclado.style.opacity = '1';
     teclado.style.position = 'fixed';
-    teclado.style.transform = 'none';
+    teclado.style.setProperty('transform', 'none', 'important');
+    teclado.style.setProperty('right', 'auto', 'important');
+    teclado.style.setProperty('bottom', 'auto', 'important');
 
     const rectReferencia =
         elementoReferencia.getBoundingClientRect();
@@ -1653,12 +1665,21 @@ function posicionarTecladoVirtual(inputSelector, anchorSelector) {
 
     const margen = 12;
 
-    let top = rectReferencia.bottom + margen;
+    let top = ladoPreferido === 'left' || ladoPreferido === 'right'
+        ? rectReferencia.top
+        : rectReferencia.bottom + margen;
+
     let left = rectReferencia.left;
 
-    // Si no entra debajo del campo, se muestra arriba.
-    if (top + altoTeclado > window.innerHeight - margen) {
-        top = rectReferencia.top - altoTeclado - margen;
+    if (ladoPreferido === 'left') {
+        left = margen;
+    } else if (ladoPreferido === 'right') {
+        left = window.innerWidth - anchoTeclado - margen;
+    } else {
+        // Si no entra debajo del campo, se muestra arriba.
+        if (top + altoTeclado > window.innerHeight - margen) {
+            top = rectReferencia.top - altoTeclado - margen;
+        }
     }
 
     // Evita salir por arriba.
@@ -1675,20 +1696,27 @@ function posicionarTecladoVirtual(inputSelector, anchorSelector) {
         left = margen;
     }
 
-    teclado.style.top = `${Math.round(top)}px`;
-    teclado.style.left = `${Math.round(left)}px`;
+    teclado.style.setProperty('top', `${Math.round(top)}px`, 'important');
+    teclado.style.setProperty('left', `${Math.round(left)}px`, 'important');
 
     // El teclado debe estar por encima del modal activo.
     const zIndexModal = modalActual
         ? parseInt(window.getComputedStyle(modalActual).zIndex, 10)
         : 0;
 
-    teclado.style.zIndex = String(
-        Math.max(Number.isFinite(zIndexModal) ? zIndexModal + 10 : 0, 5020)
+    teclado.style.setProperty(
+        'z-index',
+        String(
+            Math.max(
+                Number.isFinite(zIndexModal) ? zIndexModal + 10 : 0,
+                5020
+            )
+        ),
+        'important'
     );
 
     console.log(
-        `✅ Teclado posicionado: top=${Math.round(top)}px, left=${Math.round(left)}px`
+        `✅ Teclado posicionado: top=${Math.round(top)}px, left=${Math.round(left)}px, lado=${ladoPreferido || 'auto'}`
     );
 
     return true;
@@ -1750,7 +1778,8 @@ function activarTecladoParaInput(inputSelector, opciones = {}) {
     setTimeout(() => {
         posicionarTecladoVirtual(
             inputSelector,
-            opciones.anchorSelector || null
+            opciones.anchorSelector || null,
+            opciones
         );
 
         input.focus();
