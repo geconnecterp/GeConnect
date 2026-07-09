@@ -2,6 +2,7 @@
 {
     public class NCProductoBuscarResponseDto
     {
+        public int item { get; set; }
         public string p_id { get; set; } = string.Empty;
         public string p_id_barrado { get; set; } = string.Empty;
         public string p_desc { get; set; } = string.Empty;

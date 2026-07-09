@@ -819,7 +819,6 @@ namespace gc.caja.Areas.Facturacion.Controllers
                 var productosAceptados = new List<NCProductoBuscarResponseDto>();
                 var advertencias = new List<object>();
                 var rechazos = new List<object>();
-
                 foreach (var producto in respuestaSp)
                 {
                     if (producto.respuesta.HasValue &&
@@ -849,6 +848,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
                 }
 
                 // La carga total reemplaza el detalle anterior para evitar duplicados.
+                RenumerarProductosDevolucion(productosAceptados);
                 contexto.ProductosDevolucion = productosAceptados;
                 contexto.FechaUltimaCargaProductosUtc = DateTime.UtcNow;
 
@@ -935,6 +935,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
 
                 var productos = contexto.ProductosDevolucion
                     ?? new List<NCProductoBuscarResponseDto>();
+                RenumerarProductosDevolucion(productos);
 
                 return Json(new
                 {
@@ -1054,6 +1055,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
 
                 var productoQuitado = productos[request.Indice];
                 productos.RemoveAt(request.Indice);
+                RenumerarProductosDevolucion(productos);
 
                 contexto.ProductosDevolucion = productos;
                 contexto.CoTipo = string.Empty;
@@ -1434,6 +1436,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
 
                 if (productosAceptados.Count > 0)
                 {
+                    RenumerarProductosDevolucion(contexto.ProductosDevolucion);
                     contexto.FechaUltimaCargaProductosUtc = DateTime.UtcNow;
 
                     GuardarContextoDevolucion(contexto);
@@ -2491,6 +2494,8 @@ namespace gc.caja.Areas.Facturacion.Controllers
         private string CrearJsonProductosDevolucion(
             NCDevolucionContextoSesion contexto)
         {
+            RenumerarProductosDevolucion(contexto.ProductosDevolucion);
+
             List<ProductoFactJsonDto> productos = MapearProductosModeloNC_aModeloFact(contexto.ProductosDevolucion);
 
             return JsonConvert.SerializeObject(
@@ -2545,6 +2550,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
             p.p_unidad_pres = item.p_unidad_pres;
             p.p_peso = item.p_peso ?? 0m;
             p.cpf_nro = null;
+            p.item = item.item;
 
             return p;
         }
@@ -2781,6 +2787,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
                 p_id = producto.p_id,
                 p_id_barrado = producto.p_id_barrado,
                 p_desc = producto.p_desc,
+                item = producto.item,
 
                 cantidad_tot = producto.cantidad_tot ?? 0m,
                 bultos = producto.bultos,
@@ -2799,6 +2806,20 @@ namespace gc.caja.Areas.Facturacion.Controllers
                 respuesta = producto.respuesta,
                 respuesta_msj = producto.respuesta_msj
             };
+        }
+
+        private static void RenumerarProductosDevolucion(
+            IList<NCProductoBuscarResponseDto>? productos)
+        {
+            if (productos == null)
+            {
+                return;
+            }
+
+            for (var indice = 0; indice < productos.Count; indice++)
+            {
+                productos[indice].item = indice + 1;
+            }
         }
 
         private static bool TieneMasDeTresDecimales(decimal valor)

@@ -1516,7 +1516,7 @@ window.NCDevolucion = window.NCDevolucion || {};
         if (!productos.length) {
             $tbody.html(`
                 <tr>
-                    <td colspan="7"
+                    <td colspan="8"
                          class="text-center text-muted py-4 td-compact">
                         No hay productos cargados para esta devolución.
                     </td>
@@ -1528,6 +1528,10 @@ window.NCDevolucion = window.NCDevolucion || {};
 
         $tbody.html(
             productos.map(function (producto, indice) {
+                const item = Number(producto.item) > 0
+                    ? Number(producto.item)
+                    : indice + 1;
+
                 const codigo = producto.p_id_barrado ||
                     producto.p_id ||
                     '-';
@@ -1560,6 +1564,10 @@ window.NCDevolucion = window.NCDevolucion || {};
 
                 return `
                     <tr class="ncdev-producto-row ${tieneAdvertencia ? 'ncdev-producto-con-advertencia' : ''}">
+                        <td class="text-center td-compact">
+                            <strong>${item}</strong>
+                        </td>
+
                         <td class="text-center td-compact">
                             <strong>${escaparHtml(codigo)}</strong>
                         </td>
@@ -1728,7 +1736,7 @@ window.NCDevolucion = window.NCDevolucion || {};
 
         $(SELECTORES.tablaProductos).html(`
             <tr>
-                <td colspan="7"
+                <td colspan="8"
                     class="text-center text-muted py-4">
                     No hay productos cargados.
                 </td>
