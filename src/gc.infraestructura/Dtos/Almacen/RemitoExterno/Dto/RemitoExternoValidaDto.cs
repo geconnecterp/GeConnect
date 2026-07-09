@@ -1,7 +1,9 @@
 ﻿
+using gc.infraestructura.Dtos.Almacen;
+
 namespace gc.infraestructura.Dtos
 {
-	public class RemitoExternoValidaDto : Dto
+	public class RemitoExternoValidaDto : Dto, IProductoConUnidad
 	{
 		public string pre_id { get; set; } = string.Empty;
 		public string pre_descripcion { get; set; } = string.Empty;
@@ -25,6 +27,7 @@ namespace gc.infraestructura.Dtos
 		public string adm_id { get; set; } = string.Empty;
 		public string p_id { get; set; } = string.Empty;
 		public string p_desc { get; set; } = string.Empty;
+		public string p_id_prov { get; set; } = string.Empty;
 		public decimal pre_cantidad { get; set; }
 		public decimal pre_cantidad_ent { get; set; }
 		public decimal pre_pvta { get; set; }
@@ -33,6 +36,11 @@ namespace gc.infraestructura.Dtos
 		public decimal iva_alicuota { get; set; }
 		public int pre_item { get; set; }
 		public decimal pre_pcosto { get; set; }
-
+		public decimal a_remitir { get; set; }
+		public string box_id { get; set; } = string.Empty;
+		public string up_id { get; set; } = string.Empty;
+		public string up_desc { get; set; } = string.Empty;
+		public string up_tipo { get; set; } = string.Empty;
+		public bool PermiteDecimales => up_tipo == "P";
 	}
 }

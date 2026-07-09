@@ -1,4 +1,5 @@
-﻿@model GridCoreSmart<RemitoExternoValidaDto>
+﻿@using gc.infraestructura.Helpers
+@model GridCoreSmart<RemitoExternoValidaDto>
 @{
 	var alt = true;
 	string clase = string.Empty;
@@ -12,7 +13,7 @@
 				<th class="text-center fw-bold">ID Prov</th>
 				<th class="text-center fw-bold">Box</th>
 				<th class="text-center fw-bold" title="Cantidad Comprada">Cant. Comp.</th>
-				<th class="text-center fw-bold" title="Ya entregado">Ya Entr./th>
+				<th class="text-center fw-bold" title="Ya entregado">Ya Entr.</th>
 				<th class="text-center fw-bold" title="A entregar">A Entr.</th>
 				<th class="text-center fw-bold" title="A remitir">A Rem.</th>
 			</tr>
@@ -31,6 +32,7 @@
 			{
 				foreach (var item in Model.ListaDatos)
 				{
+					var a_entregar = item.pre_cantidad - item.pre_cantidad_ent;
 					if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
 					<tr class="@clase row-ajuste"
 						data-p-id="@item.p_id"
@@ -39,12 +41,12 @@
 						data-pret-od="@item.pret_id">
 						<td class="text-center">@item.p_id</td>
 						<td class="text-start">@item.p_desc</td>
-						<td class="text-center"></td>
-						<td class="text-center"></td>
-						<td class="text-end">@item.pre_cantidad</td>
-						<td class="text-end">@item.pre_cantidad_ent</td>
-						<td class="text-end">@item.pre_cantidad</td>
-						<td class="text-end">@item.pre_cantidad_ent</td>
+						<td class="text-center">@item.p_id_prov</td>
+						<td class="text-center">@item.box_id</td>
+						<td class="text-end">@GridHelper.FormatearDato(item.pre_cantidad, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
+						<td class="text-end">@GridHelper.FormatearDato(item.pre_cantidad_ent, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
+						<td class="text-end">@GridHelper.FormatearDato(a_entregar, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
+						<td class="text-end">@GridHelper.FormatearDato(item.a_remitir, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
 					</tr>
 				}
 			}

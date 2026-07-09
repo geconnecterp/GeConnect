@@ -113,6 +113,8 @@ namespace gc.sitio.Areas.Mstk.Controllers.RegistrarRemitoExterno
 					_logger?.LogInformation("No se encontraron los datos de productos desde el comprobante");
 					return Json(CrearRespuestaWarning("No se encontraron los datos de productos desde el comprobante."));
 				}
+				lista.ListaEntidad.ForEach(x => x.box_id = request.box_id);
+				ListaRemitoExternoValida = lista.ListaEntidad;
 				return Json(CrearRespuestaOk("Se encontraron los datos de productos desde el comprobante."));
 			}
 			catch (NegocioException ex)
@@ -127,27 +129,16 @@ namespace gc.sitio.Areas.Mstk.Controllers.RegistrarRemitoExterno
 			}
 		}
 
-		public async Task<IActionResult> CargarProductosDesdeComprobante(RemitoExternoValidaRequest request)
+		public IActionResult CargarProductosDesdeComprobante()
 		{
 			try
 			{
 				if (!VerificarAutenticacion(out IActionResult redirectResult))
 					return redirectResult;
 
-				if (request == null)
-					return PartialView("_gridMensaje", CrearRespuestaWarning("no se proporcionaron los datos de búsqueda."));
+				var lista = ListaRemitoExternoValida;
 
-				var lista = await _remitoServicio.CargarProductosDesdeComprobante(request, TokenCookie);
-				if (!lista.Ok)
-					throw new NegocioException(lista.Mensaje ?? "No se ha podido obtener la lista de productos desde el comprobante.");
-
-				if (lista.ListaEntidad == null || lista.ListaEntidad.Count() == 0)
-				{
-					_logger?.LogInformation("No se encontraron los datos de productos desde el comprobante");
-					return PartialView("_partialProdsDelCompte", ObtenerGridCoreSmart<RemitoExternoValidaDto>(new List<RemitoExternoValidaDto>()));
-				}
-
-				return PartialView("_partialProdsDelCompte", ObtenerGridCoreSmart<RemitoExternoValidaDto>(lista.ListaEntidad));
+				return PartialView("_partialProdsDelCompte", ObtenerGridCoreSmart<RemitoExternoValidaDto>(lista));
 			}
 			catch (NegocioException ex)
 			{

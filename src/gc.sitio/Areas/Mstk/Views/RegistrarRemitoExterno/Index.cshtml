@@ -75,6 +75,9 @@
 		width: 120px !important;
 	}
 
+	#Busqueda {
+		width: 165px !important;
+	}
 </style>
 <div class="card mx-auto w-75" style="padding-left:0;padding-right:0;">
 	<div class="card-body p-2">
@@ -153,11 +156,11 @@
 					<div class="radio-controls d-flex align-items-center">
 						<input type="text"
 							   class="form-control inputEditable form-control-sm input-compact input-full"
-							   name="Rel01"
-							   id="Rel01"
+							   name="Rel03"
+							   id="Rel03"
 							   disabled />
 
-						<input id="Rel01Item" name="Rel01Item" type="hidden" value="">
+						<input id="Rel03Item" name="Rel03Item" type="hidden" value="">
 					</div>
 				</div>
 
@@ -237,16 +240,16 @@
 			<div class="p-2">
 
 				<div class="row g-2 align-items-center">
-
-					<!-- ID -->
-					<div class="col-auto d-flex align-items-center">
-						<label class="me-2 mb-0">ID:</label>
-						<input type="text"
-							   id="ProdID"
-							   name="ProdID"
-							   class="form-control form-control-sm input-compact input-id" />
+					<div class="col-3 align-items-center">
+						<partial name="~/areas/ControlComun/views/producto/_ctrBuscarProducto.cshtml" model="@busquedaProducto" />
 					</div>
 
+					<!-- ID -->
+					<input id="ProdID" name="ProdID" type="hidden" value="">
+					<input id="UpID" name="UpID" type="hidden" value="">
+					<input id="BarradoID" name="BarradoID" type="hidden" value="">
+					<input id="ProvID" name="ProvID" type="hidden" value="">
+					<input id="BarradoID" name="BarradoID" type="hidden" value="">
 					<!-- Nombre dinámico -->
 					<div class="col d-flex align-items-center">
 						<label class="me-2 mb-0">Nombre:</label>
@@ -343,11 +346,12 @@
 		let pags = 0;
 		let pagina = 1;
 		let search = "";
+		var funcionBusquedaAvanzada = true;
 
 		var BuscarBoxesDesdeDepositoURL = "@Url.Action("ObtenerBoxesDesdeDeposito", "RegistrarRemitoExterno", new { area = "mstk" })";
-		var autoComRel01Url = "@Url.Action("BuscarProvs", "RegistrarRemitoExterno", new { area = "mstk" })";
+		var autoComRel03Url = "@Url.Action("BuscarProvs", "RegistrarRemitoExterno", new { area = "mstk" })";
 		let validarExistenciaDeProdsURL = "@Url.Action("VerificarExistenciaDeProductosDesdeComprobantes", "RegistrarRemitoExterno", new { area = "mstk" })";
-		let buscarComisionesVentasDetalleURL = "@Url.Action("BuscarComisionesVentasDetalle", "RegistrarRemitoExterno", new { area = "mstk" })";
+		let cargarProductosDesdeComprobanteURL = "@Url.Action("CargarProductosDesdeComprobante", "RegistrarRemitoExterno", new { area = "mstk" })";
 		let buscarComisionesVentasResumenURL = "@Url.Action("BuscarComisionesVentasResumen", "RegistrarRemitoExterno", new { area = "mstk" })";
 		let setearTipoDeReporteUrl = "@Url.Action("SetearTipoDeReporte", "RegistrarRemitoExterno", new { area = "mstk" })";
 
@@ -358,10 +362,19 @@
 		var enviarEmailUrl = "@Url.Action("EnviarEmail", "GestorImpresion", new { area = "ControlComun" })";
 		var enviarWhatsAppUrl = "@Url.Action("EnviarWhatsApp", "GestorImpresion", new { area = "ControlComun" })";
 		var generadorArchivoUrl = "@Url.Action("GeneradorArchivo", "GestorImpresion", new { area = "ControlComun" })";
+
+		//Busqueda de productos
+		var busquedaProdBaseUrl = "@Url.Action("BusquedaBase", "producto", new { area = "ControlComun", validarPertenenciaDeProveedor = false })";
+		var autoComRel01Url = "@Url.Action("BuscarProvs", "abmproducto", new { area = "abms" })";
+		var autoComRel02Url = "@Url.Action("BuscarRubros", "abmproducto", new { area = "abms" })";
+		var buscarMetadataURL = "@Url.Action("ObtenerDatosPaginacion", "abmproducto", new { area = "abms" })";
+		var busquedaAvanzadaUrl = "@Url.Action("BusquedaAvanzada", "producto", new { area = "ControlComun" })";
 	</script>
 	<script src="~/lib/jstree/jstree.min.js"></script>
 	<script src="~/js/app/areas/docmngr/docmanager.js"></script>
 	<script src="~/js/plugins/jquery.simplePagination.js"></script>
+	<script src="~/js/app/busquedas.js" type="text/javascript"></script>
+	<script src="~/js/app/controlcomun/infoRpr.js" type="text/javascript"></script>
 
 	<script src="~/js/app/areas/mstk/registrarremitoexterno/regremexterno.js" type="text/javascript"></script>
 }

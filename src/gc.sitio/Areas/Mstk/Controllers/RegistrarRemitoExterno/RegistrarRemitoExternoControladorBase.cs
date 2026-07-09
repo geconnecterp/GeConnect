@@ -1,8 +1,11 @@
 ﻿using gc.api.core.Entidades;
 using gc.infraestructura.Core.EntidadesComunes.Options;
+using gc.infraestructura.Dtos;
+using gc.infraestructura.Dtos.Almacen.AjusteDeStock;
 using gc.infraestructura.Dtos.Gen;
 using gc.sitio.Controllers;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
 
 namespace gc.sitio.Areas.Mstk.Controllers.RegistrarRemitoExterno
 {
@@ -43,6 +46,24 @@ namespace gc.sitio.Areas.Mstk.Controllers.RegistrarRemitoExterno
 				EsWarn = false,
 				EsError = false
 			};
+		}
+
+		public List<RemitoExternoValidaDto> ListaRemitoExternoValida
+		{
+			get
+			{
+				var json = _context.HttpContext?.Session.GetString("ListaRemitoExternoValida");
+				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+				{
+					return [];
+				}
+				return JsonConvert.DeserializeObject<List<RemitoExternoValidaDto>>(json) ?? [];
+			}
+			set
+			{
+				var json = JsonConvert.SerializeObject(value);
+				_context.HttpContext?.Session.SetString("ListaRemitoExternoValida", json);
+			}
 		}
 	}
 }
