@@ -21,7 +21,9 @@ namespace gc.infraestructura.Dtos
 		public string pret_id { get; set; } = string.Empty;
 		public string pret_desc { get; set; } = string.Empty;
 		public string cta_id { get; set; } = string.Empty;
+		public string cta_denominacion { get; set; } = string.Empty;
 		public string tco_id { get; set; } = string.Empty;
+		public string tco_desc { get; set; } = string.Empty;
 		public string cm_compte { get; set; } = string.Empty;
 		public string usu_id { get; set; } = string.Empty;
 		public string adm_id { get; set; } = string.Empty;
@@ -38,9 +40,23 @@ namespace gc.infraestructura.Dtos
 		public decimal pre_pcosto { get; set; }
 		public decimal a_remitir { get; set; }
 		public string box_id { get; set; } = string.Empty;
+		public string depo_id { get; set; } = string.Empty;
 		public string up_id { get; set; } = string.Empty;
 		public string up_desc { get; set; } = string.Empty;
 		public string up_tipo { get; set; } = string.Empty;
 		public bool PermiteDecimales => up_tipo == "P";
+	}
+
+	public class ProductoRemitoDto
+	{
+		public string p_id { get; set; } = string.Empty;
+		public string p_desc { get; set; } = string.Empty;
+		public string depo_id { get; set; } = string.Empty;
+		public string box_id { get; set; } = string.Empty;
+		public string up_id { get; set; } = string.Empty;
+		public int unidad_pres { get; set; }
+		public decimal bulto { get; set; }
+		public decimal us { get; set; }
+		public decimal cantidad { get; set; }
 	}
 }

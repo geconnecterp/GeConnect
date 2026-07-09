@@ -4,6 +4,64 @@
 	var alt = true;
 	string clase = string.Empty;
 }
+<style>
+	#Busqueda {
+		width: 70px !important;
+		max-width: 70px !important;
+		min-width: 70px !important;
+	}
+</style>
+@if (Model != null && Model.ListaDatos != null && Model.ListaDatos.Any())
+{
+	var h = Model.ListaDatos.First();
+
+	<div id="infoComprobanteRendered" class="accordion mb-2">
+		<div class="accordion-item">
+			<h2 class="accordion-header">
+				<button class="accordion-button collapsed py-1" type="button" data-bs-toggle="collapse" data-bs-target="#accInfoBody">
+					Información del Comprobante
+				</button>
+			</h2>
+			<div id="accInfoBody" class="accordion-collapse collapse">
+				<div class="accordion-body small py-2">
+
+					<div class="row g-2">
+						<div class="col-md-2">
+							<label class="fw-bold">ID Presupuesto:</label>
+							<span>@h.pre_id</span>
+						</div>
+
+						<div class="col-md-2">
+							<label class="fw-bold">Estado:</label>
+							<span>@h.pree_desc</span>
+						</div>
+
+						<div class="col-md-5">
+							<label class="fw-bold">Cliente:</label>
+							<span>@h.cta_id - @h.cta_denominacion</span>
+						</div>
+
+						<div class="col-md-3">
+							<label class="fw-bold">Comprobante:</label>
+							<span>@h.tco_desc @h.cm_compte</span>
+						</div>
+
+						<div class="col-md-6">
+							<label class="fw-bold">Obs. Pago:</label>
+							<span>@h.pre_obs_pago</span>
+						</div>
+
+						<div class="col-md-6">
+							<label class="fw-bold">Obs. Entrega:</label>
+							<span>@h.pre_obs_entrega</span>
+						</div>
+					</div>
+
+				</div>
+			</div>
+		</div>
+	</div>
+}
 <div class="table-wrapper" id="containerListaProducto">
 	<table class="table table-sm table-golden" id="tbGridProductos">
 		<thead>
@@ -22,8 +80,8 @@
 			@if (Model == null || Model.ListaDatos == null || !Model.ListaDatos.Any())
 			{
 				<tr class="fila-vacia">
-					<td colspan="8" class="text-center text-muted py-2">
-						<i class="bx bx-info-circle me-1"></i>
+					<td colspan="8" class="text-center text-muted py-4">
+						<i class="bx bx-info-circle me-2"></i>
 						No hay items para mostrar.
 					</td>
 				</tr>

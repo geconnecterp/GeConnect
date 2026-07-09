@@ -726,6 +726,7 @@
 			#endregion
 
 			public const string SP_RE_VALIDA = "SPGECO_RE_Valida";
+			public const string SP_RE_CONFIRMAR = "SPGECO_RE_Confirmar";
 		}
 
         public static class StoredFunctions

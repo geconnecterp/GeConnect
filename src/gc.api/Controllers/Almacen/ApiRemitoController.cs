@@ -140,5 +140,19 @@ namespace gc.api.Controllers.Almacen
 
 			return Ok(new ApiResponse<List<RemitoExternoValidaDto>>(resultado));
 		}
+
+		[HttpPost("confirmar-remito-externo")]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<List<RespuestaDto>>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		public IActionResult ConfirmarRemitoExterno(ConfirmarRemitoExternoRequest request)
+		{
+			ApiResponse<RespuestaDto> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
+			RespuestaDto res = _remSv.ConfirmarRemitoExterno(request);
+
+			response = new ApiResponse<RespuestaDto>(res);
+
+			return Ok(response);
+		}
 	}
 }

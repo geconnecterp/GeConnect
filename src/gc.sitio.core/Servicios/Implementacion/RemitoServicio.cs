@@ -30,7 +30,7 @@ namespace gc.sitio.core.Servicios.Implementacion
         private const string RemitoCargarConteos = "/RTRCargarConteos";
         private const string RemitosCargarConteosXUL = "/RTRCargarConteosXUL";
 		private const string RemitoExternoProductosAValidar = "/cargar-productos-desde-comprobante";
-
+		private const string RemitoExternoConfirmar = "/confirmar-remito-externo";
 
 		private readonly AppSettings _appSettings;
         public RemitoServicio(IOptions<AppSettings> options, ILogger<RemitoServicio> logger) : base(options, logger, RutaAPI)
@@ -335,6 +335,46 @@ namespace gc.sitio.core.Servicios.Implementacion
 				_logger.LogError($"{this.GetType().Name}-{MethodBase.GetCurrentMethod()?.Name} - {ex}");
 
 				throw new Exception("Algo no fue bien al intentar cargar los productos desde el comprobante.");
+			}
+		}
+
+		public RespuestaGenerica<RespuestaDto> ConfirmarRemitoExterno(ConfirmarRemitoExternoRequest request, string token)
+		{
+			try
+			{
+				ApiResponse<List<RespuestaDto>> apiResponse;
+
+				HelperAPI helper = new HelperAPI();
+
+				HttpClient client = helper.InicializaCliente(request, token, out StringContent contentData);
+				HttpResponseMessage response;
+
+				var link = $"{_appSettings.RutaBase}{RutaAPI}{RemitoExternoConfirmar}";
+
+				response = client.PostAsync(link, contentData).Result;
+
+				if (response.StatusCode == HttpStatusCode.OK)
+				{
+					string stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+					if (string.IsNullOrEmpty(stringData))
+					{
+						_logger.LogWarning($"La API devolvió error.");
+						return new();
+					}
+					apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<RespuestaDto>>>(stringData) ?? throw new Exception("Error al deserializar la respuesta de la API.");
+					return new RespuestaGenerica<RespuestaDto>() { Entidad = apiResponse.Data.First() };
+				}
+				else
+				{
+					string stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+					_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+					return new();
+				}
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, "Error al confirmar el remito externo");
+				return new() { Mensaje = "Algo no fue bien al intentar la confirmación del remito externo. Verifique Log.", EsError = true };
 			}
 		}
 	}

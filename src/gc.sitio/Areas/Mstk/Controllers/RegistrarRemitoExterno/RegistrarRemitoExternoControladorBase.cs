@@ -37,14 +37,15 @@ namespace gc.sitio.Areas.Mstk.Controllers.RegistrarRemitoExterno
 				EsError = false
 			};
 		}
-		internal RespuestaGenerica<EntidadBase> CrearRespuestaOk(string mensaje)
+		internal RespuestaGenericaExtendida<EntidadBase> CrearRespuestaOk(string mensaje, bool permite = false)
 		{
-			return new RespuestaGenerica<EntidadBase>
+			return new RespuestaGenericaExtendida<EntidadBase>
 			{
 				Mensaje = mensaje,
 				Ok = true,
 				EsWarn = false,
-				EsError = false
+				EsError = false,
+				Permite = permite,
 			};
 		}
 
@@ -64,6 +65,11 @@ namespace gc.sitio.Areas.Mstk.Controllers.RegistrarRemitoExterno
 				var json = JsonConvert.SerializeObject(value);
 				_context.HttpContext?.Session.SetString("ListaRemitoExternoValida", json);
 			}
+		}
+
+		public class RespuestaGenericaExtendida<T> : RespuestaGenerica<T>
+		{
+			public bool Permite { get; set; }
 		}
 	}
 }

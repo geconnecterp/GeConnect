@@ -126,23 +126,61 @@ function btnCargarClick() {
 	ValidarExistenciaDeProductos();
 }
 
+function LimpiarTablaDeProductos() {
+	PostGen({}, limpiarProductosCargadosURL, function (obj) {
+		CerrarWaiting();
+		if (obj.esError === true) {
+			AbrirMensaje("ATENCIÓN", obj.mensaje, function () {
+				$("#msjModal").modal("hide");
+				return true;
+			}, false, ["Aceptar"], "error!", null);
+		}
+		else if (obj.esWarn === true) {
+			AbrirMensaje("ATENCIÓN", obj.mensaje, function () {
+				$("#msjModal").modal("hide");
+				return true;
+			}, false, ["Aceptar"], "warn!", null);
+		}
+		else {
+			// ✔ Limpiar tabla
+			const tbody = $("#tbGridProductos tbody");
+			tbody.empty();
+			tbody.append(`
+				<tr class="fila-vacia">
+					<td colspan="8" class="text-center text-muted py-4">
+						<i class="bx bx-info-circle me-2"></i>
+						No hay items para mostrar.
+					</td>
+				</tr>
+			`);
+		}
+	});
+}
+
 function ValidarExistenciaDeProductos() {
 	var data = ArmarRequestParaBuscarProductos();
 	AbrirWaiting();
 	PostGen(data, validarExistenciaDeProdsURL, function (obj) {
 		CerrarWaiting();
 		if (obj.esError === true) {
-			AbrirMensaje("ATENCIÓN", obj.msg, function () {
+			AbrirMensaje("ATENCIÓN", obj.mensaje, function () {
 				$("#msjModal").modal("hide");
 				return true;
 			}, false, ["Aceptar"], "error!", null);
 		}
 		else if (obj.esWarn === true) {
-			AbrirMensaje("ATENCIÓN", obj.msg, function () {
+			AbrirMensaje("ATENCIÓN", obj.mensaje, function () {
 				$("#msjModal").modal("hide");
 				return true;
 			}, false, ["Aceptar"], "error!", null);
 		}
+		///IMPORTANTE!!! Descomentar este codigo en la version final, esta solo para propositos de prueba con comprobantes que no cumplen las condiciones y sirven para pruebas
+		// else if (obj.permite === false) {
+		// 	AbrirMensaje("ATENCIÓN", obj.mensaje, function () {
+		// 		$("#msjModal").modal("hide");
+		// 		return true;
+		// 	}, false, ["Aceptar"], "error!", null);
+		// }
 		else {
 			AbrirMensaje("ATENCIÓN", "¿El Comprobante ingresado posee productos, desea agregarlos al remito?", function (e) {
 				$("#msjModal").modal("hide");
@@ -166,6 +204,12 @@ function BuscarProductosDelComprobante() {
 	AbrirWaiting();
 	PostGenHtml({}, cargarProductosDesdeComprobanteURL, function (obj) {
 		$("#divProductos").html(obj);
+		// Mover el acordeón al contenedor superior
+		var info = $("#divProductos").find("#infoComprobanteRendered");
+
+		if (info.length) {
+			$("#infoComprobanteContainer").html(info);
+		}
 		CerrarWaiting();
 	}, function (obj) {
 		ControlaMensajeError(obj.message);
@@ -195,6 +239,8 @@ function CancelarRemito() {
 	$("#btnCargar").prop("disabled", false);
 	$("#btnConfirmar").prop("disabled", true);
 	$("#btnCancelar").prop("disabled", true);
+
+	LimpiarTablaDeProductos();
 
 	console.log("CancelarRemito");
 }
@@ -226,7 +272,8 @@ function ArmarRequestParaBuscarProductos() {
 			tco_id: $("#listaTipoComprobante").val(),
 			cm_compte: $("#PtoVta").inputmask('unmaskedvalue').padStart(4, '0') + "-" + $("#NroComprobante").inputmask('unmaskedvalue').padStart(8, '0'),
 			pre_id: "",
-			box_id: $("#listaBoxes").val()
+			box_id: $("#listaBoxes").val(),
+			depo_id: $("#listaDeposito").val()
 		};
 	}
 
@@ -236,7 +283,8 @@ function ArmarRequestParaBuscarProductos() {
 			tco_id: "",
 			cm_compte: "",
 			pre_id: $("#NroCotizacion").val(),
-			box_id: $("#listaBoxes").val()
+			box_id: $("#listaBoxes").val(),
+			depo_id: $("#listaDeposito").val()
 		};
 	}
 
@@ -246,7 +294,8 @@ function ArmarRequestParaBuscarProductos() {
 			tco_id: "",
 			cm_compte: "",
 			pre_id: "",
-			box_id: $("#listaBoxes").val()
+			box_id: $("#listaBoxes").val(),
+			depo_id: $("#listaDeposito").val()
 		};
 	}
 }
@@ -392,29 +441,7 @@ $("#Rel03").autocomplete({
 
 function VerificarExistenciaDeProductosDesdeComprobantes(datos) {
 
-	PostGen(datos, validarExistenciaDeProdsURL, function (o) {
 
-		CerrarWaiting();
-
-		if (o.error === true) {
-
-			AbrirMensaje("Atención", o.msg, function () {
-				$("#msjModal").modal("hide");
-				return true;
-			}, false, ["Aceptar"], "error!", null);
-
-		} else if (o.warn === true) {
-
-			AbrirMensaje("Atención", o.msg, function () {
-				$("#msjModal").modal("hide");
-				return true;
-			}, false, ["Aceptar"], "warn!", null);
-
-		} else {
-			// OK
-			//Mostrar mensaje OK Cancel para levantar los productos del comprobante
-		}
-	});
 }
 
 function cargarProductos() {
@@ -426,7 +453,7 @@ function EliminarProducto(id) {
 function InicializaPantalla() {
 }
 
-function verificaEstado(e) {
+async function verificaEstado(e) {
 	FunctionCallback = null; //inicializo funcion por si tiene alguna funcionalidad asignada.
 	var res = $("#estadoFuncion").val();
 	CerrarWaiting();
@@ -434,43 +461,86 @@ function verificaEstado(e) {
 		//traigo la variable productoBase e hidrato componentes
 		var prod = productoBase;
 
-		$("#ProdID").val(prod.p_id);
-		$("#ProdNombre").text(prod.p_desc);
-		$("#estadoFuncion").val(false);
-		$("#UpID").val(prod.up_id);
-		$("#BarradoID").val(prod.p_id_barrado);
-		$("#ProvID").val(prod.p_id_prov);
-		$("#txtUP").mask("000.000.000.000", { reverse: true });
-		$("txtBto").mask('#,##0', {
-			reverse: true,
-			translation: {
-				'#': {
-					pattern: /-|\d/,
-					recursive: true
-				}
-			},
-			onChange: function (value, e) {
-				e.target.value = value.replace(/(?!^)-/g, '').replace(/^,/, '').replace(/^-,/, '-');
-			}
-		});
-
-		$("#ProdUP").val(prod.p_unidad_pres).prop("disabled", false);
-		$("#ProdBto").val(prod.bulto).prop("disabled", false);
-		$("#ProdUnid").mask("000.000.000.000", { reverse: true });
-
-		if (prod.up_id !== "07") {  //unidades enteras
-			// $("#box").mask("000.000.000.000,00", { reverse: true });
-			$("#ProdUnid").mask("000.000.000.000,00", { reverse: true });
-			$("#ProdUnid").val(0).prop("disabled", false);
+		let tipo = $("input[name='TipoRelacion']:checked").val();
+		if (tipo === "Factura" || tipo === "Cotizacion") {
+			const ok = await ValidarExistenciaDeProducto(prod.p_id);
+			if (!ok) return;   // corta el flujo
+			// seguir con la carga
+			ProcesarCargaProducto(prod);
 		}
-		else { //unidades decimales
-			//$("#txtUnid").val(0).prop("disabled", true);
-		}
-		$("#Busqueda").val("");
-		if (prod.p_con_vto !== "N") {
-		} else {
-		}
-		$("#ProdUP").focus();
+		ProcesarCargaProducto(prod);
 	}
 	return true;
+}
+
+function ProcesarCargaProducto(prod) {
+	$("#ProdID").val(prod.p_id);
+	$("#ProdNombre").text(prod.p_desc);
+	$("#estadoFuncion").val(false);
+	$("#UpID").val(prod.up_id);
+	$("#BarradoID").val(prod.p_id_barrado);
+	$("#ProvID").val(prod.p_id_prov);
+	$("#txtUP").mask("000.000.000.000", { reverse: true });
+	$("txtBto").mask('#,##0', {
+		reverse: true,
+		translation: {
+			'#': {
+				pattern: /-|\d/,
+				recursive: true
+			}
+		},
+		onChange: function (value, e) {
+			e.target.value = value.replace(/(?!^)-/g, '').replace(/^,/, '').replace(/^-,/, '-');
+		}
+	});
+
+	$("#ProdUP").val(prod.p_unidad_pres).prop("disabled", false);
+	$("#ProdBto").val(prod.bulto).prop("disabled", false);
+	$("#ProdUnid").mask("000.000.000.000", { reverse: true });
+
+	if (prod.up_id !== "07") {  //unidades enteras
+		// $("#box").mask("000.000.000.000,00", { reverse: true });
+		$("#ProdUnid").mask("000.000.000.000,00", { reverse: true });
+		$("#ProdUnid").val(0).prop("disabled", false);
+	}
+	else { //unidades decimales
+		//$("#txtUnid").val(0).prop("disabled", true);
+	}
+	$("#Busqueda").val("");
+	if (prod.p_con_vto !== "N") {
+	} else {
+	}
+	$("#ProdUP").focus();
+}
+
+///Funcion para validar la existencia del prudcto agregado en el comprobante 
+function ValidarExistenciaDeProducto(p_id) {
+	return new Promise(function (resolve) {
+		AbrirWaiting("Validando existencia de producto en comprobante...");
+		PostGen({ pId: p_id }, validarExistenciaDeProductoUrl, function (o) {
+			CerrarWaiting();
+			if (o.esError === true) {
+				AbrirMensaje("Atención", o.mensaje, function () {
+					$("#msjModal").modal("hide");
+					resolve(false);
+				}, false, ["Aceptar"], "error!", null);
+				return;
+			}
+			if (o.esWarn === true) {
+				AbrirMensaje("Atención", o.mensaje, function () {
+					$("#msjModal").modal("hide");
+					resolve(false);
+				}, false, ["Aceptar"], "warn!", null);
+				return;
+			}
+			if (o.permite === false) {
+				AbrirMensaje("ATENCIÓN", o.mensaje, function () {
+					$("#msjModal").modal("hide");
+					resolve(false);
+				}, false, ["Aceptar"], "error!", null);
+				return;
+			}
+			resolve(true);
+		});
+	});
 }

@@ -15,5 +15,6 @@ namespace gc.sitio.core.Servicios.Contratos
         Task<RespuestaDto> RTRCargarConteos(List<ProductoGenDto> lista,bool esModificacion, string token);
         Task<List<RTRxULDto>> RTRCargarConteosXUL(string reCompte, string token);
 		Task<RespuestaGenerica<RemitoExternoValidaDto>> CargarProductosDesdeComprobante(RemitoExternoValidaRequest request, string token);
+		RespuestaGenerica<RespuestaDto> ConfirmarRemitoExterno(ConfirmarRemitoExternoRequest request, string token);
 	}
 }

@@ -17,6 +17,6 @@ namespace gc.api.core.Contratos.Servicios
         RespuestaDto RTRCargarConteos(CargarJsonGenRequest request,bool esModificacion);
         List<RTRxULDto> RTRCargarConteosXUL(string reCompte);
         List<RemitoExternoValidaDto> CargarProductosDesdeComprobante(RemitoExternoValidaRequest request);
-
+        RespuestaDto ConfirmarRemitoExterno(ConfirmarRemitoExternoRequest request);
 	}
 }

@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Options;
 using Microsoft.Win32;
+using System.Reflection;
 
 namespace gc.sitio.Areas.Mstk.Controllers.RegistrarRemitoExterno
 {
@@ -107,15 +108,22 @@ namespace gc.sitio.Areas.Mstk.Controllers.RegistrarRemitoExterno
 					return Json(CrearRespuestaWarning("no se proporcionaron los datos de búsqueda."));
 				var lista = await _remitoServicio.CargarProductosDesdeComprobante(request, TokenCookie);
 				if (!lista.Ok)
-					throw new NegocioException(lista.Mensaje ?? "No se ha podido obtener la lista de productos desde el comprobante.");
+				{
+					_logger?.LogError("Se ha producido un error al intentar encontrar los datos del comprobante.");
+					return Json(CrearRespuestaError("Se ha producido un error al intentar encontrar los datos del comprobante."));
+				}
 				if (lista.ListaEntidad == null || lista.ListaEntidad.Count() == 0)
 				{
-					_logger?.LogInformation("No se encontraron los datos de productos desde el comprobante");
-					return Json(CrearRespuestaWarning("No se encontraron los datos de productos desde el comprobante."));
+					_logger?.LogInformation("El comprobante no existe o no es un comprobante relacionado a una cotización.");
+					return Json(CrearRespuestaWarning("El comprobante no existe o no es un comprobante relacionado a una cotización."));
 				}
 				lista.ListaEntidad.ForEach(x => x.box_id = request.box_id);
 				ListaRemitoExternoValida = lista.ListaEntidad;
-				return Json(CrearRespuestaOk("Se encontraron los datos de productos desde el comprobante."));
+				var resultadoDeValidacion = PermiteCargaDeProductosEnRemito(ListaRemitoExternoValida);
+				if (resultadoDeValidacion.Resultado)
+					return Json(CrearRespuestaOk("Se encontraron los datos de productos desde el comprobante.", true));
+				else
+					return Json(CrearRespuestaOk(resultadoDeValidacion.Mensaje, false));
 			}
 			catch (NegocioException ex)
 			{
@@ -152,8 +160,156 @@ namespace gc.sitio.Areas.Mstk.Controllers.RegistrarRemitoExterno
 			}
 		}
 
+		public JsonResult LimpiarProductosCargados()
+		{
+			try
+			{
+				if (!VerificarAutenticacion(out IActionResult redirectResult))
+					return Json(redirectResult);
+
+				ListaRemitoExternoValida = [];
+				return Json(CrearRespuestaOk("Colección de productos eliminada.", false));
+			}
+			catch (NegocioException ex)
+			{
+				_logger?.LogError(ex, "Error");
+				return Json(CrearRespuestaWarning(ex.Message));
+			}
+			catch (Exception ex)
+			{
+				_logger?.LogError(ex, "Error");
+				return Json(CrearRespuestaError(ex.Message));
+			}
+		}
+
+		public JsonResult ValidarExistenciaDeProducto(string pId)
+		{
+			try
+			{
+				if (!VerificarAutenticacion(out IActionResult redirectResult))
+					return Json(redirectResult);
+
+				var producto = ListaRemitoExternoValida.Where(x => x.p_id == pId);
+				if (producto == null || producto.Count() <= 0)
+					return Json(CrearRespuestaOk("Producto inexistente en comprobante.", false));
+				if (producto.First().a_remitir > 0)
+					return Json(CrearRespuestaOk("Producto ingresado posee cantidad máxima a remitir mayor a 0.", false));
+				return Json(CrearRespuestaOk("", true));
+			}
+			catch (NegocioException ex)
+			{
+				_logger?.LogError(ex, "Error");
+				return Json(CrearRespuestaWarning(ex.Message));
+			}
+			catch (Exception ex)
+			{
+				_logger?.LogError(ex, "Error");
+				return Json(CrearRespuestaError(ex.Message));
+			}
+		}
+
+		[HttpPost]
+		public async Task<JsonResult> ConfirmarRemitoExterno(ConfirmarRemitoExternoRequest request)
+		{
+			string msg = "";
+			try
+			{
+				if (!VerificarAutenticacion(out IActionResult redirectResult))
+					return Json(redirectResult);
+				if (request == null)
+					return Json(new { error = true, msg = "No se recibieron los datos para la confirmación del remito." });
+
+				if (ListaRemitoExternoValida == null || ListaRemitoExternoValida.Count <= 0)
+					return Json(new { error = true, msg = "No se han incluido productos en el remito." });
+				var listaMapeada = MapearProductos(ListaRemitoExternoValida);
+
+				request.json = System.Text.Json.JsonSerializer.Serialize(listaMapeada);
+				PrintProperties(request);
+				var respuesta = _remitoServicio.ConfirmarRemitoExterno(request, TokenCookie);
+				return AnalizarRespuesta(respuesta, "La acción se ejecutó correctamente.");
+			}
+			catch (NegocioException ex)
+			{
+				return Json(new { error = false, warn = true, msg = ex.Message });
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, $"{this.GetType().Name}-{MethodBase.GetCurrentMethod()?.Name} Error al intentar confirmar");
+				msg = $"Hubo algún inconveniente al intentar Confirmar la Autorización.";
+			}
+
+			return Json(new { error = true, msg });
+		}
+
 		#region Metodos Privados
-		private void InicializarDatosDeSession(InitCargaRegExt model) 
+		private List<ProductoRemitoDto> MapearProductos(List<RemitoExternoValidaDto> origen)
+		{
+			if (origen == null || origen.Count == 0)
+				return [];
+
+			return origen.Select(x => new ProductoRemitoDto
+			{
+				p_id = x.p_id,
+				p_desc = x.p_desc,
+				depo_id = x.depo_id,
+				box_id = x.box_id,
+				up_id = x.up_id,
+
+				// Ajustá estos campos según tu lógica real
+				unidad_pres = (int)x.pre_cantidad,   // ejemplo
+				bulto = x.pre_cantidad,              // ejemplo
+				us = x.pre_cantidad_ent,             // ejemplo
+				cantidad = x.pre_cantidad            // ejemplo
+
+			}).ToList();
+		}
+		private ResultadoValidacionRemito PermiteCargaDeProductosEnRemito(List<RemitoExternoValidaDto> lista)
+		{
+			if (lista == null || lista.Count == 0)
+				return new ResultadoValidacionRemito
+				{
+					Resultado = false,
+					Mensaje = "No existen productos asociados al comprobante."
+				};
+
+			var item = lista.First();
+			if ((item.pree_id != "F" && item.pree_id != "R") && item.pret_id != "F")
+				return new ResultadoValidacionRemito
+				{
+					Resultado = false,
+					Mensaje = "El comprobante no permite carga de productos debido a su estado."
+				};
+
+			var fechaLimite = DateTime.Now.AddDays(-60);
+			if (item.pre_fecha < fechaLimite)
+				return new ResultadoValidacionRemito
+				{
+					Resultado = false,
+					Mensaje = "El comprobante tiene más de 60 días y no permite carga de productos."
+				};
+
+			if (lista.Exists(x => x.pre_cantidad_ent < x.pre_cantidad))
+				return new ResultadoValidacionRemito
+				{
+					Resultado = false,
+					Mensaje = "Existen ítems con cantidad entregada menor a la cantidad comprada."
+				};
+
+			return new ResultadoValidacionRemito
+			{
+				Resultado = true,
+				Mensaje = "Validación correcta. Se permite la carga de productos."
+			};
+		}
+
+
+		public class ResultadoValidacionRemito
+		{
+			public bool Resultado { get; set; }
+			public string Mensaje { get; set; } = "";
+		}
+
+		private void InicializarDatosDeSession(InitCargaRegExt model)
 		{
 			if (ProveedoresLista.Count == 0)
 				ObtenerProveedores(_cuentaServicio, "BI");

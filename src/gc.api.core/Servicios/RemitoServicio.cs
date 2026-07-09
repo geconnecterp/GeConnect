@@ -9,16 +9,15 @@ using gc.infraestructura.Dtos.Almacen.Tr.Request;
 using gc.infraestructura.Dtos.Gen;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Options;
-using System.Security.Cryptography;
 
 namespace gc.api.core.Servicios
 {
-    public class RemitoServicio : Servicio<Remito>, IRemitoServicio
+	public class RemitoServicio : Servicio<Remito>, IRemitoServicio
 	{
 		public RemitoServicio(IUnitOfWork uow, IOptions<PaginationOptions> options) : base(uow, options)
 		{
 		}
-		public List<RemitoGenDto> ObtenerRemitosPendientes(string admId,string reeId="%")
+		public List<RemitoGenDto> ObtenerRemitosPendientes(string admId, string reeId = "%")
 		{
 			var sp = Constantes.ConstantesGC.StoredProcedures.SP_RTR_Pendientes;
 			var ps = new List<SqlParameter>()
@@ -65,29 +64,29 @@ namespace gc.api.core.Servicios
 			return listaTemp;
 		}
 
-        public RespuestaDto VerificaProductoEnRemito(string remCompte, string pId)
-        {
-            var sp = Constantes.ConstantesGC.StoredProcedures.SP_RTR_Verifica_Producto;
-            var ps = new List<SqlParameter>()
-            {
-                    new("@re_compte",remCompte),
-                    new("@p_id",pId)
-            };
-            var resp = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
-            return resp.First();
-        }
+		public RespuestaDto VerificaProductoEnRemito(string remCompte, string pId)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_RTR_Verifica_Producto;
+			var ps = new List<SqlParameter>()
+			{
+					new("@re_compte",remCompte),
+					new("@p_id",pId)
+			};
+			var resp = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
+			return resp.First();
+		}
 
-        public RespuestaDto RTRCargarConteos(CargarJsonGenRequest request, bool esModificacion)
-        {
-            var sp = Constantes.ConstantesGC.StoredProcedures.SP_RTR_Cargar_Conteos;
-            var ps = new List<SqlParameter>()
-            {
-                new("@json",request.json_str),
-                new("@ul_modifica",esModificacion),     				
-            };
-            var resp = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
-            return resp.First();
-        }
+		public RespuestaDto RTRCargarConteos(CargarJsonGenRequest request, bool esModificacion)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_RTR_Cargar_Conteos;
+			var ps = new List<SqlParameter>()
+			{
+				new("@json",request.json_str),
+				new("@ul_modifica",esModificacion),
+			};
+			var resp = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
+			return resp.First();
+		}
 
 		public List<RTRxULDto> RTRCargarConteosXUL(string reCompte)
 		{
@@ -111,6 +110,24 @@ namespace gc.api.core.Servicios
 			};
 			var listaTemp = _repository.EjecutarLstSpExt<RemitoExternoValidaDto>(sp, ps, true);
 			return listaTemp;
+		}
+
+		public RespuestaDto ConfirmarRemitoExterno(ConfirmarRemitoExternoRequest request)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_RE_CONFIRMAR;
+			var ps = new List<SqlParameter>()
+			{
+					new("@opcion",request.opcion),
+					new("@cta_id",request.cta_id),
+					new("@cta_denominacion",request.cta_denominacion),
+					new("@tco_id",request.tco_id),
+					new("@cm_compte",request.cm_compte),
+					new("@pre_id",request.pre_id),
+					new("@pre_obs",request.pre_obs),
+					new("@json",request.json)
+			};
+			var resp = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
+			return resp.First();
 		}
 	}
 }
