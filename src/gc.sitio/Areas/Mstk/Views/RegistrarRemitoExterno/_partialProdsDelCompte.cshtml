@@ -10,6 +10,51 @@
 		max-width: 70px !important;
 		min-width: 70px !important;
 	}
+
+	.btn-icon-compact {
+		padding: 0.15rem 0.3rem;
+		font-size: 0.7rem;
+		line-height: 1;
+	}
+
+		.btn-icon-compact i {
+			font-size: 0.9rem;
+		}
+
+	/* Compactar filas de la tabla */
+	#tbGridProductos td,
+	#tbGridProductos th {
+		padding-top: 0.15rem !important;
+		padding-bottom: 0.15rem !important;
+		line-height: 1.1 !important;
+	}
+
+	/* Opcional: reducir altura mínima de la fila */
+	#tbGridProductos tr {
+		height: 24px !important;
+	}
+
+	#tbGridProductos .fila-vacia td {
+		padding-top: 0.3rem !important;
+		padding-bottom: 0.3rem !important;
+	}
+
+	.input-cantidad {
+		width: 60px !important;
+		text-align: right !important;
+		padding: 0 4px !important;
+		height: 22px !important; /* 🔥 Ajustá este valor a gusto */
+		line-height: 22px !important;
+		font-size: 0.75rem !important; /* Más compacto */
+	}
+
+	td.celda-a-remitir {
+		display: flex;
+		justify-content: flex-end;
+		align-items: center;
+		padding-top: 0 !important;
+		padding-bottom: 0 !important;
+	}
 </style>
 @if (Model != null && Model.ListaDatos != null && Model.ListaDatos.Any())
 {
@@ -39,6 +84,8 @@
 						<div class="col-md-5">
 							<label class="fw-bold">Cliente:</label>
 							<span>@h.cta_id - @h.cta_denominacion</span>
+							<input hidden id="cta_id" value="@h.cta_id"/>
+							<input hidden id="cta_denominacion" value="@h.cta_denominacion" />
 						</div>
 
 						<div class="col-md-3">
@@ -74,13 +121,14 @@
 				<th class="text-center fw-bold" title="Ya entregado">Ya Entr.</th>
 				<th class="text-center fw-bold" title="A entregar">A Entr.</th>
 				<th class="text-center fw-bold" title="A remitir">A Rem.</th>
+				<th class="text-center fw-bold">Acción</th>
 			</tr>
 		</thead>
 		<tbody>
 			@if (Model == null || Model.ListaDatos == null || !Model.ListaDatos.Any())
 			{
 				<tr class="fila-vacia">
-					<td colspan="8" class="text-center text-muted py-4">
+					<td colspan="9" class="text-center text-muted py-4">
 						<i class="bx bx-info-circle me-2"></i>
 						No hay items para mostrar.
 					</td>
@@ -94,9 +142,20 @@
 					if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
 					<tr class="@clase row-ajuste"
 						data-p-id="@item.p_id"
+						data-p-desc="@item.p_desc"
 						data-pre-id="@item.pre_id"
 						data-pree-id="@item.pree_id"
-						data-pret-od="@item.pret_id">
+						data-pret-id="@item.pret_id"
+						data-up-id="@item.up_id"
+						data-depo-id="@item.depo_id"
+						data-box-id="@item.box_id"
+						data-unidad-pres="@item.unidad_pres"
+						data-bulto="@item.bulto"
+						data-us="@item.us"
+						data-cta-id="@item.cta_id"
+						data-cta-denominacion="@item.cta_denominacion"
+						data-tco-id="@item.tco_id"
+						data-cm-compte="@item.cm_compte">
 						<td class="text-center">@item.p_id</td>
 						<td class="text-start">@item.p_desc</td>
 						<td class="text-center">@item.p_id_prov</td>
@@ -104,7 +163,25 @@
 						<td class="text-end">@GridHelper.FormatearDato(item.pre_cantidad, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
 						<td class="text-end">@GridHelper.FormatearDato(item.pre_cantidad_ent, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
 						<td class="text-end">@GridHelper.FormatearDato(a_entregar, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
-						<td class="text-end">@GridHelper.FormatearDato(item.a_remitir, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
+						<td class="text-end celda-a-remitir">
+							<input type="text"
+								   class="form-control form-control-sm editor-celda input-cantidad"
+								   value="@GridHelper.FormatearDato(item.a_remitir, GridHelper.FormatDato.Monto, item.PermiteDecimales)"
+								   data-original="@item.a_remitir"
+								   data-permite-decimales="@(item.PermiteDecimales.ToString().ToLower())" />
+						</td>
+						<td class="text-center">
+							<div class="d-flex justify-content-center gap-1">
+								<button class="btn btn-sm btn-danger btn-icon-compact btnQuitarProducto"
+										data-p-id="@item.p_id"
+										data-pree-id="@item.pree_id"
+										data-pret-id="@item.pret_id"
+										data-pre-id="@item.pre_id"
+										title="Quitar producto del remito externo">
+									<i class="bx bx-trash"></i>
+								</button>
+							</div>
+						</td>
 					</tr>
 				}
 			}

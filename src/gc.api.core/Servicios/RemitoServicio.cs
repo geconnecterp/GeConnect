@@ -114,20 +114,56 @@ namespace gc.api.core.Servicios
 
 		public RespuestaDto ConfirmarRemitoExterno(ConfirmarRemitoExternoRequest request)
 		{
+			// Normalizar valores vacíos → null
+			string tco_id = string.IsNullOrWhiteSpace(request.tco_id) ? null : request.tco_id;
+			string cm_compte = string.IsNullOrWhiteSpace(request.cm_compte) ? null : request.cm_compte;
+			string pre_id = string.IsNullOrWhiteSpace(request.pre_id) ? null : request.pre_id;
+
 			var sp = Constantes.ConstantesGC.StoredProcedures.SP_RE_CONFIRMAR;
+
 			var ps = new List<SqlParameter>()
 			{
-					new("@opcion",request.opcion),
-					new("@cta_id",request.cta_id),
-					new("@cta_denominacion",request.cta_denominacion),
-					new("@tco_id",request.tco_id),
-					new("@cm_compte",request.cm_compte),
-					new("@pre_id",request.pre_id),
-					new("@pre_obs",request.pre_obs),
-					new("@json",request.json)
+				new("@opcion", request.opcion),
+				new("@cta_id", request.cta_id),
+				new("@tco_id", (object)tco_id ?? DBNull.Value),
+				new("@cm_compte", (object)cm_compte ?? DBNull.Value),
+				new("@pre_id", (object)pre_id ?? DBNull.Value),
+				new("@re_obs", request.re_obs),
+				new("@adm_id", request.adm_id),
+				new("@usu_id", request.usu_id),
+				new("@json", request.json)
 			};
+
 			var resp = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
 			return resp.First();
 		}
+
+
+		//public RespuestaDto ConfirmarRemitoExterno(ConfirmarRemitoExternoRequest request)
+		//{
+		//	// Normalizar valores vacíos → string vacío
+		//	string tco_id = string.IsNullOrWhiteSpace(request.tco_id) ? "" : request.tco_id;
+		//	string cm_compte = string.IsNullOrWhiteSpace(request.cm_compte) ? "" : request.cm_compte;
+		//	string pre_id = string.IsNullOrWhiteSpace(request.pre_id) ? "" : request.pre_id;
+
+		//	var sp = Constantes.ConstantesGC.StoredProcedures.SP_RE_CONFIRMAR;
+
+		//	var ps = new List<SqlParameter>()
+		//	{
+		//		new("@opcion", request.opcion),
+		//		new("@cta_id", request.cta_id),
+		//		new("@tco_id", tco_id),          // 🔥 ahora envía "" si venía vacío
+		//		new("@cm_compte", cm_compte),    // 🔥 idem
+		//		new("@pre_id", pre_id),          // 🔥 idem
+		//		new("@re_obs", request.re_obs),
+		//		new("@adm_id", request.adm_id),
+		//		new("@usu_id", request.usu_id),
+		//		new("@json", request.json)
+		//	};
+
+		//	var resp = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
+		//	return resp.First();
+		//}
+
 	}
 }

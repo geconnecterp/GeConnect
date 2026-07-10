@@ -342,7 +342,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 		{
 			try
 			{
-				ApiResponse<List<RespuestaDto>> apiResponse;
+				ApiResponse<RespuestaDto> apiResponse;
 
 				HelperAPI helper = new HelperAPI();
 
@@ -361,8 +361,8 @@ namespace gc.sitio.core.Servicios.Implementacion
 						_logger.LogWarning($"La API devolvió error.");
 						return new();
 					}
-					apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<RespuestaDto>>>(stringData) ?? throw new Exception("Error al deserializar la respuesta de la API.");
-					return new RespuestaGenerica<RespuestaDto>() { Entidad = apiResponse.Data.First() };
+					apiResponse = JsonConvert.DeserializeObject<ApiResponse<RespuestaDto>>(stringData) ?? throw new Exception("Error al deserializar la respuesta de la API.");
+					return new RespuestaGenerica<RespuestaDto>() { Entidad = apiResponse.Data };
 				}
 				else
 				{

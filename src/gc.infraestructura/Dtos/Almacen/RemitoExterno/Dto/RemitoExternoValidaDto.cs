@@ -42,6 +42,9 @@ namespace gc.infraestructura.Dtos
 		public string box_id { get; set; } = string.Empty;
 		public string depo_id { get; set; } = string.Empty;
 		public string up_id { get; set; } = string.Empty;
+		public int unidad_pres { get; set; }
+		public decimal bulto { get; set; }
+		public decimal us { get; set; }
 		public string up_desc { get; set; } = string.Empty;
 		public string up_tipo { get; set; } = string.Empty;
 		public bool PermiteDecimales => up_tipo == "P";

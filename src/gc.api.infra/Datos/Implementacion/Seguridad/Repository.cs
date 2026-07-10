@@ -148,7 +148,28 @@ namespace gc.api.infra.Datos.Implementacion
                 {
                     cmd.Parameters.Add(p);
                 }
-                cnn.Open();
+
+				// 🔥 DEBUG: imprimir comando SQL que se enviará
+				var sb = new StringBuilder();
+				sb.AppendLine($"EXEC {sp}");
+
+				foreach (SqlParameter p in cmd.Parameters)
+				{
+					string valor = p.Value == null || p.Value == DBNull.Value
+						? "NULL"
+						: $"'{p.Value}'";
+
+					sb.AppendLine($"    @{p.ParameterName} = {valor},");
+				}
+
+				// Quitar la última coma
+				string debugSql = sb.ToString().TrimEnd(',', '\r', '\n');
+
+				Console.WriteLine("SQL ENVIADO AL MOTOR:");
+				Console.WriteLine(debugSql);
+
+
+				cnn.Open();
                 using (var dr = _dbContext.ObtenerDatosDelCommand(cmd))
                 {
                     var mapper = new GenericDataMapper<S>();

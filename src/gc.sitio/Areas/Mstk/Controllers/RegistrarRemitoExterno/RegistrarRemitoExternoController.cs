@@ -117,7 +117,7 @@ namespace gc.sitio.Areas.Mstk.Controllers.RegistrarRemitoExterno
 					_logger?.LogInformation("El comprobante no existe o no es un comprobante relacionado a una cotización.");
 					return Json(CrearRespuestaWarning("El comprobante no existe o no es un comprobante relacionado a una cotización."));
 				}
-				lista.ListaEntidad.ForEach(x => x.box_id = request.box_id);
+				lista.ListaEntidad.ForEach(x => { x.box_id = request.box_id; x.depo_id = request.depo_id; x.a_remitir = (x.pre_cantidad - x.pre_cantidad_ent); });
 				ListaRemitoExternoValida = lista.ListaEntidad;
 				var resultadoDeValidacion = PermiteCargaDeProductosEnRemito(ListaRemitoExternoValida);
 				if (resultadoDeValidacion.Resultado)
@@ -219,11 +219,8 @@ namespace gc.sitio.Areas.Mstk.Controllers.RegistrarRemitoExterno
 				if (request == null)
 					return Json(new { error = true, msg = "No se recibieron los datos para la confirmación del remito." });
 
-				if (ListaRemitoExternoValida == null || ListaRemitoExternoValida.Count <= 0)
-					return Json(new { error = true, msg = "No se han incluido productos en el remito." });
-				var listaMapeada = MapearProductos(ListaRemitoExternoValida);
-
-				request.json = System.Text.Json.JsonSerializer.Serialize(listaMapeada);
+				request.adm_id = AdministracionId;
+				request.usu_id = UserName;
 				PrintProperties(request);
 				var respuesta = _remitoServicio.ConfirmarRemitoExterno(request, TokenCookie);
 				return AnalizarRespuesta(respuesta, "La acción se ejecutó correctamente.");
@@ -254,11 +251,9 @@ namespace gc.sitio.Areas.Mstk.Controllers.RegistrarRemitoExterno
 				depo_id = x.depo_id,
 				box_id = x.box_id,
 				up_id = x.up_id,
-
-				// Ajustá estos campos según tu lógica real
-				unidad_pres = (int)x.pre_cantidad,   // ejemplo
-				bulto = x.pre_cantidad,              // ejemplo
-				us = x.pre_cantidad_ent,             // ejemplo
+				unidad_pres = x.unidad_pres,   // ejemplo
+				bulto = x.bulto,              // ejemplo
+				us = x.us,             // ejemplo
 				cantidad = x.pre_cantidad            // ejemplo
 
 			}).ToList();

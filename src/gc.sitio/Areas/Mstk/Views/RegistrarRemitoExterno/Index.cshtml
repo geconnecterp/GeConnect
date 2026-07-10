@@ -223,7 +223,8 @@
 					<input id="UpID" name="UpID" type="hidden" value="">
 					<input id="BarradoID" name="BarradoID" type="hidden" value="">
 					<input id="ProvID" name="ProvID" type="hidden" value="">
-					<input id="BarradoID" name="BarradoID" type="hidden" value="">
+					<input id="BoxID" name="BoxID" type="hidden" value="">
+					<input id="DepoID" name="DepoID" type="hidden" value="">
 					<!-- Nombre dinámico -->
 					<div class="col d-flex align-items-center">
 						<label class="me-2 mb-0">Nombre:</label>
@@ -261,13 +262,6 @@
 								title="Agregar producto">
 							<i class="bx bx-plus"></i>
 						</button>
-
-						<button type="button"
-								id="btnQuitarProducto"
-								class="btn btn-sm btn-danger btn-icon-compact"
-								title="Quitar producto">
-							<i class="bx bx-trash"></i>
-						</button>
 					</div>
 				</div>
 			</div>
@@ -282,14 +276,15 @@
 								<th class="text-center fw-bold">ID Prov</th>
 								<th class="text-center fw-bold">Box</th>
 								<th class="text-center fw-bold" title="Cantidad Comprada">Cant. Comp.</th>
-								<th class="text-center fw-bold" title="Ya entregado">Ya Entr./th>
+								<th class="text-center fw-bold" title="Ya entregado">Ya Entr.</th>
 								<th class="text-center fw-bold" title="A entregar">A Entr.</th>
 								<th class="text-center fw-bold" title="A remitir">A Rem.</th>
+								<th class="text-center fw-bold">Acción</th>
 							</tr>
 						</thead>
 						<tbody>
 							<tr>
-								<td colspan="8" class="text-center text-muted py-4">
+								<td colspan="9" class="text-center text-muted py-4">
 									<i class="bx bx-info-circle me-2"></i>
 										No hay items para mostrar.
 								</td>
