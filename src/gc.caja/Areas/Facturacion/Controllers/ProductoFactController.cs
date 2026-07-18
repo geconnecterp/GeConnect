@@ -8,6 +8,7 @@ using gc.infraestructura.Dtos.Cajas.Request;
 using gc.infraestructura.Dtos.Cajas.Response;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.Productos;
+using gc.infraestructura.Dtos.Productos.Precio;
 using gc.infraestructura.EntidadesComunes.Options;
 using gc.infraestructura.Enumeraciones;
 using Microsoft.AspNetCore.Authorization;
@@ -200,25 +201,13 @@ namespace gc.caja.Areas.Facturacion.Controllers
                 _logger?.LogInformation($"   - Lista Precios (Min): {cajaActual.Caja.lp_id_min}");
                 _logger?.LogInformation($"   - Lista Precios (Max): {cajaActual.Caja.lp_id_may}");
 
-                // ❹ DETERMINAR LISTA DE PRECIOS
-                string listaPreciosId;
-                string origenUpper = clienteActual.Origen?.ToUpper() ?? "F";
-
-                if (origenUpper == "F") // Consumidor Final
+                // La lista activa de la operación se determina al cargar el cliente y
+                // sólo puede cambiar mediante el circuito de autorización remota.
+                string listaPreciosId = LP_Id;
+                string origenUpper = clienteActual.Origen?.ToUpperInvariant() ?? "F";
+                if (string.IsNullOrWhiteSpace(listaPreciosId))
                 {
-                    listaPreciosId = cajaActual.Caja.lp_id_min ?? string.Empty;
-                    _logger?.LogInformation($"✅ Cliente Consumidor Final → Lista de Precios MIN: {listaPreciosId}");
-                }
-                else if (origenUpper == "C") // Cliente Registrado
-                {
-                    listaPreciosId = cajaActual.Caja.lp_id_may ?? string.Empty;
-                    _logger?.LogInformation($"✅ Cliente Registrado → Lista de Precios MAX: {listaPreciosId}");
-                }
-                else
-                {
-                    // Fallback: usar mínima
-                    listaPreciosId = cajaActual.Caja.lp_id_min ?? string.Empty;
-                    _logger?.LogWarning($"⚠️ Origen desconocido '{origenUpper}' → Usando Lista de Precios MIN: {listaPreciosId}");
+                    return Json(new { ok = false, mensaje = "No hay una lista de precios activa para la operación." });
                 }
 
                 if (string.IsNullOrEmpty(listaPreciosId))
@@ -577,7 +566,11 @@ namespace gc.caja.Areas.Facturacion.Controllers
                 }
 
                 // ✅ CRÍTICO: Usa lp_id del parámetro si viene, sino de sesión
-                lp_id = string.IsNullOrEmpty(lp_id) ? LP_Id : lp_id;
+                lp_id = LP_Id;
+                if (string.IsNullOrWhiteSpace(lp_id))
+                {
+                    return Json(new { ok = false, mensaje = "No hay una lista de precios activa para la operación." });
+                }
 
                 // ✅ Delegación al método base optimizado
                 return await BusquedaAvanzadaV02(
@@ -685,6 +678,10 @@ namespace gc.caja.Areas.Facturacion.Controllers
 
                 if (string.IsNullOrEmpty(request.caja_nro_proceso))
                     request.caja_nro_proceso = cajaActual.Caja.caja_nro_proceso ?? string.Empty;
+
+                request.lp_id = LP_Id;
+                if (string.IsNullOrWhiteSpace(request.lp_id))
+                    return Json(new { ok = false, mensaje = "No hay una lista de precios activa para la operación." });
 
                 // ❻ VALIDAR DATOS DE CLIENTE
                 var clienteActual = ClienteActual;
@@ -829,7 +826,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
         /// <summary>
         /// ✅ NUEVO: Obtiene las listas de precios disponibles
         /// </summary>
-        [HttpPost]
+        [AcceptVerbs("GET", "POST")]
         public async Task<JsonResult> ObtenerListasPrecios()
         {
             try
@@ -843,22 +840,27 @@ namespace gc.caja.Areas.Facturacion.Controllers
                     return Json(new { ok = false, mensaje = "No hay caja abierta" });
                 }
 
-                // TODO: Implementar servicio que obtenga las listas de precios
-                // var resultado = await _productoFactServicio.ObtenerListasPrecios(TokenCookie);
-
-                // MOCK para desarrollo:
-                var listas = new[]
+                var resultado = await _productoFactServicio.ObtenerListasPrecios(TokenCookie);
+                if (!resultado.Ok)
                 {
-            new { lp_id = "001", lp_desc = "Mayorista" },
-            new { lp_id = "002", lp_desc = "Minorista" },
-            new { lp_id = "003", lp_desc = "Distribuidora" }
-        };
+                    return Json(new
+                    {
+                        ok = false,
+                        mensaje = resultado.Mensaje ?? "No se pudieron obtener las listas de precios."
+                    });
+                }
+
+                var listas = resultado.ListaEntidad ?? [];
+                var lpActualId = LP_Id?.Trim() ?? string.Empty;
+                var lpActual = listas.FirstOrDefault(x =>
+                    string.Equals(x.lp_id?.Trim(), lpActualId, StringComparison.OrdinalIgnoreCase));
 
                 return Json(new
                 {
                     ok = true,
                     listas = listas,
-                    lp_actual = LP_Id // Lista actual del usuario
+                    lp_actual = lpActualId,
+                    lp_actual_descripcion = lpActual?.lp_desc ?? string.Empty
                 });
             }
             catch (Exception ex)
@@ -872,36 +874,18 @@ namespace gc.caja.Areas.Facturacion.Controllers
         /// ✅ NUEVO: Cambia la lista de precios activa
         /// </summary>
         [HttpPost]
-        public async Task<JsonResult> CambiarListaPrecios(string lp_id)
+        public JsonResult CambiarListaPrecios(string lp_id)
         {
-            try
+            _logger?.LogWarning(
+                "Se rechazó un intento de cambio directo de lista de precios a {ListaPrecio}.",
+                lp_id);
+
+            Response.StatusCode = StatusCodes.Status409Conflict;
+            return Json(new
             {
-                if (!VerificarAutenticacion(out IActionResult redirectResult))
-                    return Json(new { ok = false, mensaje = "Sesión expirada" });
-
-                if (string.IsNullOrEmpty(lp_id))
-                {
-                    return Json(new { ok = false, mensaje = "Debe especificar una lista de precios" });
-                }
-
-                // TODO: Implementar servicio que cambie la lista de precios en sesión
-                // var resultado = await _productoFactServicio.CambiarListaPrecios(lp_id, TokenCookie);
-
-                // MOCK para desarrollo:LP_Id
-                LP_Id = lp_id; // Actualizar variable de sesión
-
-                return Json(new
-                {
-                    ok = true,
-                    mensaje = "Lista de precios cambiada exitosamente",
-                    lp_id = lp_id
-                });
-            }
-            catch (Exception ex)
-            {
-                _logger?.LogError(ex, "Error al cambiar lista de precios");
-                return Json(new { ok = false, mensaje = "Error al cambiar lista de precios" });
-            }
+                ok = false,
+                mensaje = "El cambio de lista de precios requiere autorización remota."
+            });
         }
 
         /// <summary>
@@ -1154,14 +1138,18 @@ namespace gc.caja.Areas.Facturacion.Controllers
                 }
 
                 // ❹ DETERMINAR LISTA DE PRECIOS, CANAL E IDENTIFICADOR
-                string listaPreciosId;
+                string listaPreciosId = LP_Id;
                 string canalId;
                 string identificadorCliente;
                 string origenUpper = clienteActual.Origen?.ToUpper() ?? "F";
 
+                if (string.IsNullOrWhiteSpace(listaPreciosId))
+                {
+                    return Json(new { ok = false, mensaje = "No hay una lista de precios activa para la operación." });
+                }
+
                 if (origenUpper == "F") // Consumidor Final
                 {
-                    listaPreciosId = cajaActual.Caja.lp_id_min ?? string.Empty;
                     canalId = clienteActual.ctc_id ?? "MI";
                     identificadorCliente = clienteActual.cta_documento ?? string.Empty;
 
@@ -1169,7 +1157,6 @@ namespace gc.caja.Areas.Facturacion.Controllers
                 }
                 else // Cliente Registrado
                 {
-                    listaPreciosId = cajaActual.Caja.lp_id_may ?? string.Empty;
                     canalId = clienteActual.ctc_id ?? "MA";
                     identificadorCliente = clienteActual.cta_id ?? string.Empty;
 
@@ -1588,15 +1575,18 @@ namespace gc.caja.Areas.Facturacion.Controllers
                 if (origenUpper == "F") // Consumidor Final
                 {
                     docu = clienteActual.cta_documento;
-                    LP_Id = cajaActual.Caja.lp_id_min;
                     _logger?.LogInformation($"✅ Cliente CF → Identificador (documento): {docu}");
                 }
                 else // Cliente Registrado
                 {
                     ctaId = clienteActual.cta_id;
                     docu = clienteActual.cta_documento;
-                    LP_Id = cajaActual.Caja.lp_id_may;
                     _logger?.LogInformation($"✅ Cliente Registrado → Identificador (cta_id): {ctaId}");
+                }
+
+                if (string.IsNullOrWhiteSpace(LP_Id))
+                {
+                    return Json(new { ok = false, mensaje = "No hay una lista de precios activa para la operación." });
                 }
 
                 // ❽ CONSTRUIR REQUEST DTO

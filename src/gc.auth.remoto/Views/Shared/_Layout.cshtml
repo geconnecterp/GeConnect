@@ -1,0 +1,78 @@
+﻿<!DOCTYPE html>
+@inject Microsoft.AspNetCore.Antiforgery.IAntiforgery Antiforgery
+<html lang="es">
+<head>
+    @{
+        var authenticatedUserId = ViewData["AuthenticatedUserId"]?.ToString()
+            ?? User.FindFirst("user")?.Value
+            ?? User.Identity?.Name
+            ?? string.Empty;
+        var authenticatedUserName = ViewData["AuthenticatedUserName"]?.ToString()
+            ?? User.FindFirst("nya")?.Value
+            ?? authenticatedUserId;
+        var initials = string.Join(string.Empty, authenticatedUserName
+            .Split(' ', StringSplitOptions.RemoveEmptyEntries)
+            .Take(2)
+            .Select(part => char.ToUpperInvariant(part[0])));
+    }
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Remote Authorizations</title>
+
+    <!-- API connection settings injected server-side — JS reads from here, no hardcoding -->
+    <meta name="api-hub-url" content="@(ViewData["ApiHubUrl"] ?? string.Empty)" />
+    <meta name="authenticated-user-id" content="@authenticatedUserId" />
+    <meta name="csrf-token" content="@Antiforgery.GetAndStoreTokens(Context).RequestToken" />
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body class="light-theme">
+    <div class="app-container">
+        <header class="app-header">
+            <div class="header-brand">
+                <div class="logo-icon"></div>
+                <h1>Autorizaciones Remotas</h1>
+            </div>
+            <div class="header-user">
+                @{
+                    var headerUserId = ViewData["AuthenticatedUserId"]?.ToString()
+                        ?? User.FindFirst("user")?.Value
+                        ?? User.Identity?.Name
+                        ?? string.Empty;
+                    var headerUserName = ViewData["AuthenticatedUserName"]?.ToString()
+                        ?? User.FindFirst("nya")?.Value
+                        ?? headerUserId;
+                    var headerInitials = string.Join(string.Empty, headerUserName
+                        .Split(' ', StringSplitOptions.RemoveEmptyEntries)
+                        .Take(2)
+                        .Select(part => char.ToUpperInvariant(part[0])));
+                }
+                <span class="user-avatar" aria-hidden="true">@headerInitials</span>
+                <div class="user-identity">
+                    <span class="user-name">@headerUserName</span>
+                    <span class="user-id">@headerUserId</span>
+                </div>
+                <form asp-area="Seguridad" asp-controller="Token" asp-action="Logout" method="post">
+                    <button type="submit" class="logout-button">Salir</button>
+                </form>
+            </div>
+        </header>
+
+        <main role="main" class="app-content">
+            @RenderBody()
+        </main>
+    </div>
+
+    <!-- jQuery -->
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <!-- SignalR Client from CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

@@ -64,6 +64,23 @@ namespace gc.infraestructura.Helpers
 				// 1) Que tenga setter (NO solo get)
 				if (!p.CanWrite)
 					continue;
+
+                var enumType = Nullable.GetUnderlyingType(p.PropertyType) ?? p.PropertyType;
+                if (enumType.IsEnum)
+                {
+                    if (HasColumn(dr, p.Name, ignoreCase)
+                        && dr[p.Name] != null
+                        && dr[p.Name] != DBNull.Value)
+                    {
+                        var rawValue = dr[p.Name];
+                        var enumValue = rawValue is string text
+                            ? Enum.Parse(enumType, text, ignoreCase: true)
+                            : Enum.ToObject(enumType, rawValue);
+                        p.SetValue(result, enumValue);
+                    }
+
+                    continue;
+                }
 			
                 if (p.PropertyType == typeof(string))
                 {

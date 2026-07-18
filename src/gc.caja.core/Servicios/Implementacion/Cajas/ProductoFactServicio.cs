@@ -9,6 +9,7 @@ using gc.infraestructura.Dtos.Almacen;
 using gc.infraestructura.Dtos.Cajas.Request;
 using gc.infraestructura.Dtos.Cajas.Response;
 using gc.infraestructura.Dtos.Gen;
+using gc.infraestructura.Dtos.Productos.Precio;
 using gc.infraestructura.EntidadesComunes.Options;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -33,11 +34,91 @@ namespace gc.caja.core.Servicios.Implementacion.Cajas
         private const string POST_OBTENER_COTIZACION = "/ObtenerCotizacion";
         private const string POST_CREAR_PREF_DIFERIDA = "/CrearPrefacturaDiferida";
         private const string POST_CREAR_PAGO_DIFERIDO = "/CrearPagoDiferido";
+        private const string GET_LISTAS_PRECIOS = "/api/ApiPrecioLista/ObtenerListaPrecios";
 
         
 
         public ProductoFactServicio(IOptions<AppSettings> options, ILogger<ProductoFactServicio> logger) : base(options, logger)
         {
+        }
+
+        public async Task<RespuestaGenerica<PrecioListaDto>> ObtenerListasPrecios(string token)
+        {
+            if (string.IsNullOrWhiteSpace(token))
+            {
+                throw new UnauthorizedException("Debe autenticarse nuevamente para continuar.");
+            }
+
+            try
+            {
+                var helper = new HelperAPI();
+                using var client = helper.InicializaCliente(token);
+                var link = $"{_appSettings.RutaBase}{GET_LISTAS_PRECIOS}";
+                using var response = await client.GetAsync(link);
+
+                if (response.StatusCode == HttpStatusCode.Unauthorized)
+                {
+                    throw new UnauthorizedException("Debe autenticarse nuevamente para continuar.");
+                }
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    var mensaje = await ReadApiErrorAsync(response);
+                    _logger.LogWarning(
+                        "No se pudo obtener el catálogo de listas de precios. Estado={StatusCode}, Detalle={Detalle}",
+                        (int)response.StatusCode,
+                        mensaje);
+
+                    return new RespuestaGenerica<PrecioListaDto>
+                    {
+                        Ok = false,
+                        EsError = true,
+                        Mensaje = mensaje,
+                        ListaEntidad = []
+                    };
+                }
+
+                var contenido = await response.Content.ReadAsStringAsync();
+                var apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<PrecioListaDto>>>(contenido);
+                if (apiResponse?.Data is null)
+                {
+                    return new RespuestaGenerica<PrecioListaDto>
+                    {
+                        Ok = false,
+                        EsError = true,
+                        Mensaje = "La API devolvió un catálogo de listas de precios inválido.",
+                        ListaEntidad = []
+                    };
+                }
+
+                var listas = apiResponse.Data
+                    .Where(x => !string.IsNullOrWhiteSpace(x.lp_id))
+                    .GroupBy(x => x.lp_id.Trim(), StringComparer.OrdinalIgnoreCase)
+                    .Select(x => x.First())
+                    .ToList();
+
+                return new RespuestaGenerica<PrecioListaDto>
+                {
+                    Ok = true,
+                    Mensaje = "OK",
+                    ListaEntidad = listas
+                };
+            }
+            catch (UnauthorizedException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error obteniendo el catálogo de listas de precios.");
+                return new RespuestaGenerica<PrecioListaDto>
+                {
+                    Ok = false,
+                    EsError = true,
+                    Mensaje = "No se pudo obtener el catálogo de listas de precios.",
+                    ListaEntidad = []
+                };
+            }
         }
 
         public async Task<RespuestaGenerica<ProductoDatosResponseDto>> ObtenerProductoDatos(ProductoDatosRequestDto req, string token)

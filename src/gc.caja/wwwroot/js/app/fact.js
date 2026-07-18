@@ -8,7 +8,7 @@ let modoEdicionCliente = false; // Control de modo edición
 let busquedaEnProceso = false; // ✅ NUEVO: Control de búsquedas concurrentes
 let ajaxActual = null; // ✅ NUEVO: Referencia al AJAX en curso para cancelación
 // ✅ NUEVA VARIABLE DE CONFIGURACIÓN
-let autoConfirmarClienteUnico = true; // ← Control del comportamiento
+let autoConfirmarClienteUnico = false; // La carga manual permite elegir LP antes de seguir.
 
 // ========================================
 // ✅ NUEVA SECCIÓN: SINCRONIZACIÓN CHECKBOX
@@ -177,9 +177,11 @@ function desbloquearInterfazBusqueda() {
 function actualizarEstadoBotonesAccion() {
     const hayCliente = clienteSeleccionado !== null;
     const esConsumidorFinal = hayCliente && clienteSeleccionado.origen && clienteSeleccionado.origen.toUpperCase() === 'F';
+    const hayListaPrecio = Boolean(window.obtenerListaPrecioActivaId?.());
 
     // Habilitar/deshabilitar botón SEGUIR
-    $('#btnSeguirCliente').prop('disabled', !hayCliente);
+    $('#btnSeguirCliente').prop('disabled', !hayCliente || !hayListaPrecio);
+    $('#btnListaPrecios').prop('disabled', !hayCliente || !hayListaPrecio);
 
     // Mostrar/ocultar botón EDITAR (solo para Consumidores Finales)
     if (esConsumidorFinal) {
@@ -208,11 +210,6 @@ function cancelarBusquedaActual() {
  */
 $(function () {
     console.log('🚀 Módulo de Facturación/Cliente Cargado');
-
-    // Define admLp_id si no existe para evitar errores en otros módulos
-    if (typeof admLp_id === 'undefined') {
-        window.admLp_id = "001";
-    }
 
     // Inicializa los eventos siempre, ya que son necesarios para el modal
     inicializaEventosFact();
@@ -281,10 +278,6 @@ function inicializaEventosFact() {
             return false;
         }
         $(this).data('lastValue', $(this).val());
-    });
-
-    $('#btnListaPrecios').on('click', function () {
-        console.log('🛍️ Abrir Lista de Precios...');
     });
 
     $('#btnNuevoCliente').on('click', function () {
@@ -415,8 +408,8 @@ function abrirModalIdentificarCliente() {
     $('#modalIdentificarCliente').modal('show');
 
     setTimeout(() => {
-        // ✅ NUEVO: Restaurar checkbox a activado
-        $('#chkAutoConfirmar').prop('checked', true).prop('disabled', false);
+        // El flujo manual deja disponible el cambio de LP antes de continuar.
+        $('#chkAutoConfirmar').prop('checked', false).prop('disabled', false);
         sincronizarAutoConfirmacion();
 
         $('#txtBuscarCliente').trigger("focus");
@@ -491,10 +484,10 @@ function limpiarModalCliente() {
 
     desbloquearInterfazBusqueda();
 
-    // ✅ NUEVO: Restaurar checkbox a ACTIVADO
-    $('#chkAutoConfirmar').prop('checked', true).prop('disabled', false);
+    // Mantener desactivada la confirmación automática por defecto.
+    $('#chkAutoConfirmar').prop('checked', false).prop('disabled', false);
     sincronizarAutoConfirmacion();
-    console.log('✅ Checkbox restaurado a ACTIVADO');
+    console.log('✅ Checkbox restaurado a modo manual');
 
     limpiarSesionClientesBuscados();
 
@@ -712,6 +705,7 @@ function mostrarDatosCliente(cliente) {
     $('#cardDatosCliente').show().removeClass('hide').addClass('show');
 
     clienteSeleccionado = cliente;
+    actualizarListaPreciosGlobal(null, cliente);
 
     // ✅ SIMPLIFICADO: Llamada única a la función que ahora tiene la lógica correcta
     actualizarEstadoBotonesAccion();
@@ -1192,6 +1186,7 @@ function mostrarDatosCliente(cliente) {
     $('#btnSeguirCliente').prop('disabled', false);
 
     clienteSeleccionado = cliente;
+    actualizarListaPreciosGlobal(null, cliente);
 
     // ✅ NUEVO: Actualizar estado de botones según cliente
     actualizarEstadoBotonesAccion();
@@ -1686,35 +1681,20 @@ function obtenerDescripcionTipoDoc(tdocId) {
 * @param {object} clienteData - Datos del cliente (opcional)
 */
 function actualizarListaPreciosGlobal(tipoCliente, clienteData = null) {
-    console.log('═══════════════════════════════════════════════════');
-    console.log('🔄 ACTUALIZAR LISTA DE PRECIOS GLOBAL');
-    console.log('═══════════════════════════════════════════════════');
-    console.log(`   Tipo de cliente: ${tipoCliente}`);
-
-    // ✅ Lógica de negocio para determinar lista de precios
-    if (tipoCliente === "FINAL") {
-        // Consumidor final → Lista de precios 002 (Minorista)
-        admLp_id = "002";
-        console.log('   → Consumidor Final: Lista de precios MINORISTA (002)');
-    } else if (tipoCliente === "REGISTRADO") {
-        // Cliente registrado → Verificar su configuración
-        if (clienteData && clienteData.lp_id) {
-            admLp_id = clienteData.lp_id;
-            console.log(`   → Cliente Registrado: Lista de precios ${clienteData.lp_id}`);
-        } else {
-            // Por defecto: Lista de precios 001 (Mayorista)
-            admLp_id = "001";
-            console.log('   → Cliente Registrado (sin config): Lista de precios MAYORISTA (001)');
-        }
-    } else {
-        // Caso por defecto
-        admLp_id = "001";
-        console.log('   → Caso por defecto: Lista de precios MAYORISTA (001)');
-    }
-
-    console.log(`✅ Lista de precios actualizada globalmente: ${admLp_id}`);
-    console.log('═══════════════════════════════════════════════════');
+    const id = String(clienteData?.lp_id || clienteData?.listaPrecio || '').trim();
+    const descripcion = String(clienteData?.lp_desc || clienteData?.listaPrecioDescripcion || '').trim();
+    window.establecerListaPrecioActiva(id, descripcion);
+    $('#txtListaPrecioActual').val(
+        id ? `${id}${descripcion ? ` - ${descripcion}` : ''}` : 'Sin lista de precios activa'
+    );
 }
+
+window.aplicarListaPrecioAutorizadaUI = function (id, descripcion) {
+    if (!clienteSeleccionado) return;
+    clienteSeleccionado.lp_id = id;
+    clienteSeleccionado.listaPrecio = id;
+    clienteSeleccionado.listaPrecioDescripcion = descripcion || '';
+};
 
 /**
 * ✅ ACTUALIZADO: Confirma el cliente seleccionado
@@ -1766,7 +1746,7 @@ function obtenerClienteSeleccionadoUI() {
         origen: clienteSeleccionado.origen || '',
         tdocDesc: clienteSeleccionado.tdocDesc || '',
         documento: clienteSeleccionado.documento || '',
-        lp_id: clienteSeleccionado.lp_id || '001',
+        lp_id: window.obtenerListaPrecioActivaId?.() || clienteSeleccionado.lp_id || '',
         emite: clienteSeleccionado.emite || '',
         esConsumidorFinal: clienteSeleccionado.origen && clienteSeleccionado.origen.toUpperCase() === 'F',
         // ✅ NUEVO: Agregar campos adicionales necesarios para Cobranza Diferida

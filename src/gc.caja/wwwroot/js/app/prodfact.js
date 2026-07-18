@@ -129,6 +129,13 @@ function configurarListenersIntegracion() {
         mostrarSeccionProductos(clienteData);
     });
 
+    $(document).on('listaPrecioAutorizada', function (event, lista) {
+        if (!clienteActualFactura || !lista) return;
+        clienteActualFactura.lp_id = lista.id;
+        clienteActualFactura.listaPrecio = lista.id;
+        clienteActualFactura.listaPrecioDescripcion = lista.descripcion || '';
+    });
+
     // ✅ Escuchar evento quando se cancela/limpia el cliente
     $(document).on('clienteCancelado', function () {
         console.log('📡 EVENTO RECIBIDO: clienteCancelado');
@@ -1564,7 +1571,7 @@ function calcularTotalFactura() {
 
     const request = {
         productos: construirProductosDTO(),
-        lp_id: clienteActualFactura.listaPrecio || '001'
+        lp_id: window.obtenerListaPrecioActivaId?.() || ''
     };
 
     console.log('📤 Request a enviar:', request);
@@ -2066,7 +2073,7 @@ function confirmarFactura() {
         tot_rows: tot_rows,
         tot_cantidad: tot_cantidad,
         tot_pvta: tot_pvta,
-        lp_id: clienteActualFactura.listaPrecio || '001'
+        lp_id: window.obtenerListaPrecioActivaId?.() || ''
     };
 
     console.log('═══════════════════════════════════════════════════');

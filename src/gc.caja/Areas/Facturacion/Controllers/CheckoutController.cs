@@ -1065,7 +1065,6 @@ namespace gc.caja.Areas.Facturacion.Controllers
                     if (origenUpper == "F") // Consumidor Final
                     {
                         ctaId = string.Empty;
-                        LP_Id = cajaActual.Caja.lp_id_min;
                         coTipo = "CF";
 
                         _logger?.LogInformation($"✅ Cliente CF → Identificador (documento): {ctaId}");
@@ -1074,11 +1073,15 @@ namespace gc.caja.Areas.Facturacion.Controllers
                     else // Cliente Registrado
                     {
                         ctaId = clienteActual.cta_id ?? string.Empty;
-                        LP_Id = cajaActual.Caja.lp_id_may;
                         coTipo = "CR";
 
                         _logger?.LogInformation($"✅ Cliente Registrado → Identificador (cta_id): {ctaId}");
                         _logger?.LogInformation($"✅ co_tipo: {coTipo}");
+                    }
+
+                    if (string.IsNullOrWhiteSpace(LP_Id))
+                    {
+                        return Json(new { ok = false, mensaje = "No hay una lista de precios activa para la operación." });
                     }
                 }
 

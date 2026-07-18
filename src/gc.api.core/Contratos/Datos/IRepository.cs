@@ -24,6 +24,12 @@
         int InvokarSpNQuery(string sp, List<SqlParameter> parametros, bool esTransacciona = false, bool elUltimo = true);
         object InvokarSpScalar(string sp, List<SqlParameter>? parametros, bool esTransacciona = false, bool elUltimo = true,bool esSP=true);
         List<S> EjecutarLstSpExt<S>(string sp, List<SqlParameter> ps, bool ignoreCase = false) where S : class;
+        (List<S1> Primero, List<S2> Segundo) EjecutarSpDosResultados<S1, S2>(
+            string sp,
+            List<SqlParameter> parametros,
+            bool ignoreCase = false)
+            where S1 : class
+            where S2 : class;
         List<TResult> EjecutarLstFunction<TResult>(string sqlFunction, List<SqlParameter> parameters = null, bool esTransaccion = false) where TResult : class, new();
         /// <summary>
         /// Ejecuta una función escalar que retorna un valor único

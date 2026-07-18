@@ -1,0 +1,68 @@
+@model LoginViewModel
+@{
+    Layout = null;
+    ViewData["Title"] = "Ingreso";
+    var returnUrl = ViewData["ReturnUrl"] as string;
+}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Ingreso - Autorizaciones Remotas</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body class="light-theme login-page">
+    <main class="login-shell">
+        <section class="login-card" aria-labelledby="login-title">
+            <div class="login-brand">
+                <div class="logo-icon" aria-hidden="true"></div>
+                <div>
+                    <span class="login-kicker">GeConnect</span>
+                    <h1 id="login-title">Autorizaciones Remotas</h1>
+                </div>
+            </div>
+
+            <p class="login-intro">Ingrese con las mismas credenciales y administración que utiliza en GC Sitio.</p>
+
+            <form asp-area="Seguridad" asp-controller="Token" asp-action="Login"
+                  asp-route-returnUrl="@returnUrl" method="post" class="login-form">
+                <div asp-validation-summary="ModelOnly" class="validation-summary" role="alert"></div>
+
+                <div class="form-field">
+                    <label asp-for="UserName"></label>
+                    <input asp-for="UserName" autocomplete="username" autofocus />
+                    <span asp-validation-for="UserName" class="field-validation"></span>
+                </div>
+
+                <div class="form-field">
+                    <label asp-for="Password"></label>
+                    <input asp-for="Password" autocomplete="current-password" />
+                    <span asp-validation-for="Password" class="field-validation"></span>
+                </div>
+
+                <div class="form-field">
+                    <label asp-for="Admid"></label>
+                    <select asp-for="Admid" disabled="@(Model.Administraciones.Count == 0 ? "disabled" : null)">
+                        <option value="">Seleccione una administración</option>
+                        @foreach (var administration in Model.Administraciones)
+                        {
+                            <option value="@administration.Id">@administration.Descripcion</option>
+                        }
+                    </select>
+                    <span asp-validation-for="Admid" class="field-validation"></span>
+                </div>
+
+                <button type="submit" class="login-submit" disabled="@(Model.Administraciones.Count == 0 ? "disabled" : null)">
+                    Ingresar
+                </button>
+            </form>
+
+            <p class="login-date">@Model.Fecha.ToString("dd/MM/yyyy HH:mm")</p>
+        </section>
+    </main>
+</body>
+</html>

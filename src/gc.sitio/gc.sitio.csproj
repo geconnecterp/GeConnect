@@ -34,7 +34,7 @@
     <PackageReference Include="EPPlus" Version="8.0.8" />
     <PackageReference Include="ExcelDataReader" Version="3.8.0" />
     <PackageReference Include="log4net" Version="3.3.1" />
-    <PackageReference Include="MailKit" Version="4.15.0" />
+    <PackageReference Include="MailKit" Version="4.17.0" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="8.0.8" />
     <PackageReference Include="Microsoft.Extensions.Logging.Log4Net.AspNetCore" Version="8.0.0" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="8.0.7" />
