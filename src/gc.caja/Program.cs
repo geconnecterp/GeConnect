@@ -1,5 +1,7 @@
 ﻿using gc.caja.Models.Middleware;
 using gc.sitio.core.Extensions;
+using gc.caja.core.Autorizaciones;
+using gc.caja.Models;
 using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.EntidadesComunes.Options;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -10,6 +12,10 @@ using System.Globalization;
 var builder = WebApplication.CreateBuilder(args);
 builder.Logging.AddLog4Net("log4net.config", watch: true);
 builder.Services.Configure<AppSettings>(builder.Configuration.GetSection("AppSettings"));
+builder.Services.Configure<AutorizacionRemotaOptions>(
+    builder.Configuration.GetSection(AutorizacionRemotaOptions.Seccion));
+builder.Services.Configure<CambioListaPrecioOptions>(
+    builder.Configuration.GetSection(CambioListaPrecioOptions.Seccion));
 //builder.Services.Configure<CajaSettings>(builder.Configuration.GetSection("CajaSettings"));
 
 
@@ -63,6 +69,31 @@ builder.Services.AddServicios();
 
 builder.Services.AddRazorPages();
 builder.Services.AddHttpClient();
+builder.Services.AddHttpClient<IAutorizacionRemotaServicio, AutorizacionRemotaServicio>((services, client) =>
+{
+    var appOptions = services
+        .GetRequiredService<Microsoft.Extensions.Options.IOptions<AppSettings>>()
+        .Value;
+    var autorizacionOptions = services
+        .GetRequiredService<Microsoft.Extensions.Options.IOptions<AutorizacionRemotaOptions>>()
+        .Value;
+
+    var rutaBase = appOptions.RutaBase;
+    if (string.IsNullOrWhiteSpace(rutaBase))
+    {
+        throw new InvalidOperationException("Debe configurarse AppSettings:RutaBase.");
+    }
+
+    if (autorizacionOptions.TimeoutHttpSegundos <= 0)
+    {
+        throw new InvalidOperationException(
+            "AutorizacionRemota:TimeoutHttpSegundos debe ser mayor que cero.");
+    }
+
+    client.BaseAddress = new Uri(rutaBase.TrimEnd('/') + "/");
+    client.Timeout = TimeSpan.FromSeconds(autorizacionOptions.TimeoutHttpSegundos);
+});
+builder.Services.AddScoped<IAutorizacionRemotaOrquestador, AutorizacionRemotaOrquestador>();
 builder.Services.AddDistributedMemoryCache();
 
 builder.Services.AddHsts(opt =>

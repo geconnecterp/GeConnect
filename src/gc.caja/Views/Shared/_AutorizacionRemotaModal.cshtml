@@ -1,0 +1,61 @@
+@using gc.caja.core.Autorizaciones
+@using Microsoft.Extensions.Options
+@inject IOptions<AutorizacionRemotaOptions> AutorizacionOptions
+
+<div class="modal fade autorizacion-remota-modal"
+     id="modalAutorizacionRemota"
+     data-intervalo-consulta="@AutorizacionOptions.Value.IntervaloConsultaMilisegundos"
+     data-bs-backdrop="static"
+     data-bs-keyboard="false"
+     tabindex="-1"
+     role="dialog"
+     aria-labelledby="autorizacionRemotaTitulo"
+     aria-describedby="autorizacionRemotaMensaje"
+     aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header autorizacion-remota-header border-0">
+                <div class="d-flex align-items-center gap-3">
+                    <span class="autorizacion-remota-icono" aria-hidden="true">
+                        <i class="bx bx-shield-quarter"></i>
+                    </span>
+                    <div>
+                        <h5 class="modal-title mb-0" id="autorizacionRemotaTitulo">
+                            Esperando autorización
+                        </h5>
+                        <small class="opacity-75" id="autorizacionRemotaSubtitulo">
+                            La operación requiere confirmación remota
+                        </small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-body text-center px-4 py-4">
+                <div class="autorizacion-remota-indicador" id="autorizacionRemotaIndicador" aria-hidden="true">
+                    <div class="spinner-border text-warning" role="status">
+                        <span class="visually-hidden">Consultando autorización...</span>
+                    </div>
+                </div>
+
+                <p class="fs-5 fw-semibold mb-2" id="autorizacionRemotaMensaje" aria-live="polite">
+                    Solicitud enviada. Esperando la respuesta de un administrador.
+                </p>
+                <p class="text-muted mb-3" id="autorizacionRemotaDetalle">
+                    No cierre ni actualice esta pantalla.
+                </p>
+
+                <div class="autorizacion-remota-estado mx-auto">
+                    <span class="badge rounded-pill text-bg-warning" id="autorizacionRemotaEstado">
+                        PENDIENTE
+                    </span>
+                    <span class="autorizacion-remota-tiempo" id="autorizacionRemotaTiempo" aria-live="off"></span>
+                </div>
+
+                <div class="alert alert-warning mt-4 mb-0 py-2" role="note">
+                    <i class="bx bx-lock-alt me-1" aria-hidden="true"></i>
+                    El flujo continuará automáticamente cuando se resuelva la solicitud.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

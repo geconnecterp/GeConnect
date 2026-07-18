@@ -47,6 +47,9 @@ namespace gc.infraestructura.Core.EntidadesComunes.Options
         public string NotaCreditoDevolucionAfipId { get; set; } = "%";
         public string NotaCreditoDevolucionOptId { get; set; } = "VE";
         public string NotaCreditoReporteModo { get; set; } = "PANTALLA";
+        public string BaseUrl { get; set; } = string.Empty;
+        public string HubPath { get; set; } = string.Empty;
+        public string HubUrl => $"{BaseUrl.TrimEnd('/')}{HubPath}";
     }
     
 }

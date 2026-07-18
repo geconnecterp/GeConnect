@@ -8,5 +8,10 @@
         IRepository<T> GetRepository<T>() where T : EntidadBase;        
         int SaveChanges(bool process = true);
         Task<int> SaveChangesAsync(bool process = true);
+
+        long Complete();
+        void InicializarTransaccion();
+        void Commit();
+        void Rollback();
     }
 }

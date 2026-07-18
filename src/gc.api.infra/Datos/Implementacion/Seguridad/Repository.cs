@@ -26,6 +26,12 @@ namespace gc.api.infra.Datos.Implementacion
             _dbContext = new DataConnectionContext(contexto);
         }
 
+        internal Repository(IDataConnectionContext dataConnectionContext)
+        {
+            _dbContext = dataConnectionContext;
+            _contexto = dataConnectionContext.ObtenerDbContext();
+        }
+
         public T Find(object id)
         {
             return _contexto.Set<T>().Find(id);
@@ -161,6 +167,46 @@ namespace gc.api.infra.Datos.Implementacion
                 }
             }
             return resultado;
+        }
+
+        public (List<S1> Primero, List<S2> Segundo) EjecutarSpDosResultados<S1, S2>(
+            string sp,
+            List<SqlParameter> parametros,
+            bool ignoreCase = false)
+            where S1 : class
+            where S2 : class
+        {
+            var primero = new List<S1>();
+            var segundo = new List<S2>();
+
+            using var cnn = _dbContext.ObtenerConexionSql();
+            using var cmd = _dbContext.ObtenerCommandSql(cnn, CommandType.StoredProcedure);
+            cmd.CommandText = sp;
+            cmd.CommandTimeout = 600;
+
+            foreach (var parametro in parametros)
+            {
+                cmd.Parameters.Add(parametro);
+            }
+
+            cnn.Open();
+            using var reader = _dbContext.ObtenerDatosDelCommand(cmd);
+            var mapperPrimero = new GenericDataMapper<S1>();
+            while (reader.Read())
+            {
+                primero.Add(mapperPrimero.Map(reader, ignoreCase));
+            }
+
+            if (reader.NextResult())
+            {
+                var mapperSegundo = new GenericDataMapper<S2>();
+                while (reader.Read())
+                {
+                    segundo.Add(mapperSegundo.Map(reader, ignoreCase));
+                }
+            }
+
+            return (primero, segundo);
         }
 
         public List<T> InvokarSp2Lst(string sp, List<SqlParameter> parametros, bool ignoreCase = false)
@@ -396,7 +442,7 @@ namespace gc.api.infra.Datos.Implementacion
             resultado = cmd.ExecuteNonQuery();
             if (esTransacciona && elUltimo)
             {
-                _dbContext.GrabarCambios();
+                _dbContext.Commit();
             }
             //en caso de ser el ultimo item de ejecución se procederá a cerrar la conexión
             if (elUltimo)
@@ -440,7 +486,7 @@ namespace gc.api.infra.Datos.Implementacion
             resultado = cmd.ExecuteScalar();
             if (esTransacciona && elUltimo)
             {
-                _dbContext.GrabarCambios();
+                _dbContext.Commit();
             }
             //en caso de ser el ultimo item de ejecución se procederá a cerrar la conexión
             if (elUltimo)

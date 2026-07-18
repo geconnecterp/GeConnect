@@ -41,6 +41,11 @@ namespace gc.api.infra.Datos.Implementacion
             return manejador.sqlConnection;
         }
 
+        public GeConnectContext ObtenerDbContext()
+        {
+            return _context;
+        }
+
         private void GenerarConexion()
         {
             if (manejador.sqlConnection == null || string.IsNullOrWhiteSpace(manejador.sqlConnection.ConnectionString))
@@ -57,7 +62,7 @@ namespace gc.api.infra.Datos.Implementacion
         {
             if (grabarCambios)
             {
-                GrabarCambios();
+                Commit();
             }
             if (manejador.sqlTransaction != null)
             {
@@ -88,13 +93,18 @@ namespace gc.api.infra.Datos.Implementacion
             return cmd.ExecuteReader(CommandBehavior.CloseConnection);
         }
 
-        public void GrabarCambios()
+        public void Commit()
         {
             try
             {
                 if (manejador.sqlTransaction != null)
                 {
                     manejador.sqlTransaction.Commit();
+                    if (manejador.sqlConnection != null && manejador.sqlConnection.State == ConnectionState.Open)
+                        manejador.sqlConnection.Close();
+
+                    manejador.sqlTransaction.Dispose();
+                    manejador.sqlTransaction = null;
                 }
             }
             catch (Exception )
@@ -109,7 +119,7 @@ namespace gc.api.infra.Datos.Implementacion
             }
         }
 
-        public void DeshacerCambios()
+        public void Rollback()
         {
             try
             {
@@ -123,9 +133,20 @@ namespace gc.api.infra.Datos.Implementacion
                 // _logger.Log(LogLevel.Error, $"DatabaseContext - Error al Deshacer los datos: {ex.Message}");
                 throw;
             }
+            finally
+            {
+                if (manejador.sqlConnection != null
+                    && manejador.sqlConnection.State == ConnectionState.Open)
+                {
+                    manejador.sqlConnection.Close();
+                }
+
+                manejador.sqlTransaction?.Dispose();
+                manejador.sqlTransaction = null;
+            }
         }
 
-        public List<SqlParameter> InferirParametros<T>(T entidad, IEnumerable<string> excluir = null)
+        public List<SqlParameter> InferirParametros<T>(T entidad, IEnumerable<string>? excluir = null)
         {
             var parametros = new List<SqlParameter>();
 
@@ -153,13 +174,29 @@ namespace gc.api.infra.Datos.Implementacion
             GC.SuppressFinalize(this);
         }
 
-        
+        public SqlTransaction TransaccionAcual()
+        {
+            return manejador.sqlTransaction;
+        }
+
+        public void InicializarTransaccion()
+        {
+            if (manejador.sqlConnection == null || manejador.sqlConnection.State != ConnectionState.Open)
+            {
+                manejador.sqlConnection = new SqlConnection(_context.Database.GetConnectionString());
+                manejador.sqlConnection.Open();
+            }
+            if (manejador.sqlTransaction == null)
+            {
+                manejador.sqlTransaction = manejador.sqlConnection.BeginTransaction();
+            }
+        }
     }
 
     public class ManejadorDeTransacciones
     {
-        public SqlConnection sqlConnection = null;
-        public SqlTransaction sqlTransaction = null;
+        public SqlConnection? sqlConnection = null;
+        public SqlTransaction? sqlTransaction = null;
 
         public bool HasConectionOpen()
         {
