@@ -107,6 +107,14 @@
 			public const string SP_E_AV_CIERRES = "SPGECO_E_AV_Cierres";
 			#endregion
 
+			#region Reporte de Ranking y Rentabilidad de Ventas
+			public const string SP_E_RANKING_VTAS_P = "SPGECO_E_Ranking_Vtas_P";
+			public const string SP_E_RANKING_VTAS_SEC = "SPGECO_E_Ranking_Vtas_SEC";
+			public const string SP_E_RANKING_VTAS_RUB = "SPGECO_E_Ranking_Vtas_RUB";
+			public const string SP_E_RANKING_VTAS_CTA = "SPGECO_E_Ranking_Vtas_CTA";
+			public const string SP_E_RANKING_VTAS_RUBG = "SPGECO_E_Ranking_Vtas_RUBG";
+			#endregion
+
 			#region Análisis de Valores de Ventas
 			public const string SP_E_AVALORES_MES = "SPGECO_E_AValores_mes";
 			public const string SP_E_AVALORES_DIAS = "SPGECO_E_AValores_dias";

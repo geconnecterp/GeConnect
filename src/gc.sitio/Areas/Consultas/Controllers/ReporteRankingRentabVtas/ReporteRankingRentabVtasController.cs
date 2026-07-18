@@ -1,70 +1,67 @@
 ﻿using gc.api.core.Entidades;
-using gc.infraestructura.Core.EntidadesComunes;
 using gc.infraestructura.Core.EntidadesComunes.Options;
+using gc.infraestructura.Dtos;
 using gc.infraestructura.Dtos.Administracion;
 using gc.infraestructura.Dtos.Almacen;
+using gc.infraestructura.Dtos.Consultas;
 using gc.infraestructura.Dtos.Gen;
-using gc.infraestructura.Dtos.Mstk;
-using gc.infraestructura.Dtos.Mstk.Request;
 using gc.infraestructura.EntidadesComunes.Options;
 using gc.infraestructura.Enumeraciones;
 using gc.infraestructura.Helpers;
 using gc.sitio.Areas.Consultas.Models;
-using gc.sitio.Areas.Mstk.Models;
 using gc.sitio.core.Servicios.Contratos;
 using gc.sitio.core.Servicios.Contratos.DocManager;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Options;
 
-namespace gc.sitio.Areas.Mstk.Controllers
+namespace gc.sitio.Areas.Consultas.Controllers.ReporteRankingRentabVtas
 {
-	[Area("Mstk")]
-	public class ConsultaDeStockController : ConsultaDeStockControladorBase
+	[Area("Consultas")]
+	public class ReporteRankingRentabVtasController : ReporteRankingRentabVtasControladorBase
 	{
 		private readonly AppSettings _setting;
+		private readonly IConsultasServicio _consultasServicio;
+		private readonly IRubroServicio _rubroServicio;
+		private readonly ICuentaServicio _cuentaServicio;
 		private readonly IDepositoServicio _depositoServicio;
 		private readonly IAdministracionServicio _administracionServicio;
-		private readonly ICuentaServicio _cuentaServicio;
-		private readonly IRubroServicio _rubroServicio;
-		private readonly IConsultasServicio _consultaServicio;
 
 		//PARA MODULO DE IMPRESION
 		private readonly DocsManager _docsManager; //recupero los datos desde el appsettings.json
 		private AppModulo _modulo; //tengo el AppModulo que corresponde a la consulta de cuentas
-		private string APP_MODULO = AppModulos.REPORTE_STOCK.ToString();
+		private string APP_MODULO = AppModulos.REPORTE_DE_RANKING_Y_RENTABILIDAD.ToString();
 		private readonly IDocManagerServicio _docMSv;
 
 		//************************
-
-		public ConsultaDeStockController(IOptions<AppSettings> options, IHttpContextAccessor contexto, ILogger<ConsultaDeStockController> logger,
-										 IDepositoServicio depositoServicio, IAdministracionServicio administracionServicio,
-										 IDocManagerServicio docManager, IOptions<DocsManager> docsManager, ICuentaServicio cuentaServicio,
-										 IRubroServicio rubroServicio, IConsultasServicio consultaServicio) : base(options, contexto, logger)
+		public ReporteRankingRentabVtasController(IOptions<AppSettings> options, IHttpContextAccessor contexto, ILogger<ReporteRankingRentabVtasController> logger,
+												  IConsultasServicio consultasServicio, IRubroServicio rubroServicio, IConsultasServicio consultaServicio,
+												  IDepositoServicio depositoServicio, IAdministracionServicio administracionServicio, ICuentaServicio cuentaServicio,
+												  IDocManagerServicio docManager, IOptions<DocsManager> docsManager) : base(options, contexto, logger)
 		{
 			_setting = options.Value;
+			_consultasServicio = consultasServicio;
 			_depositoServicio = depositoServicio;
 			_administracionServicio = administracionServicio;
+			_cuentaServicio = cuentaServicio;
+			_rubroServicio = rubroServicio;
 
 			//PARA MODULO DE IMPRESION
 			_docsManager = docsManager.Value; //recupero los datos desde el appsettings.json
 			_modulo = _docsManager.Modulos.First(x => x.Id == APP_MODULO); //identifico los datos del modulo que necesito: CC_NR_NP
 			_docMSv = docManager; //instancio el servicio de impresión
-			_cuentaServicio = cuentaServicio;
-			_rubroServicio = rubroServicio;
-			_consultaServicio = consultaServicio;
 		}
 
 		public IActionResult Index()
 		{
-			var model = new ConsultaDeStockModel();
+			var model = new ReporteRankingRentabVtasModel();
 			try
 			{
 				var auth = EstaAutenticado;
 				if (!auth.Item1 || auth.Item2 < DateTime.Now)
 					return RedirectToAction("Login", "Token", new { area = "seguridad" });
 
-				var titulo = "REPORTE DE STOCK";
+				var titulo = "REPORTE DE STOCK VALORIZADO";
 				ViewData["Titulo"] = titulo;
 
 				#region Gestor Impresion - Inicializacion de variables
@@ -89,57 +86,38 @@ namespace gc.sitio.Areas.Mstk.Controllers
 			}
 		}
 
-		public async Task<IActionResult> BuscarStockProductos(ConsultarStockRequest request, bool buscaNew, string sort = "p_id", string sortDir = "asc", int pag = 1, bool actualizar = false)
+		public async Task<IActionResult> RepRkgRentabVtas(ReporteRankingRentabVtasRequest request)
 		{
-			var model = new ProductoStkListaModel();
-			var lista = new List<ProductoStkDto>();
-			MetadataGrid metadata;
-			GridCoreSmart<ProductoStkDto> grillaDatos;
+			var model = new ListadoRankingModel();
 
 			try
 			{
-				if (!buscaNew)
-				{
-					lista = ListaProductoStk.ToList();
-					lista = OrdenarEntidad(lista, sortDir, sort);
-					ListaProductoStk = lista;
-				}
-				else
-				{
-					request.Sort = sort;
-					request.SortDir = sortDir;
-					request.Registros = _setting.NroRegistrosPagina;
-					//request.Pagina = pag;
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+					return RedirectToAction("Login", "Token", new { area = "seguridad" });
 
-					var res = await _consultaServicio.ConsultarProductoStk(request, TokenCookie);
-					lista = res.Item1 ?? [];
-					MetadataGeneral = res.Item2 ?? new MetadataGrid();
-					ListaProductoStk = lista;
+				if (request == null)
+					throw new Exception("No se recibieron los parámetros de búsqueda.");
 
-				}
-				metadata = MetadataStockProd;
-				grillaDatos = GenerarGrillaSmart(ListaProductoStk, sort, _setting.NroRegistrosPagina, pag, MetadataGeneral.TotalCount, MetadataGeneral.TotalPages, sortDir);
-				model.GrillaProductoStk = grillaDatos;
+				var res = _consultasServicio.RepRkgRentabVtas(request, TokenCookie);
+				ListaProductoRnk = res;
+
+				model.GrillaProductoRnk = ObtenerGridCoreSmart<RepRkgRentabVtasDto>(res);
 				model.AgrupadoPor = request.agrupador;
+
 				switch (request.agrupador)
 				{
-					case 1:
-						model.Leyenda = "Productos agrupados por Sector";
-						break;
-					case 2:
-						model.Leyenda = "Productos agrupados por Grupos de Rubro";
-						break;
-					case 3:
-						model.Leyenda = "Productos agrupados por Rubro";
-						break;
-					case 4:
-						model.Leyenda = "Productos agrupados por Proveedor";
-						break;
+					case 0: //Sin Agrupar
+						return PartialView("_grillaProductosP", model);
+					case 1: //Por Sector
+						return PartialView("_grillaProductosSec", model);
+					case 2: //Por Rubros
+						return PartialView("_grillaProductosRub", model);
+					case 3: //Por Proveedor
+						return PartialView("_grillaProductosCta", model);
 					default:
-						model.Leyenda = "Productos no agrupados";
-						break;
+						return PartialView("_grillaProductosP", model);
 				}
-				return PartialView("_grillaProductos", model);
 			}
 			catch (Exception ex)
 			{
@@ -203,8 +181,10 @@ namespace gc.sitio.Areas.Mstk.Controllers
 			var lista = adms.Select(x => new ComboGenDto { Id = x.Rub_Id, Descripcion = x.Rub_Desc });
 			return HelperMvc<ComboGenDto>.ListaGenerica(lista);
 		}
-		private void CargarDatosIniciales(ConsultaDeStockModel model)
+		private void CargarDatosIniciales(ReporteRankingRentabVtasModel model)
 		{
+			model.Desde = DateTime.Now.AddMonths(-3);
+			model.Hasta = DateTime.Now;
 			if (ProveedoresLista.Count == 0)
 				ObtenerProveedores(_cuentaServicio, "BI");
 			if (RubroLista.Count == 0)
@@ -242,9 +222,8 @@ namespace gc.sitio.Areas.Mstk.Controllers
 			{
 				new() { Value = "0", Text = "Sin Agrupar" },
 				new() { Value = "1", Text = "Por Sector" },
-				new() { Value = "2", Text = "Por Grupo de Rubros" },
-				new() { Value = "3", Text = "Por Rubros" },
-				new() { Value = "4", Text = "Por Proveedor" }
+				new() { Value = "2", Text = "Por Rubros" },
+				new() { Value = "3", Text = "Por Proveedor" }
 			};
 
 			return new SelectList(opciones, "Value", "Text");

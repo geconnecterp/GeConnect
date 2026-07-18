@@ -601,5 +601,19 @@ namespace gc.api.Controllers.Consultas
 
 			return Ok(response);
 		}
+
+		[HttpPost]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<RepRkgRentabVtasDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult RepRkgRentabVtas(ReporteRankingRentabVtasRequest request)
+		{
+			ApiResponse<List<RepRkgRentabVtasDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
+			var res = _consSv.RepRkgRentabVtas(request);
+			response = new ApiResponse<List<RepRkgRentabVtasDto>>(res);
+
+			return Ok(response);
+		}
 	}
 }

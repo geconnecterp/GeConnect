@@ -1,5 +1,4 @@
-﻿using DocumentFormat.OpenXml.Wordprocessing;
-using gc.api.core.Constantes;
+﻿using gc.api.core.Constantes;
 using gc.api.core.Contratos.Servicios;
 using gc.api.core.Entidades;
 using gc.api.core.Interfaces.Datos;
@@ -7,14 +6,9 @@ using gc.infraestructura.Dtos;
 using gc.infraestructura.Dtos.Consultas;
 using gc.infraestructura.Dtos.Consultas.ConsCertNoRetNoPercep;
 using gc.infraestructura.Dtos.Consultas.ConsVencTipoCtaTipoCompte;
-using gc.infraestructura.Dtos.Financieros;
-using gc.infraestructura.Dtos.Financieros.Request;
 using gc.infraestructura.Dtos.Mstk;
 using gc.infraestructura.Dtos.Mstk.Request;
-using gc.infraestructura.Dtos.Users;
 using Microsoft.Data.SqlClient;
-using System.Diagnostics.Metrics;
-using System.Security.Claims;
 using System.Text;
 
 namespace gc.api.core.Servicios
@@ -798,6 +792,114 @@ namespace gc.api.core.Servicios
 			};
 			List<ComisionesDeRepartidoresResumenDto> res = _repository.EjecutarLstSpExt<ComisionesDeRepartidoresResumenDto>(sp, ps, true);
 			return res;
+		}
+
+		public List<RepRkgRentabVtasDto> RepRkgRentabVtas(ReporteRankingRentabVtasRequest filtros)
+		{
+			string sp = "";
+
+			switch (filtros.agrupador)
+			{
+				case 0:
+					sp = ConstantesGC.StoredProcedures.SP_E_RANKING_VTAS_P;
+					break;
+				case 1:
+					sp = ConstantesGC.StoredProcedures.SP_E_RANKING_VTAS_SEC;
+					break;
+				case 2:
+					sp = ConstantesGC.StoredProcedures.SP_E_RANKING_VTAS_RUB;
+					break;
+				case 3:
+					sp = ConstantesGC.StoredProcedures.SP_E_RANKING_VTAS_CTA;
+					break;
+				default:
+					sp = ConstantesGC.StoredProcedures.SP_CONS_STOCK_VALOR_P;
+					break;
+			}
+			var ps = new List<SqlParameter>();
+
+			if (filtros.lSuc != null && filtros.lSuc.Count > 0)
+			{
+				StringBuilder sb = new();
+				bool first = true;
+				foreach (var item in filtros.lSuc)
+				{
+					if (first)
+						first = false;
+					else
+						sb.Append(',');
+
+					sb.Append(item);
+				}
+				ps.Add(new SqlParameter("@adm", "1"));
+				ps.Add(new SqlParameter("@adm_list", sb.ToString()));
+			}
+			else
+				ps.Add(new SqlParameter("@adm", "0"));
+
+			if (filtros.lProv != null && filtros.lProv.Count > 0)
+			{
+				StringBuilder sb = new();
+				bool first = true;
+				foreach (var item in filtros.lProv)
+				{
+					if (first)
+						first = false;
+					else
+						sb.Append(',');
+
+					sb.Append(item);
+				}
+				ps.Add(new SqlParameter("@prov", "1"));
+				ps.Add(new SqlParameter("@prov_list", sb.ToString()));
+			}
+			else
+				ps.Add(new SqlParameter("@prov", "0"));
+
+			if (filtros.lFam != null && filtros.lFam.Count > 0)
+			{
+				StringBuilder sb = new();
+				bool first = true;
+				foreach (var item in filtros.lFam)
+				{
+					if (first)
+						first = false;
+					else
+						sb.Append(',');
+
+					sb.Append(item);
+				}
+				ps.Add(new SqlParameter("@pg", "1"));
+				ps.Add(new SqlParameter("@pg_list", sb.ToString() + ','));
+			}
+			else
+				ps.Add(new SqlParameter("@pg", "0"));
+
+			if (filtros.lRub != null && filtros.lRub.Count > 0)
+			{
+				StringBuilder sb = new();
+				bool first = true;
+				foreach (var item in filtros.lRub)
+				{
+					if (first)
+						first = false;
+					else
+						sb.Append(',');
+
+					sb.Append(item);
+				}
+				ps.Add(new SqlParameter("@rub", "1"));
+				ps.Add(new SqlParameter("@rub_list", sb.ToString()));
+			}
+			else
+				ps.Add(new SqlParameter("@rub", "0"));
+
+			ps.Add(new SqlParameter("@desde", filtros.desde));
+			ps.Add(new SqlParameter("@hasta", filtros.hasta));
+			ps.Add(new SqlParameter("@tipo", string.Empty));
+			List<RepRkgRentabVtasDto> lstProductos = _repository.EjecutarLstSpExt<RepRkgRentabVtasDto>(sp, ps, true);
+
+			return lstProductos;
 		}
 	}
 }

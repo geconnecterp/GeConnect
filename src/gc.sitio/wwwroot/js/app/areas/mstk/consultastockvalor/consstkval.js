@@ -17,6 +17,7 @@
 	$("#DepositosList").on("dblclick", 'option', function () { $(this).remove(); })
 	$("#FamiliaList").on("dblclick", 'option', function () { $(this).remove(); })
 	$("#RubrosList").on("dblclick", 'option', function () { $(this).remove(); })
+	$("#Rel01List").on("dblclick", 'option', function () { $(this).remove(); })
 
 	$("#btnFiltro").on("click", function () {
 		if ($("#divFiltros").hasClass("show")) {

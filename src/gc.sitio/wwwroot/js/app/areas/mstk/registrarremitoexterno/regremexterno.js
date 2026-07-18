@@ -698,6 +698,7 @@ function btnConfirmarClick() {
 }
 
 function ConfirmarRemito() {
+	AbrirWaiting("Registrando Remito Externo...")
 	var data = ObtenerRequest();
 	PostGen(data, confirmarRemitoExternoUrl, function (obj) {
 		CerrarWaiting();
@@ -717,6 +718,7 @@ function ConfirmarRemito() {
 						$('#msjModal').modal('hide');
 						//Imprimir Remito
 						//ImprimirRemitoExterno(obj.id);
+						console.log("Remito Externo Generado: ", obj.id);
 						ResetearPantallaRemito();
 					},
 					false,

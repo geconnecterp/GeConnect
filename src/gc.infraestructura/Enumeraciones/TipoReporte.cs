@@ -96,7 +96,8 @@ namespace gc.infraestructura.Enumeraciones
 		R088_Comisiones_Vendedores_Detalle = 88,
 		R089_Comisiones_Vendedores_Resumen = 89,
 		R090_Comisiones_Repartidores_Detalle = 90,
-		R091_Comisiones_Repartidores_Resumen = 91
+		R091_Comisiones_Repartidores_Resumen = 91,
+		R092_Reporte_Ranking_Y_Rentabilidad = 92,
 
 	}
 }
