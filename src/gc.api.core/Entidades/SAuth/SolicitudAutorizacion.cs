@@ -55,6 +55,8 @@ public class SolicitudAutorizacion : EntidadBase
     }
     public void Bloquear(string idUsuario)
     {
+        ValidarUsuarioAutorizador(idUsuario);
+
         if (Estado != EstadoAutorizacion.PENDIENTE)
         {
             throw new InvalidOperationException($"No se puede tomar una solicitud en estado {Estado}");
@@ -74,6 +76,8 @@ public class SolicitudAutorizacion : EntidadBase
         string idUsuarioResolucion,
         bool esResolucionPorDefecto)
     {
+        ValidarUsuarioAutorizador(idUsuarioResolucion);
+
         if (Estado != EstadoAutorizacion.PENDIENTE && Estado != EstadoAutorizacion.EN_PROCESO)
         {
             throw new InvalidOperationException($"No se puede resolver una solicitud en estado {Estado}");
@@ -106,5 +110,17 @@ public class SolicitudAutorizacion : EntidadBase
             "Autorización no respondida dentro del tiempo permitido.",
             "SYSTEM",
             true);
+    }
+
+    private void ValidarUsuarioAutorizador(string idUsuarioAutorizador)
+    {
+        if (string.Equals(
+            IdUsuarioSolicitante?.Trim(),
+            idUsuarioAutorizador?.Trim(),
+            StringComparison.OrdinalIgnoreCase))
+        {
+            throw new InvalidOperationException(
+                "El usuario solicitante no puede autorizar su propia solicitud.");
+        }
     }
 }

@@ -127,6 +127,8 @@ namespace gc.api.core.Servicios.SolAuth
                 throw new Exception("Solicitud no encontrada.");
             }
 
+            ValidarQueNoSeaElSolicitante(solicitud, idUsuario);
+
             if (!solicitud.PuedeAutorizar)
             {
                 throw new Exception("No tiene permisos para autorizar esta categoría.");
@@ -176,6 +178,8 @@ namespace gc.api.core.Servicios.SolAuth
             {
                 throw new Exception("Solicitud no encontrada.");
             }
+
+            ValidarQueNoSeaElSolicitante(solicitud, idUsuarioResolucion);
 
             if (solicitud.Estado != EstadoAutorizacion.PENDIENTE && solicitud.Estado != EstadoAutorizacion.EN_PROCESO)
             {
@@ -446,6 +450,20 @@ namespace gc.api.core.Servicios.SolAuth
                 IdUsuarioResolucion = resolucion.IdUsuarioResolucion,
                 EsResolucionPorDefecto = resolucion.EsResolucionPorDefecto
             };
+        }
+
+        private static void ValidarQueNoSeaElSolicitante(
+            SolicitudAutorizacion solicitud,
+            string idUsuarioAutorizador)
+        {
+            if (string.Equals(
+                solicitud.IdUsuarioSolicitante?.Trim(),
+                idUsuarioAutorizador?.Trim(),
+                StringComparison.OrdinalIgnoreCase))
+            {
+                throw new InvalidOperationException(
+                    "El usuario solicitante no puede autorizar su propia solicitud.");
+            }
         }
     }
 }

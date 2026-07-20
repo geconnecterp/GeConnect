@@ -31,9 +31,14 @@ BEGIN
     INNER JOIN dbo.usuarios_uderechos ud
         ON ud.der_codigo = s.DerCodigo
        AND ud.usu_id = @IdUsuario
-    WHERE s.Estado = 'PENDIENTE'
-       OR (s.Estado = 'EN_PROCESO' AND s.IdUsuarioBloqueo = @IdUsuario)
-       OR (s.Estado = 'EN_PROCESO' AND s.FechaBloqueo < DATEADD(SECOND, -60, SYSUTCDATETIME()));
+    WHERE UPPER(LTRIM(RTRIM(s.IdUsuarioSolicitante))) <>
+          UPPER(LTRIM(RTRIM(@IdUsuario)))
+      AND
+      (
+          s.Estado = 'PENDIENTE'
+          OR (s.Estado = 'EN_PROCESO' AND s.IdUsuarioBloqueo = @IdUsuario)
+          OR (s.Estado = 'EN_PROCESO' AND s.FechaBloqueo < DATEADD(SECOND, -60, SYSUTCDATETIME()))
+      );
 END;
 GO
 
@@ -50,6 +55,8 @@ BEGIN
            IdUsuarioBloqueo = @IdUsuario,
            FechaBloqueo = SYSUTCDATETIME()
      WHERE Id = @IdSolicitud
+       AND UPPER(LTRIM(RTRIM(IdUsuarioSolicitante))) <>
+           UPPER(LTRIM(RTRIM(@IdUsuario)))
        AND
        (
            Estado = 'PENDIENTE'
@@ -127,6 +134,16 @@ BEGIN
 
     IF EXISTS
     (
+        SELECT 1
+        FROM dbo.sauth_SolicitudesAutorizacion
+        WHERE Id = @IdSolicitud
+          AND UPPER(LTRIM(RTRIM(IdUsuarioSolicitante))) =
+              UPPER(LTRIM(RTRIM(@IdUsuarioResolucion)))
+    )
+        THROW 50012, 'El usuario solicitante no puede autorizar su propia solicitud.', 1;
+
+    IF EXISTS
+    (
         SELECT 1 FROM dbo.sauth_SolicitudesAutorizacion
         WHERE Id = @IdSolicitud AND Estado IN ('EXPIRADO', 'RESUELTO')
     )
@@ -159,7 +176,13 @@ BEGIN
     SELECT
         s.*,
         d.der_descripcion AS DerechoDescripcion,
-        CASE WHEN ud.der_codigo IS NULL THEN CAST(0 AS BIT) ELSE CAST(1 AS BIT) END AS PuedeAutorizar
+        CASE
+            WHEN ud.der_codigo IS NULL
+                 OR UPPER(LTRIM(RTRIM(s.IdUsuarioSolicitante))) =
+                    UPPER(LTRIM(RTRIM(@IdUsuario)))
+                THEN CAST(0 AS BIT)
+            ELSE CAST(1 AS BIT)
+        END AS PuedeAutorizar
     FROM dbo.sauth_SolicitudesAutorizacion s
     INNER JOIN dbo.uderechos d
         ON d.der_codigo = s.DerCodigo
