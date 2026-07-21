@@ -359,7 +359,20 @@ namespace gc.caja.Areas.Facturacion.Controllers
                 var datos = resultadoDatos.Entidad;
 
                 //resguardamos la lista de precios del cliente
-                LP_Id = datos.lp_id;
+                var listaPrecioPredeterminada = datos.lp_id?.Trim() ?? string.Empty;
+                if (string.IsNullOrWhiteSpace(listaPrecioPredeterminada))
+                {
+                    _logger?.LogError(
+                        "El cliente {ClienteId} no devolvió una lista de precios predeterminada.",
+                        datos.cta_id);
+                    return (
+                        false,
+                        "No se pudo determinar la lista de precios predeterminada del cliente.",
+                        null,
+                        null);
+                }
+
+                LP_Id = listaPrecioPredeterminada;
 
                 string[] nombre = datos.cta_denominacion
                     .Split([' '], StringSplitOptions.RemoveEmptyEntries);
@@ -389,6 +402,8 @@ namespace gc.caja.Areas.Facturacion.Controllers
                     movil = datos.cta_celu ?? string.Empty,
                     origen = cuenta.Origen,
                     origenDesc = cuenta.Origen_Desc,
+                    lp_id = listaPrecioPredeterminada,
+                    listaPrecio = listaPrecioPredeterminada,
 
                     // ✅ Datos fiscales
                     condicionAfip = datos.afip_desc ?? string.Empty,

@@ -8,6 +8,7 @@ using gc.api.core.Contratos.Servicios.Libros;
 using gc.api.core.Contratos.Servicios.LineaCaja;
 using gc.api.core.Contratos.Servicios.Ofertas;
 using gc.api.core.Contratos.Servicios.Reportes;
+using gc.api.core.Contratos.Servicios.SolAuth;
 using gc.api.core.Contratos.Servicios.Tipos;
 using gc.api.core.Interfaces.Datos;
 using gc.api.core.Interfaces.Servicios;
@@ -21,6 +22,7 @@ using gc.api.core.Servicios.Libros;
 using gc.api.core.Servicios.LineaCaja;
 using gc.api.core.Servicios.Ofertas;
 using gc.api.core.Servicios.Reportes;
+using gc.api.core.Servicios.SolAuth;
 using gc.api.core.Servicios.Tipos;
 using gc.api.infra.Datos.Contratos;
 using gc.api.infra.Datos.Contratos.Security;
@@ -175,6 +177,8 @@ namespace gc.api.infra.Extensions
             services.AddScoped<IApiPagoFactServicio, ApiPagoFactServicio>();
             services.AddScoped<IApiNotaCreditoServicio, ApiNotaCreditoServicio>();
 
+            //autorizacion Remota
+            services.AddScoped<ISolicitudAuthServicio, SolicitudAuthServicio>();
 
             return services;
         }

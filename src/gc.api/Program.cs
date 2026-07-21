@@ -1,12 +1,15 @@
-using FluentValidation;
+﻿using FluentValidation;
 using FluentValidation.AspNetCore;
+using gc.api.Hubs;
 using gc.api.infra.Datos;
 using gc.api.infra.Extensions;
 using gc.api.infra.Filtros;
+using gc.api.Workers;
 using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Core.Interfaces;
 using gc.infraestructura.Core.Services;
 using gc.infraestructura.EntidadesComunes.Options;
+using gc.infraestructura.Workers;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
@@ -17,6 +20,26 @@ var builder = WebApplication.CreateBuilder(args);
 // Agregamos el AutoMapper
 builder.Services.AddAutoMapper(_ => { }, AppDomain.CurrentDomain.GetAssemblies());
 builder.Logging.AddLog4Net("log4net.config", watch: true);
+
+// ── CORS ─────────────────────────────────────────────────────────────────────
+// Allowed origins are read from appsettings.json → CorsSettings:AllowedOrigins
+// In Production, override them in appsettings.Production.json (no code change needed).
+const string CorsPolicyName = "FrontendPolicy";
+var allowedOrigins = builder.Configuration
+    .GetSection("CorsSettings:AllowedOrigins")
+    .Get<string[]>() ?? [];
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(CorsPolicyName, policy =>
+    {
+        policy
+            .WithOrigins(allowedOrigins)
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .AllowCredentials(); // Required for SignalR WebSocket handshake
+    });
+});
 
 //Activamos el Filtro de Exception General
 builder.Services.AddControllers(opt => { opt.Filters.Add<GlobalExceptionFilter>(); })
@@ -59,7 +82,7 @@ builder.Services.AddSingleton<IUriService>(provider =>
 
 });
 
-//Configuraci�n del JWT
+//Configuración del JWT
 builder.Services.AddAuthentication(opt => {
     opt.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
     opt.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -81,6 +104,10 @@ builder.Services.AddAuthentication(opt => {
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+builder.Services.AddSignalR();
+builder.Services.AddHostedService<ExpiracionSolicitudWorker>();
+builder.Services.AddHostedService<OutboxPublisherWorker>();
+
 builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddValidatorsFromAssemblyContaining<ValidationFilter>();
 
@@ -99,11 +126,16 @@ app.UseForwardedHeaders(new ForwardedHeadersOptions { ForwardedHeaders = Forward
 
 app.UseHttpsRedirection();
 
+// CORS must be applied BEFORE UseAuthorization and MapHub
+app.UseCors(CorsPolicyName);
+
+
 app.UseRouting();
 
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+app.MapHub<AutorizacionHub>("/hubs/authorizaciones");
 
 app.Run();

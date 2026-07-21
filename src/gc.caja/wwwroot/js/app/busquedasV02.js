@@ -9,7 +9,7 @@
 
 $(function () {
     console.log('🚀 Módulo de Búsqueda Avanzada Simplificado - Caja v2.0');
-    console.log(`   Lista de precios inicial: ${admLp_id}`);
+    console.log(`   Lista de precios inicial: ${window.obtenerListaPrecioActivaId?.() || ''}`);
 
     // Botón cerrar modal
     $("button[type='button'].close.buscAdv").on("click", function () {
@@ -96,7 +96,7 @@ function busquedaAvanzadaProductosV02(pag) {
         cstk, 
         sstk, 
         buscar, 
-        lp_id: admLp_id
+        lp_id: window.obtenerListaPrecioActivaId?.() || ''
     };
 
     const buscaNew = JSON.stringify(dataBakV02) !== JSON.stringify(data1);
