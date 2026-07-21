@@ -45,9 +45,8 @@ namespace gc.sitio.Areas.Mstk.Controllers.RegistrarRemitoExterno
 			List<DepositoInfoBoxDto> boxes = [];
 			try
 			{
-				var auth = EstaAutenticado;
-				if (!auth.Item1 || auth.Item2 < DateTime.Now)
-					return RedirectToAction("Login", "Token", new { area = "seguridad" });
+				if (!VerificarAutenticacion(out IActionResult redirectResult))
+					return redirectResult;
 
 				var titulo = "REMITOS EXTERNOS";
 				ViewData["Titulo"] = titulo;
@@ -76,6 +75,9 @@ namespace gc.sitio.Areas.Mstk.Controllers.RegistrarRemitoExterno
 			var model = new BoxListDto();
 			try
 			{
+				if (!VerificarAutenticacion(out IActionResult redirectResult))
+					return redirectResult;
+
 				if (depoId != "0")
 					model.ComboBoxes = CargarComboBoxes(depoId);
 				else
@@ -123,7 +125,7 @@ namespace gc.sitio.Areas.Mstk.Controllers.RegistrarRemitoExterno
 				if (resultadoDeValidacion.Resultado)
 					return Json(CrearRespuestaOk("Se encontraron los datos de productos desde el comprobante.", true));
 				else
-					return Json(CrearRespuestaOk(resultadoDeValidacion.Mensaje, false));
+					return Json(CrearRespuestaWarning(resultadoDeValidacion.Mensaje));
 			}
 			catch (NegocioException ex)
 			{
@@ -239,25 +241,6 @@ namespace gc.sitio.Areas.Mstk.Controllers.RegistrarRemitoExterno
 		}
 
 		#region Metodos Privados
-		private List<ProductoRemitoDto> MapearProductos(List<RemitoExternoValidaDto> origen)
-		{
-			if (origen == null || origen.Count == 0)
-				return [];
-
-			return origen.Select(x => new ProductoRemitoDto
-			{
-				p_id = x.p_id,
-				p_desc = x.p_desc,
-				depo_id = x.depo_id,
-				box_id = x.box_id,
-				up_id = x.up_id,
-				unidad_pres = x.unidad_pres,   // ejemplo
-				bulto = x.bulto,              // ejemplo
-				us = x.us,             // ejemplo
-				cantidad = x.pre_cantidad            // ejemplo
-
-			}).ToList();
-		}
 		private ResultadoValidacionRemito PermiteCargaDeProductosEnRemito(List<RemitoExternoValidaDto> lista)
 		{
 			if (lista == null || lista.Count == 0)
@@ -274,7 +257,12 @@ namespace gc.sitio.Areas.Mstk.Controllers.RegistrarRemitoExterno
 					Resultado = false,
 					Mensaje = "El comprobante no permite carga de productos debido a su estado."
 				};
-
+			if (string.IsNullOrEmpty(item.pre_nombre) || string.IsNullOrEmpty(item.pre_domicilio))
+				return new ResultadoValidacionRemito
+				{
+					Resultado = false,
+					Mensaje = "El comprobante no tiene definido Nombre y Domicilio."
+				};
 			var fechaLimite = DateTime.Now.AddDays(-60);
 			if (item.pre_fecha < fechaLimite)
 				return new ResultadoValidacionRemito

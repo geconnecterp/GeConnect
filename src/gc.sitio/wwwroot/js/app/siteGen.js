@@ -333,24 +333,71 @@ function PostGenHtml(data, path, retorno) {
 function PostGenHtml(data, path, retorno, fxError) {
     PostGen(data, path, retorno, fxError, "HTML");
 }
+
+//DEJO COMENTADA LA SIGUIENTE FUNCION POR SI LA NUEVA NO RESULTA COMO SE ESPERA
 //function PostGen(data, path, retorno) {
 //    PostGen(data, path, retorno, fnError, "json");
 //}
+// function PostGen(data, path, retorno, fxError, datatype) {
+//     $.ajax({
+//         "dataType": datatype,
+//         "url": path,
+//         "type": "POST",
+//         "data": data,
+//         xhrFields: {
+//             withCredentials: true
+//         },
+//         /*contentType: "application/json",*/
+//         "success": retorno,
+//         //beforeSend: function () { Bloquear();},
+//         error: fxError
+//     });
+// }
+
+///Nueva version de PostGen:
+///Mejora en la obtencion de redireccion al login por vencimiento de token
 function PostGen(data, path, retorno, fxError, datatype) {
     $.ajax({
-        "dataType": datatype,
-        "url": path,
-        "type": "POST",
-        "data": data,
+        dataType: datatype,
+        url: path,
+        type: "POST",
+        data: data,
         xhrFields: {
             withCredentials: true
         },
-        /*contentType: "application/json",*/
-        "success": retorno,
-        //beforeSend: function () { Bloquear();},
-        error: fxError
+        success: function (response, status, xhr) {
+
+            // Detectar si el servidor redirigió al login
+            if (xhr.responseURL && xhr.responseURL.includes("/seguridad/Token/Login")) {
+                window.location.href = xhr.responseURL;
+                return;
+            }
+
+            // Detectar si el HTML recibido es el login
+            if (typeof response === "string" &&
+                (response.includes("id=\"loginForm\"") ||
+                    response.includes("Iniciar sesión") ||
+                    response.includes("Usuario") && response.includes("Contraseña"))) {
+
+                window.location.href = "/seguridad/Token/Login";
+                return;
+            }
+
+            retorno(response);
+        },
+        error: function (xhr) {
+
+            // Si por alguna razón el backend devolvió 401 o 302
+            if (xhr.status === 401 || xhr.status === 302) {
+                window.location.href = "/seguridad/Token/Login";
+                return;
+            }
+
+            fxError(xhr);
+        }
     });
 }
+
 
 /**
  * Realiza una solicitud POST al servidor con datos JSON o FormData.
