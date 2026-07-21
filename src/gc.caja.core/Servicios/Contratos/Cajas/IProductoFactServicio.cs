@@ -17,6 +17,7 @@ namespace gc.caja.core.Servicios.Contratos.Cajas
 
         Task<(List<ProductoListaDto>, MetadataGrid?)> BusquedaListaProductos(BusquedaProducto busqueda, string token);
         Task<CalculaFilasResDto> CalcularFilas(CalcularFilasReqDto req, string token);
+        Task<CalculaFilasResDto> CalcularFila(CalcularFilasReqDto req, string token);
 
         Task<RespuestaGenerica<PrefacturaResDto>> ObtenerPrefactura(PrefacturaReqDto req, string token);
         Task<RespuestaGenerica<CotizacionResDto>> ObtenerCotizacion(CotizacionReqDto req, string token);

@@ -54,6 +54,36 @@ namespace gc.api.core.Servicios.LineaCaja
             return res.FirstOrDefault();
         }
 
+        public CalculaFilasResDto CalcularFila(CalcularFilasReqDto req)
+        {
+            var sp = ConstantesGC.StoredProcedures.SP_CAJA_CALCULA_FILA;
+
+            var ps = new List<SqlParameter>() {
+                new SqlParameter("@caja_id", req.caja_id),
+                new SqlParameter("@usu_id", req.usu_id),
+                new SqlParameter("@adm_id", req.adm_id),
+                new SqlParameter("@lp_id", req.lp_id),
+                new SqlParameter("@caja_nro_proceso", req.caja_nro_proceso),
+                new SqlParameter("@caja_nro_cierre", req.caja_nro_cierre),
+                new SqlParameter("@cta_id", req.cta_id),
+                new SqlParameter("@ctac_dto", req.ctac_dto),
+                new SqlParameter("@ctc_id", req.ctc_id),
+                new SqlParameter("@tco_letra", req.tco_letra),
+                new SqlParameter("@tco_id", req.tco_id),
+                new SqlParameter("@tco_id_ori", req.tco_id_ori),
+                new SqlParameter("@cm_compte_ori", req.cm_compte_ori),
+                new SqlParameter("@afip_id", req.afip_id),
+                new SqlParameter("@afip_desc", req.afip_desc),
+                new SqlParameter("@tot_rows", req.tot_rows),
+                new SqlParameter("@tot_cantidad", req.tot_cantidad),
+                new SqlParameter("@tot_pvta", req.tot_pvta),
+                new SqlParameter("@json_p", req.json_p)
+            };
+
+            var res = _repository.EjecutarLstSpExt<CalculaFilasResDto>(sp, ps, true);
+            return res.FirstOrDefault();
+        }
+
         public List<CotizacionResDto> ObtenerCotizacion(CotizacionReqDto req)
         {
             var sp = ConstantesGC.StoredProcedures.SP_CAJA_COTIZACION;

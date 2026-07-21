@@ -30,6 +30,7 @@ namespace gc.caja.core.Servicios.Implementacion.Cajas
         private const string BUSCAR_PROD = "/ProductoBuscar";
         private const string BUSCAR_LISTA = "/ProductoListaBuscar";
         private const string POST_CALCULAR_FILAS = "/CalcularFilas"; // ✅ NUEVO
+        private const string POST_CALCULAR_FILA = "/CalcularFila";
         private const string POST_OBTENER_PREFACTURA = "/ObtenerPrefactura";
         private const string POST_OBTENER_COTIZACION = "/ObtenerCotizacion";
         private const string POST_CREAR_PREF_DIFERIDA = "/CrearPrefacturaDiferida";
@@ -327,6 +328,76 @@ namespace gc.caja.core.Servicios.Implementacion.Cajas
             catch (Exception ex)
             {
                 _logger?.LogError($"❌ EXCEPCIÓN en CalcularFilas: {ex.Message}");
+                _logger?.LogError($"   Stack Trace: {ex.StackTrace}");
+                return new CalculaFilasResDto();
+            }
+        }
+
+        public async Task<CalculaFilasResDto> CalcularFila(CalcularFilasReqDto req, string token)
+        {
+            try
+            {
+                _logger?.LogInformation("═══════════════════════════════════════════════════");
+                _logger?.LogInformation("🔢 CALCULAR FILA - SERVICIO");
+                _logger?.LogInformation("═══════════════════════════════════════════════════");
+                _logger?.LogInformation($"   caja_id: {req?.caja_id}");
+                _logger?.LogInformation($"   usu_id: {req?.usu_id}");
+                _logger?.LogInformation($"   cta_id: {req?.cta_id}");
+                _logger?.LogInformation($"   lp_id: {req?.lp_id}");
+                _logger?.LogInformation($"   tco_letra: {req?.tco_letra}");
+                _logger?.LogInformation($"   json_p longitud: {req?.json_p?.Length ?? 0}");
+
+                if (req == null)
+                {
+                    _logger?.LogError("❌ Request es null");
+                    return new CalculaFilasResDto();
+                }
+
+                if (string.IsNullOrWhiteSpace(req.json_p) || req.json_p == "{}" || req.json_p == "[]")
+                {
+                    _logger?.LogWarning("⚠️ JSON de fila vacío");
+                    return new CalculaFilasResDto();
+                }
+
+                var helper = new HelperAPI();
+                var client = helper.InicializaCliente(req, token, out StringContent contentData);
+                var link = $"{_appSettings.RutaBase}{RutaAPI}{POST_CALCULAR_FILA}";
+
+                _logger?.LogInformation($"📡 Endpoint: {link}");
+
+                using var response = await client.PostAsync(link, contentData);
+
+                if (response.StatusCode == HttpStatusCode.OK)
+                {
+                    var stringData = await response.Content.ReadAsStringAsync();
+
+                    if (string.IsNullOrWhiteSpace(stringData))
+                    {
+                        _logger?.LogWarning("⚠️ API retornó respuesta vacía");
+                        return new CalculaFilasResDto();
+                    }
+
+                    var apiResponse = JsonConvert.DeserializeObject<ApiResponse<CalculaFilasResDto>>(stringData);
+                    if (apiResponse?.Data == null)
+                    {
+                        _logger?.LogError("❌ Error deserializando la respuesta");
+                        return new CalculaFilasResDto();
+                    }
+
+                    var resultado = apiResponse.Data;
+                    _logger?.LogInformation("✅ FILA CALCULADA EXITOSAMENTE");
+                    _logger?.LogInformation($"   json_subtotal: {(string.IsNullOrEmpty(resultado.json_subtotal) ? "vacío" : $"{resultado.json_subtotal.Length} caracteres")}");
+                    _logger?.LogInformation($"   json_p: {(string.IsNullOrEmpty(resultado.json_p) ? "vacío" : $"{resultado.json_p.Length} caracteres")}");
+                    return resultado;
+                }
+
+                var msg = await ReadApiErrorAsync(response);
+                _logger?.LogWarning($"❌ Error API ({response.StatusCode}): {msg}");
+                return new CalculaFilasResDto();
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError($"❌ EXCEPCIÓN en CalcularFila: {ex.Message}");
                 _logger?.LogError($"   Stack Trace: {ex.StackTrace}");
                 return new CalculaFilasResDto();
             }

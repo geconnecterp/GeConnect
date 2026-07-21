@@ -56,6 +56,21 @@ namespace gc.api.Controllers.Caja
         }
 
         [HttpPost]
+        [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<CalculaFilasResDto>))]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        [Route("[action]")]
+        public IActionResult CalcularFila(CalcularFilasReqDto req)
+        {
+            if (req == null)
+            {
+                return BadRequest("El parámetro req es requerido.");
+            }
+
+            var res = _apiProductoFactServicio.CalcularFila(req);
+            return Ok(new ApiResponse<CalculaFilasResDto>(res));
+        }
+
+        [HttpPost]
         [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<List<PrefacturaResDto>>))]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [Route("[action]")]
