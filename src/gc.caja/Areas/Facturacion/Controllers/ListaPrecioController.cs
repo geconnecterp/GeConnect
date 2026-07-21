@@ -128,6 +128,12 @@ public sealed class ListaPrecioController : ControladorBaseCaja
         {
             return Unauthorized(new { ok = false, mensaje = ex.Message });
         }
+        catch (NegocioException ex)
+        {
+            _logger?.LogWarning(ex, "La API rechazo la solicitud de cambio de lista de precios.");
+            return StatusCode(StatusCodes.Status502BadGateway,
+                new { ok = false, mensaje = ex.Message });
+        }
         catch (Exception ex)
         {
             _logger?.LogError(ex, "No se pudo solicitar el cambio de lista de precios.");

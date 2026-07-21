@@ -85,12 +85,25 @@ BEGIN
     IF EXISTS
     (
         SELECT 1
-        FROM dbo.sauth_SolicitudesAutorizacion
-        WHERE Id = @IdSolicitud
-          AND UPPER(LTRIM(RTRIM(IdUsuarioSolicitante))) =
+        FROM dbo.sauth_SolicitudesAutorizacion s
+        WHERE s.Id = @IdSolicitud
+          AND UPPER(LTRIM(RTRIM(s.IdUsuarioSolicitante))) =
               UPPER(LTRIM(RTRIM(@IdUsuarioResolucion)))
+          AND NOT
+          (
+              @Decision = 'APROBADO'
+              AND @CodigoResolucion = 'POSESION_DERECHO'
+              AND ISNULL(@EsResolucionPorDefecto, 0) = 0
+              AND EXISTS
+              (
+                  SELECT 1
+                  FROM dbo.usuarios_uderechos ud
+                  WHERE ud.usu_id = @IdUsuarioResolucion
+                    AND ud.der_codigo = s.DerCodigo
+              )
+          )
     )
-        THROW 50012, 'El usuario solicitante no puede autorizar su propia solicitud.', 1;
+        THROW 50012, 'El usuario solicitante solo puede autorizar automaticamente si posee el derecho requerido.', 1;
 
     IF EXISTS
     (

@@ -94,6 +94,27 @@ public class SolicitudAutorizacion : EntidadBase
             esResolucionPorDefecto);
     }
 
+    public void ResolverAutomaticamentePorPosesionDerecho()
+    {
+        if (Estado != EstadoAutorizacion.PENDIENTE && Estado != EstadoAutorizacion.EN_PROCESO)
+        {
+            throw new InvalidOperationException($"No se puede resolver una solicitud en estado {Estado}");
+        }
+
+        Estado = EstadoAutorizacion.RESUELTO;
+        FechaActualizacion = DateTime.UtcNow;
+        IdUsuarioBloqueo = IdUsuarioSolicitante;
+        FechaBloqueo = FechaActualizacion;
+
+        Resolucion = new ResolucionAutorizacion(
+            Id,
+            DecisionAutorizacion.APROBADO,
+            "POSESION_DERECHO",
+            "Autorizacion automatica por posesion del derecho requerido.",
+            IdUsuarioSolicitante,
+            false);
+    }
+
     public void Expirar()
     {
         if (Estado != EstadoAutorizacion.PENDIENTE && Estado != EstadoAutorizacion.EN_PROCESO)

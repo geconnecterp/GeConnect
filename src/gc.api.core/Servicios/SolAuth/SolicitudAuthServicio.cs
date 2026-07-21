@@ -5,15 +5,18 @@ using gc.api.core.Entidades.SAuth;
 using gc.api.core.Interfaces.Datos;
 using gc.infraestructura.Core.Interfaces;
 using gc.infraestructura.Dtos.SolAuth.Comando;
+using gc.infraestructura.Dtos.Users;
 using gc.infraestructura.Enumeraciones;
 using Microsoft.Data.SqlClient;
 using Newtonsoft.Json;
 using RemoteAuthorizations.Application.Responses;
+using System.Diagnostics;
 
 namespace gc.api.core.Servicios.SolAuth
 {
     public class SolicitudAuthServicio:Servicio<EntidadBase>, ISolicitudAuthServicio
     {
+        private const string CodigoResolucionPosesionDerecho = "POSESION_DERECHO";
         private readonly IRepository<ResolucionAutorizacion> _resolucionRepo;
         private readonly IRepository<MensajeBandejaSalida> _outboxRepo;
 
@@ -65,47 +68,55 @@ namespace gc.api.core.Servicios.SolAuth
             new("@IdempotencyKey", solicitud.IdempotencyKey)
         };
 
+            var solicitantePoseeDerecho = UsuarioSolicitantePoseeDerecho(
+                solicitud.IdUsuarioSolicitante,
+                solicitud.DerCodigo);
+
             _uow.InicializarTransaccion();
 
             try
             {
                 _repository.InvokarSpNQuery(sp, dict, true, false);
 
-                var createdEvent = new
-                {
-                    EventId = Guid.NewGuid(),
-                    EventType = "SolicitudAutorizacionCreada",
-                    IdSolicitud = solicitud.Id,
-                    CodigoModuloOrigen = solicitud.CodigoModuloOrigen,
-                    DerCodigo = solicitud.DerCodigo,
-                    Estado = solicitud.Estado.ToString(),
-                    FechaSolicitud = solicitud.FechaSolicitud
-                };
+                InsertarEventoCreada(solicitud);
 
-                var outboxMessage = new MensajeBandejaSalida
+                if (solicitantePoseeDerecho)
                 {
-                    Id = Guid.NewGuid(),
-                    Tipo = "SolicitudAutorizacionCreada",
-                    FechaOcurrencia = DateTime.UtcNow,
-                    PayloadJson = JsonConvert.SerializeObject(createdEvent)
-                };
+                    solicitud.ResolverAutomaticamentePorPosesionDerecho();
+                    _logger.Log(
+                        TraceEventType.Information,
+                        $"Solicitud {solicitud.Id}: se detecto posesion del derecho {solicitud.DerCodigo}. Persistiendo autorizacion automatica.");
 
-                sp = ConstantesGC.StoredProcedures.SP_SAUTH_BANDEJA_SALIDA_INSERTAR;
-                var dictOutbox = new List<SqlParameter>
-            {
-                new("@Id", outboxMessage.Id),
-                new("@Tipo", outboxMessage.Tipo),
-                new("@PayloadJson", outboxMessage.PayloadJson),
-                new("@FechaOcurrencia", outboxMessage.FechaOcurrencia),
-                new SqlParameter("@Intentos", System.Data.SqlDbType.Int) { Value = 1 }
-            };
-                _outboxRepo.InvokarSpNQuery(sp, dictOutbox, true, false);
+                    PersistirResolucion(solicitud);
+                    InsertarEventoResuelta(solicitud);
+
+                    _logger.Log(
+                        TraceEventType.Information,
+                        $"Solicitud {solicitud.Id} autorizada automaticamente por posesion del derecho {solicitud.DerCodigo}.");
+                }
+                else
+                {
+                    _logger.Log(
+                        TraceEventType.Information,
+                        $"Solicitud {solicitud.Id}: el usuario {solicitud.IdUsuarioSolicitante} no posee el derecho {solicitud.DerCodigo}; queda pendiente de autorizacion remota.");
+                }
 
                 _uow.Commit();
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                _uow.Rollback();
+                try
+                {
+                    _uow.Rollback();
+                }
+                catch (Exception rollbackEx)
+                {
+                    _logger.Log(rollbackEx);
+                    _logger.Log(
+                        TraceEventType.Error,
+                        $"No se pudo deshacer la transaccion de la solicitud {solicitud.Id}. Excepcion original: {ex.Message}");
+                }
+
                 throw;
             }
 
@@ -462,8 +473,124 @@ namespace gc.api.core.Servicios.SolAuth
                 StringComparison.OrdinalIgnoreCase))
             {
                 throw new InvalidOperationException(
-                    "El usuario solicitante no puede autorizar su propia solicitud.");
+                "El usuario solicitante no puede autorizar su propia solicitud.");
             }
+        }
+
+        private bool UsuarioSolicitantePoseeDerecho(string usuario, int derCodigo)
+        {
+            if (string.IsNullOrWhiteSpace(usuario) || derCodigo <= 0)
+            {
+                return false;
+            }
+
+            var sp = ConstantesGC.StoredProcedures.SP_USU_DER;
+            var ps = new List<SqlParameter> { new("@usu_id", usuario) };
+            try
+            {
+                var derechos = _repository.EjecutarLstSpExt<DerUserDto>(sp, ps, true);
+
+                return derechos.Any(d =>
+                    d.asignado &&
+                    int.TryParse(d.der_codigo, out var codigo) &&
+                    codigo == derCodigo);
+            }
+            catch (Exception ex)
+            {
+                _logger.Log(ex);
+                _logger.Log(
+                    TraceEventType.Error,
+                    $"No se pudo verificar si el usuario {usuario} posee el derecho {derCodigo}.");
+                throw;
+            }
+        }
+
+        private void PersistirResolucion(SolicitudAutorizacion solicitud)
+        {
+            var resolucion = solicitud.Resolucion
+                ?? throw new InvalidOperationException("La solicitud no contiene resolucion para persistir.");
+
+            var sp = ConstantesGC.StoredProcedures.SP_AUTH_SOLICITUD_AUTORIZACION_RESOLVER;
+            var dictRes = new List<SqlParameter>
+            {
+                new("@IdResolucion", resolucion.Id),
+                new("@IdSolicitud", resolucion.IdSolicitud),
+                new("@Decision", resolucion.Decision.ToString()),
+                new("@CodigoResolucion", resolucion.CodigoResolucion),
+                new("@Mensaje", resolucion.Mensaje ?? (object)DBNull.Value),
+                new("@IdUsuarioResolucion", resolucion.IdUsuarioResolucion),
+                new("@EsResolucionPorDefecto", resolucion.EsResolucionPorDefecto)
+            };
+
+            try
+            {
+                _resolucionRepo.InvokarSpNQuery(sp, dictRes, true, false);
+            }
+            catch (Exception ex)
+            {
+                _logger.Log(ex);
+                _logger.Log(
+                    TraceEventType.Error,
+                    $"No se pudo persistir la autorizacion automatica de la solicitud {solicitud.Id} con codigo {CodigoResolucionPosesionDerecho}.");
+                throw;
+            }
+        }
+
+        private void InsertarEventoCreada(SolicitudAutorizacion solicitud)
+        {
+            var createdEvent = new
+            {
+                EventId = Guid.NewGuid(),
+                EventType = "SolicitudAutorizacionCreada",
+                IdSolicitud = solicitud.Id,
+                CodigoModuloOrigen = solicitud.CodigoModuloOrigen,
+                DerCodigo = solicitud.DerCodigo,
+                Estado = EstadoAutorizacion.PENDIENTE.ToString(),
+                FechaSolicitud = solicitud.FechaSolicitud
+            };
+
+            InsertarOutbox("SolicitudAutorizacionCreada", createdEvent, 1);
+        }
+
+        private void InsertarEventoResuelta(SolicitudAutorizacion solicitud)
+        {
+            var resolutionEvent = new
+            {
+                EventId = Guid.NewGuid(),
+                EventType = "SolicitudAutorizacionResuelta",
+                IdSolicitud = solicitud.Id,
+                CodigoModuloOrigen = solicitud.CodigoModuloOrigen,
+                IdSolicitudExterna = solicitud.IdSolicitudExterna,
+                Estado = solicitud.Estado.ToString(),
+                FechaResolucion = solicitud.Resolucion!.FechaResolucion,
+                CodigoResolucion = CodigoResolucionPosesionDerecho,
+                AutorizacionAutomatica = true
+            };
+
+            InsertarOutbox("SolicitudAutorizacionResuelta", resolutionEvent, 0);
+        }
+
+        private void InsertarOutbox(string tipo, object payload, int intentos)
+        {
+            var outboxMessage = new MensajeBandejaSalida
+            {
+                Id = Guid.NewGuid(),
+                Tipo = tipo,
+                FechaOcurrencia = DateTime.UtcNow,
+                PayloadJson = JsonConvert.SerializeObject(payload)
+            };
+
+            var sp = ConstantesGC.StoredProcedures.SP_SAUTH_BANDEJA_SALIDA_INSERTAR;
+            var dictOutbox = new List<SqlParameter>
+            {
+                new("@Id", outboxMessage.Id),
+                new("@Tipo", outboxMessage.Tipo),
+                new("@PayloadJson", outboxMessage.PayloadJson),
+                new("@FechaOcurrencia", outboxMessage.FechaOcurrencia),
+                new SqlParameter("@Intentos", System.Data.SqlDbType.Int) { Value = intentos }
+            };
+
+            _outboxRepo.InvokarSpNQuery(sp, dictOutbox, true, false);
         }
     }
 }

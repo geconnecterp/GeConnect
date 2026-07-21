@@ -31,6 +31,11 @@ namespace gc.api.Controllers.SolicitudAuth
                  [FromHeader(Name = "Idempotency-Key")] string idempotencyKey,
                  CancellationToken cancellationToken)
         {
+            if (comando is null)
+            {
+                return BadRequest("La solicitud de autorizacion es requerida.");
+            }
+
             if (string.IsNullOrWhiteSpace(idempotencyKey) || idempotencyKey.Length > 100)
             {
                 return BadRequest("El header Idempotency-Key es requerido y admite hasta 100 caracteres.");
@@ -44,19 +49,50 @@ namespace gc.api.Controllers.SolicitudAuth
             comando.usu_id = ObtenerUsuarioAutenticado();
             comando.CodigoModuloOrigen = comando.CodigoModuloOrigen.Trim().ToUpperInvariant();
 
-            var result = await _servicio.CrearAsync(
-                comando,
-                idempotencyKey,
-                comando.CodigoModuloOrigen,
-                cancellationToken);
-
-            return Ok(new RespuestaDto
+            try
             {
-                resultado = 0,
-                resultado_msj = "Solicitud cargada correctamente",
-                IdFile = result.Id,
-                hoy = DateTime.UtcNow
-            });
+                _logger.LogInformation(
+                    "Creando solicitud de autorizacion remota. Usuario={Usuario}; Modulo={Modulo}; Derecho={DerCodigo}; Externa={IdSolicitudExterna}; IdempotencyKey={IdempotencyKey}",
+                    comando.usu_id,
+                    comando.CodigoModuloOrigen,
+                    comando.DerCodigo,
+                    comando.IdSolicitudExterna,
+                    idempotencyKey);
+
+                var result = await _servicio.CrearAsync(
+                    comando,
+                    idempotencyKey,
+                    comando.CodigoModuloOrigen,
+                    cancellationToken);
+
+                return Ok(new RespuestaDto
+                {
+                    resultado = 0,
+                    resultado_msj = "Solicitud cargada correctamente",
+                    IdFile = result.Id,
+                    hoy = DateTime.UtcNow
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(
+                    ex,
+                    "No se pudo crear la solicitud de autorizacion remota. Usuario={Usuario}; Modulo={Modulo}; Derecho={DerCodigo}; Externa={IdSolicitudExterna}; IdempotencyKey={IdempotencyKey}",
+                    comando.usu_id,
+                    comando.CodigoModuloOrigen,
+                    comando.DerCodigo,
+                    comando.IdSolicitudExterna,
+                    idempotencyKey);
+
+                return StatusCode(
+                    StatusCodes.Status500InternalServerError,
+                    new RespuestaDto
+                    {
+                        resultado = -1,
+                        resultado_msj = "No se pudo crear la solicitud de autorizacion remota.",
+                        hoy = DateTime.UtcNow
+                    });
+            }
         }
 
         [HttpPost("{idSolicitud:guid}/resolucion")]
