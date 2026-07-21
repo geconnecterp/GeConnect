@@ -34,7 +34,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
         /// <param name="criterio">Criterio de búsqueda (CUIT, DNI, ID o nombre)</param>
         /// <returns>JSON con datos del cliente encontrado o indicador de múltiples resultados</returns>
         [HttpPost]
-        public async Task<JsonResult> BuscarCliente(string criterio)
+        public async Task<JsonResult> BuscarCliente(string criterio, string app = "FV")
         {
             try
             {
@@ -68,6 +68,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
                     busqueda: criterio.Trim(),
                     adm_id: AdministracionId,
                     usu_id: UserName,
+                    app: app,
                     token: TokenCookie
                 );
 
@@ -114,12 +115,17 @@ namespace gc.caja.Areas.Facturacion.Controllers
                     ProductosSeleccionados = []; // Limpiar productos seleccionados al cargar nuevo cliente
                     var clienteParcial = listaClientes[0];
 
-                    if (clienteParcial.Origen.Equals("N", StringComparison.OrdinalIgnoreCase))
+                    if (clienteParcial.Origen.Equals("N", StringComparison.OrdinalIgnoreCase) ||
+                        clienteParcial.Origen.Equals("Q", StringComparison.OrdinalIgnoreCase))
                     {
+                        var mensajeNoHabilitado = clienteParcial.Origen.Equals("Q", StringComparison.OrdinalIgnoreCase)
+                            ? "Proveedor NO HABILITADO"
+                            : "Cliente Registrado NO HABILITADO";
+
                         return Json(new
                         {
                             ok = false,
-                            mensaje = "Cliente Registrado NO HABILITADO",
+                            mensaje = mensajeNoHabilitado,
                             cantidadResultados = 1,
                             cliente = MapearClienteParcial(clienteParcial)
                         });
@@ -335,7 +341,8 @@ namespace gc.caja.Areas.Facturacion.Controllers
                 // ❶ Determinar valor de búsqueda según origen
                 // Si es Cuenta Registrada → usar ID
                 // Si es Consumidor Final → usar Documento
-                string valorBusqueda = cuenta.Origen.Equals("C", StringComparison.OrdinalIgnoreCase)
+                string valorBusqueda = cuenta.Origen.Equals("C", StringComparison.OrdinalIgnoreCase) ||
+                    cuenta.Origen.Equals("P", StringComparison.OrdinalIgnoreCase)
                     ? clienteId
                     : numeroDocumento ?? clienteId;
 

@@ -243,14 +243,14 @@ namespace gc.caja.core.Servicios.Implementacion.Seguridad
             }
         }
 
-        public async Task<RespuestaGenerica<CuentaBusquedaResultadoDto>> BusquedaClientes(string busqueda, string adm_id, string usu_id , string token)
+        public async Task<RespuestaGenerica<CuentaBusquedaResultadoDto>> BusquedaClientes(string busqueda, string adm_id, string usu_id, string app, string token)
         {
             try
             {
                 var helper = new HelperAPI();
                 var client = helper.InicializaCliente(token);
 
-                var link = $"{_appSettings.RutaBase}{RutaAPI}{GET_BUSQUEDA_CUENTA}?busqueda={busqueda}&adm_id={adm_id}&usu_id={usu_id}";
+                var link = $"{_appSettings.RutaBase}{RutaAPI}{GET_BUSQUEDA_CUENTA}?busqueda={busqueda}&adm_id={adm_id}&usu_id={usu_id}&app={app}";
                 using var response = await client.GetAsync(link);
 
                 if (response.StatusCode == HttpStatusCode.OK)

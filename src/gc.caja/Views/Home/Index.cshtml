@@ -45,6 +45,12 @@
         var notaCreditoDevolucionInicializaUrl =
             '@Url.Action("Index", "NotaCredito", new { area = "Facturacion" })';
 
+        var notaDebitoCreditoValidarUrl =
+            '@Url.Action("ValidacionInicial", "NotaDebitoCredito", new { area = "Facturacion" })';
+
+        var notaDebitoCreditoInicializaUrl =
+            '@Url.Action("Index", "NotaDebitoCredito", new { area = "Facturacion" })';
+
         // URLs necesarias para el módulo de Cobranza Diferida y el buscador de clientes
         const cobranzaDiferidaInicializaUrl = '@Url.Action("Inicializa", "PDiferido", new { Area = "Facturacion" })';
         const cobranzaDiferidaValidarUrl = '@Url.Action("Validar", "PDiferido", new { Area = "Facturacion" })';
