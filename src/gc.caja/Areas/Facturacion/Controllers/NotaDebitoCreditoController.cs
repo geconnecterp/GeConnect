@@ -17,6 +17,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
         private readonly ICajaInitServicio _cajaInitServicio;
         private readonly IProductoFactServicio _productoFactServicio;
         private readonly INotaCreditoServicio _notaCreditoServicio;
+        private readonly ICajaServicio _cajaServicio;
 
         public NotaDebitoCreditoController(
             IOptions<AppSettings> options,
@@ -24,12 +25,14 @@ namespace gc.caja.Areas.Facturacion.Controllers
             IHttpContextAccessor httpContext,
             ICajaInitServicio cajaInitServicio,
             IProductoFactServicio productoFactServicio,
-            INotaCreditoServicio notaCreditoServicio)
+            INotaCreditoServicio notaCreditoServicio,
+            ICajaServicio cajaServicio)
             : base(options, httpContext, logger)
         {
             _cajaInitServicio = cajaInitServicio;
             _productoFactServicio = productoFactServicio;
             _notaCreditoServicio = notaCreditoServicio;
+            _cajaServicio = cajaServicio;
         }
 
         [HttpGet]
@@ -432,64 +435,63 @@ namespace gc.caja.Areas.Facturacion.Controllers
                     });
                 }
 
-                var productosCalculados = new JArray();
-                var subtotalesCalculados = new JArray();
-                var totalManual = 0m;
+                var productosOriginales = new JArray();
+                var totalCantidad = 0m;
+                var totalControl = 0m;
                 var item = 1;
 
                 foreach (var concepto in request.Conceptos)
                 {
-                    var filaJson = CrearJsonConcepto(contexto, request.CoTipo, concepto, item);
-                    var requestCalculo = CrearRequestCalculoFila(contexto, request, concepto, filaJson);
+                    var cantidad = concepto.Cantidad <= 0 ? 1 : concepto.Cantidad;
+                    var iva = CalcularIvaManual(concepto.NetoGravado, concepto.AlicuotaIva);
+                    var totalConcepto = (concepto.NetoGravado + concepto.PercepcionIb + concepto.PercepcionIva + iva) * cantidad;
+                    var filaJson = JObject.FromObject(CrearJsonConcepto(contexto, request.CoTipo, concepto, item));
 
-                    _logger?.LogInformation("═══════════════════════════════════════════════════");
-                    _logger?.LogInformation("🧾 ND/NC/FS - REQUEST CALCULAR FILA");
-                    _logger?.LogInformation("   Operacion={Operacion}; Cuenta={Cuenta}; Item={Item}", request.CoTipo, contexto.Cuenta.cta_id, item);
-                    _logger?.LogInformation("   Request={Request}", JsonConvert.SerializeObject(requestCalculo));
-                    _logger?.LogInformation("═══════════════════════════════════════════════════");
-
-                    var resultado = await _productoFactServicio.CalcularFila(requestCalculo, token);
-
-                    _logger?.LogInformation("═══════════════════════════════════════════════════");
-                    _logger?.LogInformation("📥 ND/NC/FS - RESPONSE CALCULAR FILA");
-                    _logger?.LogInformation("   Resultado null={ResultadoNull}; json_subtotal_len={JsonSubtotalLen}; json_p_len={JsonProductosLen}",
-                        resultado == null,
-                        resultado?.json_subtotal?.Length ?? 0,
-                        resultado?.json_p?.Length ?? 0);
-                    _logger?.LogInformation("   Response={Response}", JsonConvert.SerializeObject(resultado));
-                    _logger?.LogInformation("═══════════════════════════════════════════════════");
-
-                    if (resultado == null || string.IsNullOrWhiteSpace(resultado.json_subtotal))
-                    {
-                        return Json(new
-                        {
-                            ok = false,
-                            mensaje = $"No se pudo calcular el concepto #{item}."
-                        });
-                    }
-
-                    AgregarJson(productosCalculados, resultado.json_p, filaJson);
-                    AgregarJson(subtotalesCalculados, resultado.json_subtotal, null);
-
-                    totalManual += concepto.NetoGravado + concepto.PercepcionIb + concepto.PercepcionIva
-                        + CalcularIvaManual(concepto.NetoGravado, concepto.AlicuotaIva);
+                    productosOriginales.Add(filaJson);
+                    totalCantidad += cantidad;
+                    totalControl += totalConcepto;
                     item++;
+                }
+
+                var requestCalculo = CrearRequestCalculoFilas(contexto, request, productosOriginales, totalCantidad, totalControl);
+
+                _logger?.LogInformation("═══════════════════════════════════════════════════");
+                _logger?.LogInformation("ND/NC/FS - REQUEST CALCULAR FILAS");
+                _logger?.LogInformation("   Operacion={Operacion}; Cuenta={Cuenta}; Conceptos={Conceptos}", request.CoTipo, contexto.Cuenta.cta_id, productosOriginales.Count);
+                _logger?.LogInformation("   Request={Request}", JsonConvert.SerializeObject(requestCalculo));
+                _logger?.LogInformation("═══════════════════════════════════════════════════");
+
+                var resultado = await _productoFactServicio.CalcularFilas(requestCalculo, token);
+
+                _logger?.LogInformation("═══════════════════════════════════════════════════");
+                _logger?.LogInformation("ND/NC/FS - RESPONSE CALCULAR FILAS");
+                _logger?.LogInformation("   Resultado null={ResultadoNull}; json_subtotal_len={JsonSubtotalLen}; json_p_len={JsonProductosLen}",
+                    resultado == null,
+                    resultado?.json_subtotal?.Length ?? 0,
+                    resultado?.json_p?.Length ?? 0);
+                _logger?.LogInformation("   Response={Response}", JsonConvert.SerializeObject(resultado));
+                _logger?.LogInformation("═══════════════════════════════════════════════════");
+
+                if (resultado == null || string.IsNullOrWhiteSpace(resultado.json_subtotal))
+                {
+                    return Json(new
+                    {
+                        ok = false,
+                        mensaje = "No se pudo calcular la operacion."
+                    });
                 }
 
                 contexto.CoTipo = request.CoTipo.Trim().ToUpperInvariant();
                 contexto.TcoIdOri = contexto.CoTipo == "NC" ? (request.TcoIdOri ?? string.Empty).Trim() : string.Empty;
                 contexto.CmCompteOri = contexto.CoTipo == "NC" ? (request.CmCompteOri ?? string.Empty).Trim() : string.Empty;
                 contexto.CmRepetidoOri = contexto.CoTipo == "NC" ? (request.CmRepetidoOri ?? string.Empty).Trim() : string.Empty;
-                contexto.JsonProductosOriginal = JsonConvert.SerializeObject(
-                    request.Conceptos.Select((concepto, index) => CrearJsonConcepto(contexto, request.CoTipo, concepto, index + 1)),
-                    Formatting.None
-                );
-                contexto.JsonProductosCalculado = productosCalculados.Count > 0
-                    ? productosCalculados.ToString(Formatting.None)
+                contexto.JsonProductosOriginal = productosOriginales.ToString(Formatting.None);
+                contexto.JsonProductosCalculado = !string.IsNullOrWhiteSpace(resultado.json_p)
+                    ? resultado.json_p
                     : contexto.JsonProductosOriginal;
-                contexto.JsonSubtotal = subtotalesCalculados.ToString(Formatting.None);
+                contexto.JsonSubtotal = resultado.json_subtotal;
                 contexto.JsonSorteo = "[]";
-                contexto.Total = totalManual;
+                contexto.Total = totalControl;
                 contexto.FechaUltimoCalculoUtc = DateTime.UtcNow;
 
                 GuardarContexto(contexto);
@@ -562,7 +564,66 @@ namespace gc.caja.Areas.Facturacion.Controllers
                     });
                 }
 
+                var cajaActual = CajaActual;
+                if (cajaActual?.Caja == null)
+                {
+                    return Json(new
+                    {
+                        ok = false,
+                        mensaje = "No se encontraron datos validos de caja para confirmar la operacion."
+                    });
+                }
+
                 var request = CrearRequestConfirmacion(contexto);
+
+                _logger?.LogInformation("═══════════════════════════════════════════════════");
+                _logger?.LogInformation("ND/NC/FS - VALIDANDO ESTADO DEL PUNTO DE VENTA");
+                _logger?.LogInformation("═══════════════════════════════════════════════════");
+
+                var validacionPV = await ValidarEstadoPuntoVenta(
+                    cajaServicio: _cajaServicio,
+                    cajaId: cajaActual.CajaId ?? string.Empty,
+                    ctrlId: cajaActual.Caja.ctrl_id ?? string.Empty,
+                    nroProceso: request.caja_nro_proceso,
+                    nroCierre: request.caja_nro_cierre,
+                    tipoLlamada: "F"
+                );
+
+                if (!validacionPV.PuedeContinuar)
+                {
+                    _logger?.LogError("ND/NC/FS: validacion de PV falló - Operacion bloqueada");
+                    _logger?.LogError("   Resultado: {Resultado}", validacionPV.Resultado);
+                    _logger?.LogError("   Mensaje: {Mensaje}", validacionPV.Mensaje);
+
+                    return Json(new
+                    {
+                        ok = false,
+                        mensaje = validacionPV.Mensaje,
+                        error_tipo = "estado_pv",
+                        ctrl_id = validacionPV.CtrlId,
+                        resultado_pv = validacionPV.Resultado
+                    });
+                }
+
+                if (validacionPV.EsAdvertencia)
+                {
+                    _logger?.LogWarning("ND/NC/FS: validacion de PV con advertencia - Operacion continua");
+                    _logger?.LogWarning("   Resultado: {Resultado}", validacionPV.Resultado);
+                    _logger?.LogWarning("   Mensaje: {Mensaje}", validacionPV.Mensaje);
+                }
+                else
+                {
+                    _logger?.LogInformation("ND/NC/FS: validacion de PV exitosa - Operacion autorizada");
+                }
+
+                request.caea = cajaActual.Caja.ctrl_id == "-1" && validacionPV.Resultado == 1;
+
+                _logger?.LogInformation(
+                    "ND/NC/FS: FormaPago={CtrlId} - ResultadoPV={ResultadoPV} - CAEA={Caea}",
+                    cajaActual.Caja.ctrl_id,
+                    validacionPV.Resultado,
+                    request.caea
+                );
 
                 _logger?.LogInformation("═══════════════════════════════════════════════════");
                 _logger?.LogInformation("✅ ND/NC/FS - REQUEST CONFIRMAR OPERACION");
@@ -739,16 +800,15 @@ namespace gc.caja.Areas.Facturacion.Controllers
             return (true, "OK");
         }
 
-        private CalcularFilasReqDto CrearRequestCalculoFila(
+        private CalcularFilasReqDto CrearRequestCalculoFilas(
             NotaDebitoCreditoContextoSesion contexto,
             NotaDebitoCreditoCalcularRequest request,
-            NotaDebitoCreditoConceptoRequest concepto,
-            object filaJson)
+            JArray productosJson,
+            decimal totalCantidad,
+            decimal totalControl)
         {
             var cajaActual = CajaActual;
             var cuenta = contexto.Cuenta;
-            var cantidad = concepto.Cantidad <= 0 ? 1 : concepto.Cantidad;
-            var totalControl = concepto.NetoGravado * cantidad;
 
             return new CalcularFilasReqDto
             {
@@ -773,10 +833,10 @@ namespace gc.caja.Areas.Facturacion.Controllers
                     : string.Empty,
                 afip_id = cuenta.afip_id ?? string.Empty,
                 afip_desc = cuenta.afip_desc ?? string.Empty,
-                tot_rows = 1,
-                tot_cantidad = cantidad,
+                tot_rows = (short)productosJson.Count,
+                tot_cantidad = totalCantidad,
                 tot_pvta = totalControl,
-                json_p = JsonConvert.SerializeObject(filaJson, Formatting.None)
+                json_p = productosJson.ToString(Formatting.None)
             };
         }
 
