@@ -4,6 +4,7 @@ using gc.infraestructura.Dtos.Almacen;
 using gc.infraestructura.Dtos.Cajas.Request;
 using gc.infraestructura.Dtos.Cajas.Response;
 using gc.infraestructura.Dtos.Gen;
+using gc.infraestructura.Dtos.Productos;
 using gc.infraestructura.Dtos.Productos.Precio;
 using gc.infraestructura.EntidadesComunes.Options;
 
@@ -24,6 +25,7 @@ namespace gc.caja.core.Servicios.Contratos.Cajas
         Task<RespuestaGenerica<RespuestaDto>> CrearPrefacturaDiferida(CajaPrefDiferidaReqDto req, string token);
         Task<RespuestaGenerica<RespuestaDto>> CrearDiferirPago(CajaOpeConfirmarReq req, string token);
         Task<RespuestaGenerica<PrecioListaDto>> ObtenerListasPrecios(string token);
+        Task<RespuestaGenerica<IVAAlicuotaDto>> ObtenerIvaAlicuotas(string token);
 
 
     }

@@ -9,6 +9,7 @@ using gc.infraestructura.Dtos.Almacen;
 using gc.infraestructura.Dtos.Cajas.Request;
 using gc.infraestructura.Dtos.Cajas.Response;
 using gc.infraestructura.Dtos.Gen;
+using gc.infraestructura.Dtos.Productos;
 using gc.infraestructura.Dtos.Productos.Precio;
 using gc.infraestructura.EntidadesComunes.Options;
 using Microsoft.Extensions.Logging;
@@ -35,12 +36,106 @@ namespace gc.caja.core.Servicios.Implementacion.Cajas
         private const string POST_OBTENER_COTIZACION = "/ObtenerCotizacion";
         private const string POST_CREAR_PREF_DIFERIDA = "/CrearPrefacturaDiferida";
         private const string POST_CREAR_PAGO_DIFERIDO = "/CrearPagoDiferido";
+        private const string GET_IVA_ALICUOTAS = "/ObtenerIVAAlicuotas";
         private const string GET_LISTAS_PRECIOS = "/api/ApiPrecioLista/ObtenerListaPrecios";
 
         
 
         public ProductoFactServicio(IOptions<AppSettings> options, ILogger<ProductoFactServicio> logger) : base(options, logger)
         {
+        }
+
+        public async Task<RespuestaGenerica<IVAAlicuotaDto>> ObtenerIvaAlicuotas(string token)
+        {
+            if (string.IsNullOrWhiteSpace(token))
+            {
+                throw new UnauthorizedException("Debe autenticarse nuevamente para continuar.");
+            }
+
+            try
+            {
+                var helper = new HelperAPI();
+                using var client = helper.InicializaCliente(token);
+                var link = $"{_appSettings.RutaBase}{RutaAPIProducto}{GET_IVA_ALICUOTAS}";
+
+                _logger?.LogInformation("Obteniendo alicuotas IVA desde API. Endpoint={Endpoint}", link);
+
+                using var response = await client.GetAsync(link);
+
+                if (response.StatusCode == HttpStatusCode.Unauthorized)
+                {
+                    throw new UnauthorizedException("Debe autenticarse nuevamente para continuar.");
+                }
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    var mensaje = await ReadApiErrorAsync(response);
+                    _logger?.LogWarning(
+                        "No se pudieron obtener las alicuotas IVA. Estado={StatusCode}, Detalle={Detalle}",
+                        (int)response.StatusCode,
+                        mensaje);
+
+                    return new RespuestaGenerica<IVAAlicuotaDto>
+                    {
+                        Ok = false,
+                        EsError = true,
+                        Mensaje = mensaje,
+                        ListaEntidad = []
+                    };
+                }
+
+                var contenido = await response.Content.ReadAsStringAsync();
+                if (string.IsNullOrWhiteSpace(contenido))
+                {
+                    return new RespuestaGenerica<IVAAlicuotaDto>
+                    {
+                        Ok = false,
+                        EsError = true,
+                        Mensaje = "La API no devolvio alicuotas IVA.",
+                        ListaEntidad = []
+                    };
+                }
+
+                var apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<IVAAlicuotaDto>>>(contenido);
+                if (apiResponse?.Data == null)
+                {
+                    return new RespuestaGenerica<IVAAlicuotaDto>
+                    {
+                        Ok = false,
+                        EsError = true,
+                        Mensaje = "La API devolvio un catalogo de alicuotas IVA invalido.",
+                        ListaEntidad = []
+                    };
+                }
+
+                var alicuotas = apiResponse.Data
+                    .GroupBy(x => x.IVA_Alicuota)
+                    .Select(x => x.First())
+                    .OrderBy(x => x.IVA_Alicuota)
+                    .ToList();
+
+                return new RespuestaGenerica<IVAAlicuotaDto>
+                {
+                    Ok = true,
+                    Mensaje = "OK",
+                    ListaEntidad = alicuotas
+                };
+            }
+            catch (UnauthorizedException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, "Error obteniendo alicuotas IVA.");
+                return new RespuestaGenerica<IVAAlicuotaDto>
+                {
+                    Ok = false,
+                    EsError = true,
+                    Mensaje = "No se pudieron obtener las alicuotas IVA.",
+                    ListaEntidad = []
+                };
+            }
         }
 
         public async Task<RespuestaGenerica<PrecioListaDto>> ObtenerListasPrecios(string token)

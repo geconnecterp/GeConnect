@@ -74,11 +74,6 @@
                         <label class="form-label">Repetido</label>
                         <input type="text" class="form-control input-integer" id="txtNdcfsRepetidoOri" maxlength="3" value="0" />
                     </div>
-                    <div class="col-md-2">
-                        <label class="form-label">Concepto</label>
-                        <input type="text" class="form-control input-text" id="txtNdcfsConcepto" maxlength="120" />
-                        <input type="hidden" id="txtNdcfsCantidad" value="1" />
-                    </div>
                 </div>
 
                 <div class="row g-3 align-items-end mb-3">
@@ -88,20 +83,20 @@
                     </div>
                     <div class="col-md-2">
                         <label class="form-label">IVA</label>
-                        <select class="form-select" id="cmbNdcfsIva">
-                            <option value="21" selected>21.00</option>
-                            <option value="10.5">10.50</option>
-                            <option value="27">27.00</option>
-                            <option value="0">0.00</option>
+                        <select class="form-select text-end ndcfs-select-numero" id="cmbNdcfsIva">
+                            <option value="">Cargando...</option>
                         </select>
                     </div>
                     <div class="col-md-2">
-                        <label class="form-label">Percepcion IB</label>
-                        <input type="text" class="form-control input-decimal text-end" id="txtNdcfsPerIb" value="0" />
+                        <label class="form-label">Cantidad</label>
+                        <input type="text" class="form-control input-integer text-end" id="txtNdcfsCantidad" value="1" />
                     </div>
-                    <div class="col-md-2">
-                        <label class="form-label">Percepcion IVA</label>
-                        <input type="text" class="form-control input-decimal text-end" id="txtNdcfsPerIva" value="0" />
+                    <div class="col-md-5">
+                        <label class="form-label">Concepto</label>
+                        <input type="text" class="form-control input-text" id="txtNdcfsConcepto" maxlength="120" />
+                        <input type="hidden" id="txtNdcfsAlicuota" value="0.00" />
+                        <input type="hidden" id="txtNdcfsPerIb" value="0.00" />
+                        <input type="hidden" id="txtNdcfsPerIva" value="0.00" />
                     </div>
                     <div class="col-md-1 d-grid">
                         <button type="button" class="btn btn-golden" id="btnNdcfsAgregarConcepto" title="Agregar concepto">
@@ -126,9 +121,9 @@
                                 <thead class="table-golden-header">
                                     <tr>
                                         <th>Concepto</th>
-                                        <th class="text-end">Neto</th>
-                                        <th class="text-end">IVA</th>
-                                        <th class="text-end">Total</th>
+                                        <th class="text-end">Cantidad</th>
+                                        <th class="text-end">Precio Uni</th>
+                                        <th class="text-end">Precio TOT</th>
                                         <th class="text-center">Accion</th>
                                     </tr>
                                 </thead>

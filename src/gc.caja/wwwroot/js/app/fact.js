@@ -1013,17 +1013,19 @@ function seleccionarClienteDesdeGrilla($row) {
     console.log('🔒 Interfaz bloqueada - Iniciando carga de cliente');
     console.log('═══════════════════════════════════════════════════');
 
-    buscarClientePorId(criterioBusqueda);
+    buscarClientePorId(datosCliente.id || criterioBusqueda, datosCliente.origen, datosCliente.documento);
 }
 
 // ====== BUSCAR CLIENTE POR ID ======
 /**
  * ✅ MODIFICADO v2.1: Búsqueda por ID con gestión de estado y validación de CUIT
  */
-function buscarClientePorId(clienteId) {
+function buscarClientePorId(clienteId, origen, documento) {
     console.log('═══════════════════════════════════════════════════');
     console.log('🔍 BUSCAR CLIENTE POR ID v2.1');
     console.log(`   ID: ${clienteId}`);
+    console.log(`   Origen: ${origen || ''}`);
+    console.log(`   Documento: ${documento || ''}`);
     console.log('═══════════════════════════════════════════════════');
 
     if (!clienteId || clienteId.toString().trim() === '') {
@@ -1034,9 +1036,9 @@ function buscarClientePorId(clienteId) {
         return;
     }
 
-    const url = typeof BuscarClienteUrl !== 'undefined' && BuscarClienteUrl
-        ? BuscarClienteUrl
-        : '/Facturacion/Cliente/BuscarCliente';
+    const url = typeof BuscarClientePorIdUrl !== 'undefined' && BuscarClientePorIdUrl
+        ? BuscarClientePorIdUrl
+        : '/Facturacion/Cliente/BuscarClientePorId';
 
     console.log(`📡 URL: ${url}`);
 
@@ -1044,7 +1046,7 @@ function buscarClientePorId(clienteId) {
     ajaxActual = $.ajax({
         url: url,
         type: 'POST',
-        data: { criterio: clienteId },
+        data: { clienteId: clienteId, origen: origen || '', documento: documento || '' },
         timeout: 30000,
         success: function (response) {
             console.log('✅ Respuesta recibida');
@@ -1893,3 +1895,5 @@ function verificaExistenciaRegistrosCC(ctaid) {
 
     console.log('═══════════════════════════════════════════════════');
 }
+
+

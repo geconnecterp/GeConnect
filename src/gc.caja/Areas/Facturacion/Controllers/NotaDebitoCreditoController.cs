@@ -3,13 +3,10 @@ using gc.caja.core.Servicios.Contratos.Cajas;
 using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Dtos.Cajas;
 using gc.infraestructura.Dtos.Cajas.Request;
-using gc.infraestructura.Dtos.Cajas.Response;
-using gc.infraestructura.Dtos.Gen;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using System.Globalization;
 
 namespace gc.caja.Areas.Facturacion.Controllers
 {
@@ -164,6 +161,64 @@ namespace gc.caja.Areas.Facturacion.Controllers
                 {
                     success = false,
                     message = "Error interno al validar los datos de la caja. Contacte al administrador."
+                });
+            }
+        }
+
+        [HttpGet]
+        public async Task<JsonResult> ObtenerIvaAlicuotas()
+        {
+            try
+            {
+                if (!VerificarAutenticacion(out IActionResult _))
+                {
+                    return Json(new
+                    {
+                        ok = false,
+                        mensaje = "La sesion ha expirado. Vuelva a iniciar sesion.",
+                        lista = Array.Empty<object>()
+                    });
+                }
+
+                _logger?.LogInformation(
+                    "ND/NC/FS: solicitando alicuotas IVA. Usuario={Usuario}",
+                    UserName);
+
+                var respuesta = await _productoFactServicio.ObtenerIvaAlicuotas(TokenCookie);
+                var lista = (respuesta.ListaEntidad ?? [])
+                    .Select(x => new
+                    {
+                        ivaAlicuota = x.IVA_Alicuota,
+                        ivaGrl = x.IVA_Grl,
+                        ivaExtra = x.IVA_Extra,
+                        ivaAfip = x.IVA_Afip
+                    })
+                    .ToList();
+
+                _logger?.LogInformation(
+                    "ND/NC/FS: alicuotas IVA recibidas. Ok={Ok}; Cantidad={Cantidad}",
+                    respuesta.Ok,
+                    lista.Count);
+
+                return Json(new
+                {
+                    ok = respuesta.Ok,
+                    mensaje = respuesta.Mensaje,
+                    lista
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(
+                    ex,
+                    "ND/NC/FS: error obteniendo alicuotas IVA. Usuario={Usuario}",
+                    UserName);
+
+                return Json(new
+                {
+                    ok = false,
+                    mensaje = "No se pudieron obtener las alicuotas IVA.",
+                    lista = Array.Empty<object>()
                 });
             }
         }

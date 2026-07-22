@@ -328,6 +328,102 @@ namespace gc.caja.Areas.Facturacion.Controllers
         //}
 
         /// <summary>
+        /// Busca datos completos para una cuenta seleccionada desde la grilla.
+        /// Preserva el origen elegido por el operador para evitar que una nueva busqueda general
+        /// resuelva otro registro con el mismo documento.
+        /// </summary>
+        [HttpPost]
+        public async Task<JsonResult> BuscarClientePorId(string clienteId, string origen, string documento)
+        {
+            try
+            {
+                if (!VerificarAutenticacion(out IActionResult redirectResult))
+                    return Json(new { ok = false, resultado = -1, mensaje = "Sesión expirada" });
+
+                var origenNormalizado = origen?.Trim().ToUpperInvariant() ?? string.Empty;
+                var clienteIdNormalizado = clienteId?.Trim() ?? string.Empty;
+                var documentoNormalizado = documento?.Trim() ?? string.Empty;
+
+                if (string.IsNullOrWhiteSpace(origenNormalizado))
+                    return Json(new { ok = false, mensaje = "Origen de cliente inválido" });
+
+                if (string.IsNullOrWhiteSpace(clienteIdNormalizado) && string.IsNullOrWhiteSpace(documentoNormalizado))
+                    return Json(new { ok = false, mensaje = "ID de cliente inválido" });
+
+                var cuentaSeleccionada = ClientesBuscados?.FirstOrDefault(x =>
+                    string.Equals(x.Origen?.Trim(), origenNormalizado, StringComparison.OrdinalIgnoreCase) &&
+                    (string.IsNullOrWhiteSpace(clienteIdNormalizado) || string.Equals(x.Cta_Id?.Trim(), clienteIdNormalizado, StringComparison.OrdinalIgnoreCase)) &&
+                    (string.IsNullOrWhiteSpace(documentoNormalizado) || string.Equals(x.Cta_Documento?.Trim(), documentoNormalizado, StringComparison.OrdinalIgnoreCase)));
+
+                if (cuentaSeleccionada == null)
+                {
+                    _logger?.LogWarning(
+                        "BuscarClientePorId no encontro la cuenta seleccionada en sesion. ClienteId={ClienteId}, Documento={Documento}, Origen={Origen}. Se usaran datos enviados desde la grilla.",
+                        clienteIdNormalizado,
+                        documentoNormalizado,
+                        origenNormalizado);
+
+                    cuentaSeleccionada = new CuentaBusquedaResultadoDto
+                    {
+                        Cta_Id = clienteIdNormalizado,
+                        Cta_Documento = documentoNormalizado,
+                        Origen = origenNormalizado
+                    };
+                }
+
+                if (origenNormalizado is "N" or "Q")
+                {
+                    var mensajeNoHabilitado = origenNormalizado == "Q"
+                        ? "Proveedor NO HABILITADO"
+                        : "Cliente Registrado NO HABILITADO";
+
+                    return Json(new
+                    {
+                        ok = false,
+                        mensaje = mensajeNoHabilitado,
+                        cantidadResultados = 1,
+                        cliente = MapearClienteParcial(cuentaSeleccionada)
+                    });
+                }
+
+                var resultado = await ObtenerDatosCompletosCliente(
+                    cuentaSeleccionada,
+                    cuentaSeleccionada.Cta_Id,
+                    cuentaSeleccionada.Cta_Documento);
+
+                if (!resultado.ok)
+                {
+                    _logger?.LogWarning(
+                        "No se pudieron cargar datos completos desde seleccion de grilla. ClienteId={ClienteId}, Documento={Documento}, Origen={Origen}, Error={Error}",
+                        clienteIdNormalizado,
+                        documentoNormalizado,
+                        origenNormalizado,
+                        resultado.mensaje);
+
+                    return Json(new { ok = false, mensaje = resultado.mensaje });
+                }
+
+                if (resultado.datosCompletos != null)
+                {
+                    resultado.datosCompletos.Origen = origenNormalizado;
+                    ClienteActual = resultado.datosCompletos;
+                }
+
+                return Json(new
+                {
+                    ok = true,
+                    mensaje = "Cliente encontrado",
+                    cantidadResultados = 1,
+                    cliente = resultado.cliente
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, "Error al buscar cliente por ID desde grilla: {ClienteId}", clienteId);
+                return Json(new { ok = false, mensaje = "Error al cargar datos del cliente" });
+            }
+        }
+        /// <summary>
         /// ✅ MÉTODO PRIVADO: Obtiene datos fiscales y comerciales completos del cliente.
         /// Reutilizable desde BuscarCliente (1 resultado) y BuscarClientePorId (desde grilla).
         /// </summary>
@@ -341,14 +437,15 @@ namespace gc.caja.Areas.Facturacion.Controllers
                 // ❶ Determinar valor de búsqueda según origen
                 // Si es Cuenta Registrada → usar ID
                 // Si es Consumidor Final → usar Documento
-                string valorBusqueda = cuenta.Origen.Equals("C", StringComparison.OrdinalIgnoreCase) ||
-                    cuenta.Origen.Equals("P", StringComparison.OrdinalIgnoreCase)
+                var origenParaBusqueda = cuenta.Origen?.Trim() ?? string.Empty;
+                string valorBusqueda = string.Equals(origenParaBusqueda, "C", StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(origenParaBusqueda, "P", StringComparison.OrdinalIgnoreCase)
                     ? clienteId
                     : numeroDocumento ?? clienteId;
 
                 // ❷ Invocar servicio de datos completos
                 var resultadoDatos = await _cajaServicio.BusquedaDatosCliente(
-                    origen: cuenta.Origen,
+                    origen: origenParaBusqueda,
                     valor: valorBusqueda,
                     adm_id: AdministracionId,
                     usu_id: UserName,
@@ -365,13 +462,53 @@ namespace gc.caja.Areas.Facturacion.Controllers
 
                 var datos = resultadoDatos.Entidad;
 
-                //resguardamos la lista de precios del cliente
-                var listaPrecioPredeterminada = datos.lp_id?.Trim() ?? string.Empty;
+                // Resguardar la lista de precios del cliente. Si el SP no informa una,
+                // se usa la configuracion inicial de caja segun el origen de la cuenta.
+                var origenCuenta = !string.IsNullOrWhiteSpace(origenParaBusqueda)
+                    ? origenParaBusqueda.Trim().ToUpperInvariant()
+                    : datos.Origen?.Trim().ToUpperInvariant() ?? string.Empty;
+
+                var cajaActual = CajaActual;
+                // En la caja, lp_id_min corresponde a la lista mayorista y lp_id_may a la minorista.
+                // La decision por defecto se toma por origen: CF -> minorista, CR/proveedor -> mayorista.
+                var listaPrecioMayoristaDefault = cajaActual?.Caja?.lp_id_min?.Trim() ?? string.Empty;
+                var listaPrecioMinoristaDefault = cajaActual?.Caja?.lp_id_may?.Trim() ?? string.Empty;
+                var listaPrecioDesdeCliente = datos.lp_id?.Trim() ?? string.Empty;
+                if (string.Equals(listaPrecioDesdeCliente, "NULL", StringComparison.OrdinalIgnoreCase))
+                {
+                    listaPrecioDesdeCliente = string.Empty;
+                }
+
+                var listaPrecioPredeterminada = listaPrecioDesdeCliente;
+                var origenListaPrecio = "SP";
+
+                if (string.IsNullOrWhiteSpace(listaPrecioPredeterminada))
+                {
+                    listaPrecioPredeterminada = origenCuenta switch
+                    {
+                        "F" => listaPrecioMinoristaDefault,
+                        "C" or "P" => listaPrecioMayoristaDefault,
+                        _ => string.Empty
+                    };
+
+                    origenListaPrecio = origenCuenta switch
+                    {
+                        "F" => "FALLBACK_CAJA_MINORISTA_CF",
+                        "C" or "P" => "FALLBACK_CAJA_MAYORISTA_CR",
+                        _ => "SIN_FALLBACK"
+                    };
+                }
+
                 if (string.IsNullOrWhiteSpace(listaPrecioPredeterminada))
                 {
                     _logger?.LogError(
-                        "El cliente {ClienteId} no devolvió una lista de precios predeterminada.",
-                        datos.cta_id);
+                        "El cliente {ClienteId} no devolvio lp_id y no se pudo resolver fallback. Origen={Origen}, LP_SP='{LP_SP}', LP_MayoristaDefault={LPMayorista}, LP_MinoristaDefault={LPMinorista}.",
+                        datos.cta_id,
+                        origenCuenta,
+                        datos.lp_id,
+                        listaPrecioMayoristaDefault,
+                        listaPrecioMinoristaDefault);
+
                     return (
                         false,
                         "No se pudo determinar la lista de precios predeterminada del cliente.",
@@ -379,13 +516,25 @@ namespace gc.caja.Areas.Facturacion.Controllers
                         null);
                 }
 
+                _logger?.LogInformation(
+                    "Lista de precios resuelta para cliente {ClienteId}. OrigenCuenta={Origen}, LP_SP='{LP_SP}', LP_Final={LPFinal}, Fuente={Fuente}, LP_MayoristaDefault={LPMayorista}, LP_MinoristaDefault={LPMinorista}.",
+                    datos.cta_id,
+                    origenCuenta,
+                    datos.lp_id,
+                    listaPrecioPredeterminada,
+                    origenListaPrecio,
+                    listaPrecioMayoristaDefault,
+                    listaPrecioMinoristaDefault);
+
+                datos.Origen = origenCuenta;
+                datos.lp_id = listaPrecioPredeterminada;
                 LP_Id = listaPrecioPredeterminada;
 
                 string[] nombre = datos.cta_denominacion
                     .Split([' '], StringSplitOptions.RemoveEmptyEntries);
 
                 // ✅ NUEVO: Validación de CUIT para clientes registrados
-                bool requiereCuit = cuenta.Origen.Equals("C", StringComparison.OrdinalIgnoreCase) && datos.tdoc_id != "80";
+                bool requiereCuit = origenCuenta == "C" && datos.tdoc_id != "80";
 
                 // ❹ Mapear a objeto de respuesta con TODOS los datos (para frontend)
                 var clienteCompleto = new
@@ -407,7 +556,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
 
                     email = datos.cta_email ?? string.Empty,
                     movil = datos.cta_celu ?? string.Empty,
-                    origen = cuenta.Origen,
+                    origen = origenCuenta,
                     origenDesc = cuenta.Origen_Desc,
                     lp_id = listaPrecioPredeterminada,
                     listaPrecio = listaPrecioPredeterminada,
@@ -739,3 +888,9 @@ namespace gc.caja.Areas.Facturacion.Controllers
         }
     }
 }
+
+
+
+
+
+

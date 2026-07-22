@@ -7775,6 +7775,11 @@ span[data-bs-toggle="tooltip"] {
     overflow: auto;
 }
 
+#modalNdcfsConceptos .ndcfs-select-numero,
+#modalNdcfsConceptos .ndcfs-select-numero option {
+    text-align: right;
+}
+
 #modalNdcfsCalculo .ndcfs-operacion-resumen dt,
 #modalNdcfsCalculo .ndcfs-operacion-resumen dd {
     padding-top: .45rem;

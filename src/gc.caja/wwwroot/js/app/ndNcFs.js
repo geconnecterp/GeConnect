@@ -32,6 +32,7 @@
         repetidoOri: '#txtNdcfsRepetidoOri',
         cantidad: '#txtNdcfsCantidad',
         neto: '#txtNdcfsNeto',
+        alicuota: '#txtNdcfsAlicuota',
         iva: '#cmbNdcfsIva',
         perIb: '#txtNdcfsPerIb',
         perIva: '#txtNdcfsPerIva',
@@ -54,6 +55,7 @@
     let calculoActual = null;
     let calculoEnCurso = false;
     let confirmacionEnCurso = false;
+    let ivaAlicuotasCargadas = false;
 
     $(function () {
         logPaso('Inicializando modulo', {
@@ -123,6 +125,18 @@
         });
 
         $(document).on('change', SELECTORES.operacion, actualizarVisibilidadOrigenNc);
+        $(document).on('input', SELECTORES.neto, recalcularAlicuota);
+        $(document).on('change', SELECTORES.iva, recalcularAlicuota);
+        $(document).on('blur', SELECTORES.neto, function () {
+            formatearInputNumerico($(this), 2);
+            recalcularAlicuota();
+        });
+        $(document).on('blur', SELECTORES.cantidad, function () {
+            formatearInputNumerico($(this), 0);
+        });
+        $(document).on('focus', `${SELECTORES.neto}, ${SELECTORES.cantidad}`, function () {
+            normalizarInputParaEdicion($(this));
+        });
         $(document).on('click', SELECTORES.btnAgregarConcepto, agregarConcepto);
         $(document).on('click', '.btn-ndcfs-eliminar-concepto', function () {
             eliminarConcepto($(this).data('index'));
@@ -413,13 +427,14 @@
         conceptos = [];
         calculoActual = null;
         cargarOperaciones(response?.operacionesPermitidas || cuentaSeleccionada?.operacionesPermitidas || []);
+        cargarIvaAlicuotas();
         hidratarDatosCuentaModulo(cuentaSeleccionada || response?.cuenta || {}, 'Conceptos');
         limpiarInputsConcepto();
         renderConceptos();
         actualizarVisibilidadOrigenNc();
         $(SELECTORES.modalConceptos).modal('show');
         setTimeout(function () {
-            $(SELECTORES.concepto).trigger('focus');
+            $(SELECTORES.neto).trigger('focus');
         }, 350);
     }
 
@@ -439,12 +454,110 @@
         }
     }
 
+    function cargarIvaAlicuotas() {
+        if (ivaAlicuotasCargadas) {
+            logPaso('Alicuotas IVA ya cargadas');
+            recalcularAlicuota();
+            return;
+        }
+
+        const url = String(window.ndcfsObtenerIvaAlicuotasUrl || '').trim();
+        const $select = $(SELECTORES.iva);
+
+        if (!url) {
+            logError('No se encontro URL para obtener alicuotas IVA');
+            cargarIvaAlicuotasFallback();
+            return;
+        }
+
+        logPaso('Solicitando alicuotas IVA', { url: url });
+        $select.prop('disabled', true).html('<option value="">Cargando...</option>');
+
+        $.ajax({
+            url: url,
+            type: 'GET',
+            dataType: 'json',
+            timeout: 30000
+        })
+            .done(function (response) {
+                logPaso('Respuesta alicuotas IVA', response);
+                if (!response || response.ok !== true || !Array.isArray(response.lista) || response.lista.length === 0) {
+                    logWarn('Alicuotas IVA no disponibles desde servicio', response);
+                    cargarIvaAlicuotasFallback();
+                    return;
+                }
+
+                hidratarComboIva(response.lista);
+                ivaAlicuotasCargadas = true;
+            })
+            .fail(function (xhr) {
+                logError('Error AJAX obteniendo alicuotas IVA', {
+                    status: xhr?.status,
+                    response: xhr?.responseJSON || xhr?.responseText
+                });
+                cargarIvaAlicuotasFallback();
+            })
+            .always(function () {
+                $select.prop('disabled', false);
+                recalcularAlicuota();
+            });
+    }
+
+    function hidratarComboIva(lista) {
+        const $select = $(SELECTORES.iva);
+        $select.empty();
+
+        lista
+            .map(function (item) {
+                return {
+                    valor: parsearNumero(item.ivaAlicuota ?? item.IVA_Alicuota, NaN),
+                    grl: item.ivaGrl ?? item.IVA_Grl ?? '',
+                    extra: item.ivaExtra ?? item.IVA_Extra ?? '',
+                    afip: item.ivaAfip ?? item.IVA_Afip ?? ''
+                };
+            })
+            .filter(function (item) {
+                return Number.isFinite(item.valor) && item.valor >= 0;
+            })
+            .sort(function (a, b) {
+                return a.valor - b.valor;
+            })
+            .forEach(function (item) {
+                const textoBase = formatearPorcentaje(item.valor);
+                const detalle = item.grl || item.afip || item.extra;
+                $select.append(
+                    `<option class="text-end" value="${item.valor}" data-iva-grl="${escaparHtml(item.grl)}" data-iva-extra="${escaparHtml(item.extra)}" data-iva-afip="${escaparHtml(item.afip)}">${escaparHtml(detalle ? `${textoBase} - ${detalle}` : textoBase)}</option>`
+                );
+            });
+
+        if ($select.find('option[value="21"]').length > 0) {
+            $select.val('21');
+        }
+
+        if (!$select.val()) {
+            $select.prop('selectedIndex', 0);
+        }
+    }
+
+    function cargarIvaAlicuotasFallback() {
+        logWarn('Usando fallback local de alicuotas IVA');
+        const $select = $(SELECTORES.iva);
+        $select.html(`
+            <option class="text-end" value="0">0.00</option>
+            <option class="text-end" value="10.5">10.50</option>
+            <option class="text-end" value="21" selected>21.00</option>
+            <option class="text-end" value="27">27.00</option>
+        `);
+        ivaAlicuotasCargadas = true;
+    }
+
     function agregarConcepto() {
         const concepto = {
             concepto: String($(SELECTORES.concepto).val() || '').trim(),
             cantidad: parsearNumero($(SELECTORES.cantidad).val(), 1),
             netoGravado: parsearNumero($(SELECTORES.neto).val(), 0),
             alicuotaIva: parsearNumero($(SELECTORES.iva).val(), 0),
+            alicuotaMonto: parsearNumero($(SELECTORES.alicuota).val(), 0),
             percepcionIb: parsearNumero($(SELECTORES.perIb).val(), 0),
             percepcionIva: parsearNumero($(SELECTORES.perIva).val(), 0)
         };
@@ -461,7 +574,7 @@
         logPaso('Concepto agregado', { cantidadConceptos: conceptos.length, total: calcularTotalConceptos() });
         limpiarInputsConcepto();
         renderConceptos();
-        $(SELECTORES.concepto).trigger('focus');
+        $(SELECTORES.neto).trigger('focus');
     }
 
     function validarConcepto(concepto) {
@@ -470,7 +583,7 @@
         }
 
         if (!Number.isFinite(concepto.netoGravado) || concepto.netoGravado <= 0) {
-            return { ok: false, mensaje: 'Ingrese un neto gravado mayor a cero.' };
+            return { ok: false, mensaje: 'Ingrese un neto mayor a cero.' };
         }
 
         if (!Number.isFinite(concepto.cantidad) || concepto.cantidad <= 0) {
@@ -519,15 +632,14 @@
 
         let total = 0;
         conceptos.forEach(function (item, index) {
-            const iva = calcularIva(item.netoGravado, item.alicuotaIva);
-            const totalItem = (item.netoGravado + iva + item.percepcionIb + item.percepcionIva) * item.cantidad;
+            const totalItem = item.netoGravado * item.cantidad;
             total += totalItem;
 
             $tbody.append(`
                 <tr>
                     <td>${escaparHtml(item.concepto)}</td>
+                    <td class="text-end">${formatearNumero(item.cantidad, 0)}</td>
                     <td class="text-end">${formatearMoneda(item.netoGravado)}</td>
-                    <td class="text-end">${formatearMoneda(iva)}</td>
                     <td class="text-end fw-bold">${formatearMoneda(totalItem)}</td>
                     <td class="text-center">
                         <button type="button"
@@ -803,10 +915,34 @@
     function limpiarInputsConcepto() {
         $(SELECTORES.cantidad).val('1');
         $(SELECTORES.neto).val('');
-        $(SELECTORES.perIb).val('0');
-        $(SELECTORES.perIva).val('0');
+        $(SELECTORES.alicuota).val('0.00');
+        $(SELECTORES.perIb).val('0.00');
+        $(SELECTORES.perIva).val('0.00');
         $(SELECTORES.concepto).val('');
         $(SELECTORES.mensajeConcepto).addClass('d-none').empty();
+    }
+
+    function recalcularAlicuota() {
+        const neto = parsearNumero($(SELECTORES.neto).val(), 0);
+        const porcentajeIva = parsearNumero($(SELECTORES.iva).val(), 0);
+        const alicuota = calcularIva(neto, porcentajeIva);
+
+        $(SELECTORES.alicuota).val(formatearNumero(alicuota, 2));
+    }
+
+    function formatearInputNumerico($input, decimales) {
+        const valor = parsearNumero($input.val(), 0);
+        $input.val(formatearNumero(valor, decimales));
+    }
+
+    function normalizarInputParaEdicion($input) {
+        const valorActual = String($input.val() || '').trim();
+        if (!valorActual) {
+            return;
+        }
+
+        const valor = parsearNumero(valorActual, 0);
+        $input.val(Number.isFinite(valor) ? String(valor) : '');
     }
 
     function mostrarMensajeConcepto(mensaje) {
@@ -991,11 +1127,35 @@
             return Number.isFinite(valor) ? valor : defecto;
         }
 
-        const normalizado = String(valor ?? '')
+        let normalizado = String(valor ?? '')
             .replace(/\$/g, '')
             .replace(/\s/g, '')
-            .replace(/\./g, '')
-            .replace(',', '.');
+            .trim();
+
+        if (!normalizado) {
+            return defecto;
+        }
+
+        const ultimoPunto = normalizado.lastIndexOf('.');
+        const ultimaComa = normalizado.lastIndexOf(',');
+
+        if (ultimoPunto >= 0 && ultimaComa >= 0) {
+            const separadorDecimal = ultimoPunto > ultimaComa ? '.' : ',';
+            const separadorMiles = separadorDecimal === '.' ? ',' : '.';
+            normalizado = normalizado
+                .replaceAll(separadorMiles, '')
+                .replace(separadorDecimal, '.');
+        } else if (ultimaComa >= 0) {
+            const decimales = normalizado.length - ultimaComa - 1;
+            normalizado = decimales === 3
+                ? normalizado.replaceAll(',', '')
+                : normalizado.replace(',', '.');
+        } else if (ultimoPunto >= 0) {
+            const decimales = normalizado.length - ultimoPunto - 1;
+            normalizado = decimales === 3
+                ? normalizado.replaceAll('.', '')
+                : normalizado;
+        }
 
         const numero = parseFloat(normalizado);
         return Number.isFinite(numero) ? numero : defecto;
@@ -1007,22 +1167,30 @@
 
     function calcularTotalConceptos() {
         return conceptos.reduce(function (total, item) {
-            return total + ((item.netoGravado + calcularIva(item.netoGravado, item.alicuotaIva) + item.percepcionIb + item.percepcionIva) * item.cantidad);
+            return total + (item.netoGravado * item.cantidad);
         }, 0);
     }
 
     function formatearMoneda(valor) {
-        return new Intl.NumberFormat('es-AR', {
+        return new Intl.NumberFormat('en-US', {
             style: 'currency',
             currency: 'ARS',
             minimumFractionDigits: 2
         }).format(Number(valor || 0));
     }
 
-    function formatearNumero(valor) {
-        return new Intl.NumberFormat('es-AR', {
-            minimumFractionDigits: 0,
-            maximumFractionDigits: 3
+    function formatearNumero(valor, decimales) {
+        const digitos = Number.isInteger(decimales) ? decimales : null;
+        return new Intl.NumberFormat('en-US', {
+            minimumFractionDigits: digitos ?? 0,
+            maximumFractionDigits: digitos ?? 3
+        }).format(Number(valor || 0));
+    }
+
+    function formatearPorcentaje(valor) {
+        return new Intl.NumberFormat('en-US', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
         }).format(Number(valor || 0));
     }
 
