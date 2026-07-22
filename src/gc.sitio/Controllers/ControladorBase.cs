@@ -3087,7 +3087,7 @@ namespace gc.sitio.Controllers
 
             if (!estaAutenticado || fechaExpiracion < DateTime.Now)
             {
-                redirectResult = RedirectToAction("Login", "Token", new { area = "seguridad" });
+				redirectResult = RedirectToAction("Login", "Token", new { area = "seguridad" });
                 return false;
             }
 
