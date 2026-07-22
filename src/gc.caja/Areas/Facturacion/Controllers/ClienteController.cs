@@ -471,8 +471,8 @@ namespace gc.caja.Areas.Facturacion.Controllers
                 var cajaActual = CajaActual;
                 // En la caja, lp_id_min corresponde a la lista mayorista y lp_id_may a la minorista.
                 // La decision por defecto se toma por origen: CF -> minorista, CR/proveedor -> mayorista.
-                var listaPrecioMayoristaDefault = cajaActual?.Caja?.lp_id_min?.Trim() ?? string.Empty;
-                var listaPrecioMinoristaDefault = cajaActual?.Caja?.lp_id_may?.Trim() ?? string.Empty;
+                var listaPrecioMayoristaDefault = cajaActual?.Caja?.lp_id_may?.Trim() ?? string.Empty; 
+                var listaPrecioMinoristaDefault = cajaActual?.Caja?.lp_id_min?.Trim() ?? string.Empty;
                 var listaPrecioDesdeCliente = datos.lp_id?.Trim() ?? string.Empty;
                 if (string.Equals(listaPrecioDesdeCliente, "NULL", StringComparison.OrdinalIgnoreCase))
                 {
