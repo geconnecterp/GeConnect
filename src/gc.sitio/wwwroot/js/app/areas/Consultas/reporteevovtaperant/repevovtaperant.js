@@ -154,11 +154,13 @@ function ImprimirListaProductosStk_Generada() {
 		var lProv = [];
 		var lFam = [];
 		var lRub = [];
-		var lSuc = ObtenerFiltroLista("#chkSucursales", "#SucursalesList");
-		$("#DepositosList").children().each(function (i, item) { lDep.push($(item).val()) });
-		var lProv = ObtenerFiltroLista("#chkRel01", "#Rel01List");
+		var temp = ObtenerFiltroLista("#chkSucursales", "#SucursalesList");
+		var lSuc = temp.ids;
+		temp = ObtenerFiltroLista("#chkRel01", "#Rel01List");
+		var lProv = temp.ids;
 		$("#FamiliaList").children().each(function (i, item) { lFam.push($(item).val()) });
-		var lRub = ObtenerFiltroLista("#chkRubro", "#RubrosList");
+		temp = ObtenerFiltroLista("#chkRubro", "#RubrosList");
+		var lRub = temp.ids;
 		var desde = $("#Desde").val();
 		var hasta = $("#Hasta").val();
 		var agrupador = $("#listaAgrupador").val();
@@ -180,9 +182,31 @@ function ImprimirListaProductosStk_Generada() {
 
 		var data = { lSuc, lProv, lFam, lRub, desde, hasta, agrupador, tipoReporte, filtrosString };
 
-		cargarReporteEnArre(93, data, "REPORTE DE EVOLUCIÓN DE VENTAS CON PERIODOS ANTERIORES", "", "");
+		cargarReporteEnArre(93, data, "REPORTE DE EVOLUCION DE VENTAS CON PERIODO ANTERIORES", "", "");
 		invocacionGestorDoc({});
 	}, 500);
+}
+
+function ReseteoDeReportes() {
+	console.log("Reseto de reportes");
+	ReporteResetArre();
+}
+
+function ConstruirDescripcionFiltro(nombre, idCheckbox, idListBox) {
+
+	const activo = $(idCheckbox).is(":checked");
+	if (!activo) return ""; // No incluir si el filtro no está activo
+
+	const valores = [];
+	$(idListBox + " option").each(function () {
+		valores.push($(this).text().trim());
+	});
+
+	if (valores.length === 0) {
+		return `${nombre}: Todos`;
+	}
+
+	return `${nombre}: ${valores.join(", ")}`;
 }
 
 function ValidarRangoFechas() {
