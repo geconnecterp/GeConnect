@@ -1,0 +1,158 @@
+<div class="modal fade modal-golden"
+     id="modalNdcfsConceptos"
+     tabindex="-1"
+     aria-labelledby="modalNdcfsConceptosLabel"
+     aria-hidden="true"
+     data-bs-backdrop="static"
+     data-bs-keyboard="false">
+    <div class="modal-dialog modal-fullscreen">
+        <div class="modal-content">
+            <div class="modal-header bg-gradient-golden text-white">
+                <div>
+                    <h5 class="modal-title mb-0" id="modalNdcfsConceptosLabel">
+                        <i class="bx bx-receipt"></i>
+                        Nota de Debito - Nota de Credito - Factura de Servicio
+                    </h5>
+                    <small id="ndcfsConceptosSubtitulo">Carga de conceptos</small>
+                </div>
+            </div>
+
+            <div class="modal-body p-4">
+                <div class="row g-3 mb-3">
+                    <div class="col-md-3">
+                        <label class="form-label">Nombre</label>
+                        <input type="text" class="form-control" id="txtNdcfsNombreConceptos" readonly />
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">ID</label>
+                        <input type="text" class="form-control" id="txtNdcfsIdConceptos" readonly />
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Domicilio</label>
+                        <input type="text" class="form-control" id="txtNdcfsDomicilioConceptos" readonly />
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">Tipo/Nro</label>
+                        <input type="text" class="form-control" id="txtNdcfsTipoNumeroConceptos" readonly />
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">Emite</label>
+                        <input type="text" class="form-control fw-bold text-golden-dark" id="txtNdcfsEmiteConceptos" readonly />
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Condicion AFIP</label>
+                        <input type="text" class="form-control" id="txtNdcfsAfipConceptos" readonly />
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Email</label>
+                        <input type="text" class="form-control" id="txtNdcfsEmailConceptos" readonly />
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Movil</label>
+                        <input type="text" class="form-control" id="txtNdcfsMovilConceptos" readonly />
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Cuenta</label>
+                        <input type="text" class="form-control" id="txtNdcfsOrigenConceptos" readonly />
+                    </div>
+                </div>
+
+                <div class="row g-3 align-items-end mb-3">
+                    <div class="col-md-3">
+                        <label class="form-label">Emite</label>
+                        <select class="form-select" id="cmbNdcfsOperacion"></select>
+                    </div>
+                    <div class="col-md-2 ndcfs-origen-nc d-none">
+                        <label class="form-label">T. Comp. Ori.</label>
+                        <input type="text" class="form-control input-text" id="txtNdcfsTcoOri" maxlength="3" />
+                    </div>
+                    <div class="col-md-3 ndcfs-origen-nc d-none">
+                        <label class="form-label">Comprobante Ori.</label>
+                        <input type="text" class="form-control input-text" id="txtNdcfsCompteOri" maxlength="13" />
+                    </div>
+                    <div class="col-md-2 ndcfs-origen-nc d-none">
+                        <label class="form-label">Repetido</label>
+                        <input type="text" class="form-control input-integer" id="txtNdcfsRepetidoOri" maxlength="3" value="0" />
+                    </div>
+                </div>
+
+                <div class="row g-3 align-items-end mb-3">
+                    <div class="col-md-2">
+                        <label class="form-label">Neto</label>
+                        <input type="text" class="form-control input-decimal text-end" id="txtNdcfsNeto" />
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">IVA</label>
+                        <select class="form-select text-end ndcfs-select-numero" id="cmbNdcfsIva">
+                            <option value="">Cargando...</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">Cantidad</label>
+                        <input type="text" class="form-control input-integer text-end" id="txtNdcfsCantidad" value="1" />
+                    </div>
+                    <div class="col-md-5">
+                        <label class="form-label">Concepto</label>
+                        <input type="text" class="form-control input-text" id="txtNdcfsConcepto" maxlength="120" />
+                        <input type="hidden" id="txtNdcfsAlicuota" value="0.00" />
+                        <input type="hidden" id="txtNdcfsPerIb" value="0.00" />
+                        <input type="hidden" id="txtNdcfsPerIva" value="0.00" />
+                    </div>
+                    <div class="col-md-1 d-grid">
+                        <button type="button" class="btn btn-golden" id="btnNdcfsAgregarConcepto" title="Agregar concepto">
+                            <i class="bx bx-plus-circle fs-4"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="alert alert-warning border-golden py-2 d-none" id="ndcfsMensajeConcepto"></div>
+
+                <div class="card card-golden shadow-sm">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h6 class="mb-0">
+                            <i class="bx bx-list-ul"></i>
+                            Conceptos cargados
+                        </h6>
+                        <strong>Total: <span id="lblNdcfsTotalConceptos">$ 0.00</span></strong>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive ndcfs-tabla-conceptos">
+                            <table class="table table-golden table-hover mb-0" id="tbNdcfsConceptos">
+                                <thead class="table-golden-header">
+                                    <tr>
+                                        <th>Concepto</th>
+                                        <th class="text-end">Cantidad</th>
+                                        <th class="text-end">Precio Uni</th>
+                                        <th class="text-end">Precio TOT</th>
+                                        <th class="text-center">Accion</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tbodyNdcfsConceptos">
+                                    <tr id="rowNdcfsSinConceptos">
+                                        <td colspan="5" class="text-center text-muted py-4">
+                                            <i class="bx bx-info-circle"></i>
+                                            Sin conceptos cargados
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer bg-light">
+                <div class="d-flex justify-content-between align-items-center w-100">
+                    <button type="button" class="btn btn-danger btn-lg" id="btnNdcfsCancelarConceptos">
+                        <i class="bx bx-x-circle"></i>
+                        CANCELAR
+                    </button>
+                    <button type="button" class="btn btn-success btn-lg px-5" id="btnNdcfsSeguirConceptos" disabled>
+                        <i class="bx bx-right-arrow-circle"></i>
+                        SEGUIR
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

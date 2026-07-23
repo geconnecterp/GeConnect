@@ -85,14 +85,15 @@ namespace gc.api.core.Servicios.LineaCaja
         /// <param name="adm_id">sucursal</param>
         /// <param name="usu_id">usuario</param>
         /// <returns></returns>
-        public List<CuentaBusquedaResultadoDto> BusquedaClientes(string busqueda, string adm_id, string usu_id)
+        public List<CuentaBusquedaResultadoDto> BusquedaClientes(string busqueda, string adm_id, string usu_id, string app)
         {
             _logger.Log(TraceEventType.Information, $"{MethodBase.GetCurrentMethod().Name} - busqueda:{busqueda}, adm_id:{adm_id}, usu_id:{usu_id}");
             var sp = ConstantesGC.StoredProcedures.SP_CAJA_BCUENTA;
             var ps = new List<SqlParameter>() {
-                new SqlParameter("@busqueda", busqueda),
-                new SqlParameter("@adm_id", adm_id),
-                new SqlParameter("@usu_id", usu_id)
+                new("@busqueda", busqueda),
+                new("@adm_id", adm_id),
+                new("@usu_id", usu_id),
+                new("@app", app)
             };
             var res = _repository.EjecutarLstSpExt<CuentaBusquedaResultadoDto>(sp, ps, true);
 
@@ -105,10 +106,10 @@ namespace gc.api.core.Servicios.LineaCaja
             var sp = ConstantesGC.StoredProcedures.SP_CAJA_BCUENTA_D;
 
             var ps = new List<SqlParameter>() {
-                new SqlParameter("@origen", origen),
-                new SqlParameter("@valor", valor),
-                new SqlParameter("@adm_id", adm_id),
-                new SqlParameter("@usu_id", usu_id)
+                new ("@origen", origen),
+                new ("@valor", valor),
+                new ("@adm_id", adm_id),
+                new ("@usu_id", usu_id)
             };
             var res = _repository.EjecutarLstSpExt<CuentaDatosResultadoDto>(sp, ps, true);
             if (res == null || !res.Any())

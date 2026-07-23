@@ -79,7 +79,7 @@ namespace gc.api.Controllers.Caja
         [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<CuentaBusquedaResultadoDto>))]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         [Route("[action]")]
-        public IActionResult BusquedaClientes(string busqueda, string adm_id, string usu_id)
+        public IActionResult BusquedaClientes(string busqueda, string adm_id, string usu_id, string app = "FV")
         {
             if (string.IsNullOrEmpty(busqueda))
             {
@@ -91,7 +91,7 @@ namespace gc.api.Controllers.Caja
                 return BadRequest("Los datos del usuario y la sucursal es necesario");
             }
 
-            var res = _apiCajaServicio.BusquedaClientes(busqueda, adm_id, usu_id);
+            var res = _apiCajaServicio.BusquedaClientes(busqueda, adm_id, usu_id, app);
             return Ok(new ApiResponse<List<CuentaBusquedaResultadoDto>>(res));
         }
 

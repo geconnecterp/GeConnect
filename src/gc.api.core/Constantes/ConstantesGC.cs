@@ -41,8 +41,9 @@
 			public const string SP_CAJA_GRAL_HAB = "SPGECO_CAJA_Grl_Habilitacion";
 			public const string SP_CAJA_PV_ABIERTOS = "SPGECO_CAJA_PV_Abiertos";
             //en ApiProductoFactServicio.cs se llama a este SP para obtener los datos del producto al ingresar un producto en la caja.
-            public const string SP_CAJA_BPROD_D = "SPGECO_CAJA_B_PRODUCTO_DATOS";
+			public const string SP_CAJA_BPROD_D = "SPGECO_CAJA_B_PRODUCTO_DATOS";
 			public const string SP_CAJA_CALCULA_FILAS = "SPGECO_CAJA_Ope_Calcula_Filas";
+			public const string SP_CAJA_CALCULA_FILA = "SPGECO_CAJA_Ope_Calcula_Fila";
 
 			public const string SP_CAJA_PREFACTURA = "SPGECO_CAJA_B_Prefacturas";
 			public const string SP_CAJA_COTIZACION = "SPGECO_CAJA_B_Cotizaciones";

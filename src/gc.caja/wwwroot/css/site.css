@@ -7768,3 +7768,25 @@ span[data-bs-toggle="tooltip"] {
 #modalNcDevolucionResumenFinal .alert {
     border-left: 4px solid var(--bs-golden-primary);
 }
+
+#modalNdcfsConceptos .ndcfs-tabla-conceptos {
+    min-height: 320px;
+    max-height: 58vh;
+    overflow: auto;
+}
+
+#modalNdcfsConceptos .ndcfs-select-numero,
+#modalNdcfsConceptos .ndcfs-select-numero option {
+    text-align: right;
+}
+
+#modalNdcfsCalculo .ndcfs-operacion-resumen dt,
+#modalNdcfsCalculo .ndcfs-operacion-resumen dd {
+    padding-top: .45rem;
+    padding-bottom: .45rem;
+    border-bottom: 1px solid rgba(212, 175, 55, .25);
+}
+
+#modalNdcfsCalculo .ndcfs-operacion-resumen dd {
+    word-break: break-word;
+}

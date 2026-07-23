@@ -9,6 +9,7 @@ using gc.infraestructura.Dtos.Almacen;
 using gc.infraestructura.Dtos.Cajas.Request;
 using gc.infraestructura.Dtos.Cajas.Response;
 using gc.infraestructura.Dtos.Gen;
+using gc.infraestructura.Dtos.Productos;
 using gc.infraestructura.Dtos.Productos.Precio;
 using gc.infraestructura.EntidadesComunes.Options;
 using Microsoft.Extensions.Logging;
@@ -30,16 +31,111 @@ namespace gc.caja.core.Servicios.Implementacion.Cajas
         private const string BUSCAR_PROD = "/ProductoBuscar";
         private const string BUSCAR_LISTA = "/ProductoListaBuscar";
         private const string POST_CALCULAR_FILAS = "/CalcularFilas"; // ✅ NUEVO
+        private const string POST_CALCULAR_FILA = "/CalcularFila";
         private const string POST_OBTENER_PREFACTURA = "/ObtenerPrefactura";
         private const string POST_OBTENER_COTIZACION = "/ObtenerCotizacion";
         private const string POST_CREAR_PREF_DIFERIDA = "/CrearPrefacturaDiferida";
         private const string POST_CREAR_PAGO_DIFERIDO = "/CrearPagoDiferido";
+        private const string GET_IVA_ALICUOTAS = "/ObtenerIVAAlicuotas";
         private const string GET_LISTAS_PRECIOS = "/api/ApiPrecioLista/ObtenerListaPrecios";
 
         
 
         public ProductoFactServicio(IOptions<AppSettings> options, ILogger<ProductoFactServicio> logger) : base(options, logger)
         {
+        }
+
+        public async Task<RespuestaGenerica<IVAAlicuotaDto>> ObtenerIvaAlicuotas(string token)
+        {
+            if (string.IsNullOrWhiteSpace(token))
+            {
+                throw new UnauthorizedException("Debe autenticarse nuevamente para continuar.");
+            }
+
+            try
+            {
+                var helper = new HelperAPI();
+                using var client = helper.InicializaCliente(token);
+                var link = $"{_appSettings.RutaBase}{RutaAPIProducto}{GET_IVA_ALICUOTAS}";
+
+                _logger?.LogInformation("Obteniendo alicuotas IVA desde API. Endpoint={Endpoint}", link);
+
+                using var response = await client.GetAsync(link);
+
+                if (response.StatusCode == HttpStatusCode.Unauthorized)
+                {
+                    throw new UnauthorizedException("Debe autenticarse nuevamente para continuar.");
+                }
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    var mensaje = await ReadApiErrorAsync(response);
+                    _logger?.LogWarning(
+                        "No se pudieron obtener las alicuotas IVA. Estado={StatusCode}, Detalle={Detalle}",
+                        (int)response.StatusCode,
+                        mensaje);
+
+                    return new RespuestaGenerica<IVAAlicuotaDto>
+                    {
+                        Ok = false,
+                        EsError = true,
+                        Mensaje = mensaje,
+                        ListaEntidad = []
+                    };
+                }
+
+                var contenido = await response.Content.ReadAsStringAsync();
+                if (string.IsNullOrWhiteSpace(contenido))
+                {
+                    return new RespuestaGenerica<IVAAlicuotaDto>
+                    {
+                        Ok = false,
+                        EsError = true,
+                        Mensaje = "La API no devolvio alicuotas IVA.",
+                        ListaEntidad = []
+                    };
+                }
+
+                var apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<IVAAlicuotaDto>>>(contenido);
+                if (apiResponse?.Data == null)
+                {
+                    return new RespuestaGenerica<IVAAlicuotaDto>
+                    {
+                        Ok = false,
+                        EsError = true,
+                        Mensaje = "La API devolvio un catalogo de alicuotas IVA invalido.",
+                        ListaEntidad = []
+                    };
+                }
+
+                var alicuotas = apiResponse.Data
+                    .GroupBy(x => x.IVA_Alicuota)
+                    .Select(x => x.First())
+                    .OrderBy(x => x.IVA_Alicuota)
+                    .ToList();
+
+                return new RespuestaGenerica<IVAAlicuotaDto>
+                {
+                    Ok = true,
+                    Mensaje = "OK",
+                    ListaEntidad = alicuotas
+                };
+            }
+            catch (UnauthorizedException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, "Error obteniendo alicuotas IVA.");
+                return new RespuestaGenerica<IVAAlicuotaDto>
+                {
+                    Ok = false,
+                    EsError = true,
+                    Mensaje = "No se pudieron obtener las alicuotas IVA.",
+                    ListaEntidad = []
+                };
+            }
         }
 
         public async Task<RespuestaGenerica<PrecioListaDto>> ObtenerListasPrecios(string token)
@@ -327,6 +423,76 @@ namespace gc.caja.core.Servicios.Implementacion.Cajas
             catch (Exception ex)
             {
                 _logger?.LogError($"❌ EXCEPCIÓN en CalcularFilas: {ex.Message}");
+                _logger?.LogError($"   Stack Trace: {ex.StackTrace}");
+                return new CalculaFilasResDto();
+            }
+        }
+
+        public async Task<CalculaFilasResDto> CalcularFila(CalcularFilasReqDto req, string token)
+        {
+            try
+            {
+                _logger?.LogInformation("═══════════════════════════════════════════════════");
+                _logger?.LogInformation("🔢 CALCULAR FILA - SERVICIO");
+                _logger?.LogInformation("═══════════════════════════════════════════════════");
+                _logger?.LogInformation($"   caja_id: {req?.caja_id}");
+                _logger?.LogInformation($"   usu_id: {req?.usu_id}");
+                _logger?.LogInformation($"   cta_id: {req?.cta_id}");
+                _logger?.LogInformation($"   lp_id: {req?.lp_id}");
+                _logger?.LogInformation($"   tco_letra: {req?.tco_letra}");
+                _logger?.LogInformation($"   json_p longitud: {req?.json_p?.Length ?? 0}");
+
+                if (req == null)
+                {
+                    _logger?.LogError("❌ Request es null");
+                    return new CalculaFilasResDto();
+                }
+
+                if (string.IsNullOrWhiteSpace(req.json_p) || req.json_p == "{}" || req.json_p == "[]")
+                {
+                    _logger?.LogWarning("⚠️ JSON de fila vacío");
+                    return new CalculaFilasResDto();
+                }
+
+                var helper = new HelperAPI();
+                var client = helper.InicializaCliente(req, token, out StringContent contentData);
+                var link = $"{_appSettings.RutaBase}{RutaAPI}{POST_CALCULAR_FILA}";
+
+                _logger?.LogInformation($"📡 Endpoint: {link}");
+
+                using var response = await client.PostAsync(link, contentData);
+
+                if (response.StatusCode == HttpStatusCode.OK)
+                {
+                    var stringData = await response.Content.ReadAsStringAsync();
+
+                    if (string.IsNullOrWhiteSpace(stringData))
+                    {
+                        _logger?.LogWarning("⚠️ API retornó respuesta vacía");
+                        return new CalculaFilasResDto();
+                    }
+
+                    var apiResponse = JsonConvert.DeserializeObject<ApiResponse<CalculaFilasResDto>>(stringData);
+                    if (apiResponse?.Data == null)
+                    {
+                        _logger?.LogError("❌ Error deserializando la respuesta");
+                        return new CalculaFilasResDto();
+                    }
+
+                    var resultado = apiResponse.Data;
+                    _logger?.LogInformation("✅ FILA CALCULADA EXITOSAMENTE");
+                    _logger?.LogInformation($"   json_subtotal: {(string.IsNullOrEmpty(resultado.json_subtotal) ? "vacío" : $"{resultado.json_subtotal.Length} caracteres")}");
+                    _logger?.LogInformation($"   json_p: {(string.IsNullOrEmpty(resultado.json_p) ? "vacío" : $"{resultado.json_p.Length} caracteres")}");
+                    return resultado;
+                }
+
+                var msg = await ReadApiErrorAsync(response);
+                _logger?.LogWarning($"❌ Error API ({response.StatusCode}): {msg}");
+                return new CalculaFilasResDto();
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError($"❌ EXCEPCIÓN en CalcularFila: {ex.Message}");
                 _logger?.LogError($"   Stack Trace: {ex.StackTrace}");
                 return new CalculaFilasResDto();
             }

@@ -1128,7 +1128,101 @@ $(function () {
         });
     }
 
-    function abrirModuloDebitoCredito() { console.log('💳 Débito y Crédito...'); }
+    function abrirModuloDebitoCredito() {
+        console.log('Iniciando validacion para ND, NC y Factura de Servicio...');
+
+        if (
+            typeof notaDebitoCreditoValidarUrl === 'undefined' ||
+            !notaDebitoCreditoValidarUrl ||
+            typeof notaDebitoCreditoInicializaUrl === 'undefined' ||
+            !notaDebitoCreditoInicializaUrl
+        ) {
+            AbrirMensaje(
+                'Error de configuracion',
+                'No se pudo preparar el modulo de Nota de Debito, Credito y Factura de Servicio.',
+                function () {
+                    $('#msjModal').modal('hide');
+                },
+                false,
+                ['Aceptar'],
+                'error!',
+                null
+            );
+
+            return;
+        }
+
+        mostrarLoader(
+            "Validando datos de caja...<br>" +
+            "<small class='text-muted'>Preparando modulo de ND, NC y Factura de Servicio</small>"
+        );
+
+        $.ajax({
+            url: notaDebitoCreditoValidarUrl,
+            type: 'POST',
+            dataType: 'json',
+            timeout: 10000,
+            success: function (response) {
+                ocultarLoader();
+
+                if (!response || response.success !== true) {
+                    AbrirMensaje(
+                        'Error de validacion',
+                        response?.message ||
+                        'No fue posible validar los datos de caja para iniciar el modulo.',
+                        function () {
+                            $('#msjModal').modal('hide');
+                        },
+                        false,
+                        ['Aceptar'],
+                        'error!',
+                        null
+                    );
+
+                    return;
+                }
+
+                const menuModal = getModalMenu();
+
+                if (menuModal) {
+                    menuModal.hide();
+                }
+
+                mostrarLoader(
+                    "Abriendo modulo de ND, NC y Factura de Servicio...<br>" +
+                    "<small class='text-muted'>Por favor, espere...</small>"
+                );
+
+                setTimeout(function () {
+                    window.location.href = notaDebitoCreditoInicializaUrl;
+                }, 800);
+            },
+            error: function (xhr, status) {
+                ocultarLoader();
+
+                let mensaje =
+                    'Error al validar los datos de caja para ND, NC y Factura de Servicio.';
+
+                if (status === 'timeout') {
+                    mensaje = 'La validacion tardo demasiado tiempo. Intente nuevamente.';
+                } else if (xhr?.responseJSON?.message) {
+                    mensaje = xhr.responseJSON.message;
+                }
+
+                AbrirMensaje(
+                    'Error',
+                    mensaje,
+                    function () {
+                        $('#msjModal').modal('hide');
+                    },
+                    false,
+                    ['Aceptar'],
+                    'error!',
+                    null
+                );
+            }
+        });
+    }
     function abrirModuloCobranzacc() {
         console.log('💰 Iniciando Módulo Cobranza en Cuenta Corriente');
         mostrarLoader("Validando datos de caja...<br><small class='text-muted'>Preparando módulo de Cobranza en Cuenta Corriente</small>");
