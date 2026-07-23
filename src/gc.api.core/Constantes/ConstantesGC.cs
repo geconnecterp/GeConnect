@@ -132,6 +132,13 @@
 			public const string SP_E_RANKING_VTAS_RUBG = "SPGECO_E_Ranking_Vtas_RUBG";
 			#endregion
 
+			#region Reporte de Evolución de Ventas con Períodos Anteriores
+			public const string SP_E_EVO_VTAS_ANUAL_P = "SPGECO_E_Evo_Vtas_Anual_P";
+			public const string SP_E_EVO_VTAS_ANUAL_SEC = "SPGECO_E_Evo_Vtas_Anual_SEC";
+			public const string SP_E_EVO_VTAS_ANUAL_RUB = "SPGECO_E_Evo_Vtas_Anual_RUB";
+			public const string SP_E_EVO_VTAS_ANUAL_CTA = "SPGECO_E_Evo_Vtas_Anual_CTA";
+			#endregion
+
 			#region Análisis de Valores de Ventas
 			public const string SP_E_AVALORES_MES = "SPGECO_E_AValores_mes";
 			public const string SP_E_AVALORES_DIAS = "SPGECO_E_AValores_dias";

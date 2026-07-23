@@ -615,5 +615,19 @@ namespace gc.api.Controllers.Consultas
 
 			return Ok(response);
 		}
+
+		[HttpPost]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<ReporteEvoVtasPerAnterioresDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult RepEvoVtasPerAnteriores(ReporteEvoVtasPerAnterioresRequest request)
+		{
+			ApiResponse<List<ReporteEvoVtasPerAnterioresDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
+			var res = _consSv.RepEvoVtasPerAnteriores(request);
+			response = new ApiResponse<List<ReporteEvoVtasPerAnterioresDto>>(res);
+
+			return Ok(response);
+		}
 	}
 }

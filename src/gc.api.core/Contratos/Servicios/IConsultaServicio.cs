@@ -46,5 +46,6 @@ namespace gc.api.core.Contratos.Servicios
         List<ComisionesDeRepartidoresDetalleDto> BuscarComisionDeRepartidorDetalle(ComisionesDeRepartidoresRequest filtros);
         List<ComisionesDeRepartidoresResumenDto> BuscarComisionDeRepartidorResumen(ComisionesDeRepartidoresRequest filtros);
         List<RepRkgRentabVtasDto> RepRkgRentabVtas(ReporteRankingRentabVtasRequest filtros);
+		List<ReporteEvoVtasPerAnterioresDto> RepEvoVtasPerAnteriores(ReporteEvoVtasPerAnterioresRequest filtros);
 	}
 }

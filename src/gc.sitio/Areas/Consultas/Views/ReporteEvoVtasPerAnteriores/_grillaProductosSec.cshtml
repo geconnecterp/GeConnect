@@ -1,0 +1,181 @@
+﻿@model ListadoEvoVtasPerAntModel
+@using gc.infraestructura.Helpers
+@using static gc.infraestructura.Helpers.GridHelper
+@{
+	var alt = true;
+	string clase = string.Empty;
+
+	var productos = new List<ReporteEvoVtasPerAnterioresDto>();
+}
+<style>
+	#containerListaProducto {
+		position: relative;
+		max-height: 60vh;
+		height: auto;
+		overflow-y: auto;
+		overflow-x: auto;
+		z-index: auto;
+	}
+
+	.table-golden {
+		border-collapse: separate;
+		border-spacing: 0;
+		table-layout: fixed;
+	}
+
+		.table-golden thead {
+			position: sticky;
+			top: 0;
+			z-index: 1;
+			background: linear-gradient(to bottom, #b8860b, #daa520) !important;
+			color: #fff !important;
+		}
+
+			.table-golden thead th {
+				position: sticky;
+				top: 0;
+				z-index: 4;
+				background: linear-gradient(to bottom, #b8860b, #daa520);
+				color: #fff;
+				box-shadow: 0 1px 0 rgba(0,0,0,0.05), 0 2px 2px rgba(0,0,0,0.04);
+				background-clip: padding-box;
+			}
+
+			.table-golden thead,
+			.table-golden thead th {
+			}
+
+	#tbGridProductos th,
+	#tbGridProductos td {
+		padding: 0.01rem 0.15rem !important;
+		line-height: 1.2 !important;
+		height: auto !important;
+	}
+
+	#tbGridProductos tr {
+		height: 1.6rem !important;
+	}
+
+	.grid-golden {
+		width: 100%;
+		margin: 0 auto;
+	}
+
+	.grid-golden-body .table-wrapper table {
+		width: 100%;
+	}
+
+	.cell-ellipsis {
+		white-space: nowrap !important;
+		overflow: hidden !important;
+		text-overflow: ellipsis !important;
+		display: block; /* evita que el contenido fuerce el ancho */
+	}
+
+	.badge.bg-secondary {
+		font-size: 0.70rem;
+		padding: 0.20rem 0.35rem;
+		border-radius: 0.25rem;
+	}
+</style>
+<div class="grid-golden">
+	<div class="grid-golden-header">
+		<div class="row align-items-md-center">
+			<div class="col-md-10 col-sm-6">
+				<h5 class="mb-0">
+					<i class="bx bx-package me-2"></i>
+					<strong>Ranking agrupado por Sector</strong>
+				</h5>
+				<!-- ⭐ Leyenda con badges ERP -->
+				<div class="mt-1">
+					<span class="badge bg-secondary">@Model.LeyendaFechas</span>
+					<span class="badge bg-secondary">@Model.LeyendaSuc</span>
+					<span class="badge bg-secondary">@Model.LeyendaProv</span>
+					<span class="badge bg-secondary">@Model.LeyendaRub</span>
+				</div>
+				<!-- ⭐ Fin leyenda -->
+			</div>
+			<div class="col-md-2 col-sm-6">
+				<div class="d-flex justify-content-sm-end">
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="grid-golden-body">
+		<div class="table-wrapper" id="containerListaProducto">
+			<table class="table table-sm table-golden" id="tbGridProductos">
+				<thead>
+					<tr class="header">
+						<th class="text-center" style="width: 4%;">ID</th>
+						<th class="text-center" style="width: 10%;">Descripción</th>
+						<th class="text-center" style="width: 5%;" title="Cantidad Vendida">C. Vend.</th>
+						<th class="text-center" style="width: 5%;" title="Diferencia con Año Anterior">Dif. Año Ant.</th>
+						<th class="text-center" style="width: 4%;">% Dif</th>
+						<th class="text-center" style="width: 6%;">Facturado</th>
+						<th class="text-center" style="width: 6%;" title="Diferencia con Año Anterior">Dif. Año Ant.</th>
+						<th class="text-center" style="width: 4%;">% Dif</th>
+						<th class="text-center" style="width: 5%;" title="Cantidad Vendida">C. Vend.</th>
+						<th class="text-center" style="width: 5%;" title="Diferencia con Año Anterior">Dif. Año Ant.</th>
+						<th class="text-center" style="width: 4%;">% Dif</th>
+						<th class="text-center" style="width: 6%;">Facturado</th>
+						<th class="text-center" style="width: 6%;" title="Diferencia con Año Anterior">Dif. Año Ant.</th>
+						<th class="text-center" style="width: 4%;">% Dif</th>
+						<th class="text-center" style="width: 5%;" title="Cantidad Vendida">C. Vend.</th>
+						<th class="text-center" style="width: 5%;" title="Diferencia con Año Anterior">Dif. Año Ant.</th>
+						<th class="text-center" style="width: 4%;">% Dif</th>
+						<th class="text-center" style="width: 6%;">Facturado</th>
+						<th class="text-center" style="width: 6%;" title="Diferencia con Año Anterior">Dif. Año Ant.</th>
+						<th class="text-center" style="width: 4%;">% Dif</th>
+					</tr>
+				</thead>
+				<tbody>
+					@if (Model != null && Model.GrillaProductoEvo != null && Model.GrillaProductoEvo.ListaDatos != null && Model.GrillaProductoEvo.ListaDatos.Count > 0)
+					{
+						productos = Model.GrillaProductoEvo.ListaDatos.OrderBy(x => x.sec_id).ToList();
+
+						@foreach (var item in productos)
+						{
+							if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+							<tr class="@clase" onclick="selectReg(this, 'tbGridProductos')">
+								<td class="text-center cell-fit-content">@Model.GrillaProductoEvo.FormatearDato(item.sec_id, FormatDato.Ninguno)</td>
+								<td class="@Model.GrillaProductoEvo.ObtenerClase(item.sec_desc) cell-fit-content">
+									<span class="cell-ellipsis" title="@item.sec_desc">
+										@Model.GrillaProductoEvo.FormatearDato(item.sec_desc, FormatDato.Ninguno)
+									</span>
+								</td>
+								<td class="@Model.GrillaProductoEvo.ObtenerClase(item.vtas_cantidad1) text-right cell-fit-content">@Model.GrillaProductoEvo.FormatearDato(item.vtas_cantidad1, FormatDato.Entero)</td>
+								<td class="@Model.GrillaProductoEvo.ObtenerClase(item.DifCant_1_2) text-right cell-fit-content">@Model.GrillaProductoEvo.FormatearDato(item.DifCant_1_2, FormatDato.Entero)</td>
+								<td class="@Model.GrillaProductoEvo.ObtenerClase(item.PorcCant_1_2) text-right cell-fit-content">@GridHelper.FormatearDato(item.PorcCant_1_2, FormatDato.Monto, true)</td>
+								<td class="@Model.GrillaProductoEvo.ObtenerClase(item.vtas_facturacion1) text-right cell-fit-content">@GridHelper.FormatearDato(item.vtas_facturacion1, FormatDato.Monto, true)</td>
+								<td class="@Model.GrillaProductoEvo.ObtenerClase(item.DifFact_1_2) text-right cell-fit-content">@GridHelper.FormatearDato(item.DifFact_1_2, FormatDato.Monto, true)</td>
+								<td class="@Model.GrillaProductoEvo.ObtenerClase(item.PorcFact_1_2) text-right cell-fit-content">@GridHelper.FormatearDato(item.PorcFact_1_2, FormatDato.Monto, true)</td>
+								<td class="@Model.GrillaProductoEvo.ObtenerClase(item.vtas_cantidad2) text-right cell-fit-content">@Model.GrillaProductoEvo.FormatearDato(item.vtas_cantidad2, FormatDato.Entero)</td>
+								<td class="@Model.GrillaProductoEvo.ObtenerClase(item.DifCant_2_3) text-right cell-fit-content">@Model.GrillaProductoEvo.FormatearDato(item.DifCant_2_3, FormatDato.Entero)</td>
+								<td class="@Model.GrillaProductoEvo.ObtenerClase(item.PorcCant_2_3) text-right cell-fit-content">@GridHelper.FormatearDato(item.PorcCant_2_3, FormatDato.Monto, true)</td>
+								<td class="@Model.GrillaProductoEvo.ObtenerClase(item.vtas_facturacion2) text-right cell-fit-content">@GridHelper.FormatearDato(item.vtas_facturacion2, FormatDato.Monto, true)</td>
+								<td class="@Model.GrillaProductoEvo.ObtenerClase(item.DifFact_2_3) text-right cell-fit-content">@GridHelper.FormatearDato(item.DifFact_2_3, FormatDato.Monto, true)</td>
+								<td class="@Model.GrillaProductoEvo.ObtenerClase(item.PorcFact_2_3) text-right cell-fit-content">@GridHelper.FormatearDato(item.PorcFact_2_3, FormatDato.Monto, true)</td>
+								<td class="@Model.GrillaProductoEvo.ObtenerClase(item.vtas_cantidad3) text-right cell-fit-content">@Model.GrillaProductoEvo.FormatearDato(item.vtas_cantidad3, FormatDato.Entero)</td>
+								<td class="@Model.GrillaProductoEvo.ObtenerClase(item.DifCant_3_4) text-right cell-fit-content">@Model.GrillaProductoEvo.FormatearDato(item.DifCant_3_4, FormatDato.Entero)</td>
+								<td class="@Model.GrillaProductoEvo.ObtenerClase(item.PorcCant_3_4) text-right cell-fit-content">@GridHelper.FormatearDato(item.PorcCant_3_4, FormatDato.Monto, true)</td>
+								<td class="@Model.GrillaProductoEvo.ObtenerClase(item.vtas_facturacion3) text-right cell-fit-content">@GridHelper.FormatearDato(item.vtas_facturacion3, FormatDato.Monto, true)</td>
+								<td class="@Model.GrillaProductoEvo.ObtenerClase(item.DifFact_3_4) text-right cell-fit-content">@GridHelper.FormatearDato(item.DifFact_3_4, FormatDato.Monto, true)</td>
+								<td class="@Model.GrillaProductoEvo.ObtenerClase(item.PorcFact_3_4) text-right cell-fit-content">@GridHelper.FormatearDato(item.PorcFact_3_4, FormatDato.Monto, true)</td>
+
+							</tr>
+						}
+					}
+					else
+					{
+						<tr>
+							<td colspan="20" class="text-center text-muted py-4">
+								<i class="bx bx-info-circle me-2"></i>
+								No se encontraron productos con los criterios especificados
+							</td>
+						</tr>
+					}
+				</tbody>
+			</table>
+		</div>
+	</div>
+</div>
