@@ -1316,7 +1316,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
                 }
 
                 //analizamos si el CAEA se activa o no para esta operación
-                request.caea = cajaActual.Caja.ctrl_id == "-1" && validacionPV.Resultado == 1 ? true : false;
+                request.caea = cajaActual.Caja.ctrl_id == "-1" && validacionPV.Resultado == 1;
 
                 _logger?.LogInformation("═══════════════════════════════════════════════════");
                 _logger?.LogInformation("📦 REQUEST DTO CONSTRUIDO");
@@ -2161,3 +2161,5 @@ namespace gc.caja.Areas.Facturacion.Controllers
         }
     }
 }
+
+

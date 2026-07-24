@@ -1,4 +1,4 @@
-// Modulo: Nota de Debito, Nota de Credito y Factura de Servicio
+﻿// Modulo: Nota de Debito, Nota de Credito y Factura de Servicio
 // Lote 1: busqueda y seleccion de cuenta con app=ND.
 
 (function () {
@@ -28,6 +28,9 @@
         modalCalculo: '#modalNdcfsCalculo',
         operacion: '#cmbNdcfsOperacion',
         tcoOri: '#txtNdcfsTcoOri',
+        comboTcoOri: '#cmbNdcfsTcoOri',
+        puntoVentaOri: '#txtNdcfsPuntoVentaOri',
+        numeroCompteOri: '#txtNdcfsNumeroCompteOri',
         compteOri: '#txtNdcfsCompteOri',
         repetidoOri: '#txtNdcfsRepetidoOri',
         cantidad: '#txtNdcfsCantidad',
@@ -56,14 +59,17 @@
     let calculoEnCurso = false;
     let confirmacionEnCurso = false;
     let ivaAlicuotasCargadas = false;
+    let tiposComprobanteOrigenCargados = false;
 
     $(function () {
         logPaso('Inicializando modulo', {
             buscarClienteUrl: window.BuscarClienteUrl,
             registrarCuentaUrl: window.ndcfsRegistrarCuentaUrl,
             calcularUrl: window.ndcfsCalcularConceptosUrl,
-            confirmarUrl: window.ndcfsConfirmarOperacionUrl
+            confirmarUrl: window.ndcfsConfirmarOperacionUrl,
+            tiposComprobanteUrl: window.ndcfsObtenerTiposComprobanteUrl
         });
+        reiniciarEstadoModulo();
         inicializarVista();
         registrarEventos();
 
@@ -72,6 +78,16 @@
             $(SELECTORES.modal).modal('show');
         }, 250);
     });
+
+    function reiniciarEstadoModulo() {
+        cuentaSeleccionada = null;
+        busquedaEnCurso = false;
+        conceptos = [];
+        calculoActual = null;
+        actualizarEstadoOperacionPorConceptos();
+        calculoEnCurso = false;
+        confirmacionEnCurso = false;
+    }
 
     function inicializarVista() {
         $(SELECTORES.cardDatos).hide();
@@ -125,8 +141,28 @@
         });
 
         $(document).on('change', SELECTORES.operacion, actualizarVisibilidadOrigenNc);
-        $(document).on('input', SELECTORES.neto, recalcularAlicuota);
+        $(document).on('change', SELECTORES.comboTcoOri, sincronizarTipoComprobanteOrigen);
+        $(document).on('input', `${SELECTORES.puntoVentaOri}, ${SELECTORES.numeroCompteOri}`, function () {
+            limitarSoloDigitos($(this), this.id === 'txtNdcfsPuntoVentaOri' ? 4 : 8);
+            sincronizarComprobanteOrigen();
+        });
+        $(document).on('input', SELECTORES.neto, function () {
+            limitarInputDecimal($(this));
+            recalcularAlicuota();
+        });
         $(document).on('change', SELECTORES.iva, recalcularAlicuota);
+        $(document).on('focus', SELECTORES.neto, function () {
+            normalizarInputParaEdicion($(this));
+            this.select();
+        });
+        $(document).on('keydown', SELECTORES.neto, permitirSoloDecimal);
+        $(document).on('paste', SELECTORES.neto, function () {
+            const $input = $(this);
+            setTimeout(function () {
+                limitarInputDecimal($input);
+                recalcularAlicuota();
+            }, 0);
+        });
         $(document).on('blur', SELECTORES.neto, function () {
             formatearInputNumerico($(this), 2);
             recalcularAlicuota();
@@ -134,7 +170,7 @@
         $(document).on('blur', SELECTORES.cantidad, function () {
             formatearInputNumerico($(this), 0);
         });
-        $(document).on('focus', `${SELECTORES.neto}, ${SELECTORES.cantidad}`, function () {
+        $(document).on('focus', SELECTORES.cantidad, function () {
             normalizarInputParaEdicion($(this));
         });
         $(document).on('click', SELECTORES.btnAgregarConcepto, agregarConcepto);
@@ -152,6 +188,11 @@
             $(SELECTORES.modalConceptos).modal('show');
         });
         $(document).on('click', SELECTORES.btnFinalizar, confirmarOperacion);
+    }
+
+    function actualizarEstadoOperacionPorConceptos() {
+        const tieneConceptos = conceptos.length > 0;
+        $(SELECTORES.operacion).prop('disabled', tieneConceptos);
     }
 
     function buscarCuenta() {
@@ -428,6 +469,7 @@
         calculoActual = null;
         cargarOperaciones(response?.operacionesPermitidas || cuentaSeleccionada?.operacionesPermitidas || []);
         cargarIvaAlicuotas();
+        cargarTiposComprobanteOrigen();
         hidratarDatosCuentaModulo(cuentaSeleccionada || response?.cuenta || {}, 'Conceptos');
         limpiarInputsConcepto();
         renderConceptos();
@@ -451,6 +493,163 @@
 
         if (!$select.val()) {
             $select.append('<option value="">Sin operaciones disponibles</option>');
+        }
+    }
+
+    function cargarTiposComprobanteOrigen() {
+        if (tiposComprobanteOrigenCargados) {
+            return;
+        }
+
+        const url = String(window.ndcfsObtenerTiposComprobanteUrl || '').trim();
+        const $select = $(SELECTORES.comboTcoOri);
+
+        if (!url || $select.length === 0) {
+            logWarn('No se encontro URL o combo para tipos de comprobante origen');
+            $select.html('<option value="">Sin tipos disponibles</option>');
+            return;
+        }
+
+        logPaso('Solicitando tipos de comprobante origen', { url: url });
+        $select.prop('disabled', true).html('<option value="">Cargando...</option>');
+
+        $.ajax({
+            url: url,
+            type: 'GET',
+            dataType: 'json',
+            timeout: 30000
+        })
+            .done(function (response) {
+                logPaso('Respuesta tipos de comprobante origen', response);
+                const datos = Array.isArray(response?.datos) ? response.datos : [];
+                if (!response || response.ok !== true || datos.length === 0) {
+                    const mensaje = response?.mensaje || 'No se encontraron tipos de comprobante origen.';
+                    logWarn('Tipos de comprobante origen no disponibles', response);
+                    $select.html(`<option value="">${escaparHtml(mensaje)}</option>`);
+                    return;
+                }
+
+                hidratarComboTiposComprobanteOrigen(datos);
+                tiposComprobanteOrigenCargados = true;
+            })
+            .fail(function (xhr) {
+                logError('Error AJAX obteniendo tipos de comprobante origen', {
+                    status: xhr?.status,
+                    response: xhr?.responseJSON || xhr?.responseText
+                });
+                $select.html('<option value="">No disponible</option>');
+            })
+            .always(function () {
+                $select.prop('disabled', false);
+                sincronizarTipoComprobanteOrigen();
+            });
+    }
+
+    function hidratarComboTiposComprobanteOrigen(tipos) {
+        const $select = $(SELECTORES.comboTcoOri);
+        $select.empty().append('<option value="">Seleccione...</option>');
+
+        tipos.forEach(function (tipo) {
+            const id = String(tipo.tco_id || '').trim();
+            if (!id) {
+                return;
+            }
+
+            const descripcion = String(tipo.tco_desc || '').trim();
+            const letra = String(tipo.tco_letra || '').trim();
+            const texto = `${id}${letra ? ` ${letra}` : ''}${descripcion ? ` - ${descripcion}` : ''}`;
+            $select.append(
+                `<option value="${escaparHtml(id)}" data-letra="${escaparHtml(letra)}">${escaparHtml(texto)}</option>`
+            );
+        });
+    }
+
+    function sincronizarTipoComprobanteOrigen() {
+        $(SELECTORES.tcoOri).val(obtenerTipoComprobanteOrigen());
+    }
+
+    function sincronizarComprobanteOrigen() {
+        $(SELECTORES.compteOri).val(obtenerComprobanteOrigenFormateado());
+    }
+
+    function obtenerTipoComprobanteOrigen() {
+        return String($(SELECTORES.comboTcoOri).val() || $(SELECTORES.tcoOri).val() || '').trim();
+    }
+
+    function obtenerComprobanteOrigenFormateado() {
+        const puntoVenta = String($(SELECTORES.puntoVentaOri).val() || '').trim();
+        const numero = String($(SELECTORES.numeroCompteOri).val() || '').trim();
+
+        if (!puntoVenta || !numero) {
+            return '';
+        }
+
+        return `${puntoVenta.padStart(4, '0')}-${numero.padStart(8, '0')}`;
+    }
+
+    function validarComprobanteOrigenNc() {
+        const tco = obtenerTipoComprobanteOrigen();
+        const puntoVenta = String($(SELECTORES.puntoVentaOri).val() || '').trim();
+        const numero = String($(SELECTORES.numeroCompteOri).val() || '').trim();
+
+        if (!tco) {
+            logWarn('Calculo cancelado: NC sin tipo de comprobante origen');
+            mostrarMensajeConcepto('Para Nota de Credito debe seleccionar el tipo de comprobante origen.');
+            $(SELECTORES.comboTcoOri).trigger('focus');
+            return false;
+        }
+
+        if (!/^\d{1,4}$/.test(puntoVenta)) {
+            logWarn('Calculo cancelado: PV origen invalido', { puntoVenta: puntoVenta });
+            mostrarMensajeConcepto('El punto de venta origen debe contener entre 1 y 4 digitos numericos.');
+            $(SELECTORES.puntoVentaOri).trigger('focus');
+            return false;
+        }
+
+        if (!/^\d{1,8}$/.test(numero)) {
+            logWarn('Calculo cancelado: numero origen invalido', { numero: numero });
+            mostrarMensajeConcepto('El numero de comprobante origen debe contener entre 1 y 8 digitos numericos.');
+            $(SELECTORES.numeroCompteOri).trigger('focus');
+            return false;
+        }
+
+        sincronizarTipoComprobanteOrigen();
+        sincronizarComprobanteOrigen();
+        return true;
+    }
+
+    function limpiarComprobanteOrigenNc() {
+        $(SELECTORES.comboTcoOri).val('');
+        $(SELECTORES.tcoOri).val('');
+        $(SELECTORES.puntoVentaOri).val('');
+        $(SELECTORES.numeroCompteOri).val('');
+        $(SELECTORES.compteOri).val('');
+        $(SELECTORES.repetidoOri).val('0');
+    }
+
+    function limitarSoloDigitos($input, maxLength) {
+        const valor = String($input.val() || '');
+        const limpio = valor.replace(/\D/g, '').slice(0, maxLength);
+        if (valor !== limpio) {
+            $input.val(limpio);
+        }
+    }
+    function permitirSoloDecimal(event) {
+        const teclasPermitidas = ['Backspace', 'Delete', 'Tab', 'Enter', 'Escape', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End'];
+        if (event.ctrlKey || event.metaKey || teclasPermitidas.includes(event.key)) {
+            return;
+        }
+        if (/^[0-9.,]$/.test(event.key)) {
+            return;
+        }
+        event.preventDefault();
+    }
+
+    function limitarInputDecimal($input) {
+        const valor = String($input.val() || '');
+        const limpio = valor.replace(/[^0-9.,]/g, '');
+        if (valor !== limpio) {
+            $input.val(limpio);
         }
     }
 
@@ -524,9 +723,9 @@
             })
             .forEach(function (item) {
                 const textoBase = formatearPorcentaje(item.valor);
-                const detalle = item.grl || item.afip || item.extra;
+                
                 $select.append(
-                    `<option class="text-end" value="${item.valor}" data-iva-grl="${escaparHtml(item.grl)}" data-iva-extra="${escaparHtml(item.extra)}" data-iva-afip="${escaparHtml(item.afip)}">${escaparHtml(detalle ? `${textoBase} - ${detalle}` : textoBase)}</option>`
+                    `<option class="text-end" value="${item.valor}" data-iva-grl="${escaparHtml(item.grl)}" data-iva-extra="${escaparHtml(item.extra)}" data-iva-afip="${escaparHtml(item.afip)}">${escaparHtml(textoBase)}</option>`
                 );
             });
 
@@ -627,6 +826,7 @@
             `);
             $(SELECTORES.btnSeguirConceptos).prop('disabled', true);
             $(SELECTORES.totalConceptos).text(formatearMoneda(0));
+            actualizarEstadoOperacionPorConceptos();
             return;
         }
 
@@ -655,6 +855,7 @@
 
         $(SELECTORES.totalConceptos).text(formatearMoneda(total));
         $(SELECTORES.btnSeguirConceptos).prop('disabled', false);
+        actualizarEstadoOperacionPorConceptos();
     }
 
     function calcularConceptos() {
@@ -676,9 +877,7 @@
             return;
         }
 
-        if (coTipo === 'NC' && (!String($(SELECTORES.tcoOri).val() || '').trim() || !String($(SELECTORES.compteOri).val() || '').trim())) {
-            logWarn('Calculo cancelado: NC sin comprobante origen');
-            mostrarMensajeConcepto('Para Nota de Credito debe informar el comprobante origen.');
+        if (coTipo === 'NC' && !validarComprobanteOrigenNc()) {
             return;
         }
 
@@ -691,8 +890,8 @@
 
         const request = {
             coTipo: coTipo,
-            tcoIdOri: String($(SELECTORES.tcoOri).val() || '').trim(),
-            cmCompteOri: String($(SELECTORES.compteOri).val() || '').trim(),
+            tcoIdOri: obtenerTipoComprobanteOrigen(),
+            cmCompteOri: obtenerComprobanteOrigenFormateado(),
             cmRepetidoOri: String($(SELECTORES.repetidoOri).val() || '').trim(),
             conceptos: conceptos.map(function (item) {
                 return {
@@ -760,10 +959,8 @@
 
     function renderSubtotales(response) {
         const $tbody = $(SELECTORES.tbodySubtotales);
-        const subtotales = Array.isArray(response?.subtotales) ? response.subtotales : [];
+        const subtotales = obtenerSubtotalesCalculo(response);
         $tbody.empty();
-
-        let total = Number(response?.calculo?.total || 0);
 
         if (subtotales.length === 0) {
             $tbody.html(`
@@ -788,11 +985,85 @@
             });
         }
 
-        if (!Number.isFinite(total) || total <= 0) {
-            total = calcularTotalConceptos();
+        const total = calcularTotalSubtotales(subtotales);
+        $(SELECTORES.totalCalculo).text(formatearMoneda(total));
+    }
+
+    function obtenerSubtotalesCalculo(response) {
+        if (Array.isArray(response?.subtotales) && response.subtotales.length > 0) {
+            return response.subtotales;
         }
 
-        $(SELECTORES.totalCalculo).text(formatearMoneda(total));
+        const jsonSubtotal =
+            response?.calculo?.json_subtotal ||
+            response?.calculo?.jsonSubtotal ||
+            response?.json_subtotal ||
+            response?.jsonSubtotal ||
+            '';
+
+        return normalizarSubtotalesCalculo(parsearJsonSeguro(jsonSubtotal));
+    }
+
+    function normalizarSubtotalesCalculo(origen) {
+        const filas = Array.isArray(origen)
+            ? origen
+            : Array.isArray(origen?.subtotales)
+                ? origen.subtotales
+                : Array.isArray(origen?.Subtotales)
+                    ? origen.Subtotales
+                    : Array.isArray(origen?.data)
+                        ? origen.data
+                        : Array.isArray(origen?.Data)
+                            ? origen.Data
+                            : [];
+
+        return filas.map(function (item) {
+            const fila = item || {};
+            return {
+                concepto: fila.concepto || fila.Concepto || fila.descripcion || fila.Descripcion || fila.tipo || fila.Tipo || '',
+                tipo: fila.tipo || fila.Tipo || '',
+                importe: parsearNumero(fila.importe ?? fila.Importe ?? fila.total ?? fila.Total ?? fila.monto ?? fila.Monto, 0)
+            };
+        }).filter(function (item) {
+            return item.concepto || item.tipo || item.importe !== 0;
+        });
+    }
+
+    function parsearJsonSeguro(valor) {
+        if (!valor) {
+            return [];
+        }
+
+        if (Array.isArray(valor) || typeof valor === 'object') {
+            return valor;
+        }
+
+        if (typeof valor !== 'string') {
+            return [];
+        }
+
+        try {
+            const parseado = JSON.parse(valor);
+            return typeof parseado === 'string'
+                ? parsearJsonSeguro(parseado)
+                : parseado;
+        } catch (error) {
+            logWarn('No se pudo parsear json_subtotal', {
+                error: String(error || ''),
+                jsonSubtotal: valor
+            });
+            return [];
+        }
+    }
+
+    function calcularTotalSubtotales(subtotales) {
+        if (!Array.isArray(subtotales)) {
+            return 0;
+        }
+
+        return subtotales.reduce(function (total, item) {
+            return total + parsearNumero(item?.importe, 0);
+        }, 0);
     }
 
     function confirmarOperacion() {
@@ -812,7 +1083,7 @@
             'Confirmar Operacion',
             `
                 <div class="text-start">
-                    <p class="mb-2"><strong>¿Desea finalizar la operacion?</strong></p>
+                    <p class="mb-2"><strong>Â¿Desea finalizar la operacion?</strong></p>
                     <p class="mb-0">Se emitira el comprobante y se registrara en cuenta corriente.</p>
                 </div>
             `,
@@ -841,7 +1112,8 @@
 
         logPaso('Ejecutando confirmacion de operacion', { url: url, calculoActual: calculoActual });
         confirmacionEnCurso = true;
-        mostrarLoaderNdcfs('Confirmando operacion...');
+        mostrarLoaderNdcfs('Finalizando operacion. Aguarde, no toque nada hasta que el proceso termine...');
+        mostrarEsperaFinalizacion();
         $(SELECTORES.btnFinalizar).prop('disabled', true).html('<i class="bx bx-loader-alt bx-spin"></i> FINALIZANDO');
 
         $.ajax({
@@ -857,18 +1129,7 @@
                     return;
                 }
 
-                AbrirMensaje(
-                    'Operacion Confirmada',
-                    response.mensaje || 'La operacion fue confirmada correctamente.',
-                    function () {
-                        $('#msjModal').modal('hide');
-                        window.location.href = window.ndcfsMenuCajaUrl || '/';
-                    },
-                    false,
-                    ['Aceptar'],
-                    'success!',
-                    null
-                );
+                procesarConfirmacionExitosa(response);
             })
             .fail(function (xhr) {
                 logError('Error AJAX confirmando operacion', {
@@ -880,16 +1141,164 @@
             .always(function () {
                 confirmacionEnCurso = false;
                 ocultarLoaderNdcfs();
+                ocultarEsperaFinalizacion();
                 $(SELECTORES.btnFinalizar).prop('disabled', false).html('<i class="bx bx-check-circle"></i> FINALIZAR');
             });
     }
 
+    function mostrarEsperaFinalizacion() {
+        const $modal = $(SELECTORES.modalCalculo);
+        if ($modal.find('#ndcfsEsperaFinalizacion').length > 0) {
+            return;
+        }
+        $modal.find('.modal-body').prepend(`
+            <div id="ndcfsEsperaFinalizacion" class="alert alert-warning border-golden d-flex align-items-center mb-3" role="alert">
+                <i class="bx bx-loader-alt bx-spin fs-3 me-2"></i>
+                <div>
+                    <strong>Finalizando operacion.</strong>
+                    <div class="small">Aguarde sin tocar la pantalla hasta que el proceso termine.</div>
+                </div>
+            </div>
+        `);
+    }
+
+    function ocultarEsperaFinalizacion() {
+        $('#ndcfsEsperaFinalizacion').remove();
+    }
+
+    function obtenerUrlReinicioModulo() {
+        return window.ndcfsModuloIndexUrl || window.location.pathname || '/';
+    }
+
+    function procesarConfirmacionExitosa(response) {
+        const comprobante = Array.isArray(response?.data)
+            ? response.data[0]
+            : null;
+        const debeImprimir = response?.debe_imprimir === true;
+        const modoReporte = String(response?.reporte_modo || 'PANTALLA')
+            .trim()
+            .toUpperCase();
+        const mensajeOperacion = construirMensajeConfirmacion(response, comprobante);
+
+        const mostrarResultadoYVolver = function (titulo, mensaje, tipo) {
+            AbrirMensaje(
+                titulo,
+                mensaje,
+                function () {
+                    $('#msjModal').modal('hide');
+                    window.location.href = obtenerUrlReinicioModulo();
+                },
+                false,
+                ['Aceptar'],
+                tipo || 'success!',
+                null
+            );
+        };
+
+        const cerrarConExito = function () {
+            mostrarResultadoYVolver(
+                'Operacion Confirmada',
+                mensajeOperacion,
+                'success!'
+            );
+        };
+
+        if (!debeImprimir) {
+            cerrarConExito();
+            return;
+        }
+
+        if (!comprobante) {
+            mostrarResultadoYVolver(
+                'Operacion Confirmada',
+                `${mensajeOperacion}<br>` +
+                '<span class="text-warning">No se recibieron datos suficientes para presentar el comprobante.</span>',
+                'warn!'
+            );
+            return;
+        }
+
+        if (typeof ModuloReportes === 'undefined') {
+            mostrarResultadoYVolver(
+                'Operacion Confirmada',
+                `${mensajeOperacion}<br>` +
+                '<span class="text-warning">No se encontro el modulo de reportes para presentar el comprobante.</span>',
+                'warn!'
+            );
+            return;
+        }
+
+        mostrarLoaderNdcfs('Generando comprobante...');
+        ModuloReportes.generarYVisualizarReporte(
+            {
+                tco_letra: comprobante.tco_letra,
+                tco_id: comprobante.tco_id,
+                cm_compte: comprobante.cm_compte,
+                cm_repetido: comprobante.cm_repetido
+            },
+            {
+                modo: modoReporte,
+                titulo: 'Operacion Confirmada'
+            }
+        ).then(function (exitoso) {
+            logPaso('Generacion de reporte de comprobante finalizada', { exitoso: exitoso });
+            cerrarConExito();
+        }).catch(function (error) {
+            logError('Error generando reporte de comprobante', error);
+            cerrarConExito();
+        }).finally(function () {
+            ocultarLoaderNdcfs();
+        });
+    }
+    function construirMensajeConfirmacion(response, comprobante) {
+        const mensajePrincipal = response?.mensaje || 'La operacion fue confirmada correctamente.';
+        const mensajeDetalle = response?.resultado_completo || response?.resultado_msj || '';
+        const numero = comprobante?.cm_compte || '';
+        const letra = comprobante?.tco_letra || '';
+        const tipo = comprobante?.tco_id || '';
+
+        let html = `<div class="text-center">
+            <div class="mb-3">
+                <i class='bx bx-check-circle text-golden' style="font-size: 4rem;"></i>
+            </div>
+            <h4 class="text-golden mb-3">${escaparHtml(mensajePrincipal)}</h4>`;
+
+        if (numero || letra || tipo) {
+            html += `<div class="alert alert-success mb-3">
+                <div class="mb-2">
+                    <strong class="d-block text-uppercase">Comprobante emitido</strong>
+                    ${letra ? `<span class="badge bg-primary fs-6">${escaparHtml(letra)}</span>` : ''}
+                </div>
+                <div class="mt-2">
+                    <small class="text-muted">Numero:</small><br>
+                    <strong class="fs-5">${escaparHtml(numero || '-')}</strong>
+                </div>
+                ${tipo ? `<div class="mt-2"><small class="text-muted">Tipo: ${escaparHtml(tipo)}</small></div>` : ''}
+            </div>`;
+        }
+
+        if (mensajeDetalle && mensajeDetalle !== mensajePrincipal) {
+            html += `<div class="alert alert-info text-start mb-0">
+                <i class='bx bx-info-circle'></i> ${escaparHtml(mensajeDetalle)}
+            </div>`;
+        }
+
+        html += '</div>';
+        return html;
+    }
     function actualizarVisibilidadOrigenNc() {
         const coTipo = String($(SELECTORES.operacion).val() || '').trim().toUpperCase();
         logPaso('Cambio de operacion', { coTipo: coTipo });
         $('.ndcfs-origen-nc').toggleClass('d-none', coTipo !== 'NC');
-    }
 
+        if (coTipo === 'NC') {
+            cargarTiposComprobanteOrigen();
+            sincronizarTipoComprobanteOrigen();
+            sincronizarComprobanteOrigen();
+        } else {
+            limpiarComprobanteOrigenNc();
+        }
+    }
     function hidratarDatosCuentaModulo(cuenta, sufijo) {
         const nombre = cuenta.cta_denominacion || cuenta.denominacion || cuenta.nombre || '';
         const id = cuenta.cta_id || cuenta.id || '';
@@ -1116,8 +1525,8 @@
             return 'No requiere';
         }
 
-        const tco = String($(SELECTORES.tcoOri).val() || '').trim();
-        const compte = String($(SELECTORES.compteOri).val() || '').trim();
+        const tco = obtenerTipoComprobanteOrigen();
+        const compte = obtenerComprobanteOrigenFormateado();
         const repetido = String($(SELECTORES.repetidoOri).val() || '').trim();
         return `${tco} ${compte}${repetido ? ` (${repetido})` : ''}`.trim();
     }
@@ -1227,3 +1636,10 @@
             .replace(/'/g, '&#039;');
     }
 })();
+
+
+
+
+
+
+

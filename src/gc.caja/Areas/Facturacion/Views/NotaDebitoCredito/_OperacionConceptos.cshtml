@@ -1,4 +1,4 @@
-<div class="modal fade modal-golden"
+﻿<div class="modal fade modal-golden"
      id="modalNdcfsConceptos"
      tabindex="-1"
      aria-labelledby="modalNdcfsConceptosLabel"
@@ -13,7 +13,7 @@
                         <i class="bx bx-receipt"></i>
                         Nota de Debito - Nota de Credito - Factura de Servicio
                     </h5>
-                    <small id="ndcfsConceptosSubtitulo">Carga de conceptos</small>
+                    <small id="ndcfsConceptosSubtitulo" class="fw-bold">Carga de conceptos</small>
                 </div>
             </div>
 
@@ -62,18 +62,35 @@
                         <label class="form-label">Emite</label>
                         <select class="form-select" id="cmbNdcfsOperacion"></select>
                     </div>
-                    <div class="col-md-2 ndcfs-origen-nc d-none">
+                    <div class="col-md-3 ndcfs-origen-nc d-none">
                         <label class="form-label">T. Comp. Ori.</label>
-                        <input type="text" class="form-control input-text" id="txtNdcfsTcoOri" maxlength="3" />
+                        <select class="form-select" id="cmbNdcfsTcoOri">
+                            <option value="">Cargando...</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2 ndcfs-origen-nc d-none">
+                        <label class="form-label">PV Ori.</label>
+                        <input type="text"
+                               class="form-control input-integer text-center"
+                               id="txtNdcfsPuntoVentaOri"
+                               maxlength="4"
+                               inputmode="numeric"
+                               autocomplete="off"
+                               placeholder="0000" />
                     </div>
                     <div class="col-md-3 ndcfs-origen-nc d-none">
-                        <label class="form-label">Comprobante Ori.</label>
-                        <input type="text" class="form-control input-text" id="txtNdcfsCompteOri" maxlength="13" />
+                        <label class="form-label">Nro. Comp. Ori.</label>
+                        <input type="text"
+                               class="form-control input-integer text-center"
+                               id="txtNdcfsNumeroCompteOri"
+                               maxlength="8"
+                               inputmode="numeric"
+                               autocomplete="off"
+                               placeholder="00000000" />
                     </div>
-                    <div class="col-md-2 ndcfs-origen-nc d-none">
-                        <label class="form-label">Repetido</label>
-                        <input type="text" class="form-control input-integer" id="txtNdcfsRepetidoOri" maxlength="3" value="0" />
-                    </div>
+                    <input type="hidden" id="txtNdcfsTcoOri" />
+                    <input type="hidden" id="txtNdcfsCompteOri" />
+                    <input type="hidden" id="txtNdcfsRepetidoOri" value="0" />
                 </div>
 
                 <div class="row g-3 align-items-end mb-3">
@@ -113,7 +130,6 @@
                             <i class="bx bx-list-ul"></i>
                             Conceptos cargados
                         </h6>
-                        <strong>Total: <span id="lblNdcfsTotalConceptos">$ 0.00</span></strong>
                     </div>
                     <div class="card-body p-0">
                         <div class="table-responsive ndcfs-tabla-conceptos">
@@ -138,6 +154,16 @@
                             </table>
                         </div>
                     </div>
+                    <div class="card-footer bg-golden-light border-top border-golden ndcfs-total-footer">
+                        <div class="row g-2 align-items-center">
+                            <div class="col-md-8 text-end">
+                                <span class="fw-bold text-golden-dark fs-4">TOTAL:</span>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-control form-control-lg text-end fw-bold text-success ndcfs-total-display" id="lblNdcfsTotalConceptos">$ 0.00</div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -156,3 +182,5 @@
         </div>
     </div>
 </div>
+
+

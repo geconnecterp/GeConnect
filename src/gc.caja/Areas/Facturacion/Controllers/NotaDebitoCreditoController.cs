@@ -1,4 +1,4 @@
-using gc.caja.Controllers;
+﻿using gc.caja.Controllers;
 using gc.caja.core.Servicios.Contratos.Cajas;
 using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Dtos.Cajas;
@@ -18,6 +18,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
         private readonly IProductoFactServicio _productoFactServicio;
         private readonly INotaCreditoServicio _notaCreditoServicio;
         private readonly ICajaServicio _cajaServicio;
+        private readonly AppSettings _appSettings;
 
         public NotaDebitoCreditoController(
             IOptions<AppSettings> options,
@@ -33,6 +34,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
             _productoFactServicio = productoFactServicio;
             _notaCreditoServicio = notaCreditoServicio;
             _cajaServicio = cajaServicio;
+            _appSettings = options.Value;
         }
 
         [HttpGet]
@@ -60,6 +62,112 @@ namespace gc.caja.Areas.Facturacion.Controllers
             return View();
         }
 
+        [HttpGet]
+        public async Task<IActionResult> ObtenerTiposComprobante()
+        {
+            if (!VerificarAutenticacion(out IActionResult redirectResult))
+            {
+                return Json(new
+                {
+                    ok = false,
+                    mensaje = "Sesion expirada."
+                });
+            }
+
+            var token = TokenCookie;
+
+            if (string.IsNullOrWhiteSpace(token))
+            {
+                _logger?.LogWarning(
+                    "ND/NC/FS: no se pudo obtener tipos de comprobante origen: token inexistente."
+                );
+
+                return Json(new
+                {
+                    ok = false,
+                    mensaje = "La sesion actual no posee un token valido."
+                });
+            }
+
+            var afipId = string.IsNullOrWhiteSpace(_appSettings.NotaCreditoDevolucionAfipId)
+                ? "%"
+                : _appSettings.NotaCreditoDevolucionAfipId.Trim();
+
+            var optId = string.IsNullOrWhiteSpace(_appSettings.NotaCreditoDevolucionOptId)
+                ? "VE"
+                : _appSettings.NotaCreditoDevolucionOptId.Trim();
+
+            try
+            {
+                var resultado = await _notaCreditoServicio.GetTipoComprobante(
+                    afipId,
+                    optId,
+                    token
+                );
+
+                if (resultado == null || !resultado.Ok)
+                {
+                    var mensaje = resultado?.Mensaje
+                        ?? "No fue posible obtener los tipos de comprobante.";
+
+                    _logger?.LogWarning(
+                        "ND/NC/FS: error obteniendo tipos de comprobante origen. Mensaje={Mensaje}",
+                        mensaje
+                    );
+
+                    return Json(new
+                    {
+                        ok = false,
+                        mensaje
+                    });
+                }
+
+                var tipos = (resultado.ListaEntidad ?? [])
+                    .Where(x => !string.IsNullOrWhiteSpace(x.tco_id))
+                    .Select(x => new
+                    {
+                        tco_id = x.tco_id.Trim(),
+                        tco_desc = x.tco_desc?.Trim() ?? string.Empty,
+                        tco_letra = x.tco_letra?.Trim() ?? string.Empty,
+                        tco_tipo = x.tco_tipo?.Trim() ?? string.Empty
+                    })
+                    .ToList();
+
+                if (tipos.Count == 0)
+                {
+                    _logger?.LogWarning(
+                        "ND/NC/FS: no se encontraron tipos de comprobante origen. afip_id={AfipId}, opt_id={OptId}",
+                        afipId,
+                        optId
+                    );
+
+                    return Json(new
+                    {
+                        ok = false,
+                        mensaje = "No se encontraron tipos de comprobante habilitados."
+                    });
+                }
+
+                return Json(new
+                {
+                    ok = true,
+                    datos = tipos
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(
+                    ex,
+                    "ND/NC/FS: error inesperado al obtener tipos de comprobante origen."
+                );
+
+                return Json(new
+                {
+                    ok = false,
+                    mensaje = "Ocurrio un error al obtener los tipos de comprobante."
+                });
+            }
+        }
         [HttpPost]
         public JsonResult ValidacionInicial()
         {
@@ -455,22 +563,22 @@ namespace gc.caja.Areas.Facturacion.Controllers
 
                 var requestCalculo = CrearRequestCalculoFilas(contexto, request, productosOriginales, totalCantidad, totalControl);
 
-                _logger?.LogInformation("═══════════════════════════════════════════════════");
+                _logger?.LogInformation("â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•");
                 _logger?.LogInformation("ND/NC/FS - REQUEST CALCULAR FILAS");
                 _logger?.LogInformation("   Operacion={Operacion}; Cuenta={Cuenta}; Conceptos={Conceptos}", request.CoTipo, contexto.Cuenta.cta_id, productosOriginales.Count);
                 _logger?.LogInformation("   Request={Request}", JsonConvert.SerializeObject(requestCalculo));
-                _logger?.LogInformation("═══════════════════════════════════════════════════");
+                _logger?.LogInformation("â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•");
 
                 var resultado = await _productoFactServicio.CalcularFilas(requestCalculo, token);
 
-                _logger?.LogInformation("═══════════════════════════════════════════════════");
+                _logger?.LogInformation("â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•");
                 _logger?.LogInformation("ND/NC/FS - RESPONSE CALCULAR FILAS");
                 _logger?.LogInformation("   Resultado null={ResultadoNull}; json_subtotal_len={JsonSubtotalLen}; json_p_len={JsonProductosLen}",
                     resultado == null,
                     resultado?.json_subtotal?.Length ?? 0,
                     resultado?.json_p?.Length ?? 0);
                 _logger?.LogInformation("   Response={Response}", JsonConvert.SerializeObject(resultado));
-                _logger?.LogInformation("═══════════════════════════════════════════════════");
+                _logger?.LogInformation("â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•");
 
                 if (resultado == null || string.IsNullOrWhiteSpace(resultado.json_subtotal))
                 {
@@ -576,9 +684,9 @@ namespace gc.caja.Areas.Facturacion.Controllers
 
                 var request = CrearRequestConfirmacion(contexto);
 
-                _logger?.LogInformation("═══════════════════════════════════════════════════");
+                _logger?.LogInformation("â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•");
                 _logger?.LogInformation("ND/NC/FS - VALIDANDO ESTADO DEL PUNTO DE VENTA");
-                _logger?.LogInformation("═══════════════════════════════════════════════════");
+                _logger?.LogInformation("â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•");
 
                 var validacionPV = await ValidarEstadoPuntoVenta(
                     cajaServicio: _cajaServicio,
@@ -591,7 +699,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
 
                 if (!validacionPV.PuedeContinuar)
                 {
-                    _logger?.LogError("ND/NC/FS: validacion de PV falló - Operacion bloqueada");
+                    _logger?.LogError("ND/NC/FS: validacion de PV fallÃ³ - Operacion bloqueada");
                     _logger?.LogError("   Resultado: {Resultado}", validacionPV.Resultado);
                     _logger?.LogError("   Mensaje: {Mensaje}", validacionPV.Mensaje);
 
@@ -625,19 +733,19 @@ namespace gc.caja.Areas.Facturacion.Controllers
                     request.caea
                 );
 
-                _logger?.LogInformation("═══════════════════════════════════════════════════");
-                _logger?.LogInformation("✅ ND/NC/FS - REQUEST CONFIRMAR OPERACION");
+                _logger?.LogInformation("â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•");
+                _logger?.LogInformation("âœ… ND/NC/FS - REQUEST CONFIRMAR OPERACION");
                 _logger?.LogInformation("   Operacion={Operacion}; Cuenta={Cuenta}; Total={Total}", contexto.CoTipo, contexto.Cuenta.cta_id, contexto.Total);
                 _logger?.LogInformation("   Request={Request}", JsonConvert.SerializeObject(request));
-                _logger?.LogInformation("═══════════════════════════════════════════════════");
+                _logger?.LogInformation("â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•");
 
                 var resultado = await _notaCreditoServicio.ConfirmarOperacionCaja(request, token);
 
-                _logger?.LogInformation("═══════════════════════════════════════════════════");
-                _logger?.LogInformation("📥 ND/NC/FS - RESPONSE CONFIRMAR OPERACION");
+                _logger?.LogInformation("â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•");
+                _logger?.LogInformation("ðŸ“¥ ND/NC/FS - RESPONSE CONFIRMAR OPERACION");
                 _logger?.LogInformation("   Ok={Ok}; Mensaje={Mensaje}", resultado?.Ok, resultado?.Mensaje);
                 _logger?.LogInformation("   Response={Response}", JsonConvert.SerializeObject(resultado));
-                _logger?.LogInformation("═══════════════════════════════════════════════════");
+                _logger?.LogInformation("â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•");
 
                 if (resultado == null || !resultado.Ok || resultado.Entidad == null)
                 {
@@ -649,16 +757,64 @@ namespace gc.caja.Areas.Facturacion.Controllers
                 }
 
                 var respuesta = resultado.Entidad;
+                if (respuesta.resultado != 0)
+                {
+                    return Json(new
+                    {
+                        ok = false,
+                        mensaje = respuesta.resultado_msj ?? "No se pudo confirmar la operacion."
+                    });
+                }
+
+                if (!TryParsearComprobanteJson(respuesta.resultado_id, out var comprobanteEmitido) ||
+                    comprobanteEmitido == null)
+                {
+                    return Json(new
+                    {
+                        ok = false,
+                        mensaje = "La operacion fue procesada, pero no se pudo interpretar el comprobante emitido.",
+                        debug_resultado_id = respuesta.resultado_id
+                    });
+                }
+
+                var debeImprimir = DebeImprimirComprobanteElectronico();
+                var reporteModo = NormalizarModoReporte(_appSettings.NotaCreditoReporteModo);
+                var mensajeFinal = CrearMensajeOperacionConfirmada(contexto.CoTipo, comprobanteEmitido.tco_letra, comprobanteEmitido.cm_compte);
+
                 LimpiarContexto();
 
                 return Json(new
                 {
                     ok = true,
-                    mensaje = respuesta.resultado_msj ?? "Operacion confirmada correctamente.",
+                    mensaje = mensajeFinal,
                     resultado = respuesta.resultado,
                     resultado_id = respuesta.resultado_id,
+                    resultado_completo = respuesta.resultado_msj,
                     comprobante = respuesta.resultado_id,
-                    operacion = contexto.CoTipo
+                    operacion = contexto.CoTipo,
+                    debe_imprimir = debeImprimir,
+                    reporte_modo = reporteModo,
+                    reporte = new
+                    {
+                        habilitado = debeImprimir,
+                        modo = reporteModo,
+                        motivo = debeImprimir
+                            ? "Caja configurada para Factura Electronica."
+                            : "La caja no esta configurada para Factura Electronica."
+                    },
+                    data = new[]
+                    {
+                        new
+                        {
+                            tco_letra = comprobanteEmitido.tco_letra,
+                            tco_id = comprobanteEmitido.tco_id,
+                            cm_compte = comprobanteEmitido.cm_compte,
+                            cm_repetido = comprobanteEmitido.cm_repetido,
+                            co_tipo = contexto.CoTipo,
+                            debe_imprimir = debeImprimir,
+                            reporte_modo = reporteModo
+                        }
+                    }
                 });
             }
             catch (Exception ex)
@@ -901,6 +1057,36 @@ namespace gc.caja.Areas.Facturacion.Controllers
             };
         }
 
+        private bool DebeImprimirComprobanteElectronico()
+        {
+            return string.Equals(
+                CajaActual?.Facturacion.ToString(),
+                "FE",
+                StringComparison.OrdinalIgnoreCase
+            );
+        }
+
+        private static string NormalizarModoReporte(string? modo)
+        {
+            var valor = (modo ?? string.Empty).Trim().ToUpperInvariant();
+
+            return valor == "IMPRESORA"
+                ? "IMPRESORA"
+                : "PANTALLA";
+        }
+
+        private static string CrearMensajeOperacionConfirmada(string coTipo, string tcoLetra, string cmCompte)
+        {
+            var descripcion = (coTipo ?? string.Empty).Trim().ToUpperInvariant() switch
+            {
+                "ND" => "Nota de Debito",
+                "NC" => "Nota de Credito",
+                "FS" => "Factura de Servicio",
+                _ => "Operacion"
+            };
+
+            return $"{descripcion} {tcoLetra} Nro {cmCompte} emitida correctamente.";
+        }
         private CajaOpeConfirmarReq CrearRequestConfirmacion(NotaDebitoCreditoContextoSesion contexto)
         {
             var cajaActual = CajaActual;
@@ -1050,3 +1236,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
         }
     }
 }
+
+
+
+
