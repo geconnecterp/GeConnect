@@ -1,0 +1,278 @@
+﻿@model ListadoVarVtasYCompUltDoceMModel
+@using gc.infraestructura.Helpers
+@using static gc.infraestructura.Helpers.GridHelper
+@{
+    string grupoActual = string.Empty;
+    string grupoAnterior = string.Empty;
+    string leyendaAgrupador = string.Empty;
+
+    var alt = true;
+    string clase = string.Empty;
+
+    var productos = new List<ReporteVarVtasYCompUltDoceMDto>();
+}
+<style>
+    #containerListaProducto {
+        position: relative;
+        max-height: 68vh;
+        height: auto;
+        overflow-y: auto;
+        overflow-x: auto;
+        z-index: auto;
+    }
+        #containerListaProducto thead tr.header:first-child th {
+            position: sticky;
+            top: 0;
+            z-index: 30;
+            background: linear-gradient(to bottom, #b8860b, #daa520);
+            color: #fff;
+        }
+        #containerListaProducto thead tr.header:nth-child(2) th {
+            position: sticky;
+            top: var(--header-height); /* altura real calculada por JS */
+            z-index: 29;
+            background: linear-gradient(to bottom, #b8860b, #daa520);
+            color: #fff;
+        }
+    .table-golden {
+        border-collapse: collapse !important;
+        table-layout: auto !important;
+        width: auto !important;
+        min-width: 100% !important;
+    }
+
+    #tbGridProductos th,
+    #tbGridProductos td {
+        padding: 0.15rem 0.20rem !important;
+        line-height: 1.1 !important;
+        vertical-align: middle !important;
+    }
+
+    #tbGridProductos tr {
+        min-height: 1.6rem;
+        height: auto !important;
+    }
+
+    #tbGridProductos td div.d-flex.flex-column {
+        line-height: 1.05 !important;
+        text-align: right !important;
+        align-items: flex-end !important;
+    }
+
+    #tbGridProductos td {
+        text-align: right !important;
+    }
+
+        #tbGridProductos th.cant-col,
+        #tbGridProductos td.cant-col {
+            min-width: 40px !important;
+            width: 40px !important;
+        }
+
+        #tbGridProductos th.col-id,
+        #tbGridProductos td.col-id {
+            width: 3% !important;
+            min-width: 35px !important;
+            max-width: 45px !important;
+            white-space: nowrap !important;
+        }
+
+        #tbGridProductos th.col-desc,
+        #tbGridProductos td.col-desc {
+            width: 6% !important;
+            min-width: 120px !important;
+            max-width: 160px !important;
+            text-align: left !important;
+        }
+
+    #tbGridProductos tr.table-secondary td {
+        text-align: center !important;
+    }
+    .desc-ellipsis {
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        display: block;
+        max-width: 100%;
+    }
+
+    .cell-ellipsis {
+        display: inline-block !important;
+        max-width: 100% !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+    }
+
+    .badge.bg-secondary {
+        font-size: 0.70rem;
+        padding: 0.20rem 0.35rem;
+        border-radius: 0.25rem;
+    }
+
+    #toggleFiltros:hover {
+        color: #000;
+        transform: scale(1.15);
+    }
+
+    /* Fondo gris SOLO para columnas Fact. cuando la fila NO está seleccionada */
+    #tbGridProductos tr:not(.selected-row) td:not(.cant-col):not(.col-desc):not(.col-id) {
+        background-color: #f2f2f2 !important;
+    }
+
+</style>
+<div class="grid-golden">
+    <div class="grid-golden-header">
+        <div class="row align-items-md-center">
+            <div class="col-md-10 col-sm-6 d-flex align-items-center">
+                <h5 class="mb-0 flex-grow-1">
+                    <i class="bx bx-package me-2"></i>
+                    <strong>Ranking no agrupado</strong>
+                </h5>
+                <i class="bx bx-chevrons-down fs-4 ms-2"
+                   id="toggleFiltros"
+                   data-bs-toggle="collapse"
+                   data-bs-target="#filtrosCollapse"
+                   role="button"
+                   data-bs-placement="top"
+                   title="Haz click acá para conocer los filtros aplicados"
+                   style="
+                    cursor:pointer;
+                    transition: transform .25s ease, color .25s ease;
+                    color:#666;
+                    ">
+                </i>
+            </div>
+
+            <div class="col-md-2 col-sm-6">
+                <div class="d-flex justify-content-sm-end"></div>
+            </div>
+        </div>
+    </div>
+    <div class="collapse" id="filtrosCollapse">
+        <div class="mt-2">
+            <span class="badge bg-secondary me-1">@Model.LeyendaSuc</span>
+            <span class="badge bg-secondary me-1">@Model.LeyendaProv</span>
+            <span class="badge bg-secondary me-1">@Model.LeyendaRub</span>
+        </div>
+    </div>
+    <div class="grid-golden-body">
+        <div class="table-wrapper" id="containerListaProducto">
+            <table class="table table-sm table-golden" id="tbGridProductos">
+                <thead>
+                    <tr class="header">
+                        <th rowspan="2" class="text-center col-id">ID</th>
+                        <th rowspan="2" class="text-center col-desc">Descripción</th>
+
+                        @if (Model?.GrillaProductoEvoVtaComp?.ListaDatos != null
+                            && Model.GrillaProductoEvoVtaComp.ListaDatos.Count > 0)
+                        {
+                            var firstItem = Model.GrillaProductoEvoVtaComp.ListaDatos.First();
+
+                            for (int i = 1; i <= 12; i++)
+                            {
+                                var periodoProp = firstItem.GetType().GetProperty($"periodo{i}");
+                                var periodo = periodoProp?.GetValue(firstItem)?.ToString() ?? $"Periodo {i}";
+
+                                <th colspan="2" class="text-center" style="width: 8%;">@periodo</th>
+                            }
+                        }
+                        else
+                        {
+                            for (int i = 1; i <= 12; i++)
+                            {
+                                <th colspan="2" class="text-center" style="width: 8%;">Periodo @i</th>
+                            }
+                        }
+                    </tr>
+
+                    <tr class="header">
+                        @for (int i = 1; i <= 12; i++)
+                        {
+                            <th class="text-center cant-col" style="width: 4%;">Cant.</th>
+                            <th class="text-center" style="width: 4%;">Fact.</th>
+                        }
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model?.GrillaProductoEvoVtaComp?.ListaDatos != null && Model.GrillaProductoEvoVtaComp.ListaDatos.Count > 0)
+                    {
+                        productos = Model.GrillaProductoEvoVtaComp.ListaDatos.OrderBy(x => x.rub_id).ToList();
+
+                        foreach (var item in productos)
+                        {
+                            grupoActual = item.rub_id;
+                            leyendaAgrupador = $"({item.rub_id}) {item.rub_desc}";
+
+                            if (grupoActual != grupoAnterior)
+                            {
+                                <tr class="table-secondary fw-bold">
+                                    <td colspan="26" class="text-center">
+                                        <i class="bx bx-folder me-1"></i>
+                                        @leyendaAgrupador
+                                    </td>
+                                </tr>
+                                grupoAnterior = grupoActual;
+                                alt = true;
+                            }
+
+                            clase = alt ? "alt" : "";
+                            alt = !alt;
+                            <tr class="@clase" onclick="selectReg(this, 'tbGridProductos')">
+                                <td class="text-center cell-fit-content col-id">
+                                    @Model.GrillaProductoEvoVtaComp.FormatearDato(item.p_id, FormatDato.Ninguno)
+                                </td>
+                                <td class="col-desc">
+                                    <span class="desc-ellipsis" title="@item.p_desc">
+                                        @Model.GrillaProductoEvoVtaComp.FormatearDato(item.p_desc, FormatDato.Ninguno)
+                                    </span>
+                                </td>
+                                @for (int i = 1; i <= 12; i++)
+                                {
+                                    var vtaCant = (int)item.GetType().GetProperty($"vta_cantidad{i}")?.GetValue(item);
+                                    var compCant = (int)item.GetType().GetProperty($"comp_cantidad{i}")?.GetValue(item);
+                                    var vtaFact = (decimal)item.GetType().GetProperty($"vta_neto{i}")?.GetValue(item);
+                                    var compFact = (decimal)item.GetType().GetProperty($"comp_costo{i}")?.GetValue(item);
+                                    <td class="text-right cell-fit-content cant-col">
+                                        <div class="d-flex flex-column lh-1">
+                                            <span>@GridHelper.FormatearDato(vtaCant, FormatDato.Monto, false)</span>
+                                            <span class="text-muted">@GridHelper.FormatearDato(compCant, FormatDato.Monto, false)</span>
+                                        </div>
+                                    </td>
+                                    <td class="text-right cell-fit-content">
+                                        <div class="d-flex flex-column lh-1">
+                                            <span>@GridHelper.FormatearDato(vtaFact, FormatDato.Monto, true)</span>
+                                            <span class="text-muted">@GridHelper.FormatearDato(compFact, FormatDato.Monto, true)</span>
+                                        </div>
+                                    </td>
+                                }
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="26" class="text-center text-muted py-4">
+                                <i class="bx bx-info-circle me-2"></i>
+                                No se encontraron productos con los criterios especificados
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<script>
+    // Rotación del doble-chevron al abrir/cerrar
+    const toggle = document.getElementById('toggleFiltros');
+    const collapse = document.getElementById('filtrosCollapse');
+
+    collapse.addEventListener('show.bs.collapse', () => {
+        toggle.style.transform = 'rotate(180deg)';
+    });
+
+    collapse.addEventListener('hide.bs.collapse', () => {
+        toggle.style.transform = 'rotate(0deg)';
+    });
+</script>

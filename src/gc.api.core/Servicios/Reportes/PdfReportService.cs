@@ -139,6 +139,7 @@ namespace gc.api.core.Servicios.Reportes
 				{ InfoReporte.R091_Comisiones_Repartidores_Resumen, new R091_Comisiones_Repartidores_Resumen(uow,consSv,empresa,ctaSv, logger) },
 				{ InfoReporte.R092_Reporte_Ranking_Y_Rentabilidad, new R092_Reporte_Ranking_Y_Rentabilidad(uow,consSv,empresa,ctaSv, logger) },
 				{ InfoReporte.R093_Reporte_Evo_Ventas_Periodos_Anteriores, new R093_Reporte_Evo_Ventas_Periodos_Anteriores(uow,consSv,empresa,ctaSv, logger) },
+				{ InfoReporte.R094_Reporte_Var_Vtas_Y_Comp_Ult_Doce_M, new R094_Reporte_Var_Vtas_Y_Comp_Ult_Doce_M(uow,consSv,empresa,ctaSv, logger) },
 			}; 
             _logger = logger;
         }

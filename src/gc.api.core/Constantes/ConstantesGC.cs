@@ -140,6 +140,13 @@
 			public const string SP_E_EVO_VTAS_ANUAL_CTA = "SPGECO_E_Evo_Vtas_Anual_CTA";
 			#endregion
 
+			#region Reporte de Variación de Ventas y Compras en los Últimos Doce Meses
+			public const string SP_E_VAR_VTAS_COMP_P = "SPGECO_E_Var_Vtas_Comp_P";
+			public const string SP_E_VAR_VTAS_COMP_SEC = "SPGECO_E_Var_Vtas_Comp_SEC";
+			public const string SP_E_VAR_VTAS_COMP_RUB = "SPGECO_E_Var_Vtas_Comp_RUB";
+			public const string SP_E_VAR_VTAS_COMP_CTA = "SPGECO_E_Var_Vtas_Comp_CTA";
+			#endregion
+
 			#region Análisis de Valores de Ventas
 			public const string SP_E_AVALORES_MES = "SPGECO_E_AValores_mes";
 			public const string SP_E_AVALORES_DIAS = "SPGECO_E_AValores_dias";

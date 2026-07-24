@@ -629,5 +629,19 @@ namespace gc.api.Controllers.Consultas
 
 			return Ok(response);
 		}
+
+		[HttpPost]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<ReporteVarVtasYCompUltDoceMDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult RepoVarVtasYCompUltDoceM(ReporteVarVtasYCompUltDoceMRequest request)
+		{
+			ApiResponse<List<ReporteVarVtasYCompUltDoceMDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
+			var res = _consSv.RepoVarVtasYCompUltDoceM(request);
+			response = new ApiResponse<List<ReporteVarVtasYCompUltDoceMDto>>(res);
+
+			return Ok(response);
+		}
 	}
 }

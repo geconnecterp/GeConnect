@@ -1009,5 +1009,111 @@ namespace gc.api.core.Servicios
 
 			return lstProductos;
 		}
+
+		public List<ReporteVarVtasYCompUltDoceMDto> RepoVarVtasYCompUltDoceM(ReporteVarVtasYCompUltDoceMRequest filtros)
+		{
+			string sp = "";
+
+			switch (filtros.agrupador)
+			{
+				case 0:
+					sp = ConstantesGC.StoredProcedures.SP_E_VAR_VTAS_COMP_P;
+					break;
+				case 1:
+					sp = ConstantesGC.StoredProcedures.SP_E_VAR_VTAS_COMP_SEC;
+					break;
+				case 2:
+					sp = ConstantesGC.StoredProcedures.SP_E_VAR_VTAS_COMP_RUB;
+					break;
+				case 3:
+					sp = ConstantesGC.StoredProcedures.SP_E_VAR_VTAS_COMP_CTA;
+					break;
+				default:
+					sp = ConstantesGC.StoredProcedures.SP_E_VAR_VTAS_COMP_P;
+					break;
+			}
+			var ps = new List<SqlParameter>();
+
+			if (filtros.lSuc != null && filtros.lSuc.Count > 0)
+			{
+				StringBuilder sb = new();
+				bool first = true;
+				foreach (var item in filtros.lSuc)
+				{
+					if (first)
+						first = false;
+					else
+						sb.Append(',');
+
+					sb.Append(item);
+				}
+				ps.Add(new SqlParameter("@adm", "1"));
+				ps.Add(new SqlParameter("@adm_list", sb.ToString()));
+			}
+			else
+				ps.Add(new SqlParameter("@adm", "0"));
+
+			if (filtros.lProv != null && filtros.lProv.Count > 0)
+			{
+				StringBuilder sb = new();
+				bool first = true;
+				foreach (var item in filtros.lProv)
+				{
+					if (first)
+						first = false;
+					else
+						sb.Append(',');
+
+					sb.Append(item);
+				}
+				ps.Add(new SqlParameter("@prov", "1"));
+				ps.Add(new SqlParameter("@prov_list", sb.ToString()));
+			}
+			else
+				ps.Add(new SqlParameter("@prov", "0"));
+
+			if (filtros.lFam != null && filtros.lFam.Count > 0)
+			{
+				StringBuilder sb = new();
+				bool first = true;
+				foreach (var item in filtros.lFam)
+				{
+					if (first)
+						first = false;
+					else
+						sb.Append(',');
+
+					sb.Append(item);
+				}
+				ps.Add(new SqlParameter("@pg", "1"));
+				ps.Add(new SqlParameter("@pg_list", sb.ToString() + ','));
+			}
+			else
+				ps.Add(new SqlParameter("@pg", "0"));
+
+			if (filtros.lRub != null && filtros.lRub.Count > 0)
+			{
+				StringBuilder sb = new();
+				bool first = true;
+				foreach (var item in filtros.lRub)
+				{
+					if (first)
+						first = false;
+					else
+						sb.Append(',');
+
+					sb.Append(item);
+				}
+				ps.Add(new SqlParameter("@rub", "1"));
+				ps.Add(new SqlParameter("@rub_list", sb.ToString()));
+			}
+			else
+				ps.Add(new SqlParameter("@rub", "0"));
+
+			ps.Add(new SqlParameter("@tipo", string.Empty));
+			List<ReporteVarVtasYCompUltDoceMDto> lstProductos = _repository.EjecutarLstSpExt<ReporteVarVtasYCompUltDoceMDto>(sp, ps, true);
+
+			return lstProductos;
+		}
 	}
 }

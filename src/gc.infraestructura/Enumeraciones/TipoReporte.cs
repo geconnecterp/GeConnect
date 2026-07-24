@@ -99,6 +99,7 @@ namespace gc.infraestructura.Enumeraciones
 		R091_Comisiones_Repartidores_Resumen = 91,
 		R092_Reporte_Ranking_Y_Rentabilidad = 92,
 		R093_Reporte_Evo_Ventas_Periodos_Anteriores = 93,
+        R094_Reporte_Var_Vtas_Y_Comp_Ult_Doce_M = 94,
 
 	}
 }

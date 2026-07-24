@@ -49,6 +49,7 @@ namespace gc.sitio.core.Servicios.Contratos
         List<ComisionesDeRepartidoresResumenDto> BuscarComisionDeRepartidorResumen(ComisionesDeRepartidoresRequest request, string token);
         List<RepRkgRentabVtasDto> RepRkgRentabVtas(ReporteRankingRentabVtasRequest request, string token);
         List<ReporteEvoVtasPerAnterioresDto> RepEvoVtasPerAnteriores(ReporteEvoVtasPerAnterioresRequest request, string token);
+		List<ReporteVarVtasYCompUltDoceMDto> RepoVarVtasYCompUltDoceM(ReporteVarVtasYCompUltDoceMRequest request, string token);
 	}
 }
 
