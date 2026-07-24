@@ -1912,9 +1912,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
                     _logger?.LogInformation("✅ NC Devolución: validación de PV exitosa - Operación autorizada");
                 }
 
-                requestConfirmacion.caea =
-                    cajaActual.Caja.ctrl_id == "-1" &&
-                    validacionPV.Resultado == 1;
+                requestConfirmacion.caea = cajaActual.Caja.ctrl_id == "-1" && validacionPV.Resultado == 1;
 
                 _logger?.LogInformation(
                     "NC Devolución: FormaPago={CtrlId} - ResultadoPV={ResultadoPV} - CAEA={Caea}",
@@ -2873,3 +2871,6 @@ namespace gc.caja.Areas.Facturacion.Controllers
         }
     }
 }
+
+
+
