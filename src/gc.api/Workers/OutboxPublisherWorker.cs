@@ -16,6 +16,8 @@ namespace gc.api.Workers
         private readonly IHubContext<AutorizacionHub> _hubContext;
         private readonly ILogger<OutboxPublisherWorker> _logger;
         private readonly PaginationOptions _paginacion;
+        private static readonly TimeSpan IntervaloLogSinPendientes = TimeSpan.FromMinutes(1);
+        private DateTime _ultimoLogSinPendientesUtc = DateTime.MinValue;
 
         public OutboxPublisherWorker(
             IServiceProvider serviceProvider,
@@ -34,6 +36,31 @@ namespace gc.api.Workers
         }
 
 
+        private void RegistrarResultadoConsultaPendientes(int cantidad)
+        {
+            if (cantidad > 0)
+            {
+                _logger.LogInformation(
+                    "Se encontraron {Count} mensajes pendientes en la bandeja de salida",
+                    cantidad
+                );
+                return;
+            }
+
+            var ahoraUtc = DateTime.UtcNow;
+            if (ahoraUtc - _ultimoLogSinPendientesUtc < IntervaloLogSinPendientes)
+            {
+                _logger.LogDebug("No hay mensajes pendientes en la bandeja de salida");
+                return;
+            }
+
+            _ultimoLogSinPendientesUtc = ahoraUtc;
+            _logger.LogInformation(
+                "No hay mensajes pendientes en la bandeja de salida. Proxima verificacion informativa en {Minutos} minuto(s).",
+                IntervaloLogSinPendientes.TotalMinutes
+            );
+        }
+
         /// <summary>
         /// Este método es el bucle principal de ejecución del OutboxPublisherWorker. Continuamente verifica si hay mensajes pendientes en la bandeja de salida e intenta publicarlos a través de SignalR. Si un mensaje se publica correctamente, actualiza su estado en la base de datos. Si ocurre un error durante la publicación o actualización, registra el error y continúa procesando otros mensajes.
         /// dentro del codigo loguear todas las partes del codigo
@@ -48,18 +75,18 @@ namespace gc.api.Workers
             {
                 try
                 {
-                    _logger.LogInformation("Verificando mensajes pendientes en la bandeja de salida");
+                    _logger.LogDebug("Verificando mensajes pendientes en la bandeja de salida");
                     using var scope = _serviceProvider.CreateScope();
                     var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
                     var outboxRepo = unitOfWork.GetRepository<MensajeBandejaSalida>();
 
-                    _logger.LogInformation("Obteniendo mensajes pendientes de la bandeja de salida con un tamaño de lote de {LimiteAvalancha}", _paginacion.DefaultPageSize);
+                    _logger.LogDebug("Obteniendo mensajes pendientes de la bandeja de salida con un tamaño de lote de {LimiteAvalancha}", _paginacion.DefaultPageSize);
                     var dictGet = new List<SqlParameter> { new("@BatchSize", _paginacion.DefaultPageSize) };
 
-                    _logger.LogInformation("Ejecutando procedimiento almacenado {StoredProcedure} para obtener mensajes pendientes", ConstantesGC.StoredProcedures.SP_SAUTH_BANDEJA_SALIDA_OBTENER_PENDIENTES);
+                    _logger.LogDebug("Ejecutando procedimiento almacenado {StoredProcedure} para obtener mensajes pendientes", ConstantesGC.StoredProcedures.SP_SAUTH_BANDEJA_SALIDA_OBTENER_PENDIENTES);
                     var messages = outboxRepo.EjecutarLstSpExt<MensajeBandejaSalida>(ConstantesGC.StoredProcedures.SP_SAUTH_BANDEJA_SALIDA_OBTENER_PENDIENTES, dictGet);
 
-                    _logger.LogInformation("Se encontraron {Count} mensajes pendientes en la bandeja de salida", messages.Count);
+                    RegistrarResultadoConsultaPendientes(messages.Count);
                     foreach (var message in messages)
                     {
                         message.Intentos++;
@@ -109,3 +136,5 @@ namespace gc.api.Workers
         }
     }
 }
+
+

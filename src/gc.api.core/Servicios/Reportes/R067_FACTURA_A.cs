@@ -305,7 +305,7 @@ namespace gc.api.core.Servicios.Reportes
             PdfPTable tablaDatos = new PdfPTable(1);
             tablaDatos.WidthPercentage = 100;
 
-            AgregarCeldaSinBorde(tablaDatos, "TICKET FACTURA", fuenteSubtitulo, Element.ALIGN_CENTER);
+            AgregarCeldaSinBorde(tablaDatos, encabezado.tco_desc, fuenteSubtitulo, Element.ALIGN_CENTER);
             AgregarCeldaSinBorde(tablaDatos, $"Punto de Venta: {encabezado.adm_id} Comp. Nro: {encabezado.cm_compte}", fuenteChica, Element.ALIGN_LEFT);
             AgregarCeldaSinBorde(tablaDatos, $"Fecha de Emisión: {encabezado.cm_fecha:dd/MM/yyyy}", fuenteChica, Element.ALIGN_LEFT);
 

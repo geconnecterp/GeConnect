@@ -1,4 +1,4 @@
-@{
+﻿@{
     ViewData["Title"] = "Nota de Debito, Credito y Factura de Servicio";
     Layout = "~/Views/Shared/_Layout.cshtml";
     var modulo = "NotaDebitoCredito";
@@ -98,17 +98,27 @@
         var ndcfsObtenerIvaAlicuotasUrl =
             '@Url.Action("ObtenerIvaAlicuotas", "NotaDebitoCredito", new { area = "Facturacion" })';
 
+        var ndcfsObtenerTiposComprobanteUrl =
+            '@Url.Action("ObtenerTiposComprobante", "NotaDebitoCredito", new { area = "Facturacion" })';
+
         var ndcfsCalcularConceptosUrl =
             '@Url.Action("CalcularConceptos", "NotaDebitoCredito", new { area = "Facturacion" })';
 
         var ndcfsConfirmarOperacionUrl =
             '@Url.Action("ConfirmarOperacion", "NotaDebitoCredito", new { area = "Facturacion" })';
 
+        var ndcfsModuloIndexUrl =
+            '@Url.Action("Index", "NotaDebitoCredito", new { area = "Facturacion" })';
+
         var ndcfsMenuCajaUrl =
             '@Url.Action("Index", "Home", new { area = "" })';
     </script>
 
+    <script src="~/js/app/reportes.js"
+            asp-append-version="true">
+    </script>
     <script src="~/js/app/ndNcFs.js"
             asp-append-version="true">
     </script>
 }
+
