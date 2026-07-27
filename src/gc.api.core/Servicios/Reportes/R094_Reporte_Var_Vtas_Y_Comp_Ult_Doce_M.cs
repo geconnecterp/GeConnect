@@ -49,7 +49,7 @@ namespace gc.api.core.Servicios.Reportes
 				string subtit;
 				string tipoReporte;
 				string filtrosString;
-				List<ReporteEvoVtasPerAnterioresDto> registros = ObtenerDatos(solicitud, out tit, out subtit, out tipoReporte, out filtrosString);
+				List<ReporteVarVtasYCompUltDoceMDto> registros = ObtenerDatos(solicitud, out tit, out subtit, out tipoReporte, out filtrosString);
 
 				solicitud.Titulo = tit;
 				solicitud.SubTitulo = subtit;
@@ -76,6 +76,7 @@ namespace gc.api.core.Servicios.Reportes
 				//****=============================****/
 				anchos = [70f, 30f];
 
+				var chicoplus = HelperPdf.FontSuperChicoPredeterminado();
 				var chico = HelperPdf.FontChicoPredeterminado();
 				var chicoBold = HelperPdf.FontChicoPredeterminado(true);
 				var normal = HelperPdf.FontNormalPredeterminado();
@@ -104,7 +105,7 @@ namespace gc.api.core.Servicios.Reportes
 				pdf.Open();
 
 				#region Armado de Reporte
-				CargarComisionDeRepartidoresResumen(pdf, registros, filtrosString, tipoReporte, chico, normal, chicoBold, normalBold, titulo, tituloBig);
+				CargarRepoVarVtasYCompUltDoceM(pdf, registros, filtrosString, tipoReporte, chicoplus, normal, chicoBold, normalBold, titulo, tituloBig);
 				#endregion
 
 				pdf.Close();
@@ -125,19 +126,13 @@ namespace gc.api.core.Servicios.Reportes
 		}
 
 		#region Funciones de generacion de secciones de reportes
-		public static void CargarComisionDeRepartidoresResumen(Document pdf, List<ReporteEvoVtasPerAnterioresDto> registros, string filtrosString, string tipoReporte, Font chico, Font normal, Font chicoBold, Font normalBold, Font titulo, Font tituloBig)
+		public static void CargarRepoVarVtasYCompUltDoceM(Document pdf, List<ReporteVarVtasYCompUltDoceMDto> registros, string filtrosString, string tipoReporte, Font chico, Font normal, Font chicoBold, Font normalBold, Font titulo, Font tituloBig)
 		{
 			if (registros == null || registros.Count == 0)
 			{
 				pdf.Add(new Paragraph("No hay datos para mostrar.", normal));
 				return;
 			}
-
-			// ============================
-			// LEYENDA (filtros)
-			// ============================
-			//pdf.Add(new Paragraph(filtrosString, normal));
-			//pdf.Add(Chunk.Newline);
 
 			// ============================
 			// SELECCIÓN DE TABLA SEGÚN AGRUPADOR
@@ -166,706 +161,232 @@ namespace gc.api.core.Servicios.Reportes
 			}
 		}
 
-		private static void TablaSinAgrupar(Document pdf, List<ReporteEvoVtasPerAnterioresDto> registros, Font chico, Font normal, Font normalBold)
+		private static void TablaSinAgrupar(Document pdf, List<ReporteVarVtasYCompUltDoceMDto> registros, Font chico, Font normal, Font normalBold)
 		{
-			if (registros == null || registros.Count == 0)
+			var lista = registros.OrderBy(x => x.rub_id).ToList();
+			PdfPTable tabla = CrearTablaBase(chico, normalBold);
+
+			AgregarEncabezado(tabla, lista, normalBold);
+
+			string grupoAnterior = null;
+
+			foreach (var item in lista)
 			{
-				pdf.Add(new Paragraph("No hay datos para mostrar.", normal));
-				return;
-			}
+				string grupoActual = item.rub_id;
+				string leyenda = $"({item.rub_id}) {item.rub_desc}";
 
-			// ============================
-			// Cálculo de totales y rankings
-			// ============================
-			var total1 = registros.Sum(x => x.vtas_cantidad1);
-			var total2 = registros.Sum(x => x.vtas_cantidad2);
-			var total3 = registros.Sum(x => x.vtas_cantidad3);
-
-			var lista = registros
-				.Select(x => new
+				if (grupoActual != grupoAnterior)
 				{
-					Item = x,
-					Porc1 = total1 == 0 ? 0 : (x.vtas_cantidad1 / total1) * 100,
-					Porc2 = total2 == 0 ? 0 : (x.vtas_cantidad2 / total2) * 100,
-					Porc3 = total3 == 0 ? 0 : (x.vtas_cantidad3 / total3) * 100
-				})
-				.ToList();
+					PdfPCell agrup = new PdfPCell(new Phrase(leyenda, normalBold));
+					agrup.Colspan = 26;
+					agrup.BackgroundColor = new BaseColor(220, 220, 220);
+					agrup.HorizontalAlignment = Element.ALIGN_CENTER;
+					tabla.AddCell(agrup);
 
-			var rk1 = lista.OrderByDescending(x => x.Porc1)
-						   .Select((x, i) => new { x.Item.p_id, RK = i + 1 })
-						   .ToDictionary(x => x.p_id, x => x.RK);
+					grupoAnterior = grupoActual;
+				}
 
-			var rk2 = lista.OrderByDescending(x => x.Porc2)
-						   .Select((x, i) => new { x.Item.p_id, RK = i + 1 })
-						   .ToDictionary(x => x.p_id, x => x.RK);
+				tabla.AddCell(new PdfPCell(new Phrase(item.p_id.ToString(), chico)) { HorizontalAlignment = Element.ALIGN_CENTER });
+				tabla.AddCell(new PdfPCell(new Phrase(item.p_desc, chico)));
 
-			var rk3 = lista.OrderByDescending(x => x.Porc3)
-						   .Select((x, i) => new { x.Item.p_id, RK = i + 1 })
-						   .ToDictionary(x => x.p_id, x => x.RK);
+				for (int i = 1; i <= 12; i++)
+				{
+					var vtaCant = (int)item.GetType().GetProperty($"vta_cantidad{i}")?.GetValue(item);
+					var compCant = (int)item.GetType().GetProperty($"comp_cantidad{i}")?.GetValue(item);
+					var vtaFact = (decimal)item.GetType().GetProperty($"vta_neto{i}")?.GetValue(item);
+					var compFact = (decimal)item.GetType().GetProperty($"comp_costo{i}")?.GetValue(item);
 
-			// ============================
-			// Tabla (19 columnas)
-			// ============================
-			PdfPTable table = new PdfPTable(19)
-			{
-				WidthPercentage = 100,
-				HeaderRows = 2
-			};
-
-			float[] widths = {
-				25f, // Producto
-				4f,5f,6f,10f,8f,10f, // Grupo 1
-				4f,5f,6f,10f,8f,10f, // Grupo 2
-				4f,5f,6f,10f,8f,10f  // Grupo 3
-			};
-
-			table.SetWidths(widths);
-
-			var first = lista.First().Item;
-
-			// ============================
-			// Encabezado fila 1
-			// ============================
-			// Producto con rowspan = 2
-			var prodHeader = new PdfPCell(new Phrase("Producto", normalBold))
-			{
-				Rowspan = 2,
-				HorizontalAlignment = Element.ALIGN_CENTER,
-				VerticalAlignment = Element.ALIGN_MIDDLE,
-				BackgroundColor = BaseColor.LightGray,
-				PaddingTop = 4,
-				PaddingBottom = 4
-			};
-			table.AddCell(prodHeader);
-
-			// Colores pastel para los grupos
-			var azulPastel = new BaseColor(176, 196, 222); // light steel blue
-			var verdePastel = new BaseColor(144, 238, 144); // light green
-			var rojoPastel = new BaseColor(255, 182, 193);  // light pink
-
-			AddHeaderGroup(table, first.periodo1.ToString(), 6, normalBold, azulPastel);
-			AddHeaderGroup(table, first.periodo2.ToString(), 6, normalBold, verdePastel);
-			AddHeaderGroup(table, first.periodo3.ToString(), 6, normalBold, rojoPastel);
-
-			// ============================
-			// Encabezado fila 2 (solo columnas de grupos)
-			// ============================
-			string[] cols = { "RK", "%/Tot.", "Cantidad", "Dif. Año Ant.(C)", "Fact. Neto", "Dif. Año Ant.(F)" };
-
-			foreach (var c in cols) AddHeader(table, c, normalBold, azulPastel);
-			foreach (var c in cols) AddHeader(table, c, normalBold, verdePastel);
-			foreach (var c in cols) AddHeader(table, c, normalBold, rojoPastel);
-
-			// ============================
-			// Filas
-			// ============================
-			bool alt = false;
-
-			foreach (var x in lista.OrderByDescending(x => x.Porc1))
-			{
-				var item = x.Item;
-				alt = !alt;
-
-				// Producto
-				AddCell(table, $"{item.p_desc} ({item.p_id})", chico, alt, Element.ALIGN_LEFT);
-
-				// Grupo 1
-				AddCell(table, rk1.GetValueOrDefault(item.p_id).ToString(), chico, alt);
-				AddCell(table, x.Porc1.ToString("N2"), chico, alt);
-				AddCell(table, item.vtas_cantidad1.ToString("N0"), chico, alt);
-				table.AddCell(CeldaDoble(item.DifCant_1_2.ToString("N0"), item.PorcCant_1_2.ToString("N2"), chico, chico, alt));
-				AddCell(table, item.vtas_facturacion1.ToString("N2"), chico, alt);
-				table.AddCell(CeldaDoble(item.DifFact_1_2.ToString("N2"), item.PorcFact_1_2.ToString("N2"), chico, chico, alt));
-
-				// Grupo 2
-				AddCell(table, rk2.GetValueOrDefault(item.p_id).ToString(), chico, alt);
-				AddCell(table, x.Porc2.ToString("N2"), chico, alt);
-				AddCell(table, item.vtas_cantidad2.ToString("N0"), chico, alt);
-				table.AddCell(CeldaDoble(item.DifCant_2_3.ToString("N0"), item.PorcCant_2_3.ToString("N2"), chico, chico, alt));
-				AddCell(table, item.vtas_facturacion2.ToString("N2"), chico, alt);
-				table.AddCell(CeldaDoble(item.DifFact_2_3.ToString("N2"), item.PorcFact_2_3.ToString("N2"), chico, chico, alt));
-
-				// Grupo 3
-				AddCell(table, rk3.GetValueOrDefault(item.p_id).ToString(), chico, alt);
-				AddCell(table, x.Porc3.ToString("N2"), chico, alt);
-				AddCell(table, item.vtas_cantidad3.ToString("N0"), chico, alt);
-				table.AddCell(CeldaDoble(item.DifCant_3_4.ToString("N0"), item.PorcCant_3_4.ToString("N2"), chico, chico, alt));
-				AddCell(table, item.vtas_facturacion3.ToString("N2"), chico, alt);
-				table.AddCell(CeldaDoble(item.DifFact_3_4.ToString("N2"), item.PorcFact_3_4.ToString("N2"), chico, chico, alt));
+					tabla.AddCell(CeldaDoble(vtaCant, compCant, chico));
+					tabla.AddCell(CeldaDoble(vtaFact, compFact, chico));
+				}
 			}
 
-			pdf.Add(table);
+			pdf.Add(tabla);
 		}
 
-		private static void TablaPorRubro(Document pdf, List<ReporteEvoVtasPerAnterioresDto> registros, Font chico, Font normal, Font normalBold, Font chicoBold)
+
+		private static void TablaPorRubro(Document pdf, List<ReporteVarVtasYCompUltDoceMDto> registros, Font chico, Font normal, Font normalBold, Font chicoBold)
 		{
-			if (registros == null || registros.Count == 0)
+			var lista = registros.OrderBy(x => x.sec_id).ToList();
+			PdfPTable tabla = CrearTablaBase(chico, normalBold);
+
+			AgregarEncabezado(tabla, lista, normalBold);
+
+			string grupoAnterior = null;
+
+			foreach (var item in lista)
 			{
-				pdf.Add(new Paragraph("No hay datos para mostrar.", normal));
-				return;
+				string grupoActual = item.sec_id;
+				string leyenda = $"({item.sec_id}) {item.sec_desc}";
+
+				if (grupoActual != grupoAnterior)
+				{
+					PdfPCell agrup = new PdfPCell(new Phrase(leyenda, chicoBold));
+					agrup.Colspan = 26;
+					agrup.BackgroundColor = new BaseColor(220, 220, 220);
+					agrup.HorizontalAlignment = Element.ALIGN_CENTER;
+					tabla.AddCell(agrup);
+
+					grupoAnterior = grupoActual;
+				}
+
+				tabla.AddCell(new PdfPCell(new Phrase(item.rub_id.ToString(), chico)) { HorizontalAlignment = Element.ALIGN_CENTER });
+				tabla.AddCell(new PdfPCell(new Phrase(item.rub_desc, chico)));
+
+				for (int i = 1; i <= 12; i++)
+				{
+					var vtaCant = (int)item.GetType().GetProperty($"vta_cantidad{i}")?.GetValue(item);
+					var compCant = (int)item.GetType().GetProperty($"comp_cantidad{i}")?.GetValue(item);
+					var vtaFact = (decimal)item.GetType().GetProperty($"vta_neto{i}")?.GetValue(item);
+					var compFact = (decimal)item.GetType().GetProperty($"comp_costo{i}")?.GetValue(item);
+
+					tabla.AddCell(CeldaDoble(vtaCant, compCant, chico));
+					tabla.AddCell(CeldaDoble(vtaFact, compFact, chico));
+				}
 			}
 
-			// Totales por período
-			var totalCant1 = registros.Sum(x => x.vtas_cantidad1);
-			var totalCant2 = registros.Sum(x => x.vtas_cantidad2);
-			var totalCant3 = registros.Sum(x => x.vtas_cantidad3);
-
-			var totalDifCant1 = registros.Sum(x => x.DifCant_1_2);
-			var totalDifCant2 = registros.Sum(x => x.DifCant_2_3);
-			var totalDifCant3 = registros.Sum(x => x.DifCant_3_4);
-
-			var totalFact1 = registros.Sum(x => x.vtas_facturacion1);
-			var totalFact2 = registros.Sum(x => x.vtas_facturacion2);
-			var totalFact3 = registros.Sum(x => x.vtas_facturacion3);
-
-			var totalDifFact1 = registros.Sum(x => x.DifFact_1_2);
-			var totalDifFact2 = registros.Sum(x => x.DifFact_2_3);
-			var totalDifFact3 = registros.Sum(x => x.DifFact_3_4);
-
-			// Lista con porcentajes
-			var lista = registros
-				.Select(x => new {
-					Item = x,
-					Porc1 = totalCant1 == 0 ? 0 : (x.vtas_cantidad1 / totalCant1) * 100,
-					Porc2 = totalCant2 == 0 ? 0 : (x.vtas_cantidad2 / totalCant2) * 100,
-					Porc3 = totalCant3 == 0 ? 0 : (x.vtas_cantidad3 / totalCant3) * 100
-				})
-				.OrderBy(x => x.Item.rub_id)
-				.ToList();
-
-			// Tabla
-			PdfPTable table = new PdfPTable(13)
-			{
-				WidthPercentage = 100,
-				HeaderRows = 2
-			};
-
-			float[] widths = {
-				27f,
-				7f,10f,8f,10f,
-				7f,10f,8f,10f,
-				7f,10f,8f,10f
-			};
-
-			table.SetWidths(widths);
-
-			// Colores pastel
-			var azulPastel = new BaseColor(176, 196, 222);
-			var verdePastel = new BaseColor(144, 238, 144);
-			var rojoPastel = new BaseColor(255, 182, 193);
-
-			// Encabezado fila 1
-			var prodHeader = new PdfPCell(new Phrase("Rubro", normalBold))
-			{
-				Rowspan = 2,
-				HorizontalAlignment = Element.ALIGN_CENTER,
-				VerticalAlignment = Element.ALIGN_MIDDLE,
-				BackgroundColor = BaseColor.LightGray
-			};
-			table.AddCell(prodHeader);
-
-			var first = lista.First().Item;
-
-			AddHeaderGroup(table, first.periodo1.ToString(), 4, normalBold, azulPastel);
-			AddHeaderGroup(table, first.periodo2.ToString(), 4, normalBold, verdePastel);
-			AddHeaderGroup(table, first.periodo3.ToString(), 4, normalBold, rojoPastel);
-
-			// Encabezado fila 2
-			string[] cols = { "Cantidad", "Dif. Año Ant.(C)", "Fact. Neto", "Dif. Año Ant.(F)" };
-			foreach (var c in cols) AddHeader(table, c, normalBold, azulPastel);
-			foreach (var c in cols) AddHeader(table, c, normalBold, verdePastel);
-			foreach (var c in cols) AddHeader(table, c, normalBold, rojoPastel);
-
-			// Filas
-			bool alt = false;
-
-			foreach (var x in lista)
-			{
-				var item = x.Item;
-				alt = !alt;
-
-				AddCell(table, $"{item.rub_desc} ({item.rub_id})", chico, alt, Element.ALIGN_LEFT);
-
-				// Grupo 1
-				AddCell(table, item.vtas_cantidad1.ToString("N0"), chico, alt);
-				table.AddCell(CeldaDoble(item.DifCant_1_2.ToString("N0"), item.PorcCant_1_2.ToString("N2"), chico, chico, alt));
-				AddCell(table, item.vtas_facturacion1.ToString("N2"), chico, alt);
-				table.AddCell(CeldaDoble(item.DifFact_1_2.ToString("N2"), item.PorcFact_1_2.ToString("N2"), chico, chico, alt));
-
-				// Grupo 2
-				AddCell(table, item.vtas_cantidad2.ToString("N0"), chico, alt);
-				table.AddCell(CeldaDoble(item.DifCant_2_3.ToString("N0"), item.PorcCant_2_3.ToString("N2"), chico, chico, alt));
-				AddCell(table, item.vtas_facturacion2.ToString("N2"), chico, alt);
-				table.AddCell(CeldaDoble(item.DifFact_2_3.ToString("N2"), item.PorcFact_2_3.ToString("N2"), chico, chico, alt));
-
-				// Grupo 3
-				AddCell(table, item.vtas_cantidad3.ToString("N0"), chico, alt);
-				table.AddCell(CeldaDoble(item.DifCant_3_4.ToString("N0"), item.PorcCant_3_4.ToString("N2"), chico, chico, alt));
-				AddCell(table, item.vtas_facturacion3.ToString("N2"), chico, alt);
-				table.AddCell(CeldaDoble(item.DifFact_3_4.ToString("N2"), item.PorcFact_3_4.ToString("N2"), chico, chico, alt));
-			}
-
-			// ============================
-			// FILA TOTALIZADORA
-			// ============================
-			PdfPCell tot = new PdfPCell(new Phrase("TOTALES", normalBold))
-			{
-				HorizontalAlignment = Element.ALIGN_RIGHT,
-				BackgroundColor = BaseColor.LightGray
-			};
-			table.AddCell(tot);
-
-			// Grupo 1
-			AddCell(table, totalCant1.ToString("N0"), chicoBold, false);
-			table.AddCell(CeldaDoble(totalDifCant1.ToString("N0"), "0.00", chicoBold, chicoBold, false));
-			AddCell(table, totalFact1.ToString("N2"), chicoBold, false);
-			table.AddCell(CeldaDoble(totalDifFact1.ToString("N2"), "0.00", chicoBold, chicoBold, false));
-
-			// Grupo 2
-			AddCell(table, totalCant2.ToString("N0"), chicoBold, false);
-			table.AddCell(CeldaDoble(totalDifCant2.ToString("N0"), "0.00", chicoBold, chicoBold, false));
-			AddCell(table, totalFact2.ToString("N2"), chicoBold, false);
-			table.AddCell(CeldaDoble(totalDifFact2.ToString("N2"), "0.00", chicoBold, chicoBold, false));
-
-			// Grupo 3
-			AddCell(table, totalCant3.ToString("N0"), chicoBold, false);
-			table.AddCell(CeldaDoble(totalDifCant3.ToString("N0"), "0.00", chicoBold, chicoBold, false));
-			AddCell(table, totalFact3.ToString("N2"), chicoBold, false);
-			table.AddCell(CeldaDoble(totalDifFact3.ToString("N2"), "0.00", chicoBold, chicoBold, false));
-
-			pdf.Add(table);
+			pdf.Add(tabla);
 		}
 
 
-		private static void TablaPorSector(Document pdf, List<ReporteEvoVtasPerAnterioresDto> registros, Font chico, Font normal, Font normalBold, Font chicoBold)
+		private static void TablaPorSector(Document pdf, List<ReporteVarVtasYCompUltDoceMDto> registros, Font chico, Font normal, Font normalBold, Font chicoBold)
 		{
-			if (registros == null || registros.Count == 0)
+			var lista = registros.OrderBy(x => x.sec_id).ToList();
+			PdfPTable tabla = CrearTablaBase(chico, normalBold);
+
+			AgregarEncabezado(tabla, lista, normalBold);
+
+			foreach (var item in lista)
 			{
-				pdf.Add(new Paragraph("No hay datos para mostrar.", normal));
-				return;
+				tabla.AddCell(new PdfPCell(new Phrase(item.sec_id.ToString(), chico)) { HorizontalAlignment = Element.ALIGN_CENTER });
+				tabla.AddCell(new PdfPCell(new Phrase(item.sec_desc, chico)));
+
+				for (int i = 1; i <= 12; i++)
+				{
+					var vtaCant = (int)item.GetType().GetProperty($"vta_cantidad{i}")?.GetValue(item);
+					var compCant = (int)item.GetType().GetProperty($"comp_cantidad{i}")?.GetValue(item);
+					var vtaFact = (decimal)item.GetType().GetProperty($"vta_neto{i}")?.GetValue(item);
+					var compFact = (decimal)item.GetType().GetProperty($"comp_costo{i}")?.GetValue(item);
+
+					tabla.AddCell(CeldaDoble(vtaCant, compCant, chico));
+					tabla.AddCell(CeldaDoble(vtaFact, compFact, chico));
+				}
 			}
 
-			// Totales por período
-			var totalCant1 = registros.Sum(x => x.vtas_cantidad1);
-			var totalCant2 = registros.Sum(x => x.vtas_cantidad2);
-			var totalCant3 = registros.Sum(x => x.vtas_cantidad3);
-
-			var totalDifCant1 = registros.Sum(x => x.DifCant_1_2);
-			var totalDifCant2 = registros.Sum(x => x.DifCant_2_3);
-			var totalDifCant3 = registros.Sum(x => x.DifCant_3_4);
-
-			var totalFact1 = registros.Sum(x => x.vtas_facturacion1);
-			var totalFact2 = registros.Sum(x => x.vtas_facturacion2);
-			var totalFact3 = registros.Sum(x => x.vtas_facturacion3);
-
-			var totalDifFact1 = registros.Sum(x => x.DifFact_1_2);
-			var totalDifFact2 = registros.Sum(x => x.DifFact_2_3);
-			var totalDifFact3 = registros.Sum(x => x.DifFact_3_4);
-
-			// Lista con porcentajes
-			var lista = registros
-				.Select(x => new {
-					Item = x,
-					Porc1 = totalCant1 == 0 ? 0 : (x.vtas_cantidad1 / totalCant1) * 100,
-					Porc2 = totalCant2 == 0 ? 0 : (x.vtas_cantidad2 / totalCant2) * 100,
-					Porc3 = totalCant3 == 0 ? 0 : (x.vtas_cantidad3 / totalCant3) * 100
-				})
-				.OrderBy(x => x.Item.sec_id)
-				.ToList();
-
-			// Tabla
-			PdfPTable table = new PdfPTable(13)
-			{
-				WidthPercentage = 100,
-				HeaderRows = 2
-			};
-
-			float[] widths = {
-				21f,
-				7f,12f,8f,12f,
-				7f,12f,8f,12f,
-				7f,12f,8f,12f
-			};
-
-			table.SetWidths(widths);
-
-			// Colores pastel
-			var azulPastel = new BaseColor(176, 196, 222);
-			var verdePastel = new BaseColor(144, 238, 144);
-			var rojoPastel = new BaseColor(255, 182, 193);
-
-			// Encabezado fila 1
-			var header = new PdfPCell(new Phrase("Sector", normalBold))
-			{
-				Rowspan = 2,
-				HorizontalAlignment = Element.ALIGN_CENTER,
-				VerticalAlignment = Element.ALIGN_MIDDLE,
-				BackgroundColor = BaseColor.LightGray
-			};
-			table.AddCell(header);
-
-			var first = lista.First().Item;
-
-			AddHeaderGroup(table, first.periodo1.ToString(), 4, normalBold, azulPastel);
-			AddHeaderGroup(table, first.periodo2.ToString(), 4, normalBold, verdePastel);
-			AddHeaderGroup(table, first.periodo3.ToString(), 4, normalBold, rojoPastel);
-
-			// Encabezado fila 2
-			string[] cols = { "Cantidad", "Dif. Año Ant.(C)", "Fact. Neto", "Dif. Año Ant.(F)" };
-			foreach (var c in cols) AddHeader(table, c, normalBold, azulPastel);
-			foreach (var c in cols) AddHeader(table, c, normalBold, verdePastel);
-			foreach (var c in cols) AddHeader(table, c, normalBold, rojoPastel);
-
-			// Filas
-			bool alt = false;
-
-			foreach (var x in lista)
-			{
-				var item = x.Item;
-				alt = !alt;
-
-				AddCell(table, $"{item.sec_desc} ({item.sec_id})", chico, alt, Element.ALIGN_LEFT);
-
-				// Grupo 1
-				AddCell(table, item.vtas_cantidad1.ToString("N0"), chico, alt);
-				table.AddCell(CeldaDoble(item.DifCant_1_2.ToString("N0"), item.PorcCant_1_2.ToString("N2"), chico, chico, alt));
-				AddCell(table, item.vtas_facturacion1.ToString("N2"), chico, alt);
-				table.AddCell(CeldaDoble(item.DifFact_1_2.ToString("N2"), item.PorcFact_1_2.ToString("N2"), chico, chico, alt));
-
-				// Grupo 2
-				AddCell(table, item.vtas_cantidad2.ToString("N0"), chico, alt);
-				table.AddCell(CeldaDoble(item.DifCant_2_3.ToString("N0"), item.PorcCant_2_3.ToString("N2"), chico, chico, alt));
-				AddCell(table, item.vtas_facturacion2.ToString("N2"), chico, alt);
-				table.AddCell(CeldaDoble(item.DifFact_2_3.ToString("N2"), item.PorcFact_2_3.ToString("N2"), chico, chico, alt));
-
-				// Grupo 3
-				AddCell(table, item.vtas_cantidad3.ToString("N0"), chico, alt);
-				table.AddCell(CeldaDoble(item.DifCant_3_4.ToString("N0"), item.PorcCant_3_4.ToString("N2"), chico, chico, alt));
-				AddCell(table, item.vtas_facturacion3.ToString("N2"), chico, alt);
-				table.AddCell(CeldaDoble(item.DifFact_3_4.ToString("N2"), item.PorcFact_3_4.ToString("N2"), chico, chico, alt));
-			}
-
-			// ============================
-			// FILA TOTALIZADORA
-			// ============================
-			PdfPCell tot = new PdfPCell(new Phrase("TOTALES", normalBold))
-			{
-				HorizontalAlignment = Element.ALIGN_RIGHT,
-				BackgroundColor = BaseColor.LightGray
-			};
-			table.AddCell(tot);
-
-			// Grupo 1
-			AddCell(table, totalCant1.ToString("N0"), chicoBold, false);
-			table.AddCell(CeldaDoble(totalDifCant1.ToString("N0"), "0.00", chicoBold, chicoBold, false));
-			AddCell(table, totalFact1.ToString("N2"), chicoBold, false);
-			table.AddCell(CeldaDoble(totalDifFact1.ToString("N2"), "0.00", chicoBold, chicoBold, false));
-
-			// Grupo 2
-			AddCell(table, totalCant2.ToString("N0"), chicoBold, false);
-			table.AddCell(CeldaDoble(totalDifCant2.ToString("N0"), "0.00", chicoBold, chicoBold, false));
-			AddCell(table, totalFact2.ToString("N2"), chicoBold, false);
-			table.AddCell(CeldaDoble(totalDifFact2.ToString("N2"), "0.00", chicoBold, chicoBold, false));
-
-			// Grupo 3
-			AddCell(table, totalCant3.ToString("N0"), chicoBold, false);
-			table.AddCell(CeldaDoble(totalDifCant3.ToString("N0"), "0.00", chicoBold, chicoBold, false));
-			AddCell(table, totalFact3.ToString("N2"), chicoBold, false);
-			table.AddCell(CeldaDoble(totalDifFact3.ToString("N2"), "0.00", chicoBold, chicoBold, false));
-
-			pdf.Add(table);
+			pdf.Add(tabla);
 		}
 
 
-		private static void TablaPorProveedor(Document pdf, List<ReporteEvoVtasPerAnterioresDto> registros, Font chico, Font normal, Font normalBold, Font chicoBold)
+		private static void TablaPorProveedor(Document pdf, List<ReporteVarVtasYCompUltDoceMDto> registros, Font chico, Font normal, Font normalBold, Font chicoBold)
 		{
-			if (registros == null || registros.Count == 0)
+			var lista = registros.OrderBy(x => x.cta_id).ToList();
+			PdfPTable tabla = CrearTablaBase(chico, normalBold);
+
+			AgregarEncabezado(tabla, lista, normalBold);
+
+			foreach (var item in lista)
 			{
-				pdf.Add(new Paragraph("No hay datos para mostrar.", normal));
-				return;
+				tabla.AddCell(new PdfPCell(new Phrase(item.cta_id.ToString(), chico)) { HorizontalAlignment = Element.ALIGN_CENTER });
+				tabla.AddCell(new PdfPCell(new Phrase(item.cta_denominacion, chico)));
+
+				for (int i = 1; i <= 12; i++)
+				{
+					var vtaCant = (int)item.GetType().GetProperty($"vta_cantidad{i}")?.GetValue(item);
+					var compCant = (int)item.GetType().GetProperty($"comp_cantidad{i}")?.GetValue(item);
+					var vtaFact = (decimal)item.GetType().GetProperty($"vta_neto{i}")?.GetValue(item);
+					var compFact = (decimal)item.GetType().GetProperty($"comp_costo{i}")?.GetValue(item);
+
+					tabla.AddCell(CeldaDoble(vtaCant, compCant, chico));
+					tabla.AddCell(CeldaDoble(vtaFact, compFact, chico));
+				}
 			}
 
-			// Totales por período
-			var totalCant1 = registros.Sum(x => x.vtas_cantidad1);
-			var totalCant2 = registros.Sum(x => x.vtas_cantidad2);
-			var totalCant3 = registros.Sum(x => x.vtas_cantidad3);
-
-			var totalDifCant1 = registros.Sum(x => x.DifCant_1_2);
-			var totalDifCant2 = registros.Sum(x => x.DifCant_2_3);
-			var totalDifCant3 = registros.Sum(x => x.DifCant_3_4);
-
-			var totalFact1 = registros.Sum(x => x.vtas_facturacion1);
-			var totalFact2 = registros.Sum(x => x.vtas_facturacion2);
-			var totalFact3 = registros.Sum(x => x.vtas_facturacion3);
-
-			var totalDifFact1 = registros.Sum(x => x.DifFact_1_2);
-			var totalDifFact2 = registros.Sum(x => x.DifFact_2_3);
-			var totalDifFact3 = registros.Sum(x => x.DifFact_3_4);
-
-			// Lista con porcentajes
-			var lista = registros
-				.Select(x => new {
-					Item = x,
-					Porc1 = totalCant1 == 0 ? 0 : (x.vtas_cantidad1 / totalCant1) * 100,
-					Porc2 = totalCant2 == 0 ? 0 : (x.vtas_cantidad2 / totalCant2) * 100,
-					Porc3 = totalCant3 == 0 ? 0 : (x.vtas_cantidad3 / totalCant3) * 100
-				})
-				.OrderBy(x => x.Item.cta_id)
-				.ToList();
-
-			// Tabla
-			PdfPTable table = new PdfPTable(13)
-			{
-				WidthPercentage = 100,
-				HeaderRows = 2
-			};
-
-			float[] widths = {
-				27f,
-				7f,10f,8f,10f,
-				7f,10f,8f,10f,
-				7f,10f,8f,10f
-			};
-
-			table.SetWidths(widths);
-
-			// Colores pastel
-			var azulPastel = new BaseColor(176, 196, 222);
-			var verdePastel = new BaseColor(144, 238, 144);
-			var rojoPastel = new BaseColor(255, 182, 193);
-
-			// Encabezado fila 1
-			var header = new PdfPCell(new Phrase("Cuenta", normalBold))
-			{
-				Rowspan = 2,
-				HorizontalAlignment = Element.ALIGN_CENTER,
-				VerticalAlignment = Element.ALIGN_MIDDLE,
-				BackgroundColor = BaseColor.LightGray
-			};
-			table.AddCell(header);
-
-			var first = lista.First().Item;
-
-			AddHeaderGroup(table, first.periodo1.ToString(), 4, normalBold, azulPastel);
-			AddHeaderGroup(table, first.periodo2.ToString(), 4, normalBold, verdePastel);
-			AddHeaderGroup(table, first.periodo3.ToString(), 4, normalBold, rojoPastel);
-
-			// Encabezado fila 2
-			string[] cols = { "Cantidad", "Dif. Año Ant.(C)", "Fact. Neto", "Dif. Año Ant.(F)" };
-			foreach (var c in cols) AddHeader(table, c, normalBold, azulPastel);
-			foreach (var c in cols) AddHeader(table, c, normalBold, verdePastel);
-			foreach (var c in cols) AddHeader(table, c, normalBold, rojoPastel);
-
-			// Filas
-			bool alt = false;
-
-			foreach (var x in lista)
-			{
-				var item = x.Item;
-				alt = !alt;
-
-				AddCell(table, $"{item.cta_denominacion} ({item.cta_id})", chico, alt, Element.ALIGN_LEFT);
-
-				// Grupo 1
-				AddCell(table, item.vtas_cantidad1.ToString("N0"), chico, alt);
-				table.AddCell(CeldaDoble(item.DifCant_1_2.ToString("N0"), item.PorcCant_1_2.ToString("N2"), chico, chico, alt));
-				AddCell(table, item.vtas_facturacion1.ToString("N2"), chico, alt);
-				table.AddCell(CeldaDoble(item.DifFact_1_2.ToString("N2"), item.PorcFact_1_2.ToString("N2"), chico, chico, alt));
-
-				// Grupo 2
-				AddCell(table, item.vtas_cantidad2.ToString("N0"), chico, alt);
-				table.AddCell(CeldaDoble(item.DifCant_2_3.ToString("N0"), item.PorcCant_2_3.ToString("N2"), chico, chico, alt));
-				AddCell(table, item.vtas_facturacion2.ToString("N2"), chico, alt);
-				table.AddCell(CeldaDoble(item.DifFact_2_3.ToString("N2"), item.PorcFact_2_3.ToString("N2"), chico, chico, alt));
-
-				// Grupo 3
-				AddCell(table, item.vtas_cantidad3.ToString("N0"), chico, alt);
-				table.AddCell(CeldaDoble(item.DifCant_3_4.ToString("N0"), item.PorcCant_3_4.ToString("N2"), chico, chico, alt));
-				AddCell(table, item.vtas_facturacion3.ToString("N2"), chico, alt);
-				table.AddCell(CeldaDoble(item.DifFact_3_4.ToString("N2"), item.PorcFact_3_4.ToString("N2"), chico, chico, alt));
-			}
-
-			// ============================
-			// FILA TOTALIZADORA
-			// ============================
-			PdfPCell tot = new PdfPCell(new Phrase("TOTALES", normalBold))
-			{
-				HorizontalAlignment = Element.ALIGN_RIGHT,
-				BackgroundColor = BaseColor.LightGray
-			};
-			table.AddCell(tot);
-
-			// Grupo 1
-			AddCell(table, totalCant1.ToString("N0"), chicoBold, false);
-			table.AddCell(CeldaDoble(totalDifCant1.ToString("N0"), "0.00", chicoBold, chicoBold, false));
-			AddCell(table, totalFact1.ToString("N2"), chicoBold, false);
-			table.AddCell(CeldaDoble(totalDifFact1.ToString("N2"), "0.00", chicoBold, chicoBold, false));
-
-			// Grupo 2
-			AddCell(table, totalCant2.ToString("N0"), chicoBold, false);
-			table.AddCell(CeldaDoble(totalDifCant2.ToString("N0"), "0.00", chicoBold, chicoBold, false));
-			AddCell(table, totalFact2.ToString("N2"), chicoBold, false);
-			table.AddCell(CeldaDoble(totalDifFact2.ToString("N2"), "0.00", chicoBold, chicoBold, false));
-
-			// Grupo 3
-			AddCell(table, totalCant3.ToString("N0"), chicoBold, false);
-			table.AddCell(CeldaDoble(totalDifCant3.ToString("N0"), "0.00", chicoBold, chicoBold, false));
-			AddCell(table, totalFact3.ToString("N2"), chicoBold, false);
-			table.AddCell(CeldaDoble(totalDifFact3.ToString("N2"), "0.00", chicoBold, chicoBold, false));
-
-			pdf.Add(table);
+			pdf.Add(tabla);
 		}
-
 
 
 		// ============================================================
 		// HELPERS
 		// ============================================================
-		private static PdfPCell CeldaDoble(string izquierda, string derecha, Font fontIzq, Font fontDer, bool alt)
+		private static PdfPTable CrearTablaBase(Font chico, Font normalBold)
 		{
-			// Formateo seguro a 2 decimales
-			if (decimal.TryParse(izquierda, out var izqVal))
-				izquierda = izqVal.ToString("N2");
+			// 26 columnas: ID + DESC + (12 períodos × 2 columnas)
+			PdfPTable tabla = new PdfPTable(26);
+			tabla.WidthPercentage = 100;
 
-			if (decimal.TryParse(derecha, out var derVal))
-				derecha = derVal.ToString("N2");
+			float[] widths = new float[26];
+			widths[0] = 3f;   // ID
+			widths[1] = 8f;   // Descripción
 
-			// Tabla interna de 2 columnas en una sola fila
-			PdfPTable inner = new PdfPTable(2);
-			inner.WidthPercentage = 100;
-			inner.SetWidths(new float[] { 1f, 1f });
+			for (int i = 2; i < 26; i++)
+				widths[i] = 3.5f; // Cant / Fact
 
-			// Celda izquierda
-			PdfPCell c1 = new PdfPCell(new Phrase(izquierda, fontIzq))
+			tabla.SetWidths(widths);
+			return tabla;
+		}
+
+		private static void AgregarEncabezado(PdfPTable tabla, List<ReporteVarVtasYCompUltDoceMDto> registros, Font normalBold)
+		{
+			var first = registros.First();
+
+			// Fila 1
+			PdfPCell cId = new PdfPCell(new Phrase("ID", normalBold));
+			cId.Rowspan = 2;
+			cId.HorizontalAlignment = Element.ALIGN_CENTER;
+			cId.VerticalAlignment = Element.ALIGN_MIDDLE;
+			cId.BackgroundColor = new BaseColor(180, 180, 180);
+			tabla.AddCell(cId);
+
+			PdfPCell cDesc = new PdfPCell(new Phrase("Descripción", normalBold));
+			cDesc.Rowspan = 2;
+			cDesc.HorizontalAlignment = Element.ALIGN_CENTER;
+			cDesc.VerticalAlignment = Element.ALIGN_MIDDLE;
+			cDesc.BackgroundColor = new BaseColor(180, 180, 180);
+			tabla.AddCell(cDesc);
+
+			for (int i = 1; i <= 12; i++)
 			{
-				Border = Rectangle.NO_BORDER,
-				HorizontalAlignment = Element.ALIGN_LEFT,
-				Padding = 0
-			};
+				var periodoProp = first.GetType().GetProperty($"periodo{i}");
+				var periodoRaw = periodoProp?.GetValue(first)?.ToString() ?? $"Periodo {i}";
+				string periodo = periodoRaw.Length == 6
+					? $"{periodoRaw.Substring(0, 4)}-{periodoRaw.Substring(4, 2)}"
+					: periodoRaw;
 
-			// Celda derecha con fondo gris
-			PdfPCell c2 = new PdfPCell(new Phrase(derecha, fontDer))
+				PdfPCell celdaPeriodo = new PdfPCell(new Phrase(periodo, normalBold));
+				celdaPeriodo.Colspan = 2;
+				celdaPeriodo.HorizontalAlignment = Element.ALIGN_CENTER;
+				celdaPeriodo.BackgroundColor = new BaseColor(180, 180, 180);
+				tabla.AddCell(celdaPeriodo);
+			}
+
+			// Fila 2
+			for (int i = 1; i <= 12; i++)
 			{
-				Border = Rectangle.NO_BORDER,
-				HorizontalAlignment = Element.ALIGN_RIGHT,
-				BackgroundColor = new BaseColor(230, 230, 230),
-				Padding = 0
-			};
+				tabla.AddCell(new PdfPCell(new Phrase("Cant.", normalBold)) { HorizontalAlignment = Element.ALIGN_CENTER, BackgroundColor = new BaseColor(180, 180, 180) });
+				tabla.AddCell(new PdfPCell(new Phrase("Fact.", normalBold)) { HorizontalAlignment = Element.ALIGN_CENTER, BackgroundColor = new BaseColor(180, 180, 180) });
+			}
+		}
 
-			inner.AddCell(c1);
-			inner.AddCell(c2);
+		private static PdfPCell CeldaDoble(object vta, object comp, Font chico)
+		{
+			Phrase ph = new Phrase();
+			ph.Add(new Chunk($"{vta}\n", chico));
+			ph.Add(new Chunk($"{comp}", chico));
 
-			// Celda contenedora
-			PdfPCell celda = new PdfPCell(inner)
-			{
-				Padding = 2
-			};
-
-			if (alt)
-				celda.BackgroundColor = new BaseColor(245, 245, 245);
-
+			PdfPCell celda = new PdfPCell(ph);
+			celda.HorizontalAlignment = Element.ALIGN_RIGHT;
+			celda.Padding = 2f;
 			return celda;
 		}
 
 
-		private static void AddHeaderGroup(PdfPTable table, string texto, int colspan, Font font, BaseColor color)
-		{
-			var cell = new PdfPCell(new Phrase(texto, font))
-			{
-				Colspan = colspan,
-				HorizontalAlignment = Element.ALIGN_CENTER,
-				VerticalAlignment = Element.ALIGN_MIDDLE,
-				BackgroundColor = color,
-				PaddingTop = 4,
-				PaddingBottom = 4
-			};
-			table.AddCell(cell);
-		}
-
-		private static void AddHeader(PdfPTable table, string texto, Font font, BaseColor color)
-		{
-			var cell = new PdfPCell(new Phrase(texto, font))
-			{
-				HorizontalAlignment = Element.ALIGN_CENTER,
-				VerticalAlignment = Element.ALIGN_MIDDLE,
-				BackgroundColor = color,
-				PaddingTop = 3,
-				PaddingBottom = 3
-			};
-			table.AddCell(cell);
-		}
-
-
-
-		private static void AddRow(PdfPTable table, ReporteEvoVtasPerAnterioresDto item, Font chico, bool alt, bool useRubros = false, bool useSector = false, bool useProveedor = false)
-		{
-			string id = item.p_id;
-			string desc = item.p_desc;
-
-			if (useRubros)
-			{
-				id = item.rub_id;
-				desc = item.rub_desc;
-			}
-			else if (useSector)
-			{
-				id = item.sec_id;
-				desc = item.sec_desc;
-			}
-			else if (useProveedor)
-			{
-				id = item.cta_id;
-				desc = item.cta_denominacion;
-			}
-
-			AddCell(table, id, chico, alt, Element.ALIGN_CENTER);
-			AddCell(table, desc, chico, alt, Element.ALIGN_LEFT);
-
-			AddCell(table, item.vtas_cantidad1.ToString("N0"), chico, alt);
-			AddCell(table, item.DifCant_1_2.ToString("N0"), chico, alt);
-			AddCell(table, item.PorcCant_1_2.ToString("N2"), chico, alt);
-
-			AddCell(table, item.vtas_facturacion1.ToString("N2"), chico, alt);
-			AddCell(table, item.DifFact_1_2.ToString("N2"), chico, alt);
-			AddCell(table, item.PorcFact_1_2.ToString("N2"), chico, alt);
-
-			AddCell(table, item.vtas_cantidad2.ToString("N0"), chico, alt);
-			AddCell(table, item.DifCant_2_3.ToString("N0"), chico, alt);
-			AddCell(table, item.PorcCant_2_3.ToString("N2"), chico, alt);
-
-			AddCell(table, item.vtas_facturacion2.ToString("N2"), chico, alt);
-			AddCell(table, item.DifFact_2_3.ToString("N2"), chico, alt);
-			AddCell(table, item.PorcFact_2_3.ToString("N2"), chico, alt);
-
-			AddCell(table, item.vtas_cantidad3.ToString("N0"), chico, alt);
-			AddCell(table, item.DifCant_3_4.ToString("N0"), chico, alt);
-			AddCell(table, item.PorcCant_3_4.ToString("N2"), chico, alt);
-
-			AddCell(table, item.vtas_facturacion3.ToString("N2"), chico, alt);
-			AddCell(table, item.DifFact_3_4.ToString("N2"), chico, alt);
-			AddCell(table, item.PorcFact_3_4.ToString("N2"), chico, alt);
-		}
-
-		private static void AddCell(PdfPTable table, string texto, Font font, bool alt, int align = Element.ALIGN_RIGHT)
-		{
-			var cell = new PdfPCell(new Phrase(texto, font))
-			{
-				HorizontalAlignment = align
-			};
-
-			if (alt)
-				cell.BackgroundColor = new BaseColor(245, 245, 245);
-
-			table.AddCell(cell);
-		}
-
 		#endregion
 
-		private List<ReporteEvoVtasPerAnterioresDto> ObtenerDatos(ReporteSolicitudDto solicitud, out string titulo, out string subtitulo, out string tipoReporte, out string filtrosString)
+		private List<ReporteVarVtasYCompUltDoceMDto> ObtenerDatos(ReporteSolicitudDto solicitud, out string titulo, out string subtitulo, out string tipoReporte, out string filtrosString)
 		{
 			try
 			{
-				var ret = new List<ReporteEvoVtasPerAnterioresDto>();
+				var ret = new List<ReporteVarVtasYCompUltDoceMDto>();
 				var desde = solicitud.Parametros.GetValueOrDefault("desde", "").ToDateTime();
 				var hasta = solicitud.Parametros.GetValueOrDefault("hasta", "").ToDateTime();
 				var lSuc_temp = solicitud.Parametros.GetValueOrDefault("lSuc", "")?.ToString() ?? null;
@@ -879,18 +400,16 @@ namespace gc.api.core.Servicios.Reportes
 				var agrupador = solicitud.Parametros.GetValueOrDefault("agrupador", "")?.ToString() ?? null;
 				tipoReporte = solicitud.Parametros.GetValueOrDefault("tipoReporte", "")?.ToString() ?? null;
 				filtrosString = solicitud.Parametros.GetValueOrDefault("filtrosString", "")?.ToString() ?? null;
-				ret = _consSrv.RepEvoVtasPerAnteriores(new ReporteEvoVtasPerAnterioresRequest()
+				ret = _consSrv.RepoVarVtasYCompUltDoceM(new ReporteVarVtasYCompUltDoceMRequest()
 				{
 					agrupador = Convert.ToInt32(agrupador),
-					desde=desde,
-					hasta = hasta,
 					lFam = lFam,
 					lProv=lProv,
 					lRub=lRub,
 					lSuc=lSuc
 				});
-				titulo = $"Reporte Evo. de Vtas. para Per. Anteriores {tipoReporte}";
-				subtitulo = $"Desde: {desde.ToString("dd/MM/yyyy")} Hasta: {hasta.ToString("dd/MM/yyyy")}\n{filtrosString}";
+				titulo = $"Reporte Variación de Vtas. y Comp. Últ. 12 meses {tipoReporte}";
+				subtitulo = $"{filtrosString}";
 				return ret;
 			}
 			catch (Exception)
@@ -911,7 +430,7 @@ namespace gc.api.core.Servicios.Reportes
 			string subtit;
 			string tipoReporte;
 			string filtrosString;
-			List<ReporteEvoVtasPerAnterioresDto> registros = ObtenerDatos(solicitud, out tit, out subtit, out tipoReporte, out filtrosString);
+			List<ReporteVarVtasYCompUltDoceMDto> registros = ObtenerDatos(solicitud, out tit, out subtit, out tipoReporte, out filtrosString);
 
 			if (registros == null || registros.Count == 0)
 			{
@@ -937,7 +456,7 @@ namespace gc.api.core.Servicios.Reportes
 			string subtit;
 			string tipoReporte;
 			string filtrosString;
-			List<ReporteEvoVtasPerAnterioresDto> registros = ObtenerDatos(solicitud, out tit, out subtit, out tipoReporte, out filtrosString);
+			List<ReporteVarVtasYCompUltDoceMDto> registros = ObtenerDatos(solicitud, out tit, out subtit, out tipoReporte, out filtrosString);
 
 			if (registros == null || registros.Count == 0)
 			{

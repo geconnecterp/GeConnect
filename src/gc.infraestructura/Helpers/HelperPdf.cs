@@ -1111,6 +1111,11 @@ namespace gc.infraestructura.Helpers
 			return DefineFontWithStyle("Arial", 6, bold ? Font.BOLD : Font.NORMAL, 0, 0, 0);
 		}
 
+		public static Font FontSuperChicoPredeterminado(bool bold = false)
+		{
+			return DefineFontWithStyle("Arial", 5, bold ? Font.BOLD : Font.NORMAL, 0, 0, 0);
+		}
+
 		public static Font FontMedioPredeterminado(bool bold = false)
 		{
 			return DefineFontWithStyle("Arial", 7, bold ? Font.BOLD : Font.NORMAL, 0, 0, 0);

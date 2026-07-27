@@ -176,7 +176,10 @@
                             for (int i = 1; i <= 12; i++)
                             {
                                 var periodoProp = firstItem.GetType().GetProperty($"periodo{i}");
-                                var periodo = periodoProp?.GetValue(firstItem)?.ToString() ?? $"Periodo {i}";
+                                var periodoRaw = periodoProp?.GetValue(firstItem)?.ToString() ?? $"Periodo {i}";
+                                string periodo = periodoRaw.Length == 6
+                                    ? $"{periodoRaw.Substring(0, 4)}-{periodoRaw.Substring(4, 2)}"
+                                    : periodoRaw;
 
                                 <th colspan="2" class="text-center" style="width: 8%;">@periodo</th>
                             }
