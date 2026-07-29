@@ -16,19 +16,25 @@
 		padding-left: 0;
 		padding-top: 0.25rem;
 	}
+
+	/* Asegurar que los dropdowns de filtros flotantes se muestren por encima del menú principal */
+	#filtrosAplicadosFloating {
+		overflow: visible;
+		z-index: 1050;
+		flex-wrap: nowrap;
+		white-space: nowrap;
+		overflow-x: visible;
+	}
+
+		#filtrosAplicadosFloating .dropdown-menu {
+			z-index: 3000 !important;
+		}
+	/* Si el header global tiene un z-index muy alto, forzamos el menu del filtro encima */
+	.navbar, .main-header {
+		z-index: 1100;
+	}
 </style>
 <div class="container-fluid min-vh-100 d-flex flex-column">
-	<div class="row mb-1">
-		<div class="col-12">
-			<div class="p-1 border rounded bg-light">
-				<div class="d-flex justify-content-between align-items-center flex-wrap">
-					<div class="d-flex flex-wrap gap-4">
-						<div><strong>Filtros:</strong> @Model.Titulo</div>
-					</div>
-				</div>
-			</div>
-		</div>
-	</div>
 	<div class="d-flex align-items-center w-100 mt-2">
 		<ul class="nav nav-tabs nav-tabs-golden" role="tablist" id="tabsAnalisisDeVentasPrincipal">
 			<li class="nav-item" role="presentation" id="tabMensual">
@@ -42,6 +48,10 @@
 				</button>
 			</li>
 		</ul>
+		<!-- Contenedor flotante para filtros aplicados -->
+		<div id="filtrosAplicadosFloating" class="border rounded d-flex align-items-center" style="position:absolute; right:100px; left:auto; top:170px; height:auto; width:auto; border-color:#d9534f; background-color:#fff; z-index:1050; padding:6px 10px; overflow:visible; gap:6px; display:inline-flex; white-space:nowrap;">
+			<!-- Badges rellenadas por JS -->
+		</div>
 	</div>
 	<div class="tab-content tab-content-compact">
 		<div class="tab-pane fade tab-content-golden show active" id="navs-top-mens" role="tabpanel">
