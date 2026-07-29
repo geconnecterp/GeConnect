@@ -11,12 +11,37 @@ $(function () {
 
 });
 
+// Mostrar filtros aplicados en la UI (DESDE / HASTA)
+function MostrarFiltrosAplicados() {
+	try {
+		const cont = $("#filtrosAplicadosFloating");
+		const target = cont.length ? cont : null;
+		if (!target) return;
+
+		const desde = $("#Desde").val();
+		const hasta = $("#Hasta").val();
+
+		let html = "";
+		html += `<span class=\"badge bg-secondary me-1\">DESDE: ${desde || '-'} </span>`;
+		html += `<span class=\"badge bg-secondary me-1\">HASTA: ${hasta || '-'} </span>`;
+
+		target.html(html);
+	} catch (e) {
+		console.error('MostrarFiltrosAplicados error', e);
+	}
+}
+
+// Ejecutar al cargar para mostrar valores iniciales
+$(function () { try { MostrarFiltrosAplicados(); } catch (e) { } });
+
 function InicializarPantallaPrincipal() {
 	var desde = $("#Desde").val();
 	var hasta = $("#Hasta").val();
 	AbrirWaiting("Cargando información...");
 	PostGenHtml({ desde, hasta }, inicializarPantallPrincipalURL, function (obj) {
 		$("#divDetalle").html(obj);
+		// actualizar filtros aplicados despues de renderizar
+		try { MostrarFiltrosAplicados(); } catch (e) { console.warn('MostrarFiltrosAplicados no disponible:', e); }
 		$(document).on('shown.bs.tab', 'button[data-bs-toggle="tab"]', function (e) {
 			const tabId = $(e.target).attr("data-bs-target").replace("#", "");
 			EvaluarBotonImprimir(tabId);
@@ -158,6 +183,7 @@ function InicializaEventos() {
 	$("#btnBuscar").on("click", function () {
 		const msg = validarFechasAnalisis();
 		if (msg == "OK") {
+			try { MostrarFiltrosAplicados(); } catch (e) { console.warn('MostrarFiltrosAplicados no disponible:', e); }
 			InicializarPantallaPrincipal();
 		} else {
 			AbrirMensaje("ATENCIÓN", msg, function () {

@@ -87,6 +87,10 @@ namespace gc.sitio.Areas.Consultas.Controllers
 
 			try
 			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+					return RedirectToAction("Login", "Token", new { area = "seguridad" });
+
 				if (!buscaNew)
 				{
 					lista = ListaCertificados.ToList();
@@ -109,6 +113,34 @@ namespace gc.sitio.Areas.Consultas.Controllers
 				metadata = MetadataCertificados;
 				grillaDatos = GenerarGrillaSmart(ListaCertificados, sort, _setting.NroRegistrosPagina, pag, MetadataGeneral.TotalCount, MetadataGeneral.TotalPages, sortDir);
 				model.GrillaCertificados = grillaDatos;
+
+				// Construcción de leyenda
+				model.LeyendaImp = $"Impuesto: {request.imp_id_texto}";
+				model.LeyendaCertNoRet = request.ret ? "Certificados de No Retención (proveedores)" : "";
+				model.LeyendaCertNoPer = request.per ? "Certificados de No Percepción (clientes)" : "";
+				model.LeyendaNoVenc = request.no_vencido ? "No Vencidos" : "";
+				model.LeyendaVenc = request.vencido ? "Vencidos" : "";
+
+				// Leyenda final
+				var partesLeyenda = new List<string>();
+
+				if (!string.IsNullOrWhiteSpace(model.LeyendaImp))
+					partesLeyenda.Add(model.LeyendaImp);
+
+				if (!string.IsNullOrWhiteSpace(model.LeyendaCertNoRet))
+					partesLeyenda.Add(model.LeyendaCertNoRet);
+
+				if (!string.IsNullOrWhiteSpace(model.LeyendaCertNoPer))
+					partesLeyenda.Add(model.LeyendaCertNoPer);
+
+				if (!string.IsNullOrWhiteSpace(model.LeyendaNoVenc))
+					partesLeyenda.Add(model.LeyendaNoVenc);
+
+				if (!string.IsNullOrWhiteSpace(model.LeyendaVenc))
+					partesLeyenda.Add(model.LeyendaVenc);
+
+				model.Leyenda = string.Join(" | ", partesLeyenda);
+
 				return PartialView("_gridCertificados", model);
 			}
 			catch (Exception ex)

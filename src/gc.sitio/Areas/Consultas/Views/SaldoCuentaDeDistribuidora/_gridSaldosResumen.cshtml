@@ -8,7 +8,11 @@
 	string grupoAnterior = string.Empty;
 	string leyendaAgrupador = string.Empty;
 
-	var reg = Model.ListaDatos?.First();
+	var reg = new SaldoResumenDto();
+	if (Model != null && Model.ListaDatos != null && Model.ListaDatos.Count > 0)
+		reg = Model.ListaDatos.First();
+	else
+		reg = null;
 	var lblCol1 = "";
 	var lblCol2 = "";
 	var lblCol3 = "";

@@ -45,6 +45,36 @@
 			table-layout: fixed;
 		}
 
+	.table-golden {
+		border-collapse: separate;
+		border-spacing: 0;
+		table-layout: fixed;
+	}
+
+		.table-golden thead {
+			position: sticky;
+			top: 0;
+			z-index: 1;
+			background: linear-gradient(to bottom, #b8860b, #daa520) !important;
+			color: #fff !important;
+		}
+
+			.table-golden thead th {
+				position: sticky;
+				top: 0;
+				z-index: 4;
+				background: linear-gradient(to bottom, #b8860b, #daa520);
+				color: #fff;
+				box-shadow: 0 1px 0 rgba(0,0,0,0.05), 0 2px 2px rgba(0,0,0,0.04);
+				background-clip: padding-box;
+			}
+
+			.table-golden thead,
+			.table-golden thead th {
+				/*background-color: #b8860b;  tu dorado */
+				/* color: #333; */
+			}
+
 	.table-summary-bar {
 		background-color: #f2f2f2;
 		border-top: 2px solid #999;
@@ -55,61 +85,101 @@
 		width: 100%;
 	}
 </style>
-<div class="table-wrapper">
-	<table class="table table-sm table-golden" id="tbGridCertificados">
-		<thead>
-			<tr class="header">
-				<th class="text-center" style="width: 30%;">Cuenta</th>
-				<th class="text-center" style="width: 30%;">Domicilio</th>
-				<th class="text-center" style="width: 15%;">Teléfono</th>
-				<th class="text-center" style="width: 15%;">Email</th>
-				<th class="text-center" style="width: 10%;">Vigencia</th>
-			</tr>
-		</thead>
-		<tbody>
-			@if (Model != null && Model.GrillaCertificados != null && Model.GrillaCertificados.ListaDatos != null && Model.GrillaCertificados.ListaDatos.Count > 0)
-			{
-				var certificados = Model.GrillaCertificados.ListaDatos.OrderBy(p => p.grupo).ToList();
-				@foreach (var item in certificados)
-				{
-					grupoActual = item.grupo;
-					// Si cambia la cuenta, insertamos una fila de encabezado para la cuenta
-					if (grupoActual != grupoAnterior)
+<div class="grid-golden">
+    <div class="grid-golden-header">
+        <div class="row align-items-md-center">
+            <div class="col-md-10 col-sm-6 d-flex align-items-center">
+                <h5 class="mb-0 flex-grow-1">
+                    <i class="bx bx-package me-2"></i>
+                    <strong>Filtros</strong>
+                </h5>
+                <i class="bx bx-chevrons-down fs-4 ms-2"
+                   id="toggleFiltros"
+                   data-bs-toggle="collapse"
+                   data-bs-target="#filtrosCollapse"
+                   role="button"
+                   data-bs-placement="top"
+                   title="Haz click acá para conocer los filtros aplicados"
+                   style="
+                    cursor:pointer;
+                    transition: transform .25s ease, color .25s ease;
+                    color:#666;
+                    ">
+                </i>
+            </div>
+
+            <div class="col-md-2 col-sm-6">
+                <div class="d-flex justify-content-sm-end"></div>
+            </div>
+        </div>
+    </div>
+    <div class="collapse" id="filtrosCollapse">
+        <div class="mt-2">
+			<span class="badge bg-secondary me-1">@Model.LeyendaImp</span>
+			<span class="badge bg-secondary me-1">@Model.LeyendaCertNoRet</span>
+			<span class="badge bg-secondary me-1">@Model.LeyendaCertNoPer</span>
+			<span class="badge bg-secondary me-1">@Model.LeyendaNoVenc</span>
+			<span class="badge bg-secondary me-1">@Model.LeyendaVenc</span>
+        </div>
+    </div>
+    <div class="grid-golden-body">
+		<div class="table-wrapper">
+			<table class="table table-sm table-golden" id="tbGridCertificados">
+				<thead>
+					<tr class="header">
+						<th class="text-center th-compact" style="width: 30%;">Cuenta</th>
+						<th class="text-center th-compact" style="width: 30%;">Domicilio</th>
+						<th class="text-center th-compact" style="width: 15%;">Teléfono</th>
+						<th class="text-center th-compact" style="width: 15%;">Email</th>
+						<th class="text-center th-compact" style="width: 10%;">Vigencia</th>
+					</tr>
+				</thead>
+				<tbody>
+					@if (Model != null && Model.GrillaCertificados != null && Model.GrillaCertificados.ListaDatos != null && Model.GrillaCertificados.ListaDatos.Count > 0)
 					{
-						<tr class="table-secondary fw-bold">
-							<td colspan="7" class="text-center">
-								<i class="bx bx-folder me-1"></i>
-								@item.grupo_des
+						var certificados = Model.GrillaCertificados.ListaDatos.OrderBy(p => p.grupo).ToList();
+						@foreach (var item in certificados)
+						{
+							grupoActual = item.grupo;
+							// Si cambia la cuenta, insertamos una fila de encabezado para la cuenta
+							if (grupoActual != grupoAnterior)
+							{
+								<tr class="table-secondary fw-bold">
+									<td colspan="7" class="text-center">
+										<i class="bx bx-folder me-1"></i>
+										@item.grupo_des
+									</td>
+								</tr>
+								grupoAnterior = grupoActual;
+								alt = true; // Reiniciar alternancia de colores después de cada familia
+							}
+							if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+							<tr class="@clase" onclick="selectReg(this, 'tbGridVencimientos')">
+								<td class="@Model.GrillaCertificados.ObtenerClase(item.cta_denominacion) cell-fit-content">@Model.GrillaCertificados.FormatearDato($"{item.cta_denominacion} ({item.cta_id})", FormatDato.Ninguno)</td>
+								<td class="@Model.GrillaCertificados.ObtenerClase(item.cta_domicilio) cell-fit-content">@Model.GrillaCertificados.FormatearDato(item.cta_domicilio, FormatDato.Ninguno)</td>
+								<td class="@Model.GrillaCertificados.ObtenerClase(item.cta_te) cell-fit-content">@Model.GrillaCertificados.FormatearDato(item.cta_te, FormatDato.Ninguno)</td>
+								<td class="@Model.GrillaCertificados.ObtenerClase(item.cta_email) cell-fit-content">@Model.GrillaCertificados.FormatearDato(item.cta_email, FormatDato.Ninguno)</td>
+								<td class="@Model.GrillaCertificados.ObtenerClase(item.cert_vto) cell-fit-content">@Model.GrillaCertificados.FormatearDato(item.cert_vto, FormatDato.Fecha)</td>
+							</tr>
+						}
+					}
+					else
+					{
+						<tr>
+							<td colspan="9" class="text-center text-muted py-4">
+								<i class="bx bx-info-circle me-2"></i>
+								No se encontraron productos con los criterios especificados
 							</td>
 						</tr>
-						grupoAnterior = grupoActual;
-						alt = true; // Reiniciar alternancia de colores después de cada familia
 					}
-					if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
-					<tr class="@clase" onclick="selectReg(this, 'tbGridVencimientos')">
-						<td class="@Model.GrillaCertificados.ObtenerClase(item.cta_denominacion) cell-fit-content">@Model.GrillaCertificados.FormatearDato($"{item.cta_denominacion} ({item.cta_id})", FormatDato.Ninguno)</td>
-						<td class="@Model.GrillaCertificados.ObtenerClase(item.cta_domicilio) cell-fit-content">@Model.GrillaCertificados.FormatearDato(item.cta_domicilio, FormatDato.Ninguno)</td>
-						<td class="@Model.GrillaCertificados.ObtenerClase(item.cta_te) cell-fit-content">@Model.GrillaCertificados.FormatearDato(item.cta_te, FormatDato.Ninguno)</td>
-						<td class="@Model.GrillaCertificados.ObtenerClase(item.cta_email) cell-fit-content">@Model.GrillaCertificados.FormatearDato(item.cta_email, FormatDato.Ninguno)</td>
-						<td class="@Model.GrillaCertificados.ObtenerClase(item.cert_vto) cell-fit-content">@Model.GrillaCertificados.FormatearDato(item.cert_vto, FormatDato.Fecha)</td>
-					</tr>
-				}
-			}
-			else
-			{
-				<tr>
-					<td colspan="9" class="text-center text-muted py-4">
-						<i class="bx bx-info-circle me-2"></i>
-						No se encontraron productos con los criterios especificados
-					</td>
-				</tr>
-			}
-		</tbody>
-	</table>
-</div>
-<div class="row mt-3">
-	<div class="offset-md-3 col-md-6">
-		<div id="divPaginacion" class="">
+				</tbody>
+			</table>
 		</div>
-	</div>
+		<div class="row mt-3">
+			<div class="offset-md-3 col-md-6">
+				<div id="divPaginacion" class="">
+				</div>
+			</div>
+		</div>
+    </div>
 </div>

@@ -11,6 +11,44 @@ $(function () {
 
 });
 
+function MostrarFiltrosAplicados() {
+	try {
+		const cont = $("#filtrosAplicadosFloating");
+		const target = cont.length ? cont : null;
+		if (!target) return;
+
+		// const desde = $("#Desde").val();
+		// const hasta = $("#Hasta").val();
+
+		// Vendedores seleccionados
+		const vendedores = [];
+		$("#VendedoresList option").each(function () { vendedores.push($(this).text()); });
+		// si no hay en la listbox, tomar del dropdown
+		if (vendedores.length === 0) {
+			$("#listaVendedores option:selected").each(function () { const t = $(this).text(); if (t && t !== "Seleccionar") vendedores.push(t); });
+		}
+
+		let html = "";
+		// // html += `<span class=\"badge bg-secondary me-1\">DESDE: ${desde || '-'} </span>`;
+		// // html += `<span class=\"badge bg-secondary me-1\">HASTA: ${hasta || '-'} </span>`;
+
+		if (vendedores.length === 1) {
+			html += `<span class=\"badge bg-secondary me-1\">VENDEDOR: ${vendedores[0]}</span>`;
+		} else if (vendedores.length > 1) {
+			html += `\n                <div class=\"dropdown me-1\">\n                    <button class=\"badge bg-secondary dropdown-toggle text-nowrap\" type=\"button\" id=\"vendedoresDropDist\" data-bs-toggle=\"dropdown\" aria-expanded=\"false\">\n                        Vendedor: ${vendedores.length} seleccionados\n                    </button>\n                    <ul class=\"dropdown-menu dropdown-menu-end\" aria-labelledby=\"vendedoresDropDist\" data-bs-boundary=\"viewport\">`;
+			vendedores.forEach(function (v) { html += `<li><a class=\"dropdown-item\" href=\"#\">${v}</a></li>`; });
+			html += `</ul></div>`;
+		}
+
+		target.html(html);
+	} catch (e) {
+		console.error('MostrarFiltrosAplicados error', e);
+	}
+}
+
+// Ejecutar al cargar
+$(function () { try { MostrarFiltrosAplicados(); } catch (e) { } });
+
 function InicializaEventos() {
 	$(document).off("dblclick", "VendedoresList");
 	$("#VendedoresList").on("dblclick", 'option', function () { $(this).remove(); })
@@ -30,6 +68,7 @@ function InicializaEventos() {
 	});
 
 	$("#btnBuscar").on("click", function () {
+		try { MostrarFiltrosAplicados(); } catch (e) { console.warn('MostrarFiltrosAplicados no disponible:', e); }
 		InicializarPantallaPrincipal();
 	});
 }
@@ -40,7 +79,9 @@ function InicializarPantallaPrincipal() {
 	var vendedoresIds = vend.ids;
 	AbrirWaiting("Cargando información...");
 	PostGenHtml({ vendedoresText, vendedoresIds }, inicializarPantallPrincipalURL, function (obj) {
-		$("#divDetalle").html(obj);
+			$("#divDetalle").html(obj);
+			// actualizar filtros aplicados despues de renderizar
+			try { MostrarFiltrosAplicados(); } catch (e) { console.warn('MostrarFiltrosAplicados no disponible:', e); }
 		$(document).on('shown.bs.tab', 'button[data-bs-toggle="tab"]', function (e) {
 			const tabId = $(e.target).attr("data-bs-target").replace("#", "");
 			EvaluarBotonImprimir(tabId);

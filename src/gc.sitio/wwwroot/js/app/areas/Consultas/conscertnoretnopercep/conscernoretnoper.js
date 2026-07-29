@@ -106,11 +106,12 @@ function BuscarCertificados(pag) {
 	if (retMsj == "") {
 		AbrirWaiting("Cargando certificados...");
 		var imp_id = $("#listaTipoImpuestos").val();
+		var imp_id_texto = $("#listaTipoImpuestos option:selected").text();
 		var ret = $("#chkCertNoRet")[0].checked;
 		var per = $("#chkCertNoPercep")[0].checked;
 		var no_vencido = $("#chkNoVencidos")[0].checked;
 		var vencido = $("#chkVencidos")[0].checked;
-		var data1 = { imp_id, ret, per, no_vencido, vencido };
+		var data1 = { imp_id, imp_id_texto, ret, per, no_vencido, vencido };
 		var buscaNew = true;
 		var sort = null;
 		var sortDir = null
