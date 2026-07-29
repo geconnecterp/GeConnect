@@ -13,6 +13,7 @@ using gc.sitio.core.Servicios.Contratos;
 using gc.sitio.core.Servicios.Contratos.DocManager;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
+using Twilio.Jwt;
 
 namespace gc.sitio.Areas.Consultas.Controllers
 {
@@ -116,6 +117,52 @@ namespace gc.sitio.Areas.Consultas.Controllers
 
 				}
 				metadata = MetadataVencimientos;
+
+				// ===============================
+				// Construcción de leyendas
+				// ===============================
+
+				// Fechas de vencimiento
+				model.LeyendaFecVenc = request.fv
+					? $"Vencimientos: {request.fvDesde:dd/MM/yyyy} al {request.fvhasta:dd/MM/yyyy}"
+					: string.Empty;
+
+				// Fechas de generación
+				model.LeyendaFecGen = request.fg
+					? $"Generación: {request.fgDesde:dd/MM/yyyy} al {request.fghasta:dd/MM/yyyy}"
+					: string.Empty;
+
+				// Clientes
+				model.LeyendaCli = ConstruirLeyenda("Clientes", request.id_ctc, request.ctc_list, request.ctc_list_textos);
+
+				// Proveedores
+				model.LeyendaProv = ConstruirLeyenda("Proveedores", request.id_ope, request.ope_list, request.ope_list_textos);
+
+				// Tipos de comprobantes
+				model.LeyendaTipoC = ConstruirLeyenda("Tipos de comprobantes", request.id_tco, request.tco_list, request.tco_list_text);
+
+				// ===============================
+				// Leyenda final dinámica
+				// ===============================
+				var partes = new List<string>();
+
+				if (!string.IsNullOrWhiteSpace(model.LeyendaFecVenc))
+					partes.Add(model.LeyendaFecVenc);
+
+				if (!string.IsNullOrWhiteSpace(model.LeyendaFecGen))
+					partes.Add(model.LeyendaFecGen);
+
+				if (!string.IsNullOrWhiteSpace(model.LeyendaCli))
+					partes.Add(model.LeyendaCli);
+
+				if (!string.IsNullOrWhiteSpace(model.LeyendaProv))
+					partes.Add(model.LeyendaProv);
+
+				if (!string.IsNullOrWhiteSpace(model.LeyendaTipoC))
+					partes.Add(model.LeyendaTipoC);
+
+				model.Leyenda = string.Join(" | ", partes);
+
 				grillaDatos = GenerarGrillaSmart(ListaVencimientos, sort, _setting.NroRegistrosPagina, pag, MetadataGeneral.TotalCount, MetadataGeneral.TotalPages, sortDir);
 				model.GrillaVencimientos = grillaDatos;
 				return PartialView("_gridVencimientos", model);
@@ -134,6 +181,25 @@ namespace gc.sitio.Areas.Consultas.Controllers
 		}
 
 		#region Métodos Provados
+		private static string ConstruirLeyenda(string titulo, bool flag, List<string>? lista, string textos)
+		{
+			if (!flag)
+				return string.Empty;
+
+			if (lista == null || lista.Count == 0)
+				return string.Empty;
+
+			// Caso especial: único valor "%"
+			if (lista.Count == 1 && lista[0] == "%")
+				return $"{titulo}: Todos";
+
+			// Caso normal
+			if (!string.IsNullOrWhiteSpace(textos))
+				return $"{titulo}: {textos}";
+
+			return string.Empty;
+		}
+
 		private void CargarDatosIniciales(ConsVencTipoCtaTipoCompteModel model)
 		{
 			model.FechaVencDesde = DateTime.Today.AddYears(-30);

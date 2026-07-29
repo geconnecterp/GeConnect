@@ -135,6 +135,32 @@ function cargaPaginacion() {
 	return true;
 }
 
+function ObtenerFiltroLista(idCheckbox, idListBox) {
+
+	const estaChequeado = $(idCheckbox).is(":checked");
+	const ids = [];
+	const textos = [];
+
+	// Tomar valores y textos del ListBox
+	$(idListBox + " option").each(function () {
+		ids.push($(this).val());
+		textos.push($(this).text());
+	});
+
+	// Si está chequeado y no hay valores → devolver "%"
+	if (estaChequeado && ids.length === 0) {
+		return {
+			ids: ["%"],
+			textos: "Todos"
+		};
+	}
+
+	return {
+		ids: ids,
+		textos: textos.join(", ")
+	};
+}
+
 function BuscarVencimientos(pag) {
 	if (ValidarFiltrosSeleccionados()) {
 		AbrirWaiting("Cargando vencimientos...");
@@ -146,38 +172,21 @@ function BuscarVencimientos(pag) {
 		var fghasta = $("#FechaGenHasta").val();
 		var id_ctc = $("#chkTipoClientes")[0].checked;
 		var ctc_list = [];
-		if ($("#chkTipoClientes").is(":checked")) {
-			const values = $("#TipoClientesList")
-				.children()
-				.map((i, item) => $(item).val())
-				.get()
-				.filter(v => v !== null && v !== undefined && v !== "");
-
-			if (values.length === 0)
-				ctc_list.push('%');
-			else
-				ctc_list.push(...values);
-		}
+		var temp = ObtenerFiltroLista("#chkTipoClientes", "#TipoClientesList");
+		ctc_list = temp.ids;
+		var ctc_list_textos = temp.textos;
 		var id_ope = $("#chkTipoProveedores")[0].checked;
 		var ope_list = [];
-		if ($("#chkTipoProveedores").is(":checked")) {
-			const values = $("#TipoProveedoresList")
-				.children()
-				.map((i, item) => $(item).val())
-				.get()
-				.filter(v => v !== null && v !== undefined && v !== "");
-
-			if (values.length === 0)
-				ope_list.push('%');
-			else
-				ope_list.push(...values);
-		}
+		temp = ObtenerFiltroLista("#chkTipoProveedores", "#TipoProveedoresList");
+		ope_list = temp.ids;
+		var ope_list_textos = temp.textos;
 		var id_tco = $("#chkTipoComptes")[0].checked;
 		var tco_list = [];
-		if ($("#chkTipoComptes").is(":checked")) {
-			$("#TipoComptesList").children().each(function (i, item) { tco_list.push($(item).val()) });
-		}
-		var data1 = { fv, fvDesde, fvhasta, fg, fgDesde, fghasta, id_ctc, ctc_list, id_ope, ope_list, id_tco, tco_list };
+		temp = ObtenerFiltroLista("#chkTipoComptes", "#TipoComptesList");
+		tco_list = temp.ids;
+		var tco_list_text = temp.textos;
+		
+		var data1 = { fv, fvDesde, fvhasta, fg, fgDesde, fghasta, id_ctc, ctc_list, id_ope, ope_list, id_tco, tco_list, ctc_list_textos, ope_list_textos, tco_list_text };
 		var buscaNew = true;
 		var sort = null;
 		var sortDir = null

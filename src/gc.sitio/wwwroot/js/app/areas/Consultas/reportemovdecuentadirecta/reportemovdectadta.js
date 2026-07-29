@@ -17,11 +17,38 @@ function InicializaEventos() {
     });
 }
 
+function ConstruirDescripcionFiltro(nombre, idCheckbox, idListBox) {
+
+    const activo = $(idCheckbox).is(":checked");
+    if (!activo) return ""; // No incluir si el filtro no está activo
+
+    const valores = [];
+    $(idListBox + " option").each(function () {
+        valores.push($(this).text().trim());
+    });
+
+    if (valores.length === 0) {
+        return `${nombre}: Todos`;
+    }
+
+    return `${nombre}: ${valores.join(", ")}`;
+}
+
 function ImprimirDetalle() {
     ReseteoDeReportes();
     setTimeout(() => {
         const filtros = buildQueryFilters();
-        let data = { ctag_list: filtros.ctag_list.join(","), desde: filtros.desde, hasta: filtros.hasta };
+        // 🔥 Construcción del string de filtros
+        var filtrosDesc = [];
+
+        filtrosDesc.push(ConstruirDescripcionFiltro("Cuentas", "#chkRel01", "#Rel01List"));
+
+        // Limpieza: eliminar vacíos
+        filtrosDesc = filtrosDesc.filter(x => x !== "");
+
+        // String final
+        var filtrosString = filtrosDesc.join(" | ");
+        let data = { ctag_list: filtros.ctag_list.join(","), desde: filtros.desde, hasta: filtros.hasta, filtrosString };
         cargarReporteEnArre(85, data, "Movimiento de Cuentas Directas", "", "");
         invocacionGestorDoc({});
     }, 500);
@@ -142,10 +169,41 @@ function buildQueryFilters() {
     if (rel01.length == 0)
         rel01.push("%");
 
+    var temp = ObtenerFiltroLista("#chkRel01", "#Rel01List");
+    var ctag_list = temp.ids;
+    var ctag_list_textos = temp.textos;
+
     return {
         desde: fechaD || null,
         hasta: fechaH || null,
-        ctag_list: rel01.length ? rel01 : null,
+        ctag_list: ctag_list,
+        ctag_list_textos: ctag_list_textos
+    };
+}
+
+function ObtenerFiltroLista(idCheckbox, idListBox) {
+
+    const estaChequeado = $(idCheckbox).is(":checked");
+    const ids = [];
+    const textos = [];
+
+    // Tomar valores y textos del ListBox
+    $(idListBox + " option").each(function () {
+        ids.push($(this).val());
+        textos.push($(this).text());
+    });
+
+    // Si está chequeado y no hay valores → devolver "%"
+    if (estaChequeado && ids.length === 0) {
+        return {
+            ids: ["%"],
+            textos: "Todos"
+        };
+    }
+
+    return {
+        ids: ids,
+        textos: textos.join(", ")
     };
 }
 

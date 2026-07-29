@@ -12,6 +12,7 @@ namespace gc.infraestructura.Dtos.Consultas
 		public string lSucTextos { get; set; } = string.Empty;
 		public string lProvTextos { get; set; } = string.Empty;
 		public string lRubTextos { get; set; } = string.Empty;
+		public string lFamTextos { get; set; } = string.Empty;
 
 		public int agrupador { get; set; }
 	}

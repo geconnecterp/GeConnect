@@ -108,19 +108,31 @@ namespace gc.sitio.Areas.Consultas.Controllers.ReporteEvoVtasPerAnteriores
 				model.AgrupadoPor = request.agrupador;
 
 				// Construcción de leyenda
-				model.LeyendaSuc = string.IsNullOrWhiteSpace(request.lSucTextos)
-					? "Sucursales: Todas"
-					: $"Sucursales: {request.lSucTextos}";
-				model.LeyendaProv = string.IsNullOrWhiteSpace(request.lProvTextos)
-					? "Proveedores: Todos"
-					: $"Proveedores: {request.lProvTextos}";
-				model.LeyendaRub = string.IsNullOrWhiteSpace(request.lRubTextos)
-					? "Rubros: Todos"
-					: $"Rubros: {request.lRubTextos}";
+				model.LeyendaSuc = ConstruirLeyenda("Sucursales", request.lSuc, request.lSucTextos);
+				model.LeyendaProv = ConstruirLeyenda("Proveedores", request.lProv, request.lProvTextos);
+				model.LeyendaRub = ConstruirLeyenda("Rubros", request.lRub, request.lRubTextos);
+				model.LeyendaFam = ConstruirLeyenda("Familias", request.lFam, request.lFamTextos);
+
 				model.LeyendaFechas = $"Periodo: {request.desde:dd/MM/yyyy} al {request.hasta:dd/MM/yyyy}";
 
 				// Leyenda final
-				model.Leyenda = $"{model.LeyendaFechas} | {model.LeyendaSuc} | {model.LeyendaProv} | {model.LeyendaRub}";
+				var partesLeyenda = new List<string>();
+
+				partesLeyenda.Add(model.LeyendaFechas);
+
+				if (!string.IsNullOrWhiteSpace(model.LeyendaSuc))
+					partesLeyenda.Add(model.LeyendaSuc);
+
+				if (!string.IsNullOrWhiteSpace(model.LeyendaProv))
+					partesLeyenda.Add(model.LeyendaProv);
+
+				if (!string.IsNullOrWhiteSpace(model.LeyendaFam))
+					partesLeyenda.Add(model.LeyendaFam);
+
+				if (!string.IsNullOrWhiteSpace(model.LeyendaRub))
+					partesLeyenda.Add(model.LeyendaRub);
+
+				model.Leyenda = string.Join(" | ", partesLeyenda);
 
 				switch (request.agrupador)
 				{
@@ -192,6 +204,21 @@ namespace gc.sitio.Areas.Consultas.Controllers.ReporteEvoVtasPerAnteriores
 		}
 
 		#region Métodos Privados
+		private static string ConstruirLeyenda(string titulo, List<string>? lista, string textos)
+		{
+			if (lista == null || lista.Count == 0)
+				return string.Empty;
+
+			// Caso especial: único valor "%"
+			if (lista.Count == 1 && lista[0] == "%")
+				return $"{titulo}: Todos";
+
+			// Caso normal
+			if (!string.IsNullOrWhiteSpace(textos))
+				return $"{titulo}: {textos}";
+
+			return string.Empty;
+		}
 		private SelectList ComboRubros()
 		{
 			var adms = _rubroServicio.ObtenerListaRubros("", TokenCookie);

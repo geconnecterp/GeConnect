@@ -16,6 +16,9 @@ namespace gc.infraestructura.Dtos.Consultas.ConsVencTipoCtaTipoCompte
 		public List<string> ope_list { get; set; } = [];
 		public bool id_tco { get; set; }
 		public List<string> tco_list { get; set; } = [];
+		public string ctc_list_textos { get; set; } = string.Empty;
+		public string ope_list_textos { get; set; } = string.Empty;
+		public string tco_list_text { get; set; } = string.Empty;
 		public int? Registros { get; set; }
 		public int? Pagina { get; set; }
 	}

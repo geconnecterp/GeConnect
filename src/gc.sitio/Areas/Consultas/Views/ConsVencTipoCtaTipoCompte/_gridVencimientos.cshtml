@@ -64,67 +64,150 @@
 		width: 100%;
 	}
 
-</style>
-<div class="table-wrapper">
-	<table class="table table-sm table-golden" id="tbGridVencimientos">
-		<thead>
-			<tr class="header">
-				<th class="text-center" style="width: 30%;">Comprobante</th>
-				<th class="text-center" style="width: 10%;">Cuota</th>
-				<th class="text-center" style="width: 10%;">Estado</th>
-				<th class="text-center" style="width: 10%;">Emitido</th>
-				<th class="text-center" style="width: 10%;">Días Atr.</th>
-				<th class="text-center" style="width: 10%;">Vencimiento</th>
-				<th class="text-center" style="width: 20%;">Importe</th>
-			</tr>
-		</thead>
-		<tbody>
-			@if (Model != null && Model.GrillaVencimientos != null && Model.GrillaVencimientos.ListaDatos != null && Model.GrillaVencimientos.ListaDatos.Count > 0)
-			{
-				var vencimientos = Model.GrillaVencimientos.ListaDatos.OrderBy(p => p.cta_id).ToList();
-				@foreach (var item in vencimientos)
-				{
-					ctaIdActual = item.cta_id;
-					// Si cambia la cuenta, insertamos una fila de encabezado para la cuenta
-					if (ctaIdActual != ctaIdAnterior)
-					{
-						subTotal = vencimientos.Where(X => X.cta_id == item.cta_id).Sum(X => X.cv_importe);
-						<tr class="table-secondary fw-bold">
-							<td colspan="7" class="text-center">
-								<i class="bx bx-folder me-1"></i>
-								Cuenta: @item.cta_denominacion (@item.cta_id) - Subtotal Importe: @subTotal
-							</td>
-						</tr>
-						ctaIdAnterior = ctaIdActual;
-						alt = true; // Reiniciar alternancia de colores después de cada familia
-					}
-					if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
-					<tr class="@clase" onclick="selectReg(this, 'tbGridVencimientos')">
-						<td class="@Model.GrillaVencimientos.ObtenerClase(item.comprobante) cell-fit-content">@Model.GrillaVencimientos.FormatearDato(item.comprobante, FormatDato.Ninguno)</td>
-						<td class="@Model.GrillaVencimientos.ObtenerClase(item.cm_compte_cuota) align-center cell-fit-content">@Model.GrillaVencimientos.FormatearDato(item.cm_compte_cuota, FormatDato.Ninguno)</td>
-						<td class="@Model.GrillaVencimientos.ObtenerClase(item.cv_estado) align-center cell-fit-content">@Model.GrillaVencimientos.FormatearDato(item.cv_estado, FormatDato.Ninguno)</td>
-						<td class="@Model.GrillaVencimientos.ObtenerClase(item.cv_fecha_carga) cell-fit-content">@Model.GrillaVencimientos.FormatearDato(item.cv_fecha_carga, FormatDato.Fecha)</td>
-						<td class="@Model.GrillaVencimientos.ObtenerClase(item.atraso) align-right cell-fit-content">@Model.GrillaVencimientos.FormatearDato(item.atraso, FormatDato.Ninguno)</td>
-						<td class="@Model.GrillaVencimientos.ObtenerClase(item.cv_fecha_vto) cell-fit-content">@Model.GrillaVencimientos.FormatearDato(item.cv_fecha_vto, FormatDato.Fecha)</td>
-						<td class="@Model.GrillaVencimientos.ObtenerClase(item.cv_importe) cell-fit-content">@Model.GrillaVencimientos.FormatearDato(item.cv_importe, FormatDato.Monto)</td>
-					</tr>
-				}
+	.table-golden {
+		border-collapse: separate;
+		border-spacing: 0;
+		table-layout: fixed;
+	}
+
+		.table-golden thead {
+			position: sticky;
+			top: 0;
+			z-index: 1;
+			background: linear-gradient(to bottom, #b8860b, #daa520) !important;
+			color: #fff !important;
+		}
+
+			.table-golden thead th {
+				position: sticky;
+				top: 0;
+				z-index: 4;
+				background: linear-gradient(to bottom, #b8860b, #daa520);
+				color: #fff;
+				box-shadow: 0 1px 0 rgba(0,0,0,0.05), 0 2px 2px rgba(0,0,0,0.04);
+				background-clip: padding-box;
 			}
-		</tbody>
-	</table>
-</div>
-<!-- Fila sumarizadora fuera del scroll -->
-<div class="table-summary-bar mt-2">
-	<div class="row gx-0">
-		<div class="col-6 text-end">Subtotal página:</div>
-		<div class="col-2 text-end">@total_pagina.ToString("N2")</div>
-		<div class="col-2 text-end">Total general:</div>
-		<div class="col-2 text-end">@total.ToString("N2")</div>
+
+			.table-golden thead,
+			.table-golden thead th {
+			}
+
+	.badge.bg-secondary {
+		font-size: 0.70rem;
+		padding: 0.20rem 0.35rem;
+		border-radius: 0.25rem;
+	}
+
+	/* Hover del doble-chevron */
+	#toggleFiltros:hover {
+		color: #000;
+		transform: scale(1.15);
+	}
+</style>
+<div class="grid-golden">
+	<div class="grid-golden-header">
+		<div class="row align-items-md-center">
+			<div class="col-md-10 col-sm-6 d-flex align-items-center">
+				<h5 class="mb-0 flex-grow-1">
+					<i class="bx bx-package me-2"></i>
+					<strong>Reporte</strong>
+				</h5>
+
+				<!-- Doble-chevron toggle -->
+				<i class="bx bx-chevrons-down fs-4 ms-2"
+				   id="toggleFiltros"
+				   data-bs-toggle="collapse"
+				   data-bs-target="#filtrosCollapse"
+				   role="button"
+				   data-bs-placement="top"
+				   title="Haz click acá para conocer los filtros aplicados"
+				   style="
+					cursor:pointer;
+					transition: transform .25s ease, color .25s ease;
+					color:#666;
+					">
+				</i>
+			</div>
+
+			<div class="col-md-2 col-sm-6">
+				<div class="d-flex justify-content-sm-end"></div>
+			</div>
+		</div>
 	</div>
-</div>
-<div class="row mt-3">
-	<div class="offset-md-3 col-md-6">
-		<div id="divPaginacion" class="">
+
+	<!-- Contenedor colapsable (ocupa CERO espacio cuando está oculto) -->
+	<div class="collapse" id="filtrosCollapse">
+		<div class="mt-2">
+			<span class="badge bg-secondary me-1">@Model.LeyendaFecVenc</span>
+			<span class="badge bg-secondary me-1">@Model.LeyendaFecGen</span>
+			<span class="badge bg-secondary me-1">@Model.LeyendaCli</span>
+			<span class="badge bg-secondary me-1">@Model.LeyendaProv</span>
+			<span class="badge bg-secondary me-1">@Model.LeyendaTipoC</span>
+		</div>
+	</div>
+	<div class="grid-golden-body">
+		<div class="table-wrapper">
+			<table class="table table-sm table-golden" id="tbGridVencimientos">
+				<thead>
+					<tr class="header">
+						<th class="text-center" style="width: 30%;">Comprobante</th>
+						<th class="text-center" style="width: 10%;">Cuota</th>
+						<th class="text-center" style="width: 10%;">Estado</th>
+						<th class="text-center" style="width: 10%;">Emitido</th>
+						<th class="text-center" style="width: 10%;">Días Atr.</th>
+						<th class="text-center" style="width: 10%;">Vencimiento</th>
+						<th class="text-center" style="width: 20%;">Importe</th>
+					</tr>
+				</thead>
+				<tbody>
+					@if (Model != null && Model.GrillaVencimientos != null && Model.GrillaVencimientos.ListaDatos != null && Model.GrillaVencimientos.ListaDatos.Count > 0)
+					{
+						var vencimientos = Model.GrillaVencimientos.ListaDatos.OrderBy(p => p.cta_id).ToList();
+						@foreach (var item in vencimientos)
+						{
+							ctaIdActual = item.cta_id;
+							// Si cambia la cuenta, insertamos una fila de encabezado para la cuenta
+							if (ctaIdActual != ctaIdAnterior)
+							{
+								subTotal = vencimientos.Where(X => X.cta_id == item.cta_id).Sum(X => X.cv_importe);
+								<tr class="table-secondary fw-bold">
+									<td colspan="7" class="text-center">
+										<i class="bx bx-folder me-1"></i>
+										Cuenta: @item.cta_denominacion (@item.cta_id) - Subtotal Importe: @subTotal
+									</td>
+								</tr>
+								ctaIdAnterior = ctaIdActual;
+								alt = true; // Reiniciar alternancia de colores después de cada familia
+							}
+							if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+							<tr class="@clase" onclick="selectReg(this, 'tbGridVencimientos')">
+								<td class="@Model.GrillaVencimientos.ObtenerClase(item.comprobante) cell-fit-content">@Model.GrillaVencimientos.FormatearDato(item.comprobante, FormatDato.Ninguno)</td>
+								<td class="@Model.GrillaVencimientos.ObtenerClase(item.cm_compte_cuota) align-center cell-fit-content">@Model.GrillaVencimientos.FormatearDato(item.cm_compte_cuota, FormatDato.Ninguno)</td>
+								<td class="@Model.GrillaVencimientos.ObtenerClase(item.cv_estado) align-center cell-fit-content">@Model.GrillaVencimientos.FormatearDato(item.cv_estado, FormatDato.Ninguno)</td>
+								<td class="@Model.GrillaVencimientos.ObtenerClase(item.cv_fecha_carga) cell-fit-content">@Model.GrillaVencimientos.FormatearDato(item.cv_fecha_carga, FormatDato.Fecha)</td>
+								<td class="@Model.GrillaVencimientos.ObtenerClase(item.atraso) align-right cell-fit-content">@Model.GrillaVencimientos.FormatearDato(item.atraso, FormatDato.Ninguno)</td>
+								<td class="@Model.GrillaVencimientos.ObtenerClase(item.cv_fecha_vto) cell-fit-content">@Model.GrillaVencimientos.FormatearDato(item.cv_fecha_vto, FormatDato.Fecha)</td>
+								<td class="@Model.GrillaVencimientos.ObtenerClase(item.cv_importe) cell-fit-content">@Model.GrillaVencimientos.FormatearDato(item.cv_importe, FormatDato.Monto)</td>
+							</tr>
+						}
+					}
+				</tbody>
+			</table>
+		</div>
+		<!-- Fila sumarizadora fuera del scroll -->
+		<div class="table-summary-bar mt-2">
+			<div class="row gx-0">
+				<div class="col-6 text-end">Subtotal página:</div>
+				<div class="col-2 text-end">@total_pagina.ToString("N2")</div>
+				<div class="col-2 text-end">Total general:</div>
+				<div class="col-2 text-end">@total.ToString("N2")</div>
+			</div>
+		</div>
+		<div class="row mt-3">
+			<div class="offset-md-3 col-md-6">
+				<div id="divPaginacion" class="">
+				</div>
+			</div>
 		</div>
 	</div>
 </div>

@@ -79,24 +79,57 @@
 		width: 100%; /* la tabla se ajusta al ancho del contenedor */
 	}
 
+	.badge.bg-secondary {
+		font-size: 0.70rem;
+		padding: 0.20rem 0.35rem;
+		border-radius: 0.25rem;
+	}
+
+	/* Hover del doble-chevron */
+	#toggleFiltros:hover {
+		color: #000;
+		transform: scale(1.15);
+	}
 </style>
 <div class="grid-golden">
 	<div class="grid-golden-header">
 		<div class="row align-items-md-center">
-			<div class="col-md-10 col-sm-6">
-				<h5 class="mb-0">
+			<div class="col-md-10 col-sm-6 d-flex align-items-center">
+				<h5 class="mb-0 flex-grow-1">
 					<i class="bx bx-package me-2"></i>
 					<strong>Ranking no agrupado</strong>
 				</h5>
+
+				<!-- Doble-chevron toggle -->
+				<i class="bx bx-chevrons-down fs-4 ms-2"
+				   id="toggleFiltros"
+				   data-bs-toggle="collapse"
+				   data-bs-target="#filtrosCollapse"
+				   role="button"
+				   data-bs-placement="top"
+				   title="Haz click acá para conocer los filtros aplicados"
+				   style="
+					cursor:pointer;
+					transition: transform .25s ease, color .25s ease;
+					color:#666;
+					">
+				</i>
 			</div>
+
 			<div class="col-md-2 col-sm-6">
-				<div class="d-flex justify-content-sm-end">
-					<!-- Botón Imprimir
-					<button type="button" class="btn btn-golden btn-sm mt-1 me-1 btnImprimir" title="Imprimir">
-						<i class="bx bx-printer"></i>
-					</button>-->
-				</div>
+				<div class="d-flex justify-content-sm-end"></div>
 			</div>
+		</div>
+	</div>
+
+	<!-- Contenedor colapsable (ocupa CERO espacio cuando está oculto) -->
+	<div class="collapse" id="filtrosCollapse">
+		<div class="mt-2">
+			<span class="badge bg-secondary me-1">@Model.LeyendaFechas</span>
+			<span class="badge bg-secondary me-1">@Model.LeyendaSuc</span>
+			<span class="badge bg-secondary me-1">@Model.LeyendaProv</span>
+			<span class="badge bg-secondary me-1">@Model.LeyendaFam</span>
+			<span class="badge bg-secondary me-1">@Model.LeyendaRub</span>
 		</div>
 	</div>
 	<div class="grid-golden-body">
@@ -168,3 +201,16 @@
 		</div>
 	</div>
 </div>
+@* <script>
+	// Rotación del doble-chevron al abrir/cerrar
+	const toggle = document.getElementById('toggleFiltros');
+	const collapse = document.getElementById('filtrosCollapse');
+
+	collapse.addEventListener('show.bs.collapse', () => {
+		toggle.style.transform = 'rotate(180deg)';
+	});
+
+	collapse.addEventListener('hide.bs.collapse', () => {
+		toggle.style.transform = 'rotate(0deg)';
+	});
+</script> *@

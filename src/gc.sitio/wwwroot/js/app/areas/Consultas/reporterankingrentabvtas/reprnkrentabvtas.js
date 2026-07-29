@@ -39,16 +39,25 @@ function BuscarRankingRentabDeVentas() {
 	var lProv = [];
 	var lFam = [];
 	var lRub = [];
-	var lSuc = ObtenerFiltroLista("#chkSucursales", "#SucursalesList");
-	$("#DepositosList").children().each(function (i, item) { lDep.push($(item).val()) });
-	var lProv = ObtenerFiltroLista("#chkRel01", "#Rel01List");
-	$("#FamiliaList").children().each(function (i, item) { lFam.push($(item).val()) });
-	var lRub = ObtenerFiltroLista("#chkRubro", "#RubrosList");
+	var temp = ObtenerFiltroLista("#chkSucursales", "#SucursalesList");
+	lSuc = temp.ids;
+	var lSucTextos = temp.textos;
+	//$("#DepositosList").children().each(function (i, item) { lDep.push($(item).val()) });
+	temp = ObtenerFiltroLista("#chkRel01", "#Rel01List");
+	lProv = temp.ids;
+	var lProvTextos = temp.textos;
+	//$("#FamiliaList").children().each(function (i, item) { lFam.push($(item).val()) });
+	temp = ObtenerFiltroLista("#chkFamilias", "#FamiliaList");
+	lFam = temp.ids;
+	var lFamTextos = temp.textos;
+	temp = ObtenerFiltroLista("#chkRubro", "#RubrosList");
+	lRub = temp.ids;
+	lRubTextos = temp.textos;
 	var desde = $("#Desde").val();
 	var hasta = $("#Hasta").val();
 	var agrupador = $("#listaAgrupador").val();
 
-	var data = { lSuc, lProv, lFam, lRub, desde, hasta, agrupador };
+	var data = { lSuc, lProv, lFam, lRub, desde, hasta, agrupador, lSucTextos, lProvTextos, lFamTextos, lRubTextos };
 
 	PostGenHtml(data, repRkgRentabVtasURL, function (obj) {
 		$("#divGrillaRankingRentabVtas").html(obj);
@@ -117,19 +126,27 @@ function ValidarRangoFechas() {
 function ObtenerFiltroLista(idCheckbox, idListBox) {
 
 	const estaChequeado = $(idCheckbox).is(":checked");
-	const valores = [];
+	const ids = [];
+	const textos = [];
 
-	// Tomar valores del ListBox
+	// Tomar valores y textos del ListBox
 	$(idListBox + " option").each(function () {
-		valores.push($(this).val());
+		ids.push($(this).val());
+		textos.push($(this).text());
 	});
 
 	// Si está chequeado y no hay valores → devolver "%"
-	if (estaChequeado && valores.length === 0) {
-		return ["%"];
+	if (estaChequeado && ids.length === 0) {
+		return {
+			ids: ["%"],
+			textos: "Todos"
+		};
 	}
 
-	return valores;
+	return {
+		ids: ids,
+		textos: textos.join(", ")
+	};
 }
 
 $("#Rel01").on("click", function () { $(this).val(""); });

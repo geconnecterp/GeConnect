@@ -10,6 +10,7 @@ using gc.infraestructura.Dtos.Productos.Pedidos;
 using gc.infraestructura.EntidadesComunes.Options;
 using gc.infraestructura.Enumeraciones;
 using gc.infraestructura.Helpers;
+using gc.sitio.Areas.Consultas.Models;
 using gc.sitio.core.Servicios.Contratos;
 using gc.sitio.core.Servicios.Contratos.DocManager;
 using Microsoft.AspNetCore.Mvc;
@@ -81,7 +82,7 @@ namespace gc.sitio.Areas.Consultas.Controllers
 		[HttpPost]
 		public IActionResult BuscarMovimientoDeCtaDta(BuscarMovDeCuentaDirectaRequest request)
 		{
-			var model = new GridCoreSmart<MovimientoListaDto>();
+			var model = new ListadoMovDeCtaDtaModel();
 			try
 			{
 				if (!VerificarAutenticacion(out IActionResult redirectResult))
@@ -100,7 +101,20 @@ namespace gc.sitio.Areas.Consultas.Controllers
 					throw new NegocioException("Hubo algun problema en la busqueda de Movimientos de Cuentas Directas.");
 				}
 
-				model = ObtenerGridCoreSmart<MovimientoListaDto>(movimientos);
+				// Construcción de leyenda
+				model.LeyendaCuentas = ConstruirLeyenda("Cuentas", request.ctag_list, request.ctag_list_textos);
+				model.LeyendaFechas = $"Periodo: {request.desde:dd/MM/yyyy} al {request.hasta:dd/MM/yyyy}";
+				// Leyenda final
+				var partesLeyenda = new List<string>();
+
+				partesLeyenda.Add(model.LeyendaFechas);
+
+				if (!string.IsNullOrWhiteSpace(model.LeyendaCuentas))
+					partesLeyenda.Add(model.LeyendaCuentas);
+
+				model.Leyenda = string.Join(" | ", partesLeyenda);
+
+				model.GrillaProducto = ObtenerGridCoreSmart<MovimientoListaDto>(movimientos);
 
 				return PartialView("_gridMovimientos", model);
 			}
@@ -125,6 +139,21 @@ namespace gc.sitio.Areas.Consultas.Controllers
 		}
 
 		#region Metodos Privados
+		private static string ConstruirLeyenda(string titulo, List<string>? lista, string textos)
+		{
+			if (lista == null || lista.Count == 0)
+				return string.Empty;
+
+			// Caso especial: único valor "%"
+			if (lista.Count == 1 && lista[0] == "%")
+				return $"{titulo}: Todos";
+
+			// Caso normal
+			if (!string.IsNullOrWhiteSpace(textos))
+				return $"{titulo}: {textos}";
+
+			return string.Empty;
+		}
 		private void CargarDatosIniciales(FiltroReporteMovDeCtaDtaModel model)
 		{
 			var hoy = DateTime.Today;

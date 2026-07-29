@@ -53,7 +53,8 @@ namespace gc.api.core.Servicios.Reportes
 				#region Obteniendo registros desde la base de datos
 				string tit;
 				string subtit;
-				List<MovimientoListaDto> registros = ObtenerDatos(solicitud, out tit, out subtit);
+				string filtrosString;
+				List<MovimientoListaDto> registros = ObtenerDatos(solicitud, out tit, out subtit, out filtrosString);
 
 				solicitud.Titulo = tit;
 				solicitud.SubTitulo = subtit;
@@ -124,7 +125,7 @@ namespace gc.api.core.Servicios.Reportes
 			catch (Exception ex)
 			{
 				_logger.LogError(ex, "Error en R031");
-				throw new NegocioException("Se produjo un error al intentar generar el Reporte Analítico de Operaciones. Para mayores datos ver el log.");
+				throw new NegocioException("Se produjo un error al intentar generar el Reporte De Movimiento de Cta. Directa. Para mayores datos ver el log.");
 			}
 		}
 
@@ -305,7 +306,7 @@ namespace gc.api.core.Servicios.Reportes
 		}
 
 
-		private List<MovimientoListaDto> ObtenerDatos(ReporteSolicitudDto solicitud, out string titulo, out string subtit)
+		private List<MovimientoListaDto> ObtenerDatos(ReporteSolicitudDto solicitud, out string titulo, out string subtit, out string filtrosString)
 		{
 			try
 			{
@@ -314,19 +315,21 @@ namespace gc.api.core.Servicios.Reportes
 				List<string> lista = ctag_list_temp.Split(',').ToList();
 				var desde = solicitud.Parametros.GetValueOrDefault("desde", "").ToDateTime();
 				var hasta = solicitud.Parametros.GetValueOrDefault("hasta", "").ToDateTime();
+				filtrosString = solicitud.Parametros.GetValueOrDefault("filtrosString", "")?.ToString() ?? null;
 				titulo = $"Consulta de Cuenta de Gastos";
 				ret = _consSrv.ConsultaMovimientoLista(new BuscarMovDeCuentaDirectaRequest() { 
 					desde=desde,
 					hasta=hasta,
 					ctag_list= lista
 				});
-				subtit = $"Desde: {desde:dd/MM/yyyy} Hasta: {hasta:dd/MM/yyyy}";
+				subtit = $"Desde: {desde:dd/MM/yyyy} Hasta: {hasta:dd/MM/yyyy}\n{filtrosString}";
 				return ret;
 			}
 			catch (Exception)
 			{
 				titulo = "";
 				subtit = "";
+				filtrosString = "";
 				return [];
 			}
 
@@ -337,7 +340,8 @@ namespace gc.api.core.Servicios.Reportes
 			#region Obteniendo registros desde la base de datos
 			string tit;
 			string subtit;
-			List<MovimientoListaDto> registros = ObtenerDatos(solicitud, out tit, out subtit);
+			string filtrosString;
+			List<MovimientoListaDto> registros = ObtenerDatos(solicitud, out tit, out subtit, out filtrosString);
 
 			if (registros == null || registros.Count == 0)
 			{
@@ -361,7 +365,8 @@ namespace gc.api.core.Servicios.Reportes
 			#region Obteniendo registros desde la base de datos
 			string tit;
 			string subtit;
-			List<MovimientoListaDto> registros = ObtenerDatos(solicitud, out tit, out subtit);
+			string filtrosString;
+			List<MovimientoListaDto> registros = ObtenerDatos(solicitud, out tit, out subtit, out filtrosString);
 
 			if (registros == null || registros.Count == 0)
 			{

@@ -26,9 +26,28 @@
 	});
 
 	$("#btnBuscar").on("click", function () {
-		if (ValidarRangoFechas()) {
-			BuscarEvoVtasPerAnt();
+		// 1) Validación de rango de fechas
+		if (!ValidarRangoFechas()) {
+			return;
 		}
+
+		// 2) Validación de familias
+		if ($("#chkFamilias").is(":checked")) {
+
+			// Obtener elementos seleccionados en la ListBox
+			const familias = $("#FamiliaList option");
+
+			if (familias.length === 0) {
+				AbrirMensaje("ATENCIÓN", "Debe seleccionar al menos una Familia.", function () {
+					$("#msjModal").modal("hide");
+					return true;
+				}, false, ["Aceptar"], "error!", null);
+				return;
+			}
+		}
+
+		// 3) Ejecutar búsqueda
+		BuscarEvoVtasPerAnt();
 	});
 
 });
@@ -42,11 +61,13 @@ function BuscarEvoVtasPerAnt() {
 	var temp = ObtenerFiltroLista("#chkSucursales", "#SucursalesList");
 	var lSuc = temp.ids;
 	var lSucTextos = temp.textos;
-	$("#DepositosList").children().each(function (i, item) { lDep.push($(item).val()) });
+	//$("#DepositosList").children().each(function (i, item) { lDep.push($(item).val()) });
 	temp = ObtenerFiltroLista("#chkRel01", "#Rel01List");
 	var lProv = temp.ids;
 	var lProvTextos = temp.textos;
-	$("#FamiliaList").children().each(function (i, item) { lFam.push($(item).val()) });
+	temp = ObtenerFiltroLista("#chkFamilias", "#FamiliaList");
+	lFam = temp.ids;
+	var lFamTextos = temp.textos;
 	temp = ObtenerFiltroLista("#chkRubro", "#RubrosList");
 	var lRub = temp.ids;
 	var lRubTextos = temp.textos;
@@ -54,7 +75,7 @@ function BuscarEvoVtasPerAnt() {
 	var hasta = $("#Hasta").val();
 	var agrupador = $("#listaAgrupador").val();
 
-	var data = { lSuc, lProv, lFam, lRub, desde, hasta, agrupador, lSucTextos, lProvTextos, lRubTextos };
+	var data = { lSuc, lProv, lFam, lRub, desde, hasta, agrupador, lSucTextos, lProvTextos, lFamTextos, lRubTextos };
 
 	PostGenHtml(data, repEvoVtasPerAnterioresURL, function (obj) {
 		$("#divGrillaRepEvoVtasPerAnteriores").html(obj);

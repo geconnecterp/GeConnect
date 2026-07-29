@@ -61,7 +61,7 @@ namespace gc.sitio.Areas.Consultas.Controllers.ReporteRankingRentabVtas
 				if (!auth.Item1 || auth.Item2 < DateTime.Now)
 					return RedirectToAction("Login", "Token", new { area = "seguridad" });
 
-				var titulo = "REPORTE DE STOCK VALORIZADO";
+				var titulo = "RANKING DE VENTAS Y RENTABILIDAD";
 				ViewData["Titulo"] = titulo;
 
 				#region Gestor Impresion - Inicializacion de variables
@@ -104,6 +104,33 @@ namespace gc.sitio.Areas.Consultas.Controllers.ReporteRankingRentabVtas
 
 				model.GrillaProductoRnk = ObtenerGridCoreSmart<RepRkgRentabVtasDto>(res);
 				model.AgrupadoPor = request.agrupador;
+
+				// Construcción de leyenda
+				model.LeyendaSuc = ConstruirLeyenda("Sucursales", request.lSuc, request.lSucTextos);
+				model.LeyendaProv = ConstruirLeyenda("Proveedores", request.lProv, request.lProvTextos);
+				model.LeyendaRub = ConstruirLeyenda("Rubros", request.lRub, request.lRubTextos);
+				model.LeyendaFam = ConstruirLeyenda("Familias", request.lFam, request.lFamTextos);
+
+				model.LeyendaFechas = $"Periodo: {request.desde:dd/MM/yyyy} al {request.hasta:dd/MM/yyyy}";
+
+				// Leyenda final
+				var partesLeyenda = new List<string>();
+
+				partesLeyenda.Add(model.LeyendaFechas);
+
+				if (!string.IsNullOrWhiteSpace(model.LeyendaSuc))
+					partesLeyenda.Add(model.LeyendaSuc);
+
+				if (!string.IsNullOrWhiteSpace(model.LeyendaProv))
+					partesLeyenda.Add(model.LeyendaProv);
+
+				if (!string.IsNullOrWhiteSpace(model.LeyendaFam))
+					partesLeyenda.Add(model.LeyendaFam);
+
+				if (!string.IsNullOrWhiteSpace(model.LeyendaRub))
+					partesLeyenda.Add(model.LeyendaRub);
+
+				model.Leyenda = string.Join(" | ", partesLeyenda);
 
 				switch (request.agrupador)
 				{
@@ -175,6 +202,21 @@ namespace gc.sitio.Areas.Consultas.Controllers.ReporteRankingRentabVtas
 		}
 
 		#region Métodos Privados
+		private static string ConstruirLeyenda(string titulo, List<string>? lista, string textos)
+		{
+			if (lista == null || lista.Count == 0)
+				return string.Empty;
+
+			// Caso especial: único valor "%"
+			if (lista.Count == 1 && lista[0] == "%")
+				return $"{titulo}: Todos";
+
+			// Caso normal
+			if (!string.IsNullOrWhiteSpace(textos))
+				return $"{titulo}: {textos}";
+
+			return string.Empty;
+		}
 		private SelectList ComboRubros()
 		{
 			var adms = _rubroServicio.ObtenerListaRubros("", TokenCookie);
