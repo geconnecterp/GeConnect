@@ -37,6 +37,8 @@ $(function () {
 					return true;
 				}, false, ["Aceptar"], "error!", null);
 			} else {
+				// mostrar filtros aplicados antes de inicializar
+				try { MostrarFiltrosAplicados(); } catch (e) { console.warn('MostrarFiltrosAplicados no disponible:', e); }
 				InicializarPantallaPrincipal();
 			}
 		} else {
@@ -46,7 +48,42 @@ $(function () {
 			}, false, ["Aceptar"], "error!", null);
 		}
 	});
+	try { MostrarFiltrosAplicados(); } catch (e) { }
 });
+function MostrarFiltrosAplicados() {
+	try {
+		const cont = $("#filtrosAplicadosFloating");
+		const target = cont.length ? cont : null;
+		if (!target) return;
+
+		const desde = $("#Desde").val();
+		const hasta = $("#Hasta").val();
+
+		const sucursales = [];
+		$("#SucursalesList option").each(function () { sucursales.push($(this).text()); });
+		if (sucursales.length === 0) {
+			$("#listaSucursales option").each(function () {
+				const v = $(this).val(); const t = $(this).text(); if (v && v !== "") sucursales.push(t);
+			});
+		}
+
+		let html = "";
+		html += `<span class=\"badge bg-secondary me-1\">DESDE: ${desde || '-'} </span>`;
+		html += `<span class=\"badge bg-secondary me-1\">HASTA: ${hasta || '-'} </span>`;
+
+		if (sucursales.length === 1) {
+			html += `<span class=\"badge bg-secondary me-1\">SUCURSAL: ${sucursales[0]}</span>`;
+		} else if (sucursales.length > 1) {
+			html += `\n                <div class=\"dropdown me-1\">\n                    <button class=\"badge bg-secondary dropdown-toggle text-nowrap\" type=\"button\" id=\"sucursalesDropAdev\" data-bs-toggle=\"dropdown\" aria-expanded=\"false\">\n                        Sucursal: ${sucursales.length} seleccionados\n                    </button>\n                    <ul class=\"dropdown-menu dropdown-menu-end\" aria-labelledby=\"sucursalesDropAdev\" data-bs-boundary=\"viewport\">`;
+			sucursales.forEach(function (s) { html += `<li><a class=\"dropdown-item\" href=\"#\">${s}</a></li>`; });
+			html += `</ul></div>`;
+		}
+
+		target.html(html);
+	} catch (e) {
+		console.error('MostrarFiltrosAplicados error', e);
+	}
+}
 
 function InicializarPantallaPrincipal() {
 	var suc = ObtenerSucursalesSeleccionadasConTexto();
@@ -56,6 +93,8 @@ function InicializarPantallaPrincipal() {
 	AbrirWaiting("Cargando información...");
 	PostGenHtml({ sucursalesText, desde, hasta }, inicializarPantallPrincipalURL, function (obj) {
 		$("#divDetalle").html(obj);
+		// Actualizar filtros aplicados después de renderizar la pantalla principal
+		try { MostrarFiltrosAplicados(); } catch (e) { console.warn('MostrarFiltrosAplicados no disponible:', e); }
 		mes_selected = null;
 		periodo_selected = null;
 		$(document).on('shown.bs.tab', 'button[data-bs-toggle="tab"]', function (e) {
