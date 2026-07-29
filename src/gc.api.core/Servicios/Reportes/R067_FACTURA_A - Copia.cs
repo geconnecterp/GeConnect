@@ -13,19 +13,16 @@ using iTextSharp.text;
 using iTextSharp.text.pdf;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using System.Globalization;
 
 namespace gc.api.core.Servicios.Reportes
 {
-    public class R067_FacturaA : Servicio<EntidadBase>, IGeneradorReporte
+    public class R067_FacturaA_o : Servicio<EntidadBase>, IGeneradorReporte
     {
-        private const int FilasPaginaComun = 30;
-        private const int FilasUltimaPagina = 20;
         private readonly IApiProductoFactServicio _factServicio;
         private readonly EmpresaGeco _empresaGeco;
         private readonly ILogger _logger;
 
-        public R067_FacturaA(
+        public R067_FacturaA_o(
             IUnitOfWork uow,
             IApiProductoFactServicio factServicio,
             IOptions<EmpresaGeco> empresa,
@@ -71,6 +68,11 @@ namespace gc.api.core.Servicios.Reportes
                     20f, 20f, 20f, 20f
                 );
 
+                HelperPdf.ConfigurarPieDePaginaPersonalizado(
+                    writer,
+                    solicitud.Observacion
+                );
+
                 var logo = HelperPdf.CargaLogo(
                     solicitud.LogoPath,
                     20,
@@ -80,12 +82,11 @@ namespace gc.api.core.Servicios.Reportes
                 #endregion
 
                 #region Fuentes
-                var fuenteTitulo = CrearFuente(18, true);
-                var fuenteSubtitulo = CrearFuente(8, true);
-                var fuenteNormal = CrearFuente(7, false);
-                var fuenteNormalBold = CrearFuente(7, true);
-                var fuenteChica = CrearFuente(6, false);
-                var leyendaImpresion = FacturaBase.ObtenerLeyendaImpresion(solicitud);
+                var fuenteTitulo = HelperPdf.FontTituloBigBoldPredeterminado();
+                var fuenteSubtitulo = HelperPdf.FontTituloPredeterminado();
+                var fuenteNormal = HelperPdf.FontNormalPredeterminado();
+                var fuenteNormalBold = HelperPdf.FontNormalPredeterminado(true);
+                var fuenteChica = HelperPdf.FontChicoPredeterminado();
                 #endregion
 
                 pdf.Open();
@@ -98,8 +99,7 @@ namespace gc.api.core.Servicios.Reportes
                     fuenteTitulo,
                     fuenteSubtitulo,
                     fuenteNormal,
-                    fuenteChica,
-                    leyendaImpresion
+                    fuenteChica
                 );
 
                 GenerarDatosEmisorReceptor(
@@ -119,11 +119,7 @@ namespace gc.api.core.Servicios.Reportes
                     datosIva,
                     datosPercepciones,
                     encabezado,
-                    logo,
-                    fuenteTitulo,
-                    fuenteSubtitulo,
                     fuenteChica,
-                    leyendaImpresion,
                     fuenteNormal,
                     fuenteNormalBold
                 );
@@ -139,7 +135,7 @@ namespace gc.api.core.Servicios.Reportes
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error en R067_FacturaA");
+                _logger.LogError(ex, "Error en R048_FacturaA");
                 throw new NegocioException(
                     "Se produjo un error al generar la Factura A. Ver log para más detalles."
                 );
@@ -155,55 +151,17 @@ namespace gc.api.core.Servicios.Reportes
             List<FeIvaResDto> datosIva,
             List<FePerResDto> datosPercepciones,
             FeResDto encabezado,
-            Image logo,
-            Font fuenteTitulo,
-            Font fuenteSubtitulo,
             Font fuenteChica,
-            string leyendaImpresion,
             Font fuenteNormal,
             Font fuenteNormalBold)
         {
-            var totalPaginas = FacturaBase.CalcularTotalPaginas(productos.Count, FilasPaginaComun, FilasUltimaPagina);
-            var indiceProducto = 0;
+            pdf.Add(new Paragraph(" ", fuenteChica));
 
-            for (var pagina = 1; pagina <= totalPaginas; pagina++)
-            {
-                if (pagina > 1)
-                {
-                    pdf.NewPage();
-                    GenerarCabeceraFactura(pdf, encabezado, logo, fuenteTitulo, fuenteSubtitulo, fuenteNormal, fuenteChica, leyendaImpresion);
-                    GenerarDatosEmisorReceptor(pdf, encabezado, fuenteNormal, fuenteNormalBold, fuenteChica);
-                }
-
-                pdf.Add(new Paragraph(" ", fuenteChica) { SpacingAfter = 0f });
-
-                var filasPagina = FacturaBase.ObtenerCantidadFilasPagina(pagina, totalPaginas, FilasPaginaComun, FilasUltimaPagina);
-                var productosPagina = productos.Skip(indiceProducto).Take(filasPagina).ToList();
-                indiceProducto += productosPagina.Count;
-
-                pdf.Add(CrearTablaProductosFacturaA(productosPagina, fuenteChica, fuenteNormalBold));
-
-                if (pagina == totalPaginas)
-                {
-                    FacturaBase.DibujarPieFacturaA(
-                        writer,
-                        pdf,
-                        encabezado,
-                        datosIva,
-                        datosPercepciones,
-                        pagina,
-                        totalPaginas,
-                        fuenteNormal,
-                        fuenteNormalBold,
-                        fuenteChica
-                    );
-                }
-            }
-        }
-
-        private static PdfPTable CrearTablaProductosFacturaA(List<FeDetResDto> productos, Font fuenteChica, Font fuenteNormalBold)
-        {
             float[] anchos = new float[] { 8f, 32f, 8f, 10f, 10f, 5f, 8f, 10f, 9f };
+            PdfPTable tablaProductos = new PdfPTable(9);
+            tablaProductos.WidthPercentage = 100;
+            tablaProductos.SetWidths(anchos);
+
             string[] encabezados = new string[]
             {
                 "Código", "Producto/Servicio", "Cantidad",
@@ -211,23 +169,96 @@ namespace gc.api.core.Servicios.Reportes
                 "Alí.\nIVA", "Boni. con\nIVA", "Sub Total\ncon IVA"
             };
 
-            var tablaProductos = FacturaBase.CrearTablaProductos(anchos, encabezados, fuenteNormalBold);
+            foreach (var enc in encabezados)
+            {
+                PdfPCell celda = new PdfPCell(new Phrase(enc, fuenteNormalBold));
+                celda.BackgroundColor = BaseColor.LightGray;
+                celda.HorizontalAlignment = Element.ALIGN_CENTER;
+                celda.VerticalAlignment = Element.ALIGN_MIDDLE;
+                celda.Padding = 3f;
+                tablaProductos.AddCell(celda);
+            }
+
+            float alturaPie = CalcularAlturaPie(datosIva, datosPercepciones);
 
             foreach (var producto in productos)
             {
-                FacturaBase.AgregarCeldaProducto(tablaProductos, producto.p_id, fuenteChica, Element.ALIGN_CENTER);
-                FacturaBase.AgregarCeldaProducto(tablaProductos, producto.p_desc, fuenteChica, Element.ALIGN_LEFT);
-                FacturaBase.AgregarCeldaProducto(tablaProductos, FacturaBase.FormatearImporte(producto.cmd_cantidad), fuenteChica, Element.ALIGN_RIGHT);
-                FacturaBase.AgregarCeldaProducto(tablaProductos, FacturaBase.FormatearImporte(producto.cmd_pvta), fuenteChica, Element.ALIGN_RIGHT);
-                FacturaBase.AgregarCeldaProducto(tablaProductos, FacturaBase.FormatearImporte(producto.cmd_subtotal), fuenteChica, Element.ALIGN_RIGHT);
-                FacturaBase.AgregarCeldaProducto(tablaProductos, FacturaBase.FormatearImporte(producto.cmd_ii), fuenteChica, Element.ALIGN_RIGHT);
-                FacturaBase.AgregarCeldaProducto(tablaProductos, FacturaBase.FormatearImporte(producto.iva_alicuota), fuenteChica, Element.ALIGN_RIGHT);
-                FacturaBase.AgregarCeldaProducto(tablaProductos, FacturaBase.FormatearImporte(producto.cmd_boni), fuenteChica, Element.ALIGN_RIGHT);
-                FacturaBase.AgregarCeldaProducto(tablaProductos, FacturaBase.FormatearImporte(producto.cmd_subtotal_con_iva), fuenteChica, Element.ALIGN_RIGHT);
+                if (NecesitaNuevaPagina(writer, pdf, alturaPie))
+                {
+                    pdf.Add(tablaProductos);
+                    pdf.NewPage();
+
+                    tablaProductos = new PdfPTable(9);
+                    tablaProductos.WidthPercentage = 100;
+                    tablaProductos.SetWidths(anchos);
+
+                    foreach (var enc in encabezados)
+                    {
+                        PdfPCell celda = new PdfPCell(new Phrase(enc, fuenteNormalBold));
+                        celda.BackgroundColor = BaseColor.LightGray;
+                        celda.HorizontalAlignment = Element.ALIGN_CENTER;
+                        celda.VerticalAlignment = Element.ALIGN_MIDDLE;
+                        celda.Padding = 3f;
+                        tablaProductos.AddCell(celda);
+                    }
+                }
+
+                AgregarCeldaProducto(tablaProductos, producto.p_id, fuenteChica, Element.ALIGN_CENTER);
+                AgregarCeldaProducto(tablaProductos, producto.p_desc, fuenteChica, Element.ALIGN_LEFT);
+                AgregarCeldaProducto(tablaProductos, producto.cmd_cantidad.ToString("N2"), fuenteChica, Element.ALIGN_RIGHT);
+                AgregarCeldaProducto(tablaProductos, producto.cmd_pvta.ToString("N2"), fuenteChica, Element.ALIGN_RIGHT);
+                AgregarCeldaProducto(tablaProductos, producto.cmd_subtotal.ToString("N2"), fuenteChica, Element.ALIGN_RIGHT);
+                AgregarCeldaProducto(tablaProductos, producto.cmd_ii.ToString("N2"), fuenteChica, Element.ALIGN_RIGHT);
+                AgregarCeldaProducto(tablaProductos, producto.iva_alicuota.ToString("N2"), fuenteChica, Element.ALIGN_RIGHT);
+                AgregarCeldaProducto(tablaProductos, producto.cmd_boni.ToString("N2"), fuenteChica, Element.ALIGN_RIGHT);
+                AgregarCeldaProducto(tablaProductos, producto.cmd_subtotal_con_iva.ToString("N2"), fuenteChica, Element.ALIGN_RIGHT);
             }
 
-            return tablaProductos;
+            pdf.Add(tablaProductos);
+
+            GenerarResumenIvaYTotales(
+                pdf,
+                datosIva,
+                datosPercepciones,
+                encabezado,
+                fuenteNormal,
+                fuenteNormalBold,
+                fuenteChica
+            );
+
+            if (!string.IsNullOrEmpty(encabezado.cm_cae))
+            {
+                GenerarCodigoBarrasCAE(
+                    pdf,
+                    encabezado.cm_cae,
+                    encabezado.cm_cae_vto,
+                    fuenteChica
+                );
+            }
         }
+
+        private float CalcularAlturaPie(List<FeIvaResDto> datosIva, List<FePerResDto> datosPercepciones)
+        {
+            float altura = 0;
+            altura += 20f;
+            int filasTributos = (datosPercepciones?.Count ?? 0) + 2;
+            altura += filasTributos * 15f;
+            int filasTotales = (datosIva?.Count ?? 0) + 1;
+            altura += filasTotales * 15f;
+            altura += 50f;
+            altura += 30f;
+            return altura;
+        }
+
+        private bool NecesitaNuevaPagina(PdfWriter writer, Document pdf, float alturaPie)
+        {
+            float posicionActual = writer.GetVerticalPosition(true);
+            float espacioDisponible = posicionActual - pdf.BottomMargin;
+            float alturaFilaProducto = 20f;
+            float espacioNecesario = alturaFilaProducto + alturaPie;
+            return espacioDisponible < espacioNecesario;
+        }
+
         #endregion
 
         #region Métodos de Cabecera
@@ -239,49 +270,17 @@ namespace gc.api.core.Servicios.Reportes
             Font fuenteTitulo,
             Font fuenteSubtitulo,
             Font fuenteNormal,
-            Font fuenteChica,
-            string leyendaImpresion)
+            Font fuenteChica)
         {
-            FacturaBase.GenerarLeyendaComprobante(pdf, leyendaImpresion);
-
             PdfPTable tablaCabecera = new PdfPTable(3);
             tablaCabecera.WidthPercentage = 100;
-            tablaCabecera.SetWidths(new float[] { 44f, 10f, 46f });
-
-            PdfPTable tablaEmpresa = new PdfPTable(1);
-            tablaEmpresa.WidthPercentage = 100;
+            tablaCabecera.SetWidths(new float[] { 30f, 40f, 30f });
 
             PdfPCell celdaLogo = HelperPdf.GeneraCelda(logo, false);
-            celdaLogo.Border = Rectangle.NO_BORDER;
-            celdaLogo.HorizontalAlignment = Element.ALIGN_LEFT;
+            celdaLogo.Border = Rectangle.BOX;
+            celdaLogo.HorizontalAlignment = Element.ALIGN_CENTER;
             celdaLogo.VerticalAlignment = Element.ALIGN_MIDDLE;
-            celdaLogo.FixedHeight = 30f;
-            tablaEmpresa.AddCell(celdaLogo);
-
-            AgregarCeldaSinBorde(
-                tablaEmpresa,
-                $"Razón Social: {encabezado.emp_razon_social}",
-                fuenteChica,
-                Element.ALIGN_LEFT
-            );
-            AgregarCeldaSinBorde(
-                tablaEmpresa,
-                $"Domicilio Comercial: {ObtenerDomicilioEmpresa(encabezado)}",
-                fuenteChica,
-                Element.ALIGN_LEFT
-            );
-            AgregarCeldaSinBorde(
-                tablaEmpresa,
-                $"Condición frente al IVA: {encabezado.afip_desc_emp}",
-                fuenteChica,
-                Element.ALIGN_LEFT
-            );
-
-            PdfPCell celdaEmpresa = new PdfPCell(tablaEmpresa);
-            celdaEmpresa.Border = Rectangle.BOX;
-            celdaEmpresa.Padding = 3f;
-            celdaEmpresa.VerticalAlignment = Element.ALIGN_MIDDLE;
-            tablaCabecera.AddCell(celdaEmpresa);
+            tablaCabecera.AddCell(celdaLogo);
 
             PdfPTable tablaLetra = new PdfPTable(1);
             tablaLetra.WidthPercentage = 100;
@@ -290,7 +289,7 @@ namespace gc.api.core.Servicios.Reportes
             celdaLetra.Border = Rectangle.NO_BORDER;
             celdaLetra.HorizontalAlignment = Element.ALIGN_CENTER;
             celdaLetra.VerticalAlignment = Element.ALIGN_MIDDLE;
-            celdaLetra.PaddingTop = 8f;
+            celdaLetra.PaddingTop = 10f;
             tablaLetra.AddCell(celdaLetra);
 
             PdfPCell celdaTipo = new PdfPCell(new Phrase($"COD. {encabezado.tco_id}", fuenteChica));
@@ -306,17 +305,13 @@ namespace gc.api.core.Servicios.Reportes
             PdfPTable tablaDatos = new PdfPTable(1);
             tablaDatos.WidthPercentage = 100;
 
-            AgregarCeldaSinBorde(tablaDatos, ObtenerTituloComprobante(encabezado), fuenteSubtitulo, Element.ALIGN_LEFT);
-            AgregarCeldaSinBorde(tablaDatos, $"Punto de Venta: {ObtenerPuntoVenta(encabezado)}          Comp. Nro: {ObtenerNumeroComprobante(encabezado)}", fuenteChica, Element.ALIGN_LEFT);
+            AgregarCeldaSinBorde(tablaDatos, encabezado.tco_desc, fuenteSubtitulo, Element.ALIGN_CENTER);
+            AgregarCeldaSinBorde(tablaDatos, $"Punto de Venta: {encabezado.adm_id} Comp. Nro: {encabezado.cm_compte}", fuenteChica, Element.ALIGN_LEFT);
             AgregarCeldaSinBorde(tablaDatos, $"Fecha de Emisión: {encabezado.cm_fecha:dd/MM/yyyy}", fuenteChica, Element.ALIGN_LEFT);
-            AgregarCeldaSinBorde(tablaDatos, $"CUIT: {encabezado.emp_cuit}", fuenteChica, Element.ALIGN_LEFT);
-            AgregarCeldaSinBorde(tablaDatos, $"Ingresos Brutos: {encabezado.emp_ib_nro}", fuenteChica, Element.ALIGN_LEFT);
-            AgregarCeldaSinBorde(tablaDatos, $"Fecha de Inicio de Actividades: {encabezado.emp_inicio_act:dd/MM/yyyy}", fuenteChica, Element.ALIGN_LEFT);
 
             PdfPCell celdaContenedoraDatos = new PdfPCell(tablaDatos);
             celdaContenedoraDatos.Border = Rectangle.BOX;
-            celdaContenedoraDatos.Padding = 3f;
-            celdaContenedoraDatos.VerticalAlignment = Element.ALIGN_MIDDLE;
+            celdaContenedoraDatos.Padding = 5f;
             tablaCabecera.AddCell(celdaContenedoraDatos);
 
             pdf.Add(tablaCabecera);
@@ -329,9 +324,46 @@ namespace gc.api.core.Servicios.Reportes
             Font fuenteNormalBold,
             Font fuenteChica)
         {
+            pdf.Add(new Paragraph(" ", fuenteChica));
+
+            PdfPTable tablaDatos = new PdfPTable(2);
+            tablaDatos.WidthPercentage = 100;
+            tablaDatos.SetWidths(new float[] { 50f, 50f });
+
+            PdfPTable tablaEmisor = new PdfPTable(2);
+            tablaEmisor.WidthPercentage = 100;
+            tablaEmisor.SetWidths(new float[] { 35f, 65f });
+
+            AgregarFilaDatos(tablaEmisor, "Razón Social:", encabezado.emp_razon_social, fuenteNormalBold, fuenteNormal);
+            AgregarFilaDatos(tablaEmisor, "Domicilio Comercial:", encabezado.emp_domicilio, fuenteNormalBold, fuenteNormal);
+            AgregarFilaDatos(tablaEmisor, "Condición frente al IVA:", encabezado.afip_desc_emp, fuenteNormalBold, fuenteNormal);
+
+            PdfPCell celdaEmisor = new PdfPCell(tablaEmisor);
+            celdaEmisor.Border = Rectangle.BOX;
+            celdaEmisor.Padding = 5f;
+            tablaDatos.AddCell(celdaEmisor);
+
+            PdfPTable tablaReceptor = new PdfPTable(2);
+            tablaReceptor.WidthPercentage = 100;
+            tablaReceptor.SetWidths(new float[] { 35f, 65f });
+
+            AgregarFilaDatos(tablaReceptor, "CUIT:", encabezado.cm_cuit, fuenteNormalBold, fuenteNormal);
+            AgregarFilaDatos(tablaReceptor, "Ingresos Brutos:", encabezado.emp_ib_nro, fuenteNormalBold, fuenteNormal);
+            AgregarFilaDatos(tablaReceptor, "Fecha de Inicio de Actividades:",
+                encabezado.emp_inicio_act.ToString("dd/MM/yyyy"), fuenteNormalBold, fuenteNormal);
+
+            PdfPCell celdaReceptor = new PdfPCell(tablaReceptor);
+            celdaReceptor.Border = Rectangle.BOX;
+            celdaReceptor.Padding = 5f;
+            tablaDatos.AddCell(celdaReceptor);
+
+            pdf.Add(tablaDatos);
+
+            pdf.Add(new Paragraph(" ", fuenteChica));
+
             PdfPTable tablaCliente = new PdfPTable(2);
             tablaCliente.WidthPercentage = 100;
-            tablaCliente.SetWidths(new float[] { 24f, 76f });
+            tablaCliente.SetWidths(new float[] { 20f, 80f });
 
             AgregarFilaDatos(tablaCliente, "CUIT:", encabezado.cm_cuit, fuenteNormalBold, fuenteNormal);
             AgregarFilaDatos(tablaCliente, "Apellido y Nombre / Razón Social:", encabezado.cm_nombre, fuenteNormalBold, fuenteNormal);
@@ -341,7 +373,7 @@ namespace gc.api.core.Servicios.Reportes
 
             PdfPCell celdaCliente = new PdfPCell(tablaCliente);
             celdaCliente.Border = Rectangle.BOX;
-            celdaCliente.Padding = 3f;
+            celdaCliente.Padding = 5f;
 
             PdfPTable wrapper = new PdfPTable(1);
             wrapper.WidthPercentage = 100;
@@ -363,9 +395,11 @@ namespace gc.api.core.Servicios.Reportes
             Font fuenteNormalBold,
             Font fuenteChica)
         {
+            pdf.Add(new Paragraph(" ", fuenteChica));
+
             PdfPTable tablaResumen = new PdfPTable(2);
             tablaResumen.WidthPercentage = 100;
-            tablaResumen.SetWidths(new float[] { 54f, 46f });
+            tablaResumen.SetWidths(new float[] { 50f, 50f });
 
             PdfPTable tablaPercepciones = new PdfPTable(4);
             tablaPercepciones.WidthPercentage = 100;
@@ -373,48 +407,33 @@ namespace gc.api.core.Servicios.Reportes
 
             PdfPCell celdaTitulo = new PdfPCell(new Phrase("Otros Tributos", fuenteNormalBold));
             celdaTitulo.Colspan = 4;
-            celdaTitulo.BackgroundColor = new BaseColor(235, 235, 235);
+            celdaTitulo.BackgroundColor = BaseColor.LightGray;
             celdaTitulo.HorizontalAlignment = Element.ALIGN_CENTER;
-            celdaTitulo.Padding = 2f;
+            celdaTitulo.Padding = 3f;
             tablaPercepciones.AddCell(celdaTitulo);
 
             AgregarEncabezadosTributos(tablaPercepciones, fuenteNormalBold);
 
-            if (datosPercepciones != null && datosPercepciones.Any())
+            foreach (var percepcion in datosPercepciones.OrderBy(p => p.orden))
             {
-                foreach (var percepcion in datosPercepciones.OrderBy(p => p.orden))
-                {
-                    AgregarFilaTributo(
-                        tablaPercepciones,
-                        percepcion.imp_des ?? "",
-                        percepcion.Base ?? 0,
-                        percepcion.ali ?? 0,
-                        percepcion.percepcion ?? 0,
-                        fuenteChica
-                    );
-                }
+                AgregarFilaTributo(
+                    tablaPercepciones,
+                    percepcion.imp_des ?? "",
+                    percepcion.Base ?? 0,
+                    percepcion.ali ?? 0,
+                    percepcion.percepcion ?? 0,
+                    fuenteChica
+                );
             }
-            else
-            {
-                AgregarFilaTributo(tablaPercepciones, "", 0, 0, 0, fuenteChica);
-            }
-
-            AgregarLineaTributoTotal(
-                tablaPercepciones,
-                "Importe Otros Tributos:",
-                datosPercepciones?.Sum(p => p.percepcion ?? 0) ?? 0,
-                fuenteNormalBold
-            );
 
             PdfPCell celdaPerc = new PdfPCell(tablaPercepciones);
-            celdaPerc.Border = Rectangle.NO_BORDER;
-            celdaPerc.Padding = 0f;
-            celdaPerc.PaddingRight = 8f;
+            celdaPerc.Border = Rectangle.BOX;
+            celdaPerc.Padding = 5f;
             tablaResumen.AddCell(celdaPerc);
 
             PdfPTable tablaTotales = new PdfPTable(2);
             tablaTotales.WidthPercentage = 100;
-            tablaTotales.SetWidths(new float[] { 68f, 32f });
+            tablaTotales.SetWidths(new float[] { 70f, 30f });
 
             foreach (var lineaIva in datosIva.OrderBy(i => i.orden))
             {
@@ -433,12 +452,12 @@ namespace gc.api.core.Servicios.Reportes
                 encabezado.cm_total,
                 fuenteNormalBold,
                 Element.ALIGN_RIGHT,
-                new BaseColor(235, 235, 235)
+                BaseColor.LightGray
             );
 
             PdfPCell celdaTot = new PdfPCell(tablaTotales);
-            celdaTot.Border = Rectangle.NO_BORDER;
-            celdaTot.Padding = 0f;
+            celdaTot.Border = Rectangle.BOX;
+            celdaTot.Padding = 5f;
             tablaResumen.AddCell(celdaTot);
 
             pdf.Add(tablaResumen);
@@ -478,8 +497,8 @@ namespace gc.api.core.Servicios.Reportes
                 PdfPTable tablaInfo = new PdfPTable(1);
                 tablaInfo.WidthPercentage = 100;
 
-                AgregarCeldaSinBorde(tablaInfo, $"Pag {pdf.PageNumber}/{pdf.PageNumber}", fuenteChica, Element.ALIGN_RIGHT);
-                AgregarCeldaSinBorde(tablaInfo, $"CAE N°: {cae}", fuenteChica, Element.ALIGN_RIGHT);
+                AgregarCeldaSinBorde(tablaInfo, "Pág. 1 of 1", fuenteChica, Element.ALIGN_RIGHT);
+                AgregarCeldaSinBorde(tablaInfo, "CAE N°:", fuenteChica, Element.ALIGN_RIGHT);
 
                 if (caeVencimiento.HasValue)
                 {
@@ -502,148 +521,12 @@ namespace gc.api.core.Servicios.Reportes
 
         #region Métodos Auxiliares
 
-        private static Font CrearFuente(int size, bool bold = false)
-        {
-            return HelperPdf.DefineFontWithStyle(
-                "Arial",
-                size,
-                bold ? Font.BOLD : Font.NORMAL,
-                0,
-                0,
-                0
-            );
-        }
-
-        private static string FormatearImporte(decimal importe)
-        {
-            return importe.ToString("N2", CultureInfo.GetCultureInfo("es-AR"));
-        }
-
-        private static string ObtenerTituloComprobante(FeResDto encabezado)
-        {
-            var descripcion = (encabezado.tco_desc ?? string.Empty).Trim();
-
-            if (descripcion.Contains("Factura", StringComparison.OrdinalIgnoreCase))
-            {
-                return "TICKET FACTURA";
-            }
-
-            return string.IsNullOrWhiteSpace(descripcion)
-                ? "COMPROBANTE"
-                : descripcion.ToUpperInvariant();
-        }
-
-        private static string ObtenerPuntoVenta(FeResDto encabezado)
-        {
-            var compte = (encabezado.cm_compte ?? string.Empty).Trim();
-            var partes = compte.Split('-', StringSplitOptions.RemoveEmptyEntries);
-
-            if (partes.Length > 0)
-            {
-                return partes[0];
-            }
-
-            return (encabezado.caja_id ?? string.Empty).Trim();
-        }
-
-        private static string ObtenerNumeroComprobante(FeResDto encabezado)
-        {
-            var compte = (encabezado.cm_compte ?? string.Empty).Trim();
-            var partes = compte.Split('-', StringSplitOptions.RemoveEmptyEntries);
-
-            return partes.Length > 1 ? partes[1] : compte;
-        }
-
-        private static string ObtenerDomicilioEmpresa(FeResDto encabezado)
-        {
-            var domicilio = (encabezado.emp_domicilio ?? string.Empty).Trim();
-            var administracion = (encabezado.adm_direccion ?? string.Empty).Trim();
-
-            if (string.IsNullOrWhiteSpace(domicilio) || domicilio == "...")
-            {
-                return administracion;
-            }
-
-            if (string.IsNullOrWhiteSpace(administracion))
-            {
-                return domicilio;
-            }
-
-            if (domicilio.Contains(administracion, StringComparison.OrdinalIgnoreCase))
-            {
-                return domicilio;
-            }
-
-            return $"{domicilio} - {administracion}";
-        }
-
-        private static void UbicarPieDeFactura(Document pdf, PdfWriter writer, float alturaPie)
-        {
-            var posicionActual = writer.GetVerticalPosition(true);
-            var espacioDisponible = posicionActual - pdf.BottomMargin;
-
-            if (espacioDisponible < alturaPie)
-            {
-                pdf.NewPage();
-                posicionActual = writer.GetVerticalPosition(true);
-                espacioDisponible = posicionActual - pdf.BottomMargin;
-            }
-
-            var espacioLibre = espacioDisponible - alturaPie;
-
-            if (espacioLibre > 12f)
-            {
-                pdf.Add(new Paragraph(" ")
-                {
-                    Leading = espacioLibre,
-                    SpacingBefore = 0f,
-                    SpacingAfter = 0f
-                });
-            }
-        }
-
-        private void GenerarResumenOperacion(
-            Document pdf,
-            FeResDto encabezado,
-            Image logo,
-            Font fuenteTitulo,
-            Font fuenteSubtitulo,
-            Font fuenteChica,
-            Font fuenteNormalBold)
-        {
-            PdfPTable tabla = new PdfPTable(6);
-            tabla.WidthPercentage = 100;
-            tabla.SetWidths(new float[] { 16f, 12f, 16f, 12f, 16f, 12f });
-
-            AgregarCeldaResumenOperacion(tabla, "Subtotal:", fuenteChica, Element.ALIGN_RIGHT);
-            AgregarCeldaResumenOperacion(tabla, FormatearImporte(encabezado.cm_gravado), fuenteNormalBold, Element.ALIGN_RIGHT);
-            AgregarCeldaResumenOperacion(tabla, "Percep.:", fuenteChica, Element.ALIGN_RIGHT);
-            AgregarCeldaResumenOperacion(tabla, FormatearImporte(encabezado.cm_percepciones), fuenteNormalBold, Element.ALIGN_RIGHT);
-            AgregarCeldaResumenOperacion(tabla, "Rec/Dto.:", fuenteChica, Element.ALIGN_RIGHT);
-            AgregarCeldaResumenOperacion(tabla, FormatearImporte(encabezado.cm_dto), fuenteNormalBold, Element.ALIGN_RIGHT);
-
-            pdf.Add(tabla);
-        }
-
-        private static void AgregarCeldaResumenOperacion(
-            PdfPTable tabla,
-            string texto,
-            Font fuente,
-            int alineacion)
-        {
-            var celda = new PdfPCell(new Phrase(texto, fuente));
-            celda.Border = Rectangle.TOP_BORDER;
-            celda.HorizontalAlignment = alineacion;
-            celda.Padding = 1f;
-            tabla.AddCell(celda);
-        }
-
         private void AgregarCeldaSinBorde(PdfPTable tabla, string texto, Font fuente, int alineacion)
         {
             PdfPCell celda = new PdfPCell(new Phrase(texto, fuente));
             celda.Border = Rectangle.NO_BORDER;
             celda.HorizontalAlignment = alineacion;
-            celda.Padding = 1.2f;
+            celda.Padding = 2f;
             tabla.AddCell(celda);
         }
 
@@ -652,13 +535,13 @@ namespace gc.api.core.Servicios.Reportes
             PdfPCell celdaEtiqueta = new PdfPCell(new Phrase(etiqueta, fuenteEtiqueta));
             celdaEtiqueta.Border = Rectangle.NO_BORDER;
             celdaEtiqueta.HorizontalAlignment = Element.ALIGN_RIGHT;
-            celdaEtiqueta.Padding = 1.2f;
+            celdaEtiqueta.Padding = 2f;
             tabla.AddCell(celdaEtiqueta);
 
             PdfPCell celdaValor = new PdfPCell(new Phrase(valor, fuenteValor));
             celdaValor.Border = Rectangle.NO_BORDER;
             celdaValor.HorizontalAlignment = Element.ALIGN_LEFT;
-            celdaValor.Padding = 1.2f;
+            celdaValor.Padding = 2f;
             tabla.AddCell(celdaValor);
         }
 
@@ -669,7 +552,7 @@ namespace gc.api.core.Servicios.Reportes
             celda.BorderColor = BaseColor.LightGray;
             celda.HorizontalAlignment = alineacion;
             celda.VerticalAlignment = Element.ALIGN_MIDDLE;
-            celda.Padding = 1.5f;
+            celda.Padding = 3f;
             tabla.AddCell(celda);
         }
 
@@ -680,9 +563,9 @@ namespace gc.api.core.Servicios.Reportes
             foreach (var encabezado in encabezados)
             {
                 PdfPCell celda = new PdfPCell(new Phrase(encabezado, fuente));
-                celda.BackgroundColor = new BaseColor(245, 245, 245);
+                celda.BackgroundColor = new BaseColor(230, 230, 230);
                 celda.HorizontalAlignment = Element.ALIGN_CENTER;
-                celda.Padding = 1.5f;
+                celda.Padding = 3f;
                 tabla.AddCell(celda);
             }
         }
@@ -690,25 +573,9 @@ namespace gc.api.core.Servicios.Reportes
         private void AgregarFilaTributo(PdfPTable tabla, string descripcion, decimal baseImp, decimal ali, decimal importe, Font fuente)
         {
             AgregarCeldaProducto(tabla, descripcion, fuente, Element.ALIGN_LEFT);
-            AgregarCeldaProducto(tabla, FormatearImporte(baseImp), fuente, Element.ALIGN_RIGHT);
-            AgregarCeldaProducto(tabla, FormatearImporte(ali), fuente, Element.ALIGN_RIGHT);
-            AgregarCeldaProducto(tabla, FormatearImporte(importe), fuente, Element.ALIGN_RIGHT);
-        }
-
-        private void AgregarLineaTributoTotal(PdfPTable tabla, string etiqueta, decimal importe, Font fuente)
-        {
-            PdfPCell celdaEtiqueta = new PdfPCell(new Phrase(etiqueta, fuente));
-            celdaEtiqueta.Colspan = 3;
-            celdaEtiqueta.Border = Rectangle.NO_BORDER;
-            celdaEtiqueta.HorizontalAlignment = Element.ALIGN_RIGHT;
-            celdaEtiqueta.Padding = 1.5f;
-            tabla.AddCell(celdaEtiqueta);
-
-            PdfPCell celdaImporte = new PdfPCell(new Phrase(FormatearImporte(importe), fuente));
-            celdaImporte.Border = Rectangle.NO_BORDER;
-            celdaImporte.HorizontalAlignment = Element.ALIGN_RIGHT;
-            celdaImporte.Padding = 1.5f;
-            tabla.AddCell(celdaImporte);
+            AgregarCeldaProducto(tabla, baseImp.ToString("N2"), fuente, Element.ALIGN_RIGHT);
+            AgregarCeldaProducto(tabla, ali.ToString("N2"), fuente, Element.ALIGN_RIGHT);
+            AgregarCeldaProducto(tabla, importe.ToString("N2"), fuente, Element.ALIGN_RIGHT);
         }
 
         private void AgregarLineaTotal(PdfPTable tabla, string etiqueta, decimal valor, Font fuente, int alineacion, BaseColor? backgroundColor = null)
@@ -716,15 +583,15 @@ namespace gc.api.core.Servicios.Reportes
             PdfPCell celdaEtiqueta = new PdfPCell(new Phrase(etiqueta, fuente));
             celdaEtiqueta.Border = Rectangle.NO_BORDER;
             celdaEtiqueta.HorizontalAlignment = alineacion;
-            celdaEtiqueta.Padding = 1.8f;
+            celdaEtiqueta.Padding = 3f;
             if (backgroundColor != null)
                 celdaEtiqueta.BackgroundColor = backgroundColor;
             tabla.AddCell(celdaEtiqueta);
 
-            PdfPCell celdaValor = new PdfPCell(new Phrase(FormatearImporte(valor), fuente));
+            PdfPCell celdaValor = new PdfPCell(new Phrase(valor.ToString("N2"), fuente));
             celdaValor.Border = Rectangle.NO_BORDER;
             celdaValor.HorizontalAlignment = Element.ALIGN_RIGHT;
-            celdaValor.Padding = 1.8f;
+            celdaValor.Padding = 3f;
             if (backgroundColor != null)
                 celdaValor.BackgroundColor = backgroundColor;
             tabla.AddCell(celdaValor);
@@ -833,8 +700,3 @@ namespace gc.api.core.Servicios.Reportes
         #endregion
     }
 }
-
-
-
-
-
