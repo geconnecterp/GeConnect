@@ -10,6 +10,10 @@
 		/* Estilos para filtros flotantes */
 		#filtrosAplicadosFloating { overflow: visible; z-index: 1050; flex-wrap: nowrap; white-space: nowrap; overflow-x: visible; }
 		#filtrosAplicadosFloating .dropdown-menu { z-index: 3000 !important; }
+		/* Si el header global tiene un z-index muy alto, forzamos el menu del filtro encima */
+		.navbar, .main-header {
+			z-index: 1100;
+		}
 	</style>
 }
 <div class="container mt-2">

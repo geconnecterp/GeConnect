@@ -15,12 +15,18 @@
 			$("#divDetalle").collapse("hide");
 		}
 	});
+
+	
+
+	// intentar mostrar al cargar
+	try { MostrarFiltrosAplicados(); } catch (e) { }
 	$("input#Rel01").on("click", function () {
 		$("input#Rel01").val("");
 		$("#Rel01Item").val("");
 	});
 
 	$("#btnBuscar").on("click", function () {
+		try { MostrarFiltrosAplicados(); } catch (e) { console.warn('MostrarFiltrosAplicados no disponible:', e); }
 		BuscarChequesPropiosEmitidos();
 	});
 
@@ -36,6 +42,55 @@
 	$("#UsuList").on("dblclick", 'option', function () { $(this).remove(); })
 	$("#EstList").on("dblclick", 'option', function () { $(this).remove(); })
 });
+
+function MostrarFiltrosAplicados() {
+	try {
+		// preferir un contenedor flotante si existe, si no usar el container dentro del collapse
+		const floatCont = $("#filtrosAplicadosFloating");
+		const fallback = $("#filtrosAplicadosContainer");
+		const cont = floatCont.length ? floatCont : (fallback.length ? fallback : null);
+		if (!cont) return;
+
+		const desde = $("#Date1").val();
+		const hasta = $("#Date2").val();
+		const tipo_fecha = $("#radioSection input[name='opcion']:checked").parent().text().trim();
+
+		// recoger listas seleccionadas
+		const cbs = [];
+		$("#CBList option").each(function () { cbs.push($(this).text()); });
+		const clientes = [];
+		$("#Rel01List option").each(function () { clientes.push($(this).text()); });
+		const usuarios = [];
+		$("#UsuList option").each(function () { usuarios.push($(this).text()); });
+		const estados = [];
+		$("#EstList option").each(function () { estados.push($(this).text()); });
+
+		let html = "";
+		html += `<span class=\"badge bg-secondary me-1\">DESDE: ${desde || '-'} </span>`;
+		html += `<span class=\"badge bg-secondary me-1\">HASTA: ${hasta || '-'} </span>`;
+		if (tipo_fecha) html += `<span class=\"badge bg-secondary me-1\">TIPO: ${tipo_fecha}</span>`;
+
+		function makeListBadge(label, items, id) {
+			if (!items || items.length === 0) return '';
+			if (items.length === 1) return `<span class=\"badge bg-secondary me-1\">${label}: ${items[0]}</span>`;
+			let s = `<div class=\"dropdown me-1\">`;
+			s += `<button class=\"badge bg-secondary dropdown-toggle text-nowrap\" type=\"button\" id=\"${id}\" data-bs-toggle=\"dropdown\" aria-expanded=\"false\">${label}: ${items.length} seleccionados</button>`;
+			s += `<ul class=\"dropdown-menu dropdown-menu-end\" aria-labelledby=\"${id}\" data-bs-boundary=\"viewport\">`;
+			items.forEach(function (it) { s += `<li><a class=\"dropdown-item\" href=\"#\">${it}</a></li>`; });
+			s += `</ul></div>`;
+			return s;
+		}
+
+		html += makeListBadge('CUENTA', cbs, 'cbDrop');
+		html += makeListBadge('CLIENTE', clientes, 'cliDrop');
+		html += makeListBadge('USUARIO', usuarios, 'usuDrop');
+		html += makeListBadge('ESTADO', estados, 'estDrop');
+
+		cont.html(html);
+	} catch (e) {
+		console.error('MostrarFiltrosAplicados error', e);
+	}
+}
 
 function ReseteoDeReportes() {
 	console.log("Reseto de reportes");
@@ -349,6 +404,8 @@ function BuscarChequesPropiosEmitidos() {
 		var data = { id_f, ctaf_id, id_c, cta_id, id_u, usu_id, tipo_fecha, desde, hasta, estado };
 		PostGenHtml(data, buscarChequesPropiosEmitidosUrl, function (obj) {
 			$("#divChequesPropiosEmitidos").html(obj);
+			// actualizar filtros aplicados (si el partial reemplaza el DOM)
+			try { MostrarFiltrosAplicados(); } catch (e) { console.warn('MostrarFiltrosAplicados no disponible:', e); }
 			$("#divFiltros").collapse("hide");
 			$("#divDetalle").collapse("show");
 			CerrarWaiting();
@@ -555,7 +612,7 @@ function GuardarChequeModificar() {
 					ActualizarListaCheques();
 					return true;
 				}, false, ["Aceptar"], "succ!", null);
-				
+
 			}
 		});
 	}
@@ -653,7 +710,7 @@ function SetFechaDeEntrega(ctaf_id, che_emision) {
 		if (obj.error === true) {
 
 			AbrirMensaje("ATENCIÓN", obj.msg, function () {
-				$("#msjModal").modal("hide");	
+				$("#msjModal").modal("hide");
 				return true;
 			}, false, ["Aceptar"], "error!", null);
 		}
@@ -664,7 +721,7 @@ function SetFechaDeEntrega(ctaf_id, che_emision) {
 				ActualizarListaCheques();
 				return true;
 			}, false, ["Aceptar"], "succ!", null);
-			
+
 		}
 	});
 }

@@ -5,6 +5,16 @@
 @section styles {
 	<link rel="stylesheet" href="~/css/simplePagination.css" />
 	<link rel="stylesheet" href="~/lib/jstree/themes/default/style.min.css" />
+
+	<style>
+		/* Estilos para el recuadro flotante de filtros aplicados */
+		#filtrosAplicadosFloating { overflow: visible; z-index: 1050; white-space: nowrap; display:inline-flex; gap:6px; align-items:center; }
+		#filtrosAplicadosFloating .dropdown-menu { z-index: 3000 !important; }
+		/* Si el header global tiene un z-index muy alto, forzamos el menu del filtro encima */
+		.navbar, .main-header {
+			z-index: 1100;
+		}
+	</style>
 }
 <div class="container mt-2">
 	<div class="row mb-2">
@@ -40,7 +50,7 @@
 		</div>
 	</div>
 	<div class="collapse" id="divDetalle" style="">
-		<div class="d-flex align-items-center w-100 mt-2">
+		<div class="d-flex align-items-center w-100 mt-2" style="position:relative;">
 			<ul class="nav nav-tabs nav-tabs-golden" role="tablist" id="tabsLiqDeEmp">
 				<li class="nav-item" role="presentation" id="tabLiqDeEmp">
 					<button type="button" class="nav-link active" role="tab" data-bs-toggle="tab" data-bs-target="#navs-top-home" aria-controls="navs-top-home" aria-selected="true" id="btnTabLiqDeEmp">
@@ -53,6 +63,10 @@
 					</button>
 				</li>
 			</ul>
+			<!-- Contenedor flotante para filtros aplicados -->
+			<div id="filtrosAplicadosFloating" class="border rounded d-flex align-items-center" style="position:absolute; right:16px; left:auto; top:4px; height:auto; width:auto; border-color:#d9534f; background-color:#fff; z-index:1050; padding:6px 10px; overflow:visible; gap:6px; display:inline-flex; white-space:nowrap;">
+				<!-- Badges rellenadas por JS -->
+			</div>
 		</div>
 		<div class="tab-content tab-content-compact">
 			<div class="tab-pane fade tab-content-golden show active" id="navs-top-home" role="tabpanel">

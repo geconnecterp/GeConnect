@@ -30,6 +30,8 @@
 	});
 
 	$("#btnBuscar").on("click", function () {
+		// Actualizar visualización de filtros antes de buscar
+		try { MostrarFiltrosAplicados(); } catch (e) { console.warn('MostrarFiltrosAplicados no disponible:', e); }
 		dataBak = "";
 		pagina = 1;
 		BuscarLiquidacionDeEmpleados(pagina);
@@ -37,6 +39,7 @@
 
 	funcCallBack = BuscarLiquidacionDeEmpleados;
 });
+try { MostrarFiltrosAplicados(); } catch (e) { console.warn('MostrarFiltrosAplicados no disponible:', e); }
 
 function AbrirModalArchivoBanco() {
 	if (le_compte_selected == "" || le_compte_selected == null || le_compte_selected == undefined) {
@@ -356,6 +359,24 @@ function InicializarCamposEnFiltros() {
 	$("#divDetalle").collapse("hide");
 }
 
+function MostrarFiltrosAplicados() {
+	try {
+		const cont = $("#filtrosAplicadosFloating");
+		if (!cont || cont.length === 0) return;
+
+		const desde = $("#Date1").val();
+		const hasta = $("#Date2").val();
+
+		let html = "";
+		html += '<span class="badge bg-secondary me-1">DESDE: ' + (desde || '-') + ' </span>';
+		html += '<span class="badge bg-secondary me-1">HASTA: ' + (hasta || '-') + ' </span>';
+
+		cont.html(html);
+	} catch (e) {
+		console.error('MostrarFiltrosAplicados error', e);
+	}
+}
+
 function ValidarFechasClick() {
 	const desde = $("#Date1").val();
 	const hasta = $("#Date2").val();
@@ -398,6 +419,8 @@ function BuscarLiquidacionDeEmpleados(pag) {
 	PostGenHtml(data, buscarLiquidacionesDeEmpleadosURL, function (obj) {
 		CerrarWaiting();
 		$("#divLiqDeEmp").html(obj);
+		// Actualizar filtros aplicados después de renderizar los resultados
+		try { MostrarFiltrosAplicados(); } catch (e) { console.warn('MostrarFiltrosAplicados no disponible:', e); }
 		$("#divLiqDeEmpDetalle").empty();
 		$("#divFiltros").removeClass("show").addClass("collapse");
 		$("#divDetalle").collapse("show");
