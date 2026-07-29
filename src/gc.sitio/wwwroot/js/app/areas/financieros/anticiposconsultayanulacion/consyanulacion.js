@@ -1,4 +1,5 @@
 ﻿$(function () {
+	// patch: placeholder no-op to update file for next edits
 	$(document).on("click", "#btnImprimirDetalle", ImprimirDetalle);
 	$(document).on("click", "#btnImprimirVales", ImprimirVales);
 	$(document).on("click", "#btnCancelar", ControlaCancelar);
@@ -48,6 +49,8 @@
 	});
 
 	$("#btnBuscar").on("click", function () {
+		// Actualiza visualización de filtros antes de buscar
+		MostrarFiltrosAplicados();
 		dataBak = "";
 		pagina = 1;
 		BuscarAnticiposDeEmpleados(pagina);
@@ -57,7 +60,85 @@
 	$("#UsuarioList").on("dblclick", 'option', function () { $(this).remove(); })
 
 	funcCallBack = BuscarAnticiposDeEmpleados;
+	// Mostrar filtros iniciales cargados desde el servidor
+	MostrarFiltrosAplicados();
 });
+
+
+function MostrarFiltrosAplicados() {
+	try {
+		// Buscar el contenedor flotante primero; si no existe, usar el container normal
+		const cont = $("#filtrosAplicadosFloating");
+		const fallback = $("#filtrosAplicadosContainer");
+		const target = cont.length ? cont : fallback;
+		if (!target.length) return;
+		if (!cont.length) return;
+
+		const desde = $("#Date1").val();
+		const hasta = $("#Date2").val();
+		const tipoText = $("#listaTipo option:selected").text() || "Todos";
+
+		// Clientes seleccionados
+		const clientes = [];
+		$("#Rel01List option").each(function () {
+			clientes.push($(this).text());
+		});
+
+		// Usuarios seleccionados
+		const usuarios = [];
+		$("#UsuarioList option").each(function () {
+			usuarios.push($(this).text());
+		});
+
+		// Reconstruir contenido
+		let html = "";
+		html += `<span class=\"badge bg-secondary me-1\">Desde: ${desde || '-'} </span>`;
+		html += `<span class=\"badge bg-secondary me-1\">Hasta: ${hasta || '-'} </span>`;
+		html += `<span class=\"badge bg-secondary me-1\">Tipo: ${tipoText}</span>`;
+
+		// Clientes: agrupar si hay más de uno
+		if (clientes.length > 0) {
+			if (clientes.length === 1) {
+				html += `<span class=\"badge bg-secondary me-1\">CLIENTE: ${clientes[0]}</span>`;
+			} else {
+				// Dropdown compacto para múltiples clientes: mostrar como badge con dropdown (lista encima)
+				html += `
+					<div class=\"dropup me-1\">
+						<button class=\"badge bg-secondary dropdown-toggle text-nowrap\" type=\"button\" id=\"clientesDrop\" data-bs-toggle=\"dropdown\" aria-expanded=\"false\" title=\"Clientes seleccionados\">
+							Cliente: ${clientes.length} seleccionados
+						</button>
+						<ul class=\"dropdown-menu dropdown-menu-end\" aria-labelledby=\"clientesDrop\" data-bs-boundary=\"viewport\">`;
+				clientes.forEach(function (c) {
+					html += `<li><a class=\"dropdown-item\" href=\"#\">${c}</a></li>`;
+				});
+				html += `</ul></div>`;
+			}
+		}
+
+		// Usuarios: agrupar si hay más de uno
+		if (usuarios.length > 0) {
+			if (usuarios.length === 1) {
+				html += `<span class=\"badge bg-secondary me-1\">USUARIO: ${usuarios[0]}</span>`;
+			} else {
+				// Dropdown compacto para múltiples usuarios: mostrar como badge con dropdown (lista encima)
+				html += `
+					<div class=\"dropup me-1\">
+						<button class=\"badge bg-secondary dropdown-toggle text-nowrap\" type=\"button\" id=\"usuariosDrop\" data-bs-toggle=\"dropdown\" aria-expanded=\"false\" title=\"Usuarios seleccionados\">
+							Usuario: ${usuarios.length} seleccionados
+						</button>
+						<ul class=\"dropdown-menu dropdown-menu-end\" aria-labelledby=\"usuariosDrop\" data-bs-boundary=\"viewport\">`;
+				usuarios.forEach(function (u) {
+					html += `<li><a class=\"dropdown-item\" href=\"#\">${u}</a></li>`;
+				});
+				html += `</ul></div>`;
+			}
+		}
+
+		target.html(html);
+	} catch (e) {
+		console.error('MostrarFiltrosAplicados error', e);
+	}
+}
 
 function esFechaValidaFiltro(valor) {
 	if (!valor || valor.length !== 10) return false; // formato esperado yyyy-MM-dd

@@ -12,6 +12,47 @@ $(function () {
 
 });
 
+function MostrarFiltrosAplicados() {
+	try {
+		const cont = $("#filtrosAplicadosFloating");
+		const fallback = $(".p-1.border.rounded.bg-light").first();
+		const target = cont.length ? cont : fallback;
+		if (!target.length) return;
+
+		const desde = $("#Desde").val();
+		const hasta = $("#Hasta").val();
+
+		// Sucursales seleccionadas
+		const sucursales = [];
+		$("#SucursalesList option").each(function () { sucursales.push($(this).text()); });
+		// Si no hay en la listbox, tomar todas del dropdown
+		if (sucursales.length === 0) {
+			$("#listaSucursales option").each(function () {
+				const v = $(this).val();
+				const t = $(this).text();
+				if (v && v !== "") sucursales.push(t);
+			});
+		}
+
+		let html = "";
+		html += `<span class=\"badge bg-secondary me-1\">DESDE: ${desde || '-'} </span>`;
+		html += `<span class=\"badge bg-secondary me-1\">HASTA: ${hasta || '-'} </span>`;
+
+		if (sucursales.length === 1) {
+			html += `<span class=\"badge bg-secondary me-1\">SUCURSAL: ${sucursales[0]}</span>`;
+		} else if (sucursales.length > 1) {
+			html += `\n                <div class=\"dropdown me-1\">\n                    <button class=\"badge bg-secondary dropdown-toggle text-nowrap\" type=\"button\" id=\"sucursalesDrop\" data-bs-toggle=\"dropdown\" aria-expanded=\"false\">\n                        Sucursal: ${sucursales.length} seleccionados\n                    </button>\n                    <ul class=\"dropdown-menu dropdown-menu-end\" aria-labelledby=\"sucursalesDrop\" data-bs-boundary=\"viewport\">`;
+			sucursales.forEach(function (s) { html += `<li><a class=\"dropdown-item\" href=\"#\">${s}</a></li>`; });
+			html += `</ul></div>`;
+		}
+
+		// Render
+		target.html(html);
+	} catch (e) {
+		console.error('MostrarFiltrosAplicados error', e);
+	}
+}
+
 function InicializaEventos() {
 	$(document).on("change", "#listaSucursales", ControlalistaSucursalesSelected);
 	$("#SucursalesList").on("dblclick", 'option', function () { $(this).remove(); })
@@ -43,6 +84,8 @@ function InicializaEventos() {
 					return true;
 				}, false, ["Aceptar"], "error!", null);
 			} else {
+				// Mostrar filtros aplicados en la UI antes de cargar la pantalla
+				MostrarFiltrosAplicados();
 				InicializarPantallaPrincipal();
 			}
 		} else {
@@ -61,7 +104,9 @@ function InicializarPantallaPrincipal() {
 	var hasta = $("#Hasta").val();
 	AbrirWaiting("Cargando información...");
 	PostGenHtml({ sucursalesText, desde, hasta }, inicializarPantallPrincipalURL, function (obj) {
-		$("#divDetalle").html(obj);
+				$("#divDetalle").html(obj);
+				// Actualizar filtros aplicados después de renderizar la pantalla principal
+				try { MostrarFiltrosAplicados(); } catch (e) { console.warn('MostrarFiltrosAplicados no disponible:', e); }
 		$(document).on('shown.bs.tab', 'button[data-bs-toggle="tab"]', function (e) {
 			const tabId = $(e.target).attr("data-bs-target").replace("#", "");
 			EvaluarBotonImprimir(tabId);
