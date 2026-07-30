@@ -26,15 +26,60 @@
 			}, false, ["Aceptar"], "error!", null);
 		}
 		else {
+			try { MostrarFiltrosAplicados(); } catch (e) { console.warn('MostrarFiltrosAplicados no disponible:', e); }
 			BuscarRecepciones();
 		}
 	});
 });
 
+function MostrarFiltrosAplicados() {
+	try {
+		const floatCont = $("#filtrosAplicadosFloating");
+		const fallback = $("#filtrosAplicadosContainer");
+		const cont = floatCont.length ? floatCont : (fallback.length ? fallback : null);
+		if (!cont) return;
+
+		const desde = $("#Desde").val();
+		const hasta = $("#Hasta").val();
+
+		const sucursales = [];
+		$("#SucursalesList option").each(function () { sucursales.push($(this).text()); });
+
+		const proveedores = [];
+		$("#Rel01List option").each(function () { proveedores.push($(this).text()); });
+
+		let html = "";
+		html += `<span class=\"badge bg-secondary me-1\">DESDE: ${desde || '-'} </span>`;
+		html += `<span class=\"badge bg-secondary me-1\">HASTA: ${hasta || '-'} </span>`;
+
+		function makeList(label, items, id) {
+			if (!items || items.length === 0) return '';
+			if (items.length === 1) return `<span class=\"badge bg-secondary me-1\">${label}: ${items[0]}</span>`;
+			let s = `<div class=\"dropdown me-1\">`;
+			s += `<button class=\"badge bg-secondary dropdown-toggle text-nowrap\" type=\"button\" id=\"${id}\" data-bs-toggle=\"dropdown\" aria-expanded=\"false\">${label}: ${items.length} seleccionados</button>`;
+			s += `<ul class=\"dropdown-menu dropdown-menu-end\" aria-labelledby=\"${id}\" data-bs-boundary=\"viewport\">`;
+			items.forEach(function (it) { s += `<li><a class=\"dropdown-item\" href=\"#\">${it}</a></li>`; });
+			s += `</ul></div>`;
+			return s;
+		}
+
+		html += makeList('SUC', sucursales, 'sucDrop');
+		html += makeList('PROV', proveedores, 'provDrop');
+
+		cont.html(html);
+	} catch (e) {
+		console.error('MostrarFiltrosAplicados error', e);
+	}
+}
+
+// intentar mostrar al cargar
+try { MostrarFiltrosAplicados(); } catch (e) { }
+
 function BuscarRecepciones() {
 	var data = {};
 	PostGenHtml(data, abrirPantallaPrincipalUrl, function (obj) {
 		$("#divDetalle").html(obj);
+		try { MostrarFiltrosAplicados(); } catch (e) { console.warn('MostrarFiltrosAplicados no disponible:', e); }
 		$("#divFiltros").collapse("hide");
 		$("#divDetalle").collapse("show");
 		CargarRecepcionesDeProveedores();

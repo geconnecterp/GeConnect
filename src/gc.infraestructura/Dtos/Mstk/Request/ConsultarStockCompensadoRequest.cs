@@ -8,6 +8,9 @@ namespace gc.infraestructura.Dtos.Mstk.Request
 		public List<string>? lRub { get; set; }
 		public bool chkEstAct { get; set; }
 		public bool chkEstDisc { get; set; }
+		public string lProvTextos { get; set; } = string.Empty;
+		public string lRubTextos { get; set; } = string.Empty;
+		public string chkEstadoTextos { get; set; } = string.Empty;
 
 		public int diferencia { get; set; }
 	}

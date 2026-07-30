@@ -115,6 +115,26 @@ namespace gc.sitio.Areas.Mstk.Controllers
 				metadata = MetadataStockProdCompensados;
 				grillaDatos = GenerarGrillaSmart(ListaProductoStkCompensados, sort, _setting.NroRegistrosPagina, pag, MetadataGeneral.TotalCount, MetadataGeneral.TotalPages, sortDir);
 				model.GrillaProductoStkComp = grillaDatos;
+
+				// Construcción de leyenda
+				model.LeyendaProv = ConstruirLeyenda("Proveedores", request.lProv, request.lProvTextos);
+				model.LeyendaRub = ConstruirLeyenda("Rubros", request.lRub, request.lRubTextos);
+				model.LeyendaEstado = ConstruirLeyenda("Estado", request.chkEstadoTextos);
+
+				// Leyenda final
+				var partesLeyenda = new List<string>();
+
+				if (!string.IsNullOrWhiteSpace(model.LeyendaProv))
+					partesLeyenda.Add(model.LeyendaProv);
+
+				if (!string.IsNullOrWhiteSpace(model.LeyendaRub))
+					partesLeyenda.Add(model.LeyendaRub);
+
+				if (!string.IsNullOrWhiteSpace(model.LeyendaEstado))
+					partesLeyenda.Add(model.LeyendaEstado);
+
+				model.Leyenda = string.Join(" | ", partesLeyenda);
+
 				return PartialView("_grillaProductos", model);
 			}
 			catch (Exception ex)
@@ -174,6 +194,29 @@ namespace gc.sitio.Areas.Mstk.Controllers
 		}
 
 		#region Metodos Privados
+		private static string ConstruirLeyenda(string titulo, List<string>? lista, string textos)
+		{
+			if (lista == null || lista.Count == 0)
+				return string.Empty;
+
+			// Caso especial: único valor "%"
+			if (lista.Count == 1 && lista[0] == "%")
+				return $"{titulo}: Todos";
+
+			// Caso normal
+			if (!string.IsNullOrWhiteSpace(textos))
+				return $"{titulo}: {textos}";
+
+			return string.Empty;
+		}
+		private static string ConstruirLeyenda(string titulo, string textos)
+		{
+			// Caso normal
+			if (!string.IsNullOrWhiteSpace(textos))
+				return $"{titulo}: {textos}";
+
+			return string.Empty;
+		}
 		private SelectList ComboRubros()
 		{
 			var adms = _rubroServicio.ObtenerListaRubros("", TokenCookie);

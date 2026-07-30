@@ -3,6 +3,17 @@
 		var div = $("#divPaginacion");
 		cargaPaginacion();
 	});
+
+	$("#divFiltro").on("shown.bs.collapse hidden.bs.collapse", function () {
+		const abierto = $(this).hasClass("show");
+
+		if (abierto) {
+			$("#divDetalle").collapse("hide");
+		} else {
+			$("#divDetalle").collapse("show");
+		}
+	});
+
 	$("#chkDesdeHasta").prop('checked', true);
 	$("#chkDesdeHasta").trigger("change");
 	$("#chkDesdeHasta").prop("disabled", true);
@@ -21,6 +32,8 @@
 	$("#UsuList").on("dblclick", 'option', function () { $(this).remove(); })
 
 	$("#btnBuscar").on("click", function () {
+		// actualizar vista de filtros antes de buscar
+		try { MostrarFiltrosAplicados(); } catch (e) { console.warn('MostrarFiltrosAplicados no disponible:', e); }
 		dataBak = "";
 		pagina = 1;
 		BuscarMovimientosFinancieros(pagina);
@@ -30,7 +43,55 @@
 	funcCallBack = BuscarMovimientosFinancieros;
 });
 
+function MostrarFiltrosAplicados() {
+	try {
+		// intentar usar el contenedor flotante; si no existe, no hacemos nada (el partial puede contener su propio container)
+		const floatCont = $("#filtrosAplicadosFloating");
+		const fallback = $("#filtrosAplicadosContainer");
+		const cont = floatCont.length ? floatCont : (fallback.length ? fallback : null);
+		if (!cont) return;
 
+		const desde = $("#Date1").val();
+		const hasta = $("#Date2").val();
+
+		// Recolectar listas seleccionadas
+		const cfo = [];
+		$("#CFOList option").each(function () { cfo.push($(this).text()); });
+		const cfd = [];
+		$("#CFDList option").each(function () { cfd.push($(this).text()); });
+		const tt = [];
+		$("#TTList option").each(function () { tt.push($(this).text()); });
+		const usu = [];
+		$("#UsuList option").each(function () { usu.push($(this).text()); });
+
+		let html = "";
+		html += `<span class=\"badge bg-secondary me-1\">DESDE: ${desde || '-'} </span>`;
+		html += `<span class=\"badge bg-secondary me-1\">HASTA: ${hasta || '-'} </span>`;
+
+		function makeBadgeOrDropdown(label, items, id) {
+			if (!items || items.length === 0) return '';
+			if (items.length === 1) return `<span class=\"badge bg-secondary me-1\">${label}: ${items[0]}</span>`;
+			let s = `<div class=\"dropdown me-1\">`;
+			s += `<button class=\"badge bg-secondary dropdown-toggle text-nowrap\" type=\"button\" id=\"${id}\" data-bs-toggle=\"dropdown\" aria-expanded=\"false\">${label}: ${items.length} seleccionados</button>`;
+			s += `<ul class=\"dropdown-menu dropdown-menu-end\" aria-labelledby=\"${id}\" data-bs-boundary=\"viewport\">`;
+			items.forEach(function (it) { s += `<li><a class=\"dropdown-item\" href=\"#\">${it}</a></li>`; });
+			s += `</ul></div>`;
+			return s;
+		}
+
+		html += makeBadgeOrDropdown('ORIG', cfo, 'cfoDrop');
+		html += makeBadgeOrDropdown('DEST', cfd, 'cfdDrop');
+		html += makeBadgeOrDropdown('TIPO', tt, 'ttDrop');
+		html += makeBadgeOrDropdown('USU', usu, 'usuDrop');
+
+		cont.html(html);
+	} catch (e) {
+		console.error('MostrarFiltrosAplicados error', e);
+	}
+}
+
+// intentar mostrar al cargar
+try { MostrarFiltrosAplicados(); } catch (e) { }
 
 function cargaPaginacion() {
 	$("#divPaginacion").pagination({
@@ -81,9 +142,12 @@ function BuscarMovimientosFinancieros(pag) {
 	PostGenHtml(data, buscarMovimientosFinancieros2URL, function (obj) {
 		CerrarWaiting();
 		$("#divDatosMovimientoFinanciero").html(obj);
+		// actualizar filtros aplicados después de renderizar (fallback si partial reemplaza el DOM)
+		try { MostrarFiltrosAplicados(); } catch (e) { console.warn('MostrarFiltrosAplicados no disponible:', e); }
 		inicializarEventosTablaMovFin();
 		$("#divDetalleMovimiento").empty();
-		$("#divFiltros").removeClass("show").addClass("collapse");
+		//$("#divFiltro").removeClass("show").addClass("collapse");
+		$("#divFiltro").collapse("hide");
 		$("#divDetalle").collapse("show");
 		//$("#btnCancelar").on("click", function () {
 		//	btnCancelarClick();
@@ -422,7 +486,8 @@ function ControlalistaTTSelected() {
 }
 
 function btnCancelarClick() {
-	$("#divFiltros").removeClass("collapse").addClass("show");
+	//$("#divFiltro").removeClass("collapse").addClass("show");
+	$("#divFiltro").collapse("show");
 	$("#divDetalle").collapse("hide");
 	$("#chkCFO").prop('checked', false);
 	$("#chkCFO").trigger("change");

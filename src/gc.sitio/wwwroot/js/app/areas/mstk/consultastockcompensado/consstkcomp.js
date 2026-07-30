@@ -120,15 +120,29 @@ function ControlalistaRubroSelected() {
 function BuscarProductos(pag = 1) {
 	AbrirWaiting();
 	var lProv = [];
+	var lProvTextos = "";
 	var lRub = [];
+	var lRubTextos = "";
+	var temp = [];
 
 	$("#Rel01List").children().each(function (i, item) { lProv.push($(item).val()) });
+	$("#Rel01List").children().each(function (i, item) { temp.push($(item).text()) });
+	lProvTextos = temp.join(", ");
+	temp = [];
 	$("#RubrosList").children().each(function (i, item) { lRub.push($(item).val()) });
+	$("#RubrosList").children().each(function (i, item) { temp.push($(item).text()) });
+	lRubTextos = temp.join(", ");
+	temp = [];
 
 	var chkEstAct = $("#chkEstadoActivo")[0].checked
 	var chkEstDisc = $("#chkEstadoDiscontinuo")[0].checked
 
 	var diferencia = $("#txtDiferencia").inputmask('unmaskedvalue');
+
+	const chkEstadoTextos = obtenerTitulosSeleccionados([
+		"chkEstadoActivo",
+		"chkEstadoDiscontinuo"
+	]);
 
 	var buscaNew = true;
 	pagina = pag;
@@ -136,11 +150,27 @@ function BuscarProductos(pag = 1) {
 	var sort = null;
 	var sortDir = null
 	var data2 = { sort, sortDir, Pagina, buscaNew }
-	var data1 = { lProv, lRub, chkEstAct, chkEstDisc, diferencia };
+	var data1 = {
+		lProv, lRub, chkEstAct, chkEstDisc, diferencia,
+		lProvTextos, lRubTextos, chkEstadoTextos
+	};
 	var data = $.extend({}, data1, data2);
 
 	PostGenHtml(data, buscarStockProductosURL, function (obj) {
 		$("#divGrillaProductos").html(obj);
+
+		// Leer leyendas desde el HTML recién insertado
+		var leyProv = $("#leyendaProvHidden").text();
+		var leyRub = $("#leyendaRubHidden").text();
+		var leyEstado = $("#leyendaEstadoHidden").text();
+		var leyFull = $("#leyendaFullHidden").text();
+
+		// Actualizar badges en el Index
+		$("#badgeProv").text(leyProv);
+		$("#badgeRub").text(leyRub);
+		$("#badgeEstado").text(leyEstado);
+		// $("#tituloLegend").text("Filtros: " + leyFull);
+
 		$("#divFiltros").collapse("hide");
 		$("#divDetalle").collapse("show");
 		$("#btnImprimir").show();
@@ -165,6 +195,20 @@ function BuscarProductos(pag = 1) {
 		viendeDesdeBusquedaDeProducto = false;
 		return true
 	});
+}
+
+function obtenerTitulosSeleccionados(idsCheckbox) {
+	const textos = [];
+
+	idsCheckbox.forEach(id => {
+		const chk = $("#" + id)[0];
+		if (chk && chk.checked) {
+			const label = $("label[for='" + id + "']").text().trim();
+			textos.push(label);
+		}
+	});
+
+	return textos.join(", ");
 }
 
 function selectListaProductoRow(x) {

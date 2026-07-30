@@ -16,6 +16,15 @@ namespace gc.infraestructura.Dtos.Mstk.Request
 		public bool chkEstAct { get; set; }
 		public bool chkEstDisc { get; set; }
 		public bool chkCostoRepo { get; set; }
+
+		public string lSucTextos { get; set; } = string.Empty;
+		public string lDepTextos { get; set; } = string.Empty;
+		public string lProvTextos { get; set; } = string.Empty;
+		public string lRubTextos { get; set; } = string.Empty;
+		public string lFamTextos { get; set; } = string.Empty;
+		public string chkStockTextos { get; set; } = string.Empty;
+		public string chkEstadoTextos { get; set; } = string.Empty;
+		public string chkCostoRepoTextos { get; set; } = string.Empty;
 		public int agrupador { get; set; }
 	}
 }

@@ -54,16 +54,37 @@ function ImprimirListaProductosStk_Generada() {
 	ReseteoDeReportes();
 	setTimeout(() => {
 		var lSucArr = [];
+		var lSucTextos = "";
 		var lDepArr = [];
+		var lDepTextos = "";
 		var lProvArr = [];
+		var lProvTextos = "";
 		var lFamArr = [];
+		var lFamTextos = "";
 		var lRubArr = [];
+		var lRubTextos = "";
+		var temp = [];
 
 		$("#SucursalesList").children().each(function (i, item) { lSucArr.push($(item).val()) });
+		$("#SucursalesList").children().each(function (i, item) { temp.push($(item).text()) });
+		lSucTextos = temp.join(", ");
+		temp = [];
 		$("#DepositosList").children().each(function (i, item) { lDepArr.push($(item).val()) });
+		$("#DepositosList").children().each(function (i, item) { temp.push($(item).text()) });
+		lDepTextos = temp.join(", ");
+		temp = [];
 		$("#Rel01List").children().each(function (i, item) { lProvArr.push($(item).val()) });
+		$("#Rel01List").children().each(function (i, item) { temp.push($(item).text()) });
+		lProvTextos = temp.join(", ");
+		temp = [];
 		$("#FamiliaList").children().each(function (i, item) { lFamArr.push($(item).val()) });
+		$("#FamiliaList").children().each(function (i, item) { temp.push($(item).text()) });
+		lFamTextos = temp.join(", ");
+		temp = [];
 		$("#RubrosList").children().each(function (i, item) { lRubArr.push($(item).val()) });
+		$("#RubrosList").children().each(function (i, item) { temp.push($(item).text()) });
+		lRubTextos = temp.join(", ");
+		temp = [];
 
 		var lSuc = lSucArr.join(",");
 		var lDep = lDepArr.join(",");
@@ -77,14 +98,48 @@ function ImprimirListaProductosStk_Generada() {
 		var chkEstAct = $("#chkEstadoActivo")[0].checked
 		var chkEstDisc = $("#chkEstadoDiscontinuo")[0].checked
 
+		const chkStockTextos = obtenerTitulosSeleccionados([
+			"chkStockPositivo",
+			"chkStockCero",
+			"chkStockNegativo"
+		]);
+		const chkEstadoTextos = obtenerTitulosSeleccionados([
+			"chkEstadoActivo",
+			"chkEstadoDiscontinuo"
+		]);
+
 		var chkCostoRepo = $("#chkCostoRepo")[0].checked
+
+		const chkCostoRepoTextos = obtenerTitulosSeleccionados([
+			"chkCostoRepo"
+		]);
 
 		var agrupador = $("#listaAgrupador").val();
 
-		var data = { lSuc, lDep, lProv, lFam, lRub, chkStkPos, chkStkCero, chkStkNeg, chkEstAct, chkEstDisc, chkCostoRepo, agrupador };
+		var data = {
+			lSuc, lDep, lProv, lFam, lRub,
+			chkStkPos, chkStkCero, chkStkNeg, chkEstAct, chkEstDisc, chkCostoRepo,
+			agrupador,
+			lSucTextos, lDepTextos, lProvTextos, lFamTextos, lRubTextos,
+			chkStockTextos, chkEstadoTextos, chkCostoRepoTextos
+		};
 		cargarReporteEnArre(51, data, "REPORTE DE STOCK VALORIZADO", "", "");
 		invocacionGestorDoc({});
 	}, 500);
+}
+
+function obtenerTitulosSeleccionados(idsCheckbox) {
+	const textos = [];
+
+	idsCheckbox.forEach(id => {
+		const chk = $("#" + id)[0];
+		if (chk && chk.checked) {
+			const label = $("label[for='" + id + "']").text().trim();
+			textos.push(label);
+		}
+	});
+
+	return textos.join(", ");
 }
 
 function ReseteoDeReportes() {
@@ -198,15 +253,37 @@ function InicializarCamposEnFiltros(vieneDeCancelar) {
 function BuscarProductosValorizados(pag = 1) {
 	AbrirWaiting();
 	var lSuc = [];
+	var lSucTextos = "";
 	var lDep = [];
+	var lDepTextos = "";
 	var lProv = [];
+	var lProvTextos = "";
 	var lFam = [];
+	var lFamTextos = "";
 	var lRub = [];
+	var lRubTextos = "";
+	var temp = [];
+
 	$("#SucursalesList").children().each(function (i, item) { lSuc.push($(item).val()) });
+	$("#SucursalesList").children().each(function (i, item) { temp.push($(item).text()) });
+	lSucTextos = temp.join(", ");
+	temp = [];
 	$("#DepositosList").children().each(function (i, item) { lDep.push($(item).val()) });
+	$("#DepositosList").children().each(function (i, item) { temp.push($(item).text()) });
+	lDepTextos = temp.join(", ");
+	temp = [];
 	$("#Rel01List").children().each(function (i, item) { lProv.push($(item).val()) });
+	$("#Rel01List").children().each(function (i, item) { temp.push($(item).text()) });
+	lProvTextos = temp.join(", ");
+	temp = [];
 	$("#FamiliaList").children().each(function (i, item) { lFam.push($(item).val()) });
+	$("#FamiliaList").children().each(function (i, item) { temp.push($(item).text()) });
+	lFamTextos = temp.join(", ");
+	temp = [];
 	$("#RubrosList").children().each(function (i, item) { lRub.push($(item).val()) });
+	$("#RubrosList").children().each(function (i, item) { temp.push($(item).text()) });
+	lRubTextos = temp.join(", ");
+	temp = [];
 
 	var chkStkPos = $("#chkStockPositivo")[0].checked
 	var chkStkCero = $("#chkStockCero")[0].checked
@@ -218,13 +295,32 @@ function BuscarProductosValorizados(pag = 1) {
 
 	var agrupador = $("#listaAgrupador").val();
 
+	const chkStockTextos = obtenerTitulosSeleccionados([
+		"chkStockPositivo",
+		"chkStockCero",
+		"chkStockNegativo"
+	]);
+	const chkEstadoTextos = obtenerTitulosSeleccionados([
+		"chkEstadoActivo",
+		"chkEstadoDiscontinuo"
+	]);
+	const chkCostoRepoTextos = obtenerTitulosSeleccionados([
+		"chkCostoRepo"
+	]);
+
 	var buscaNew = true;
 	pagina = pag;
 	Pagina = pag;
 	var sort = null;
 	var sortDir = null
 	var data2 = { sort, sortDir, Pagina, buscaNew }
-	var data1 = { lSuc, lDep, lProv, lFam, lRub, chkStkPos, chkStkCero, chkStkNeg, chkEstAct, chkEstDisc, chkCostoRepo, agrupador };
+	var data1 = {
+		lSuc, lDep, lProv, lFam, lRub,
+		chkStkPos, chkStkCero, chkStkNeg, chkEstAct, chkEstDisc, chkCostoRepo,
+		agrupador,
+		lSucTextos, lDepTextos, lProvTextos, lFamTextos, lRubTextos,
+		chkStockTextos, chkEstadoTextos, chkCostoRepoTextos
+	};
 	var data = $.extend({}, data1, data2);
 
 	PostGenHtml(data, buscarStockProductosValorizadosURL, function (obj) {

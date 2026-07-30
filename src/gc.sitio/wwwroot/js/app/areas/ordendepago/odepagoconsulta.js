@@ -2,8 +2,15 @@
 	InicializaPantalla();
 	// Validar al salir del campo
 	$("#Date1, #Date2").on("blur", ValidarFechasClick);
-	// Validar al seleccionar con el mouse
-	//$("#Date1, #Date2").on("change", ValidarFechasClick);
+	$("#divFiltro").on("shown.bs.collapse hidden.bs.collapse", function () {
+		const abierto = $(this).hasClass("show");
+
+		if (abierto) {
+			$("#divDetalle").collapse("hide");
+		} else {
+			$("#divDetalle").collapse("show");
+		}
+	});
 
 	$("#pagEstado").on("change", function () {
 		var div = $("#divPaginacion");
@@ -22,6 +29,8 @@
 		$("#Rel03Item").val("");
 	});
 	$("#btnBuscar").on("click", function () {
+		// actualizar vista de filtros antes de buscar
+		try { MostrarFiltrosAplicados(); } catch (e) { console.warn('MostrarFiltrosAplicados no disponible:', e); }
 		dataBak = "";
 		pagina = 1;
 		BuscarOrdenesDePago(pagina);
@@ -70,6 +79,53 @@
 	$("#Rel02List").on("dblclick", 'option', function () { $(this).remove(); })
 	$("#Rel03List").on("dblclick", 'option', function () { $(this).remove(); })
 });
+
+function MostrarFiltrosAplicados() {
+	try {
+		// intentar usar el contenedor flotante; si no existe, no hacemos nada (el partial puede contener su propio container)
+		const floatCont = $("#filtrosAplicadosFloating");
+		const fallback = $("#filtrosAplicadosContainer");
+		const cont = floatCont.length ? floatCont : (fallback.length ? fallback : null);
+		if (!cont) return;
+
+		const desde = $("#Date1").val();
+		const hasta = $("#Date2").val();
+
+		// Recolectar listas seleccionadas
+		const cfo = [];
+		$("#Rel01List option").each(function () { cfo.push($(this).text()); });
+		const cfd = [];
+		$("#Rel03List option").each(function () { cfd.push($(this).text()); });
+		const tt = [];
+		$("#Rel02List option").each(function () { tt.push($(this).text()); });
+
+		let html = "";
+		html += `<span class=\"badge bg-secondary me-1\">DESDE: ${desde || '-'} </span>`;
+		html += `<span class=\"badge bg-secondary me-1\">HASTA: ${hasta || '-'} </span>`;
+
+		function makeBadgeOrDropdown(label, items, id) {
+			if (!items || items.length === 0) return '';
+			if (items.length === 1) return `<span class=\"badge bg-secondary me-1\">${label}: ${items[0]}</span>`;
+			let s = `<div class=\"dropdown me-1\">`;
+			s += `<button class=\"badge bg-secondary dropdown-toggle text-nowrap\" type=\"button\" id=\"${id}\" data-bs-toggle=\"dropdown\" aria-expanded=\"false\">${label}: ${items.length} seleccionados</button>`;
+			s += `<ul class=\"dropdown-menu dropdown-menu-end\" aria-labelledby=\"${id}\" data-bs-boundary=\"viewport\">`;
+			items.forEach(function (it) { s += `<li><a class=\"dropdown-item\" href=\"#\">${it}</a></li>`; });
+			s += `</ul></div>`;
+			return s;
+		}
+
+		html += makeBadgeOrDropdown('PROV', cfo, 'cfoDrop');
+		html += makeBadgeOrDropdown('TIPO', cfd, 'cfdDrop');
+		html += makeBadgeOrDropdown('USU', tt, 'ttDrop');
+
+		cont.html(html);
+	} catch (e) {
+		console.error('MostrarFiltrosAplicados error', e);
+	}
+}
+
+// intentar mostrar al cargar
+try { MostrarFiltrosAplicados(); } catch (e) { }
 
 const formatter = new Intl.NumberFormat('de-DE', {
 	minimumFractionDigits: 2,
@@ -528,6 +584,8 @@ function BuscarOrdenesDePago(pag = 1) {
 	var data = $.extend({}, data1, data2);
 	PostGenHtml(data, buscarOrdenesDePagoURL, function (obj) {
 		$("#divOrdenesDePago").html(obj);
+		// actualizar filtros aplicados después de renderizar (fallback si partial reemplaza el DOM)
+		try { MostrarFiltrosAplicados(); } catch (e) { console.warn('MostrarFiltrosAplicados no disponible:', e); }
 		AddEventListenerToGrid("tbListaOP");
 		ActivarBotonesTabPrincipal();
 		AgregarHandlerAHeaderEnGrillaListaOP();

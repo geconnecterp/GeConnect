@@ -97,21 +97,52 @@ function ControlaCancelar() {
 function BuscarProductos(pag = 1) {
 	AbrirWaiting();
 	var lSuc = [];
+	var lSucTextos = "";
 	var lDep = [];
+	var lDepTextos = "";
 	var lProv = [];
+	var lProvTextos = "";
 	var lFam = [];
+	var lFamTextos = "";
 	var lRub = [];
+	var lRubTextos = "";
+	var temp = [];
 	$("#SucursalesList").children().each(function (i, item) { lSuc.push($(item).val()) });
+	$("#SucursalesList").children().each(function (i, item) { temp.push($(item).text()) });
+	lSucTextos = temp.join(", ");
+	temp = [];
 	$("#DepositosList").children().each(function (i, item) { lDep.push($(item).val()) });
+	$("#DepositosList").children().each(function (i, item) { temp.push($(item).text()) });
+	lDepTextos = temp.join(", ");
+	temp = [];
 	$("#Rel01List").children().each(function (i, item) { lProv.push($(item).val()) });
+	$("#Rel01List").children().each(function (i, item) { temp.push($(item).text()) });
+	lProvTextos = temp.join(", ");
+	temp = [];
 	$("#FamiliaList").children().each(function (i, item) { lFam.push($(item).val()) });
+	$("#FamiliaList").children().each(function (i, item) { temp.push($(item).text()) });
+	lFamTextos = temp.join(", ");
+	temp = [];
 	$("#RubrosList").children().each(function (i, item) { lRub.push($(item).val()) });
+	$("#RubrosList").children().each(function (i, item) { temp.push($(item).text()) });
+	lRubTextos = temp.join(", ");
+	temp = [];
 
 	var chkStkPos = $("#chkStockPositivo")[0].checked
 	var chkStkCero = $("#chkStockCero")[0].checked
 	var chkStkNeg = $("#chkStockNegativo")[0].checked
 	var chkEstAct = $("#chkEstadoActivo")[0].checked
 	var chkEstDisc = $("#chkEstadoDiscontinuo")[0].checked
+
+	const chkStockTextos = obtenerTitulosSeleccionados([
+		"chkStockPositivo",
+		"chkStockCero",
+		"chkStockNegativo"
+	]);
+	const chkEstadoTextos = obtenerTitulosSeleccionados([
+		"chkEstadoActivo",
+		"chkEstadoDiscontinuo"
+	]);
 
 	var agrupador = $("#listaAgrupador").val();
 
@@ -121,7 +152,13 @@ function BuscarProductos(pag = 1) {
 	var sort = null;
 	var sortDir = null
 	var data2 = { sort, sortDir, Pagina, buscaNew }
-	var data1 = { lSuc, lDep, lProv, lFam, lRub, chkStkPos, chkStkCero, chkStkNeg, chkEstAct, chkEstDisc, agrupador };
+	var data1 = {
+		lSuc, lDep, lProv, lFam, lRub,
+		chkStkPos, chkStkCero, chkStkNeg, chkEstAct, chkEstDisc,
+		agrupador,
+		lSucTextos, lDepTextos, lProvTextos, lFamTextos, lRubTextos,
+		chkStockTextos, chkEstadoTextos
+	};
 	var data = $.extend({}, data1, data2);
 
 	PostGenHtml(data, buscarStockProductosURL, function (obj) {
@@ -149,6 +186,20 @@ function BuscarProductos(pag = 1) {
 		viendeDesdeBusquedaDeProducto = false;
 		return true
 	});
+}
+
+function obtenerTitulosSeleccionados(idsCheckbox) {
+	const textos = [];
+
+	idsCheckbox.forEach(id => {
+		const chk = $("#" + id)[0];
+		if (chk && chk.checked) {
+			const label = $("label[for='" + id + "']").text().trim();
+			textos.push(label);
+		}
+	});
+
+	return textos.join(", ");
 }
 
 function InicializarCamposEnFiltros(vieneDeCancelar) {

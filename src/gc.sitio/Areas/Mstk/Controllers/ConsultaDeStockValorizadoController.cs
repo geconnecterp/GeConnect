@@ -123,7 +123,46 @@ namespace gc.sitio.Areas.Mstk.Controllers
 				grillaDatos = GenerarGrillaSmart(ListaProductoStkValor, sort, _setting.NroRegistrosPagina, pag, MetadataGeneral.TotalCount, MetadataGeneral.TotalPages, sortDir);
 				model.GrillaProductoStk = grillaDatos;
 				model.AgrupadoPor = request.agrupador;
-				
+
+				// Construcción de leyenda
+				model.LeyendaSuc = ConstruirLeyenda("Sucursales", request.lSuc, request.lSucTextos);
+				model.LeyendaDep = ConstruirLeyenda("Depositos", request.lDep, request.lDepTextos);
+				model.LeyendaProv = ConstruirLeyenda("Proveedores", request.lProv, request.lProvTextos);
+				model.LeyendaRub = ConstruirLeyenda("Rubros", request.lRub, request.lRubTextos);
+				model.LeyendaFam = ConstruirLeyenda("Familias", request.lFam, request.lFamTextos);
+				model.LeyendaStock = ConstruirLeyenda("Stock", request.chkStockTextos);
+				model.LeyendaEstado = ConstruirLeyenda("Estado", request.chkEstadoTextos);
+				model.LeyendaCosto = ConstruirLeyenda("Costo", request.chkCostoRepoTextos);
+
+				// Leyenda final
+				var partesLeyenda = new List<string>();
+
+				if (!string.IsNullOrWhiteSpace(model.LeyendaSuc))
+					partesLeyenda.Add(model.LeyendaSuc);
+
+				if (!string.IsNullOrWhiteSpace(model.LeyendaDep))
+					partesLeyenda.Add(model.LeyendaDep);
+
+				if (!string.IsNullOrWhiteSpace(model.LeyendaProv))
+					partesLeyenda.Add(model.LeyendaProv);
+
+				if (!string.IsNullOrWhiteSpace(model.LeyendaFam))
+					partesLeyenda.Add(model.LeyendaFam);
+
+				if (!string.IsNullOrWhiteSpace(model.LeyendaRub))
+					partesLeyenda.Add(model.LeyendaRub);
+
+				if (!string.IsNullOrWhiteSpace(model.LeyendaStock))
+					partesLeyenda.Add(model.LeyendaStock);
+
+				if (!string.IsNullOrWhiteSpace(model.LeyendaEstado))
+					partesLeyenda.Add(model.LeyendaEstado);
+
+				if (!string.IsNullOrWhiteSpace(model.LeyendaCosto))
+					partesLeyenda.Add(model.LeyendaCosto);
+
+				model.Leyenda = string.Join(" | ", partesLeyenda);
+
 				switch (request.agrupador)
 				{
 					case 0: //Sin Agrupar
@@ -209,6 +248,29 @@ namespace gc.sitio.Areas.Mstk.Controllers
 		}
 
 		#region Métodos Privados
+		private static string ConstruirLeyenda(string titulo, List<string>? lista, string textos)
+		{
+			if (lista == null || lista.Count == 0)
+				return string.Empty;
+
+			// Caso especial: único valor "%"
+			if (lista.Count == 1 && lista[0] == "%")
+				return $"{titulo}: Todos";
+
+			// Caso normal
+			if (!string.IsNullOrWhiteSpace(textos))
+				return $"{titulo}: {textos}";
+
+			return string.Empty;
+		}
+		private static string ConstruirLeyenda(string titulo, string textos)
+		{
+			// Caso normal
+			if (!string.IsNullOrWhiteSpace(textos))
+				return $"{titulo}: {textos}";
+
+			return string.Empty;
+		}
 		private SelectList ComboRubros()
 		{
 			var adms = _rubroServicio.ObtenerListaRubros("", TokenCookie);

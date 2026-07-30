@@ -1,169 +1,170 @@
 ﻿@model ConsultaDeStockCompensadosModel
 @{
-	Layout = "~/views/shared/_Layout.cshtml";
-	var modelInfoProd = new InfoAdicionalModel();
+    Layout = "~/views/shared/_Layout.cshtml";
+    var modelInfoProd = new InfoAdicionalModel();
 }
 @section styles {
-	<link rel="stylesheet" href="~/css/simplePagination.css" />
-	<link rel="stylesheet" href="~/lib/jstree/themes/default/style.min.css" />
+    <link rel="stylesheet" href="~/css/simplePagination.css" />
+    <link rel="stylesheet" href="~/lib/jstree/themes/default/style.min.css" />
 }
 <style>
-	.table-golden thead th {
-		position: sticky;
-		top: 0;
-		z-index: 2;
-		background-color: inherit;
-	}
+    .table-golden thead th {
+        position: sticky;
+        top: 0;
+        z-index: 2;
+        background-color: inherit;
+    }
 
-	#containerListaProducto {
-		max-height: 400px;
-		height: 400px;
-		max-width: 100%;
-		overflow: auto;
-	}
+    #containerListaProducto {
+        max-height: 400px;
+        height: 400px;
+        max-width: 100%;
+        overflow: auto;
+    }
 
-	#collapseSection {
-		position: fixed; /* lo saca del flujo normal */
-		top: 60px; /* ajustá según tu header */
-		right: 20px; /* o left:0 si querés que ocupe todo */
-		width: 80%; /* ancho del panel */
-		max-height: 80%; /* alto máximo */
-		overflow-y: auto; /* scroll interno si se excede */
-		background: #fff; /* fondo para diferenciarlo */
-		border: 1px solid #ccc;
-		box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-		z-index: 1050; /* por encima de otros elementos */
-		padding: 1rem;
-	}
+    #collapseSection {
+        position: fixed; /* lo saca del flujo normal */
+        top: 60px; /* ajustá según tu header */
+        right: 20px; /* o left:0 si querés que ocupe todo */
+        width: 80%; /* ancho del panel */
+        max-height: 80%; /* alto máximo */
+        overflow-y: auto; /* scroll interno si se excede */
+        background: #fff; /* fondo para diferenciarlo */
+        border: 1px solid #ccc;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        z-index: 1050; /* por encima de otros elementos */
+        padding: 1rem;
+    }
 
-	#divInfoAdicionaDeProducto > div:first-child {
-		height: 400px;
-		max-height: 400px;
-		overflow-y: auto;
-	}
+    #divInfoAdicionaDeProducto > div:first-child {
+        height: 400px;
+        max-height: 400px;
+        overflow-y: auto;
+    }
 </style>
 
 <div class="container mt-2">
-	<div class="row mb-2">
-		<div class="col-md-6">
-			<div class="d-flex justify-content-sm-around">
-				<button id="btnFiltro" class="btn btn-primary btn-sm mt-1 me-1" type="button" data-bs-toggle="collapse" data-bs-target="#divFiltro" aria-expanded="true" aria-controls="divFiltro">
-					<i class="bx bx-filter bx-xs"></i>
-				</button>
+    <div class="row mb-2">
+        <div class="col-md-6">
+            <div class="d-flex justify-content-sm-around">
+                <button id="btnFiltro" class="btn btn-primary btn-sm mt-1 me-1" type="button" data-bs-toggle="collapse" data-bs-target="#divFiltro" aria-expanded="true" aria-controls="divFiltro">
+                    <i class="bx bx-filter bx-xs"></i>
+                </button>
 
-				<button class="btn btn-primary btn-sm mt-1 me-1" type="button" id="btnDetalle" data-bs-toggle="collapse" data-bs-target="#divDetalle" aria-expanded="true" aria-controls="divDetalle" hidden>
-					<i class="bx bx-caret-down"></i>
-				</button>
+                <button class="btn btn-primary btn-sm mt-1 me-1" type="button" id="btnDetalle" data-bs-toggle="collapse" data-bs-target="#divDetalle" aria-expanded="true" aria-controls="divDetalle" hidden>
+                    <i class="bx bx-caret-down"></i>
+                </button>
 
-				<button class="btn btn-secondary btn-sm mt-1 me-1" type="button" id="btnImprimir" title="Imprimir">
-					<i class="bx bx-printer"></i> Imprimir
-				</button>
-			</div>
-		</div>
-	</div>
-	<div class="col-12 col-md-9 mx-auto collapse" id="divFiltros">
-		<div class="row justify-content-center">
-			@* <div class="row"> *@
-			<partial name="_filtros" model="Model" />
-			@Html.Hidden("pagEstado", false);
-			@* </div> *@
-		</div>
-	</div>
-	
-	<div class="collapse" id="divDetalle" style="">
-		<div class="row">
-			<div class="col-9" id="divGrillaProductos">
-			</div>
-			<div class="col-3" id="divGrillaInfo" style="padding-left: 0px;padding-right: 0px;">
-				@Html.Partial("_infoProdPorDeposito", modelInfoProd)
-			</div>
-		</div>
-		@* <div class="row">
-			<div class="row">
-				<div class="col-2">
-					<a class="btn btn-sm btn-primary me-1 collapsed" id="btnCollapseSection" data-bs-toggle="collapse" data-bs-target="#collapseSection" role="button" aria-expanded="false" aria-controls="collapseSection">
-						Info. Adicional
-					</a>
-				</div>
-				<div class="col-5"></div>
-			</div>
-			<div class="collapse" id="collapseSection" style="">
-				<div class="d-grid p-1 border">
-					<div class="row">
-						<div class="nav-align-top mb-2">
-							<ul class="nav nav-tabs nav-tabs-golden" role="tablist">
-								<li class="nav-item" role="presentation">
-									<button type="button" class="nav-link" role="tab" data-bs-toggle="tab" data-bs-target="#navs-top-panda" aria-controls="navs-top-profile" aria-selected="false" tabindex="-1">
-										<span id="tabThree" class="custom-lbl">Datos de Stock</span>
-									</button>
-								</li>
-							</ul>
-							<div class="tab-content tab-content-compact" style="padding:0;">
-								<div class="tab-pane tab-content-golden fade" id="navs-top-panda" role="tabpanel">
-									<div id="divInfoStk" class="row">
-										<div class="col-12">
-											<div class="row">
-												<div id="divInfoProductoStkD">
-												</div>
-											</div>
-										</div>
-									</div>
-								</div>
-							</div>
-						</div>
-					</div>
-				</div>
-			</div>
-		</div> *@
-	</div>
-	<div id="divInfoAdicionaDeProducto" class="collapse"></div>
+                <button class="btn btn-secondary btn-sm mt-1 me-1" type="button" id="btnImprimir" title="Imprimir">
+                    <i class="bx bx-printer"></i> Imprimir
+                </button>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-md-9 mx-auto collapse" id="divFiltros">
+        <div class="row justify-content-center">
+            @* <div class="row"> *@
+            <partial name="_filtros" model="Model" />
+            @Html.Hidden("pagEstado", false);
+            @* </div> *@
+        </div>
+    </div>
+
+    <div class="collapse" id="divDetalle" style="">
+        <div class="grid-golden">
+            <div class="grid-golden-header">
+                <div class="row align-items-md-center">
+                    <div class="col-md-10 col-sm-6 d-flex align-items-center">
+                        <h5 class="mb-0 flex-grow-1">
+                            <i class="bx bx-package me-2"></i>
+                            <strong>Filtros</strong>
+                        </h5>
+                        <i class="bx bx-chevrons-down fs-4 ms-2"
+                           id="toggleFiltros"
+                           data-bs-toggle="collapse"
+                           data-bs-target="#filtrosCollapse"
+                           role="button"
+                           data-bs-placement="top"
+                           title="Haz click acá para conocer los filtros aplicados"
+                           style="
+                            cursor:pointer;
+                            transition: transform .25s ease, color .25s ease;
+                            color:#666;
+                            ">
+                        </i>
+                    </div>
+
+                    <div class="col-md-2 col-sm-6">
+                        <div class="d-flex justify-content-sm-end"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="collapse" id="filtrosCollapse">
+                <div class="mt-2">
+                    <span id="badgeProv" class="badge bg-secondary me-1"></span>
+                    <span id="badgeRub" class="badge bg-secondary me-1"></span>
+                    <span id="badgeEstado" class="badge bg-secondary me-1"></span>
+                </div>
+            </div>
+            <div class="grid-golden-body">
+                <div class="row">
+                    <div class="col-9" id="divGrillaProductos">
+                    </div>
+                    <div class="col-3" id="divGrillaInfo" style="padding-left: 0px;padding-right: 0px;">
+                        @Html.Partial("_infoProdPorDeposito", modelInfoProd)
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="divInfoAdicionaDeProducto" class="collapse"></div>
 </div>
 
 <!-- para el modal del geston de impresion -->
 <div id="modalGestorDocumental"></div>
 
 @section scripts {
-	<script type="text/javascript">
-		var totalRegs = 0;
-		var pagRegs = 0;
-		var pags = 0;
-		var pagina = 1;
-		var search = "";
-		var funcCallBack = "BuscarProductos";
-		var dataBak = {};
-		var pIdSeleccionado = "";
+    <script type="text/javascript">
+        var totalRegs = 0;
+        var pagRegs = 0;
+        var pags = 0;
+        var pagina = 1;
+        var search = "";
+        var funcCallBack = "BuscarProductos";
+        var dataBak = {};
+        var pIdSeleccionado = "";
 
-		var autoComRel01Url = "@Url.Action("BuscarProvs", "ConsultaDeStockCompensados", new { area = "Mstk" })";/**/
-		var BuscarRubrosURL = "@Url.Action("ObtenerRubros", "ConsultaDeStockCompensados", new { area = "Mstk" })";
-		var buscarMetadataURL = "@Url.Action("ObtenerDatosPaginacion", "ConsultaDeStockCompensados", new { area = "Mstk" })"; /**/
-		var buscarStockProductosURL = "@Url.Action("BuscarStockProductos", "ConsultaDeStockCompensados", new { area = "Mstk" })"; /**/
-		var BuscarInfoProdStkDepositoURL = "@Url.Action("BuscarInfoProdStkDeposito", "ConsultaDeStockCompensados", new { area = "Mstk" })";
+        var autoComRel01Url = "@Url.Action("BuscarProvs", "ConsultaDeStockCompensados", new { area = "Mstk" })";/**/
+        var BuscarRubrosURL = "@Url.Action("ObtenerRubros", "ConsultaDeStockCompensados", new { area = "Mstk" })";
+        var buscarMetadataURL = "@Url.Action("ObtenerDatosPaginacion", "ConsultaDeStockCompensados", new { area = "Mstk" })"; /**/
+        var buscarStockProductosURL = "@Url.Action("BuscarStockProductos", "ConsultaDeStockCompensados", new { area = "Mstk" })"; /**/
+        var BuscarInfoProdStkDepositoURL = "@Url.Action("BuscarInfoProdStkDeposito", "ConsultaDeStockCompensados", new { area = "Mstk" })";
 
-		/*URL para componente de Información Adicional de Productos*/
-		var abrirComponenteDeInfoAdicionalDeProdUrl = "@Url.Action("AbrirComponente", "infoadicionaldeprod", new { area = "ControlComun" })";
-		var BuscarInfoProdURL = "@Url.Action("BuscarInfoProd", "infoadicionaldeprod", new { area = "ControlComun" })";
-		var BuscarInfoProdStkAURL = "@Url.Action("BuscarInfoProdStkA", "infoadicionaldeprod", new { area = "ControlComun" })";
-		var BuscarInfoProdStkDURL = "@Url.Action("BuscarInfoProdStkD", "infoadicionaldeprod", new { area = "ControlComun" })";
-		var BuscarInfoProdStkBoxURL = "@Url.Action("BuscarInfoProdStkBox", "infoadicionaldeprod", new { area = "ControlComun" })";
-		var BuscarInfoProdMovMensURL = "@Url.Action("BuscarInfoProdMovMens", "infoadicionaldeprod", new { area = "ControlComun" })";
-		var BuscarInfoProdMovSemURL = "@Url.Action("BuscarInfoProdMovSem", "infoadicionaldeprod", new { area = "ControlComun" })";
-		var BuscarInfoProdMovDURL = "@Url.Action("BuscarInfoProdMovD", "infoadicionaldeprod", new { area = "ControlComun" })";
-		var BuscarInfoProdSustitutoURL = "@Url.Action("BuscarInfoProdSustituto", "infoadicionaldeprod", new { area = "ControlComun" })";
-		/**/
+        /*URL para componente de Información Adicional de Productos*/
+        var abrirComponenteDeInfoAdicionalDeProdUrl = "@Url.Action("AbrirComponente", "infoadicionaldeprod", new { area = "ControlComun" })";
+        var BuscarInfoProdURL = "@Url.Action("BuscarInfoProd", "infoadicionaldeprod", new { area = "ControlComun" })";
+        var BuscarInfoProdStkAURL = "@Url.Action("BuscarInfoProdStkA", "infoadicionaldeprod", new { area = "ControlComun" })";
+        var BuscarInfoProdStkDURL = "@Url.Action("BuscarInfoProdStkD", "infoadicionaldeprod", new { area = "ControlComun" })";
+        var BuscarInfoProdStkBoxURL = "@Url.Action("BuscarInfoProdStkBox", "infoadicionaldeprod", new { area = "ControlComun" })";
+        var BuscarInfoProdMovMensURL = "@Url.Action("BuscarInfoProdMovMens", "infoadicionaldeprod", new { area = "ControlComun" })";
+        var BuscarInfoProdMovSemURL = "@Url.Action("BuscarInfoProdMovSem", "infoadicionaldeprod", new { area = "ControlComun" })";
+        var BuscarInfoProdMovDURL = "@Url.Action("BuscarInfoProdMovD", "infoadicionaldeprod", new { area = "ControlComun" })";
+        var BuscarInfoProdSustitutoURL = "@Url.Action("BuscarInfoProdSustituto", "infoadicionaldeprod", new { area = "ControlComun" })";
+        /**/
 
-		// Gestor de impresión
-		var repoApiUrl = '@Url.Action("ObtenerPdfDesdeAPI", "GestorImpresion", new { area = "ControlComun" })';
-		var OrquestadorDeModulosUrl = "@Url.Action("OrquestadorDeModulos", "GestorImpresion", new { area = "ControlComun" })";
-		var presentarArchivosUrl = "@Url.Action("presentarArchivos", "GestorImpresion", new { area = "ControlComun" })";
-		var enviarEmailUrl = "@Url.Action("EnviarEmail", "GestorImpresion", new { area = "ControlComun" })";
-		var enviarWhatsAppUrl = "@Url.Action("EnviarWhatsApp", "GestorImpresion", new { area = "ControlComun" })";
-		var generadorArchivoUrl = "@Url.Action("GeneradorArchivo", "GestorImpresion", new { area = "ControlComun" })";
+        // Gestor de impresión
+        var repoApiUrl = '@Url.Action("ObtenerPdfDesdeAPI", "GestorImpresion", new { area = "ControlComun" })';
+        var OrquestadorDeModulosUrl = "@Url.Action("OrquestadorDeModulos", "GestorImpresion", new { area = "ControlComun" })";
+        var presentarArchivosUrl = "@Url.Action("presentarArchivos", "GestorImpresion", new { area = "ControlComun" })";
+        var enviarEmailUrl = "@Url.Action("EnviarEmail", "GestorImpresion", new { area = "ControlComun" })";
+        var enviarWhatsAppUrl = "@Url.Action("EnviarWhatsApp", "GestorImpresion", new { area = "ControlComun" })";
+        var generadorArchivoUrl = "@Url.Action("GeneradorArchivo", "GestorImpresion", new { area = "ControlComun" })";
 
-	</script>
-	<script src="~/lib/jstree/jstree.min.js"></script>
-	<script src="~/js/app/areas/docmngr/docmanager.js"></script>
-	<script src="~/js/plugins/jquery.simplePagination.js"></script>
+    </script>
+    <script src="~/lib/jstree/jstree.min.js"></script>
+    <script src="~/js/app/areas/docmngr/docmanager.js"></script>
+    <script src="~/js/plugins/jquery.simplePagination.js"></script>
 
-	<script src="~/js/app/areas/mstk/consultastockcompensado/consstkcomp.js" type="text/javascript"></script>
-	<script src="~/js/app/controlcomun/infoAdicionalDeProd.js" type="text/javascript"></script>
+    <script src="~/js/app/areas/mstk/consultastockcompensado/consstkcomp.js" type="text/javascript"></script>
+    <script src="~/js/app/controlcomun/infoAdicionalDeProd.js" type="text/javascript"></script>
 }

@@ -6,6 +6,12 @@
 	<link rel="stylesheet" href="~/css/simplePagination.css" />
 	<link rel="stylesheet" href="~/lib/jstree/themes/default/style.min.css" />
 }
+<style>
+	/* Si el header global tiene un z-index muy alto, forzamos el menu del filtro encima */
+	.navbar, .main-header {
+		z-index: 1100;
+	}
+</style>
 <div class="container mt-2">
 	<div class="row mb-2">
 		<div class="col-md-6">

@@ -25,16 +25,20 @@ $(function () {
 		if ($("#divFiltros").hasClass("show")) {
 			$("#divFiltros").collapse("hide");
 			$("#divDetalle").collapse("show");
-		}
+		} 
 		else {
 			$("#divFiltros").collapse("show");
 			$("#divDetalle").collapse("hide");
 		}
 	});
 
-	$("#btnBuscar").on("click", function () {
-		InicializarPantallaPrincipal();
-	});
+		$("#btnBuscar").on("click", function () {
+			try { MostrarFiltrosAplicados(); } catch (e) { }
+			InicializarPantallaPrincipal();
+		});
+
+		// Mostrar filtros al cargar la pantalla
+		try { MostrarFiltrosAplicados(); } catch (e) { }
 });
 
 
@@ -103,7 +107,8 @@ function InicializarPantallaPrincipal() {
 	var hasta = $("#Hasta").val();
 	AbrirWaiting("Cargando información...");
 	PostGenHtml({ sucursalesEnvText, sucursalesRecText, tiposText, desde, hasta }, inicializarPantallPrincipalURL, function (obj) {
-		$("#divDetalle").html(obj);
+			$("#divDetalle").html(obj);
+			try { MostrarFiltrosAplicados(); } catch (e) { }
 		$(document).on('shown.bs.tab', 'button[data-bs-toggle="tab"]', function (e) {
 			const tabId = $(e.target).attr("data-bs-target").replace("#", "");
 			EvaluarBotonImprimir(tabId);
@@ -442,6 +447,45 @@ function ObtenerSucursalesSeleccionadasConTexto(sucList, suc) {
 		textos: textos.join(", "),
 		todos_seleccionados: todos
 	};
+}
+
+function MostrarFiltrosAplicados() {
+	const $target = $("#filtrosAplicadosFloating").length ? $("#filtrosAplicadosFloating") : $("#filtrosAplicadosContainer");
+	if ($target.length === 0) return;
+
+	const desde = $("#Desde").val();
+	const hasta = $("#Hasta").val();
+
+	function listFrom(id) {
+		const arr = [];
+		$("#" + id + " option").each(function () { arr.push($(this).text()); });
+		return arr;
+	}
+
+	const sucEnv = listFrom("SucursalesEnviaList");
+	const sucRec = listFrom("SucursalesRecibeList");
+	const tipos = listFrom("TiposList");
+
+	let html = '<div class="d-inline-flex align-items-center" style="gap:8px;white-space:nowrap;">';
+	if (desde) html += `<span class="badge bg-secondary">Desde: ${desde}</span>`;
+	if (hasta) html += `<span class="badge bg-secondary">Hasta: ${hasta}</span>`;
+
+	function renderGroup(label, items) {
+		if (!items || items.length === 0) return '';
+		if (items.length === 1) return `<span class="badge bg-secondary">${label}: ${items[0]}</span>`;
+		const listItems = items.map(i => `<li class="dropdown-item text-wrap">${i}</li>`).join('');
+		return `<div class="btn-group">
+					<button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" data-bs-boundary="viewport">${label}: ${items.length} seleccionados</button>
+					<ul class="dropdown-menu p-0" style="min-width:200px;">${listItems}</ul>
+				</div>`;
+	}
+
+	html += renderGroup('Suc. Env', sucEnv);
+	html += renderGroup('Suc. Rec', sucRec);
+	html += renderGroup('Tipos', tipos);
+	html += '</div>';
+
+	$target.html(html);
 }
 
 function ControlalistaSucursalesEnviaSelected() {
