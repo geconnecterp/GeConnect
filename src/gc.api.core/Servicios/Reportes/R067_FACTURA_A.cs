@@ -195,7 +195,8 @@ namespace gc.api.core.Servicios.Reportes
                         totalPaginas,
                         fuenteNormal,
                         fuenteNormalBold,
-                        fuenteChica
+                        fuenteChica,
+                        _logger
                     );
                 }
             }
