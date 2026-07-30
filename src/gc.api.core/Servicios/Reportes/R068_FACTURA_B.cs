@@ -92,7 +92,8 @@ namespace gc.api.core.Servicios.Reportes
                     fuenteNormal,
                     fuenteNormalBold,
                     fuenteChica,
-                    leyendaImpresion
+                    leyendaImpresion,
+                    _logger
                 );
 
                 pdf.Close();
@@ -121,7 +122,8 @@ namespace gc.api.core.Servicios.Reportes
             Font fuenteNormal,
             Font fuenteNormalBold,
             Font fuenteChica,
-            string leyendaImpresion)
+            string leyendaImpresion,
+            ILogger logger)
         {
             var totalPaginas = FacturaBase.CalcularTotalPaginas(productos.Count, FilasPaginaComun, FilasUltimaPagina);
             var indiceProducto = 0;
@@ -154,7 +156,8 @@ namespace gc.api.core.Servicios.Reportes
                         totalPaginas,
                         fuenteNormal,
                         fuenteNormalBold,
-                        fuenteChica
+                        fuenteChica,
+                        logger
                     );
                 }
             }

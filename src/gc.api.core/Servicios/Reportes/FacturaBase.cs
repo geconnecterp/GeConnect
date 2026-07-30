@@ -1,17 +1,28 @@
-﻿using gc.infraestructura.Dtos.Cajas.Response;
+﻿using gc.infraestructura.Dtos.Cajas;
+using gc.infraestructura.Dtos.Cajas.Response;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Helpers;
 using iTextSharp.text;
 using iTextSharp.text.pdf;
+using Microsoft.Extensions.Logging;
 using System.Globalization;
+using System.Text;
+using System.Text.Json;
 
 namespace gc.api.core.Servicios.Reportes
 {
     internal static class FacturaBase
     {
         private const float FooterTopY = 165f;
-        private const float FooterBottomY = 52f;
+        private const float FooterBottomY = 86f;
+        private const string ArcaQrBaseUrl = "https://www.arca.gob.ar/fe/qr/?p=";
+        private const long CaeEjemploDesarrollo = 70417054367476;
+        private static readonly DateTime CaeVtoEjemploDesarrollo = new(2020, 10, 23);
         private static readonly CultureInfo Cultura = CultureInfo.GetCultureInfo("es-AR");
+        private static readonly JsonSerializerOptions ArcaQrJsonOptions = new()
+        {
+            DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
+        };
 
         internal static Font CrearFuente(int size, bool bold = false)
         {
@@ -255,7 +266,8 @@ namespace gc.api.core.Servicios.Reportes
             int totalPaginas,
             Font fuenteNormal,
             Font fuenteNormalBold,
-            Font fuenteChica)
+            Font fuenteChica,
+            ILogger? logger = null)
         {
             var canvas = writer.DirectContent;
             DibujarLineasPie(canvas, pdf);
@@ -273,7 +285,7 @@ namespace gc.api.core.Servicios.Reportes
             AgregarLineaTotal(tablaTotales, "Importe Total:", encabezado.cm_total, fuenteNormalBold, true);
 
             tablaTotales.WriteSelectedRows(0, -1, pdf.PageSize.Width - pdf.RightMargin - 230f, FooterTopY - 10f, canvas);
-            DibujarPieFiscalComun(writer, pdf, encabezado, paginaActual, totalPaginas, fuenteChica);
+            DibujarPieFiscalComun(writer, pdf, encabezado, paginaActual, totalPaginas, fuenteChica, logger);
         }
 
         internal static void DibujarPieFacturaA(
@@ -286,7 +298,8 @@ namespace gc.api.core.Servicios.Reportes
             int totalPaginas,
             Font fuenteNormal,
             Font fuenteNormalBold,
-            Font fuenteChica)
+            Font fuenteChica,
+            ILogger? logger = null)
         {
             var canvas = writer.DirectContent;
             DibujarLineasPie(canvas, pdf);
@@ -316,7 +329,7 @@ namespace gc.api.core.Servicios.Reportes
             AgregarLineaTotal(totales, "Importe Total:", encabezado.cm_total, fuenteNormalBold, true);
             totales.WriteSelectedRows(0, -1, pdf.PageSize.Width - pdf.RightMargin - 230f, FooterTopY - 12f, canvas);
 
-            DibujarPieFiscalComun(writer, pdf, encabezado, paginaActual, totalPaginas, fuenteChica);
+            DibujarPieFiscalComun(writer, pdf, encabezado, paginaActual, totalPaginas, fuenteChica, logger);
         }
 
         private static void DibujarLineasPie(PdfContentByte canvas, Document pdf)
@@ -330,19 +343,53 @@ namespace gc.api.core.Servicios.Reportes
             canvas.Stroke();
         }
 
-        private static void DibujarPieFiscalComun(PdfWriter writer, Document pdf, FeResDto encabezado, int paginaActual, int totalPaginas, Font fuenteChica)
+        private static void DibujarPieFiscalComun(PdfWriter writer, Document pdf, FeResDto encabezado, int paginaActual, int totalPaginas, Font fuenteChica, ILogger? logger = null)
         {
             PdfPTable tabla = new PdfPTable(3);
             tabla.TotalWidth = pdf.PageSize.Width - pdf.LeftMargin - pdf.RightMargin;
             tabla.SetWidths(new float[] { 30f, 35f, 35f });
 
-            AgregarCeldaSinBorde(tabla, "AFIP", fuenteChica, Element.ALIGN_LEFT);
-            AgregarCeldaSinBorde(tabla, $"Pág. {paginaActual} de {totalPaginas}", fuenteChica, Element.ALIGN_CENTER);
+            PdfPCell celdaQr = new PdfPCell();
+            celdaQr.Border = Rectangle.NO_BORDER;
+            celdaQr.HorizontalAlignment = Element.ALIGN_LEFT;
+            celdaQr.VerticalAlignment = Element.ALIGN_TOP;
+            celdaQr.Padding = 0f;
+
+            var qr = GenerarQrArca(encabezado, logger);
+            if (qr != null)
+            {
+                qr.ScaleAbsolute(58f, 58f);
+                celdaQr.AddElement(qr);
+                logger?.LogInformation(
+                    "FacturaBase QR ARCA agregado al pie. tco_id={TcoId}; cm_compte={CmCompte}; cm_repetido={CmRepetido}; pagina={Pagina}/{TotalPaginas}",
+                    encabezado.tco_id,
+                    encabezado.cm_compte,
+                    encabezado.cm_repetido,
+                    paginaActual,
+                    totalPaginas);
+            }
+            else
+            {
+                celdaQr.AddElement(new Phrase("ARCA", fuenteChica));
+            }
+            tabla.AddCell(celdaQr);
+
+            PdfPTable centro = new PdfPTable(1);
+            centro.WidthPercentage = 100;
+            AgregarCeldaSinBorde(centro, "ARCA", CrearFuente(15, true), Element.ALIGN_LEFT);
+            AgregarCeldaSinBorde(centro, "Comprobante Autorizado", CrearFuente(6, true), Element.ALIGN_LEFT);
+            AgregarCeldaSinBorde(centro, "Esta Administracion Federal no se responsabiliza por los datos ingresados en el detalle de la operacion", CrearFuente(4, true), Element.ALIGN_LEFT);
+            AgregarCeldaSinBorde(centro, $"Pág. {paginaActual}/{totalPaginas}", fuenteChica, Element.ALIGN_CENTER);
+            PdfPCell celdaCentro = new PdfPCell(centro);
+            celdaCentro.Border = Rectangle.NO_BORDER;
+            celdaCentro.Padding = 0f;
+            tabla.AddCell(celdaCentro);
 
             PdfPTable cae = new PdfPTable(1);
             cae.WidthPercentage = 100;
-            AgregarCeldaSinBorde(cae, $"CAE N°: {encabezado.cm_cae}", fuenteChica, Element.ALIGN_RIGHT);
-            var caeVto = encabezado.cm_cae_vto.HasValue ? encabezado.cm_cae_vto.Value.ToString("dd/MM/yyyy") : string.Empty;
+            var caeTexto = ObtenerCaeParaImpresion(encabezado, logger);
+            AgregarCeldaSinBorde(cae, $"CAE N°: {caeTexto}", fuenteChica, Element.ALIGN_RIGHT);
+            var caeVto = ObtenerCaeVtoParaImpresion(encabezado, logger);
             AgregarCeldaSinBorde(cae, $"Fecha de Vto. de CAE: {caeVto}", fuenteChica, Element.ALIGN_RIGHT);
             PdfPCell celdaCae = new PdfPCell(cae);
             celdaCae.Border = Rectangle.NO_BORDER;
@@ -351,6 +398,158 @@ namespace gc.api.core.Servicios.Reportes
             tabla.WriteSelectedRows(0, -1, pdf.LeftMargin, FooterBottomY - 5f, writer.DirectContent);
         }
 
+        private static Image? GenerarQrArca(FeResDto encabezado, ILogger? logger = null)
+        {
+            var url = GenerarUrlQrArca(encabezado, logger);
+            if (string.IsNullOrWhiteSpace(url))
+            {
+                return null;
+            }
+
+            try
+            {
+                return Image.GetInstance(ArcaQrHelper.GenerarPng(url));
+            }
+            catch (Exception ex)
+            {
+                logger?.LogError(
+                    ex,
+                    "FacturaBase QR ARCA no se pudo renderizar. tco_id={TcoId}; cm_compte={CmCompte}; cm_repetido={CmRepetido}",
+                    encabezado.tco_id,
+                    encabezado.cm_compte,
+                    encabezado.cm_repetido);
+                return null;
+            }
+        }
+
+        private static string GenerarUrlQrArca(FeResDto encabezado, ILogger? logger = null)
+        {
+            var puntoVentaTexto = ObtenerPuntoVenta(encabezado);
+            var numeroComprobanteTexto = ObtenerNumeroComprobante(encabezado);
+            var cuitEmisorTexto = ObtenerSoloDigitos(encabezado.emp_cuit);
+            var tipoComprobanteTexto = ObtenerSoloDigitos(encabezado.tco_id);
+            var numeroComprobanteSoloDigitos = ObtenerSoloDigitos(numeroComprobanteTexto);
+            var codigoAutorizacionTexto = ObtenerSoloDigitos(ObtenerCaeParaImpresion(encabezado, logger));
+
+            logger?.LogInformation(
+                "FacturaBase QR ARCA datos de entrada. tco_id={TcoId}; tco_desc={TcoDesc}; cm_compte={CmCompte}; cm_repetido={CmRepetido}; emp_cuit={EmpCuit}; puntoVenta={PuntoVenta}; numero={Numero}; cm_total={Total}; mon_codigo={Moneda}; cm_cae={Cae}; cm_cae_vto={CaeVto}; cm_cuit={DocReceptor}",
+                encabezado.tco_id,
+                encabezado.tco_desc,
+                encabezado.cm_compte,
+                encabezado.cm_repetido,
+                encabezado.emp_cuit,
+                puntoVentaTexto,
+                numeroComprobanteTexto,
+                encabezado.cm_total,
+                encabezado.mon_codigo,
+                encabezado.cm_cae,
+                encabezado.cm_cae_vto,
+                encabezado.cm_cuit);
+
+            if (!long.TryParse(cuitEmisorTexto, out var cuitEmisor) || cuitEmisor == 0)
+            {
+                logger?.LogWarning("FacturaBase QR ARCA omitido: CUIT emisor invalido. emp_cuit={EmpCuit}; normalizado={Normalizado}", encabezado.emp_cuit, cuitEmisorTexto);
+                return string.Empty;
+            }
+
+            if (!int.TryParse(puntoVentaTexto, out var puntoVenta) || puntoVenta == 0)
+            {
+                logger?.LogWarning("FacturaBase QR ARCA omitido: punto de venta invalido. cm_compte={CmCompte}; caja_id={CajaId}; puntoVenta={PuntoVenta}", encabezado.cm_compte, encabezado.caja_id, puntoVentaTexto);
+                return string.Empty;
+            }
+
+            if (!int.TryParse(tipoComprobanteTexto, out var tipoComprobante) || tipoComprobante == 0)
+            {
+                logger?.LogWarning("FacturaBase QR ARCA omitido: tipo de comprobante invalido. tco_id={TcoId}; normalizado={Normalizado}", encabezado.tco_id, tipoComprobanteTexto);
+                return string.Empty;
+            }
+
+            if (!long.TryParse(numeroComprobanteSoloDigitos, out var numeroComprobante) || numeroComprobante == 0)
+            {
+                logger?.LogWarning("FacturaBase QR ARCA omitido: numero de comprobante invalido. cm_compte={CmCompte}; numero={Numero}; normalizado={Normalizado}", encabezado.cm_compte, numeroComprobanteTexto, numeroComprobanteSoloDigitos);
+                return string.Empty;
+            }
+
+            if (!long.TryParse(codigoAutorizacionTexto, out var codigoAutorizacion) || codigoAutorizacion == 0)
+            {
+                logger?.LogWarning("FacturaBase QR ARCA omitido: codigo de autorizacion CAE/CAEA invalido. cm_cae={Cae}; normalizado={Normalizado}", encabezado.cm_cae, codigoAutorizacionTexto);
+                return string.Empty;
+            }
+
+            var dto = new ArcaQrComprobanteDto
+            {
+                Ver = 1,
+                Fecha = encabezado.cm_fecha.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
+                Cuit = cuitEmisor,
+                PtoVta = puntoVenta,
+                TipoCmp = tipoComprobante,
+                NroCmp = numeroComprobante,
+                Importe = encabezado.cm_total,
+                Moneda = string.IsNullOrWhiteSpace(encabezado.mon_codigo) ? "PES" : encabezado.mon_codigo.Trim(),
+                Ctz = 1m,
+                TipoCodAut = "E",
+                CodAut = codigoAutorizacion
+            };
+
+            var documentoReceptor = ObtenerSoloDigitos(encabezado.cm_cuit);
+            if (long.TryParse(documentoReceptor, out var nroDocReceptor) && nroDocReceptor > 0)
+            {
+                dto.NroDocRec = nroDocReceptor;
+                dto.TipoDocRec = documentoReceptor.Length == 11 ? 80 : documentoReceptor.Length == 8 ? 96 : null;
+            }
+
+            var json = JsonSerializer.Serialize(dto, ArcaQrJsonOptions);
+            var base64 = Convert.ToBase64String(Encoding.UTF8.GetBytes(json));
+            logger?.LogInformation("FacturaBase QR ARCA generado. json={Json}; base64={Base64}; url={Url}", json, base64, ArcaQrBaseUrl + base64);
+            return ArcaQrBaseUrl + base64;
+        }
+
+        private static string ObtenerSoloDigitos(string? valor)
+        {
+            if (string.IsNullOrWhiteSpace(valor))
+            {
+                return string.Empty;
+            }
+
+            return new string(valor.Where(char.IsDigit).ToArray());
+        }
+
+        private static string ObtenerCaeParaImpresion(FeResDto encabezado, ILogger? logger = null)
+        {
+            var caeNormalizado = ObtenerSoloDigitos(encabezado.cm_cae);
+            if (long.TryParse(caeNormalizado, out var cae) && cae > 0)
+            {
+                return caeNormalizado;
+            }
+
+            logger?.LogWarning(
+                "FacturaBase usando CAE de ejemplo para desarrollo. tco_id={TcoId}; cm_compte={CmCompte}; cm_repetido={CmRepetido}; cm_cae_original={CaeOriginal}; cae_ejemplo={CaeEjemplo}",
+                encabezado.tco_id,
+                encabezado.cm_compte,
+                encabezado.cm_repetido,
+                encabezado.cm_cae,
+                CaeEjemploDesarrollo);
+
+            return CaeEjemploDesarrollo.ToString(CultureInfo.InvariantCulture);
+        }
+
+        private static string ObtenerCaeVtoParaImpresion(FeResDto encabezado, ILogger? logger = null)
+        {
+            if (encabezado.cm_cae_vto.HasValue && encabezado.cm_cae_vto.Value.Date > new DateTime(1900, 1, 1))
+            {
+                return encabezado.cm_cae_vto.Value.ToString("dd/MM/yyyy");
+            }
+
+            logger?.LogWarning(
+                "FacturaBase usando vencimiento de CAE de ejemplo para desarrollo. tco_id={TcoId}; cm_compte={CmCompte}; cm_repetido={CmRepetido}; cm_cae_vto_original={CaeVtoOriginal}; cae_vto_ejemplo={CaeVtoEjemplo}",
+                encabezado.tco_id,
+                encabezado.cm_compte,
+                encabezado.cm_repetido,
+                encabezado.cm_cae_vto,
+                CaeVtoEjemploDesarrollo);
+
+            return CaeVtoEjemploDesarrollo.ToString("dd/MM/yyyy");
+        }
         private static PdfPTable CrearTablaTributos(List<FePerResDto> datosPercepciones, Font fuenteNormalBold, Font fuenteChica)
         {
             PdfPTable tabla = new PdfPTable(4);
