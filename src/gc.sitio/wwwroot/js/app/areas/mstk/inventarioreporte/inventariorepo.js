@@ -8,6 +8,7 @@ $(function () {
 
 	$("#btnBuscar").on("click", function () {
 		if (validarFechas()) {
+			MostrarFiltrosAplicados();
 			BuscarInventarios();
 		} else {
 			AbrirMensaje("ATENCIÓN", "Problemas con las fechas, por favor verifique.", function () {
@@ -29,11 +30,46 @@ $(function () {
 	});
 });
 
+function MostrarFiltrosAplicados() {
+	try {
+		// intentar usar el contenedor flotante; si no existe, no hacemos nada (el partial puede contener su propio container)
+		const floatCont = $("#filtrosAplicadosFloating");
+		const fallback = $("#filtrosAplicadosContainer");
+		const cont = floatCont.length ? floatCont : (fallback.length ? fallback : null);
+		if (!cont) return;
+
+		const desde = $("#Desde").val();
+		const hasta = $("#Hasta").val();
+		const listaSucText = $("#listaSucursales option:selected").text() || "Todos";
+		const estSele = $("#listaEstados option:selected").text();
+		var listaEstadoText = "";
+		if (estSele && estSele.toUpperCase() != "SELECCIONAR")
+			listaEstadoText = $("#listaEstados option:selected").text() || "Todos";
+
+		let html = '<div class="d-inline-flex align-items-center" style="gap:8px;white-space:nowrap;">';
+		if (desde) html += `<span class="badge bg-secondary">Desde: ${desde}</span>`;
+		if (hasta) html += `<span class="badge bg-secondary">Hasta: ${hasta}</span>`;
+		if (listaSucText) html += `<span class=\"badge bg-secondary me-1\">Suc.: ${listaSucText}</span>`;
+		if (listaEstadoText && listaEstadoText != "") html += `<span class=\"badge bg-secondary me-1\">Est.: ${listaEstadoText}</span>`;
+
+		html += '</div>';
+
+		cont.html(html);
+	} catch (e) {
+		console.error('MostrarFiltrosAplicados error', e);
+	}
+}
+
+// intentar mostrar al cargar
+try { MostrarFiltrosAplicados(); } catch (e) { }
+
 function BuscarInventarios() {
 	var data = {};
 	AbrirWaiting("Inicializando presentación de vista de reporte de inventario...");
 	PostGenHtml(data, inicializarPantallPrincipalURL, function (obj) {
 		$("#divDetalle").html(obj);
+		// Actualizar filtros aplicados después de renderizar la pantalla principal
+		try { MostrarFiltrosAplicados(); } catch (e) { console.warn('MostrarFiltrosAplicados no disponible:', e); }
 		$("#divFiltros").collapse("hide");
 		$("#divDetalle").collapse("show");
 		$("#btnTabInventarioReporte").addClass("tab-disabled");

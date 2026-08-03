@@ -1421,6 +1421,38 @@ function extraerValoresDeSelect(selectId, fallbackId, checkId) {
     return valores;
 }
 
+// ===================================================
+//  Funciones para renderizar los filtros en vistas
+// ===================================================
+
+function listFrom(id) {
+    return $("#" + id + " option").map(function () {
+        return $(this).text();
+    }).get();
+}
+
+function renderGroup(label, items) {
+    if (!items || items.length === 0) return '';
+    if (items.length === 1) return `<span class="badge bg-secondary">${label}: ${items[0]}</span>`;
+    const listItems = items.map(i => `<li class="dropdown-item text-wrap">${i}</li>`).join('');
+    return `
+			<div class="btn-group">
+				<button type="button"
+						class="badge-dropdown-filtros dropdown-toggle"
+						data-bs-toggle="dropdown"
+						aria-expanded="false"
+						data-bs-boundary="viewport">
+					${label}: ${items.length} seleccionados
+				</button>
+				<ul class="dropdown-menu p-0" style="min-width:200px;">
+					${listItems}</ul>
+				</div>`;
+}
+// ===================================================
+//  FIN: Funciones para renderizar los filtros en vistas
+// ===================================================
+
+
 
 // ===============================
 //  Task Manager Reutilizable

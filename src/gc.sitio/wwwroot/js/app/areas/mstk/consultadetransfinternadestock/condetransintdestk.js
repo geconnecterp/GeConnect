@@ -456,12 +456,6 @@ function MostrarFiltrosAplicados() {
 	const desde = $("#Desde").val();
 	const hasta = $("#Hasta").val();
 
-	function listFrom(id) {
-		const arr = [];
-		$("#" + id + " option").each(function () { arr.push($(this).text()); });
-		return arr;
-	}
-
 	const sucEnv = listFrom("SucursalesEnviaList");
 	const sucRec = listFrom("SucursalesRecibeList");
 	const tipos = listFrom("TiposList");
@@ -469,16 +463,6 @@ function MostrarFiltrosAplicados() {
 	let html = '<div class="d-inline-flex align-items-center" style="gap:8px;white-space:nowrap;">';
 	if (desde) html += `<span class="badge bg-secondary">Desde: ${desde}</span>`;
 	if (hasta) html += `<span class="badge bg-secondary">Hasta: ${hasta}</span>`;
-
-	function renderGroup(label, items) {
-		if (!items || items.length === 0) return '';
-		if (items.length === 1) return `<span class="badge bg-secondary">${label}: ${items[0]}</span>`;
-		const listItems = items.map(i => `<li class="dropdown-item text-wrap">${i}</li>`).join('');
-		return `<div class="btn-group">
-					<button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" data-bs-boundary="viewport">${label}: ${items.length} seleccionados</button>
-					<ul class="dropdown-menu p-0" style="min-width:200px;">${listItems}</ul>
-				</div>`;
-	}
 
 	html += renderGroup('Suc. Env', sucEnv);
 	html += renderGroup('Suc. Rec', sucRec);

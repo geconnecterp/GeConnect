@@ -12,25 +12,56 @@
             return (string.Empty, string.Empty, string.Empty);
 
         int diasRestantes = (fechaHasta.Value - fechaHoy).Days;
-        
+
         // Oferta vencida
         if (diasRestantes < 0)
             return ("bg-danger", "bx-time-five", "Oferta vencida");
-        
+
         // Oferta próxima a vencer
         int diasTotales = (fechaHasta.Value - fechaDesde.Value).Days + 1;
         int diasTranscurridos = Math.Max(0, (fechaHoy - fechaDesde.Value).Days);
-        
+
         if (diasTotales > 0 && diasTranscurridos > diasTotales / 2)
             return ("bg-warning text-dark", "bx-time-five", $"Quedan {diasRestantes} día(s)");
-        
+
         // Oferta vigente normal
         return ("bg-success", "bx-calendar-check", $"Quedan {diasRestantes} día(s)");
     }
 }
+<div class="grid-golden h-100">
+    <div class="grid-golden-header">
+        <div class="row align-items-md-center">
+            <div class="col-md-10 col-sm-6 d-flex align-items-center">
+                <h5 class="mb-0 flex-grow-1">
+                    <i class="bx bx-package me-2"></i>
+                    <strong>Filtros</strong>
+                </h5>
+                <i class="bx bx-chevrons-down fs-4 ms-2"
+                   id="toggleFiltros"
+                   data-bs-toggle="collapse"
+                   data-bs-target="#filtrosCollapse"
+                   role="button"
+                   data-bs-placement="top"
+                   title="Haz click acá para conocer los filtros aplicados"
+                   style="
+                    cursor:pointer;
+                    transition: transform .25s ease, color .25s ease;
+                    color:#666;
+                    ">
+                </i>
+            </div>
 
-<div class="card card-golden">
-    <div class="card-body p-2">
+            <div class="col-md-2 col-sm-6">
+                <div class="d-flex justify-content-sm-end"></div>
+            </div>
+        </div>
+    </div>
+    <div class="collapse" id="filtrosCollapse">
+        <div class="mt-2">
+            <div id="filtrosAplicadosContainer" class="d-flex align-items-center" style="gap:6px;flex-wrap:wrap;"></div>
+        </div>
+    </div>
+    <div class="grid-golden-body p-1">
         <div class="table-responsive text-nowrap table-wrapper-500">
             <table class="table table-sm mb-0 table-hover table-golden" id="tbGridOfertasSinActivar">
                 <thead class="sticky-top table-golden-header-compact">
@@ -56,7 +87,7 @@
                         {
                             alt = !alt;
                             clase = alt ? string.Empty : "table-row-alt";
-                            
+
                             var (vigenciaCss, vigenciaIcon, vigenciaMsg) = GetVigenciaInfo(item.po_fecha_desde, item.po_fecha_hasta);
 
                             <tr class="@clase" data-producto-id="@item.p_id">
@@ -94,7 +125,7 @@
                                         </span>
                                     }
                                 </td>
-                               @*  <td class="text-center">
+                                @*  <td class="text-center">
                                     <button type="button"
                                             class="btn btn-outline-primary btn-sm btn-activar-oferta"
                                             data-p-id="@item.p_id"
@@ -130,12 +161,12 @@
                     Total: @Model.CantidadReg ofertas sin activar
                     <span class="ms-3 badge bg-primary" id="ofertasSeleccionadas">0</span> seleccionadas
                 </div>
-               @*  <div class="text-muted small">
+                @*  <div class="text-muted small">
                     <button type="button" class="btn btn-primary btn-sm" id="btnActivarOfertas">
                         <i class="bx bx-check-double"></i> Activar Ofertas Seleccionadas
                     </button>
                 </div> *@
-               @*  <div class="text-muted small">
+                @*  <div class="text-muted small">
                     <button type="button" class="btn btn-danger btn-sm mt-1 me-1"
                             id="btnCancelaActivacion" title="Cancelar activación">
                         <i class="bx bx-x-circle"></i>

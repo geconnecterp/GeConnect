@@ -32,10 +32,45 @@ $(function () {
 			}, false, ["Aceptar"], "error!", null);
 		}
 		else {
+			try { MostrarFiltrosAplicados(); } catch (e) { }
 			InicializarPantallaPrincipal();
 		}
 	});
 });
+
+function MostrarFiltrosAplicados() {
+	const $target = $("#filtrosAplicadosFloating").length
+		? $("#filtrosAplicadosFloating")
+		: $("#filtrosAplicadosContainer");
+
+	if ($target.length === 0) return;
+
+	const desde = $("#Desde").val();
+	const hasta = $("#Hasta").val();
+
+	const suc = listFrom("SucursalesList");
+
+	let html = `
+        <div class="d-inline-flex align-items-center"
+             style="gap:8px; white-space:nowrap;">
+    `;
+
+	if (desde)
+		html += `<span class="badge bg-secondary">DESDE: ${desde}</span>`;
+
+	if (hasta)
+		html += `<span class="badge bg-secondary">HASTA: ${hasta}</span>`;
+
+	html += renderGroup("SUC.", suc);
+	html += `</div>`;
+
+	$target.html(html);
+}
+
+
+
+// Mostrar filtros al cargar la pantalla
+try { MostrarFiltrosAplicados(); } catch (e) { }
 
 function InicializarPantallaPrincipal() {
 	var suc = ObtenerSucursalesSeleccionadasConTexto("SucursalesList", "listaSucursales");
@@ -47,6 +82,7 @@ function InicializarPantallaPrincipal() {
 	AbrirWaiting("Cargando información...");
 	PostGenHtml({ sucursalesText, f_desde, f_hasta }, inicializarPantallPrincipalURL, function (obj) {
 		$("#divDetalle").html(obj);
+		try { MostrarFiltrosAplicados(); } catch (e) { };
 		$(document).on('shown.bs.tab', 'button[data-bs-toggle="tab"]', function (e) {
 			const tabId = $(e.target).attr("data-bs-target").replace("#", "");
 			EvaluarBotonImprimir(tabId);

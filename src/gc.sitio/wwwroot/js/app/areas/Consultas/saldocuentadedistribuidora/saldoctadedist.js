@@ -17,28 +17,12 @@ function MostrarFiltrosAplicados() {
 		const target = cont.length ? cont : null;
 		if (!target) return;
 
-		// const desde = $("#Desde").val();
-		// const hasta = $("#Hasta").val();
+		const vendedores = listFrom("VendedoresList");
 
-		// Vendedores seleccionados
-		const vendedores = [];
-		$("#VendedoresList option").each(function () { vendedores.push($(this).text()); });
-		// si no hay en la listbox, tomar del dropdown
-		if (vendedores.length === 0) {
-			$("#listaVendedores option:selected").each(function () { const t = $(this).text(); if (t && t !== "Seleccionar") vendedores.push(t); });
-		}
+		let html = '<div class="d-inline-flex align-items-center" style="gap:8px;white-space:nowrap;">';
 
-		let html = "";
-		// // html += `<span class=\"badge bg-secondary me-1\">DESDE: ${desde || '-'} </span>`;
-		// // html += `<span class=\"badge bg-secondary me-1\">HASTA: ${hasta || '-'} </span>`;
-
-		if (vendedores.length === 1) {
-			html += `<span class=\"badge bg-secondary me-1\">VENDEDOR: ${vendedores[0]}</span>`;
-		} else if (vendedores.length > 1) {
-			html += `\n                <div class=\"dropdown me-1\">\n                    <button class=\"badge bg-secondary dropdown-toggle text-nowrap\" type=\"button\" id=\"vendedoresDropDist\" data-bs-toggle=\"dropdown\" aria-expanded=\"false\">\n                        Vendedor: ${vendedores.length} seleccionados\n                    </button>\n                    <ul class=\"dropdown-menu dropdown-menu-end\" aria-labelledby=\"vendedoresDropDist\" data-bs-boundary=\"viewport\">`;
-			vendedores.forEach(function (v) { html += `<li><a class=\"dropdown-item\" href=\"#\">${v}</a></li>`; });
-			html += `</ul></div>`;
-		}
+		html += renderGroup('VEND', vendedores);
+		html += '</div>';
 
 		target.html(html);
 	} catch (e) {
