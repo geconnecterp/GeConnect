@@ -51,6 +51,12 @@
         var notaDebitoCreditoInicializaUrl =
             '@Url.Action("Index", "NotaDebitoCredito", new { area = "Facturacion" })';
 
+        var rendicionParcialValidarUrl =
+            '@Url.Action("ValidacionInicial", "Rendicion", new { area = "Facturacion" })';
+
+        var rendicionParcialInicializaUrl =
+            '@Url.Action("Index", "Rendicion", new { area = "Facturacion" })';
+
         // URLs necesarias para el módulo de Cobranza Diferida y el buscador de clientes
         const cobranzaDiferidaInicializaUrl = '@Url.Action("Inicializa", "PDiferido", new { Area = "Facturacion" })';
         const cobranzaDiferidaValidarUrl = '@Url.Action("Validar", "PDiferido", new { Area = "Facturacion" })';
@@ -62,3 +68,4 @@
 
     <script src="~/js/app/caja.js"></script>
 }
+

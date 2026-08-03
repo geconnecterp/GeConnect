@@ -9,7 +9,7 @@ using System.Net;
 
 namespace gc.api.Controllers.Caja
 {
-    //[Authorize]
+    [Authorize]
     [Produces("application/json")]
     [Route("api/[controller]")]
     [ApiController]

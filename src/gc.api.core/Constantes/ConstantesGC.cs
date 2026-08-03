@@ -74,6 +74,11 @@
 			//notas de credito
 			public const string SP_CAJA_NC_VALIDA = "SPGECO_CAJA_NC_Valida";
 			public const string SP_CAJA_NC_B_PRODUCTO = "SPGECO_CAJA_NC_B_Producto";	
+
+			//rendiciones parciales
+			public const string SP_CAJA_REND = "SPGECO_CAJA_Rend_Ins";
+			public const string SP_CAJA_REND_NOMIN= "SPGECO_CAJA_REND_Ins_Nominaciones";
+			public const string SP_CAJA_REND_CARGA = "SPGECO_CAJA_Rend_Carga";
             #endregion
 
             #region VTAS
