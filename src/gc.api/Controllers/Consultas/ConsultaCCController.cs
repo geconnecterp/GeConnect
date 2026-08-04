@@ -643,5 +643,19 @@ namespace gc.api.Controllers.Consultas
 
 			return Ok(response);
 		}
+
+		[HttpPost]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<ReporteEvalDeNivelDeServicioDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult RepoEvalDeNivelDeServicio(ReporteEvalDeNivelDeServicioRequest request)
+		{
+			ApiResponse<List<ReporteEvalDeNivelDeServicioDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
+			var res = _consSv.RepoEvalDeNivelDeServicio(request);
+			response = new ApiResponse<List<ReporteEvalDeNivelDeServicioDto>>(res);
+
+			return Ok(response);
+		}
 	}
 }

@@ -50,6 +50,7 @@ namespace gc.sitio.core.Servicios.Contratos
         List<RepRkgRentabVtasDto> RepRkgRentabVtas(ReporteRankingRentabVtasRequest request, string token);
         List<ReporteEvoVtasPerAnterioresDto> RepEvoVtasPerAnteriores(ReporteEvoVtasPerAnterioresRequest request, string token);
 		List<ReporteVarVtasYCompUltDoceMDto> RepoVarVtasYCompUltDoceM(ReporteVarVtasYCompUltDoceMRequest request, string token);
+		List<ReporteEvalDeNivelDeServicioDto> RepoEvalDeNivelDeServicio(ReporteEvalDeNivelDeServicioRequest request, string token);
 	}
 }
 

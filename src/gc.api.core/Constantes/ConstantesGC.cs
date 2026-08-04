@@ -154,6 +154,13 @@
 			public const string SP_E_AVALORES_CB = "SPGECO_E_AValores_CashBack";
 			#endregion
 
+			#region Reporte de Evaluacion de Nivel de Servicio
+			public const string SP_E_NS_P = "SPGECO_E_NS_P";
+			public const string SP_E_NS_SEC = "SPGECO_E_NS_SEC";
+			public const string SP_E_NS_RUB = "SPGECO_E_NS_RUB";
+			public const string SP_E_NS_CTA = "SPGECO_E_NS_CTA";
+			#endregion
+
 			public const string MNU_GET_MENU_LIST = "dbo.SP_web_geco_get_menu_list";
 
 			public const string SP_BILLETERAORD_CARGA = "dbo.SP_BilleteraOrdenCarga";

@@ -40,12 +40,13 @@
 			}
 		}
 
-		BuscarVarVtasYCompUltDoceM();
+		BuscarEvalDeNivelDeServicio();
 	});
 
 });
 
-function BuscarVarVtasYCompUltDoceM() {
+
+function BuscarEvalDeNivelDeServicio() {
 	AbrirWaiting();
 	var lSuc = [];
 	var lProv = [];
@@ -68,8 +69,8 @@ function BuscarVarVtasYCompUltDoceM() {
 
 	var data = { lSuc, lProv, lFam, lRub, agrupador, lSucTextos, lProvTextos, lFamTextos, lRubTextos };
 
-	PostGenHtml(data, reporteVarVtasYCompUltDoceMURL, function (obj) {
-		$("#divGrillaReporteVarVtasYCompUltDoceM").html(obj);
+	PostGenHtml(data, reporteEvalDeNivelDeServicioMURL, function (obj) {
+		$("#divGrillaEvalDeNivelDeServicio").html(obj);
 		ajustarHeaderSticky(); // acá, cuando el DOM de la tabla YA existe
 		$("#divFiltros").collapse("hide");
 		$("#divDetalle").collapse("show");
@@ -78,6 +79,36 @@ function BuscarVarVtasYCompUltDoceM() {
 		return true
 	});
 }
+
+function ajustarHeaderSticky() {
+	const firstRow = document.querySelector("#containerListaProducto thead tr.header:first-child");
+	if (!firstRow) return;
+
+	const height = firstRow.offsetHeight;
+	console.log("header height:", height);
+
+	if (height > 0) {
+		document.documentElement.style.setProperty("--header-height", height + "px");
+	}
+}
+
+// Observa cuando la tabla aparece en el DOM
+const observer = new MutationObserver(() => {
+	const firstRow = document.querySelector("#containerListaProducto thead tr.header:first-child");
+	if (firstRow) {
+		// Espera un frame para que el navegador calcule layout
+		requestAnimationFrame(() => {
+			ajustarHeaderSticky();
+		});
+		observer.disconnect(); // ya no necesitamos seguir observando
+	}
+});
+
+// Observa el contenedor donde insertás la grilla
+observer.observe(document.getElementById("divGrillaEvalDeNivelDeServicio"), {
+	childList: true,
+	subtree: true
+});
 
 function ObtenerFiltroLista(idCheckbox, idListBox) {
 
@@ -104,7 +135,6 @@ function ObtenerFiltroLista(idCheckbox, idListBox) {
 		textos: textos.join(", ")
 	};
 }
-
 
 $("#Rel01").on("click", function () { $(this).val(""); });
 
@@ -146,111 +176,6 @@ function ControlalistaSucursalesSelected() {
 
 function ControlaCancelar() {
 	InicializarCamposEnFiltros(true);
-}
-
-function ControlaImprimirSelected() {
-	if ($("#tbGridProductos > tbody > tr").length === 0) {
-		AbrirMensaje("ATENCIÓN", "No hay datos generar el reporte.", function () {
-			$("#msjModal").modal("hide");
-			return true;
-		}, false, ["Aceptar"], "error!", null);
-	}
-	else {
-		ImprimirListaProductosStk_Generada();
-	}
-}
-
-function ajustarHeaderSticky() {
-	const firstRow = document.querySelector("#containerListaProducto thead tr.header:first-child");
-	if (!firstRow) return;
-
-	const height = firstRow.offsetHeight;
-	console.log("header height:", height);
-
-	if (height > 0) {
-		document.documentElement.style.setProperty("--header-height", height + "px");
-	}
-}
-
-// Observa cuando la tabla aparece en el DOM
-const observer = new MutationObserver(() => {
-	const firstRow = document.querySelector("#containerListaProducto thead tr.header:first-child");
-	if (firstRow) {
-		// Espera un frame para que el navegador calcule layout
-		requestAnimationFrame(() => {
-			ajustarHeaderSticky();
-		});
-		observer.disconnect(); // ya no necesitamos seguir observando
-	}
-});
-
-// Observa el contenedor donde insertás la grilla
-observer.observe(document.getElementById("divGrillaReporteVarVtasYCompUltDoceM"), {
-	childList: true,
-	subtree: true
-});
-
-
-function ImprimirListaProductosStk_Generada() {
-	ReseteoDeReportes();
-	setTimeout(() => {
-		var lSuc = [];
-		var lProv = [];
-		var lFam = [];
-		var lRub = [];
-		var temp = ObtenerFiltroLista("#chkSucursales", "#SucursalesList");
-		var lSuc = temp.ids;
-		temp = ObtenerFiltroLista("#chkRel01", "#Rel01List");
-		var lProv = temp.ids;
-		$("#FamiliaList").children().each(function (i, item) { lFam.push($(item).val()) });
-		temp = ObtenerFiltroLista("#chkRubro", "#RubrosList");
-		var lRub = temp.ids;
-		var desde = $("#Desde").val();
-		var hasta = $("#Hasta").val();
-		var agrupador = $("#listaAgrupador").val();
-		var tipoReporte = $("#listaAgrupador option:selected").text();
-
-		// 🔥 Construcción del string de filtros
-		var filtrosDesc = [];
-
-		filtrosDesc.push(ConstruirDescripcionFiltro("Sucursales", "#chkSucursales", "#SucursalesList"));
-		filtrosDesc.push(ConstruirDescripcionFiltro("Proveedores", "#chkRel01", "#Rel01List"));
-		filtrosDesc.push(ConstruirDescripcionFiltro("Familias", "#chkFamilias", "#FamiliaList"));
-		filtrosDesc.push(ConstruirDescripcionFiltro("Rubros", "#chkRubro", "#RubrosList"));
-
-		// Limpieza: eliminar vacíos
-		filtrosDesc = filtrosDesc.filter(x => x !== "");
-
-		// String final
-		var filtrosString = filtrosDesc.join(" | ");
-
-		var data = { lSuc, lProv, lFam, lRub, desde, hasta, agrupador, tipoReporte, filtrosString };
-
-		cargarReporteEnArre(94, data, "REPORTE DE VARIACIÓN DE VENTAS Y COMPRAS EN LOS ÚLTIMOS DOCE MESES", "", "");
-		invocacionGestorDoc({});
-	}, 500);
-}
-
-function ReseteoDeReportes() {
-	console.log("Reseto de reportes");
-	ReporteResetArre();
-}
-
-function ConstruirDescripcionFiltro(nombre, idCheckbox, idListBox) {
-
-	const activo = $(idCheckbox).is(":checked");
-	if (!activo) return ""; // No incluir si el filtro no está activo
-
-	const valores = [];
-	$(idListBox + " option").each(function () {
-		valores.push($(this).text().trim());
-	});
-
-	if (valores.length === 0) {
-		return `${nombre}: Todos`;
-	}
-
-	return `${nombre}: ${valores.join(", ")}`;
 }
 
 function InicializarCamposEnFiltros(vieneDeCancelar) {
@@ -300,56 +225,6 @@ function InicializarCamposEnFiltros(vieneDeCancelar) {
 	if (!vieneDeCancelar) {
 		HandlerCheckBox();
 	}
-}
-
-$("#Rel01").autocomplete({
-	source: function (request, response) {
-
-		data = { prefix: request.term }; Rel01
-
-		$.ajax({
-			url: autoComRel01Url,
-			type: "POST",
-			dataType: "json",
-			data: data,
-			success: function (obj) {
-				response($.map(obj, function (item) {
-					var texto = item.descripcion;
-					return { label: texto, value: item.descripcion, id: item.id, prov: item.provId };
-				}));
-			}
-		})
-	},
-	minLength: 3,
-	select: function (event, ui) {
-		if ($("#Rel01List").has('option:contains("' + ui.item.id + '")').length === 0) {
-			$("#Rel01Item").val(ui.item.id);
-			var opc = "<option value=" + ui.item.id + ">" + ui.item.value + "</option>"
-			$("#Rel01List").append(opc);
-		}
-		if ($("#Rel01List")[0].length === 1) {
-			$("#chkFamilias").prop("disabled", false);
-			CargarFamiliaLista(ui.item.id);
-		}
-		else {
-			$("#chkFamilias").prop("disabled", true);
-			$("#listaFamilia").prop("disabled", true).val("");
-			$("#FamiliaList").prop("disabled", true).empty();
-			$("#chkFamilias")[0].checked = false;
-		}
-
-		return true;
-	}
-});
-
-function CargarFamiliaLista(id) {
-	var ctaId = id;
-	data = { ctaId };
-	PostGenHtml(data, BuscarProveedoresFamiliaURL, function (obj) {
-		$("#divListaFamilias").html(obj);
-		CerrarWaiting();
-		return true
-	});
 }
 
 function HandlerCheckBox() {
@@ -427,6 +302,93 @@ function CargarRubros() {
 		$("#divRubros").html(obj);
 		/*$("#divLs02").attr("class", "col-md-6 col-sm-6");*/
 		$("#listaRubros").prop("disabled", true);
+		CerrarWaiting();
+		return true
+	});
+}
+
+$("#Rel01").autocomplete({
+	source: function (request, response) {
+
+		data = { prefix: request.term }; Rel01
+
+		$.ajax({
+			url: autoComRel01Url,
+			type: "POST",
+			dataType: "json",
+			data: data,
+			success: function (obj) {
+				response($.map(obj, function (item) {
+					var texto = item.descripcion;
+					return { label: texto, value: item.descripcion, id: item.id, prov: item.provId };
+				}));
+			}
+		})
+	},
+	minLength: 3,
+	select: function (event, ui) {
+		if ($("#Rel01List").has('option:contains("' + ui.item.id + '")').length === 0) {
+			$("#Rel01Item").val(ui.item.id);
+			var opc = "<option value=" + ui.item.id + ">" + ui.item.value + "</option>"
+			$("#Rel01List").append(opc);
+		}
+		if ($("#Rel01List")[0].length === 1) {
+			$("#chkFamilias").prop("disabled", false);
+			CargarFamiliaLista(ui.item.id);
+		}
+		else {
+			$("#chkFamilias").prop("disabled", true);
+			$("#listaFamilia").prop("disabled", true).val("");
+			$("#FamiliaList").prop("disabled", true).empty();
+			$("#chkFamilias")[0].checked = false;
+		}
+
+		return true;
+	}
+});
+
+function ControlaImprimirSelected() {
+	if ($("#tbGridProductos > tbody > tr").length === 0) {
+		AbrirMensaje("ATENCIÓN", "No hay datos generar el reporte.", function () {
+			$("#msjModal").modal("hide");
+			return true;
+		}, false, ["Aceptar"], "error!", null);
+	}
+	else {
+		ImprimirListaProductosEval_Generada();
+	}
+}
+
+function ImprimirListaProductosEval_Generada() {
+}
+
+function ReseteoDeReportes() {
+	console.log("Reseto de reportes");
+	ReporteResetArre();
+}
+
+function ConstruirDescripcionFiltro(nombre, idCheckbox, idListBox) {
+
+	const activo = $(idCheckbox).is(":checked");
+	if (!activo) return ""; // No incluir si el filtro no está activo
+
+	const valores = [];
+	$(idListBox + " option").each(function () {
+		valores.push($(this).text().trim());
+	});
+
+	if (valores.length === 0) {
+		return `${nombre}: Todos`;
+	}
+
+	return `${nombre}: ${valores.join(", ")}`;
+}
+
+function CargarFamiliaLista(id) {
+	var ctaId = id;
+	data = { ctaId };
+	PostGenHtml(data, BuscarProveedoresFamiliaURL, function (obj) {
+		$("#divListaFamilias").html(obj);
 		CerrarWaiting();
 		return true
 	});
