@@ -177,6 +177,7 @@ namespace gc.api.infra.Extensions
             services.AddScoped<IApiPagoFactServicio, ApiPagoFactServicio>();
             services.AddScoped<IApiNotaCreditoServicio, ApiNotaCreditoServicio>();
             services.AddScoped<IApiRendicionServicio, ApiRendicionServicio>();
+            services.AddScoped<IApiAnulacionServicio, ApiAnulacionServicio>();
 
             //autorizacion Remota
             services.AddScoped<ISolicitudAuthServicio, SolicitudAuthServicio>();
@@ -185,3 +186,5 @@ namespace gc.api.infra.Extensions
         }
     }
 }
+
+

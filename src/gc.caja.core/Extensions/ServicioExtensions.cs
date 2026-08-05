@@ -26,9 +26,12 @@ namespace gc.sitio.core.Extensions
             services.AddScoped<ICtaCteServicio, CtaCteServicio>();
             services.AddScoped<INotaCreditoServicio, NotaCreditoServicio>();
             services.AddScoped<IRendicionServicio, RendicionServicio>();
+            services.AddScoped<IAnulacionCobranzaServicio, AnulacionCobranzaServicio>();
 
             return services;
         }
     }
 }
+
+
 

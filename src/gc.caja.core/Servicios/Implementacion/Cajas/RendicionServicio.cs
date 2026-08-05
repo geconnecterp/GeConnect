@@ -1,4 +1,4 @@
-﻿using gc.caja.core.Servicios.Contratos.Cajas;
+using gc.caja.core.Servicios.Contratos.Cajas;
 using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Core.Helpers;
 using gc.infraestructura.Core.Responses;
@@ -52,7 +52,21 @@ namespace gc.caja.core.Servicios.Implementacion.Cajas
                 var client = helper.InicializaCliente(request, token, out StringContent contentData);
                 var link = $"{_appSettings.RutaBase}{RutaAPI}{POST_CONFIRMAR_RENDICION}";
 
+                _logger.LogInformation(
+                    "Rendiciones: caja.core invoca API confirmar. Url={Url}; Caja={Caja}; Proceso={Proceso}; Cierre={Cierre}; Adm={Adm}; Usuario={Usuario}; JsonRendiciones={JsonRendiciones}",
+                    link,
+                    request.caja_id,
+                    request.caja_nro_proceso,
+                    request.caja_nro_cierre,
+                    request.adm_id,
+                    request.usu_id,
+                    request.json_rendiciones);
+
                 using var response = await client.PostAsync(link, contentData);
+                _logger.LogInformation(
+                    "Rendiciones: caja.core recibio response HTTP confirmar. StatusCode={StatusCode}; Reason={Reason}",
+                    (int)response.StatusCode,
+                    response.ReasonPhrase);
                 if (response.StatusCode != HttpStatusCode.OK)
                 {
                     var mensaje = await ReadApiErrorAsync(response);
@@ -60,6 +74,7 @@ namespace gc.caja.core.Servicios.Implementacion.Cajas
                 }
 
                 var stringData = await response.Content.ReadAsStringAsync();
+                _logger.LogInformation("Rendiciones: caja.core body response confirmar. Body={Body}", stringData);
                 if (string.IsNullOrWhiteSpace(stringData))
                 {
                     return new RespuestaGenerica<RespuestaDto>
@@ -80,6 +95,13 @@ namespace gc.caja.core.Servicios.Implementacion.Cajas
                 }
 
                 var respuesta = apiResponse.Data;
+                _logger.LogInformation(
+                    "Rendiciones: caja.core response deserializada. Resultado={Resultado}; ResultadoId={ResultadoId}; Mensaje={Mensaje}; SetFocus={SetFocus}",
+                    respuesta.resultado,
+                    respuesta.resultado_id,
+                    respuesta.resultado_msj,
+                    respuesta.resultado_setfocus);
+
                 return new RespuestaGenerica<RespuestaDto>
                 {
                     Ok = respuesta.resultado == 0,
