@@ -177,18 +177,16 @@ function desbloquearInterfazBusqueda() {
 function actualizarEstadoBotonesAccion() {
     const hayCliente = clienteSeleccionado !== null;
     const esConsumidorFinal = hayCliente && clienteSeleccionado.origen && clienteSeleccionado.origen.toUpperCase() === 'F';
-    const hayListaPrecio = Boolean(window.obtenerListaPrecioActivaId?.());
+    const moduloRequiereListaPrecio = $('#txtListaPrecioActual').length > 0 || $('#btnListaPrecios').length > 0;
+    const listaPrecioId = typeof window.obtenerListaPrecioActivaId === 'function'
+        ? window.obtenerListaPrecioActivaId()
+        : (window.LP_Id || window.listaPrecioActiva?.id || '');
+    const hayListaPrecio = !moduloRequiereListaPrecio || Boolean(listaPrecioId);
 
-    // Habilitar/deshabilitar botón SEGUIR
     $('#btnSeguirCliente').prop('disabled', !hayCliente || !hayListaPrecio);
     $('#btnListaPrecios').prop('disabled', !hayCliente || !hayListaPrecio);
 
-    // Mostrar/ocultar botón EDITAR (solo para Consumidores Finales)
-    if (esConsumidorFinal) {
-        $('#btnEditarCliente').fadeIn(300);
-    } else {
-        $('#btnEditarCliente').fadeOut(300);
-    }
+    actualizarBotonEditarCliente(esConsumidorFinal);
 }
 
 function cancelarBusquedaActual() {
@@ -645,12 +643,57 @@ function manejarClienteRequiereCuit(cliente) {
     mostrarMensajeError(mensaje);
 }
 
+function validarClientePermitidoPorModulo(cliente) {
+    if (typeof window.validarClienteAntesDeMostrar === 'function') {
+        const permitido = window.validarClienteAntesDeMostrar(cliente);
+        if (permitido === false) {
+            console.warn('[Fact] El modulo actual rechazo el cliente antes de mostrarlo.', cliente);
+            return false;
+        }
+    }
+
+    if (typeof coTipo !== "undefined" && coTipo === "CC") {
+        const origen = (cliente?.origen || '').toString().trim().toUpperCase();
+        const cuenta = (cliente?.cta_id || cliente?.id || '').toString().trim();
+        const tieneCuentaValida = cuenta !== '' && cuenta.toUpperCase() !== 'N/A';
+
+        if (origen === 'F' || !tieneCuentaValida) {
+            const nombre = cliente?.denominacion || cliente?.nombre || 'Cliente seleccionado';
+            const documento = cliente?.tipoNumero || cliente?.documento || 'N/A';
+            const detalle = `<div class="text-start">
+                <p class="mb-2">El cliente seleccionado no puede utilizarse en este modulo.</p>
+                <div class="border rounded p-2 bg-light mb-2">
+                    <div><strong>Cliente:</strong> ${nombre}</div>
+                    <div><strong>Documento:</strong> ${documento}</div>
+                    <div><strong>Origen:</strong> ${cliente?.origenDesc || cliente?.origen_desc || origen || 'N/A'}</div>
+                    <div><strong>Cuenta:</strong> ${cuenta || 'N/A'}</div>
+                </div>
+                <p class="mb-0 text-muted">Este proceso requiere un Cliente Registrado con identificador de cuenta corriente valido.</p>
+            </div>`;
+
+            if (typeof AbrirMensaje === 'function') {
+                AbrirMensaje('Cliente no habilitado', detalle, function () {
+                    $('#msjModal').modal('hide');
+                }, false, ['Aceptar'], 'warn!', null);
+            } else {
+                mostrarMensajeError(`El cliente ${nombre} no esta habilitado para este modulo. Debe seleccionar un Cliente Registrado.`);
+            }
+
+            return false;
+        }
+    }
+
+    return true;
+}
 // ====== MOSTRAR DATOS DEL CLIENTE ======
 /**
  * ✅ MODIFICADO v2.2: Lógica de habilitación de botón centralizada en actualizarEstadoBotonesAccion
  * @param {object} cliente - El objeto cliente a mostrar.
  */
 function mostrarDatosCliente(cliente) {
+    if (!validarClientePermitidoPorModulo(cliente)) {
+        return;
+    }
     console.log('═══════════════════════════════════════════════════');
     console.log('📊 MOSTRAR DATOS DEL CLIENTE v2.2');
     console.log('═══════════════════════════════════════════════════');
@@ -694,13 +737,7 @@ function mostrarDatosCliente(cliente) {
 
     const esConsumidorFinal = cliente.origen && cliente.origen.toUpperCase() === 'F';
 
-    if (esConsumidorFinal) {
-        $('#btnEditarCliente').fadeIn(300);
-        console.log('✅ Botón EDITAR mostrado (Consumidor Final)');
-    } else {
-        $('#btnEditarCliente').fadeOut(300);
-        console.log('✅ Botón EDITAR oculto (Cliente Registrado)');
-    }
+    actualizarBotonEditarCliente(esConsumidorFinal);
 
     $('#cardDatosCliente').show().removeClass('hide').addClass('show');
 
@@ -1133,6 +1170,9 @@ function buscarClientePorId(clienteId, origen, documento) {
  * ✅ MODIFICADO v2.0: Mostrar datos con actualización de estado de botones
  */
 function mostrarDatosCliente(cliente) {
+    if (!validarClientePermitidoPorModulo(cliente)) {
+        return;
+    }
     console.log('═══════════════════════════════════════════════════');
     console.log('📊 MOSTRAR DATOS DEL CLIENTE v2.0');
     console.log('═══════════════════════════════════════════════════');
@@ -1176,13 +1216,7 @@ function mostrarDatosCliente(cliente) {
 
     const esConsumidorFinal = cliente.origen && cliente.origen.toUpperCase() === 'F';
 
-    if (esConsumidorFinal) {
-        $('#btnEditarCliente').fadeIn(300);
-        console.log('✅ Botón EDITAR mostrado (Consumidor Final)');
-    } else {
-        $('#btnEditarCliente').fadeOut(300);
-        console.log('✅ Botón EDITAR oculto (Cliente Registrado)');
-    }
+    actualizarBotonEditarCliente(esConsumidorFinal);
 
     $('#cardDatosCliente').show().removeClass('hide').addClass('show');
     $('#btnSeguirCliente').prop('disabled', false);
@@ -1242,6 +1276,12 @@ function abrirModalClienteNuevo() {
 }
 
 function abrirModalClienteEditar() {
+    if (!puedeEditarConsumidorFinal()) {
+        mostrarMensajeInformacion('La edicion de Consumidor Final no esta disponible en este modulo.');
+        $('#btnEditarCliente').hide();
+        return;
+    }
+
     if (!clienteSeleccionado) {
         mostrarMensajeError('No hay cliente seleccionado para editar');
         return;
@@ -1332,7 +1372,15 @@ function abrirModalClienteEditar() {
 }
 
 function limpiarFormularioCliente(preservarModoEdicion = false) {
-    $('#formClienteUpdate')[0].reset();
+    const $formClienteUpdate = $('#formClienteUpdate');
+    if ($formClienteUpdate.length === 0) {
+        if (!preservarModoEdicion) {
+            modoEdicionCliente = false;
+        }
+        return;
+    }
+
+    $formClienteUpdate[0].reset();
     $('#txtClienteIdUpdate').val('');
     $('#selTipoDocumento').val('96');
     $('#selSexoCliente').val('M');
@@ -1358,6 +1406,10 @@ function confirmarCliente(cliente) {
 
     if (!cliente) {
         mostrarMensajeError('No hay cliente para confirmar');
+        return;
+    }
+
+    if (!validarClientePermitidoPorModulo(cliente)) {
         return;
     }
 
@@ -1677,6 +1729,25 @@ function obtenerDescripcionTipoDoc(tdocId) {
     return tipos[tdocId] || 'Desconocido';
 }
 
+function puedeEditarConsumidorFinal() {
+    return $('#formClienteUpdate').length > 0 && $('#modalClienteUpdate').length > 0;
+}
+
+function actualizarBotonEditarCliente(esConsumidorFinal) {
+    const $btnEditar = $('#btnEditarCliente');
+    if ($btnEditar.length === 0) return;
+
+    if (esConsumidorFinal && puedeEditarConsumidorFinal()) {
+        $btnEditar.fadeIn(300);
+        console.log('Boton EDITAR mostrado (Consumidor Final)');
+    } else {
+        $btnEditar.fadeOut(300);
+        console.log(esConsumidorFinal
+            ? 'Boton EDITAR oculto: este modulo no incluye edicion de Consumidor Final'
+            : 'Boton EDITAR oculto (Cliente Registrado)');
+    }
+}
+
 /**
 * ✅ NUEVA: Actualiza la lista de precios según el tipo de cliente
 * @param {string} tipoCliente - "FINAL" o "REGISTRADO"
@@ -1685,10 +1756,21 @@ function obtenerDescripcionTipoDoc(tdocId) {
 function actualizarListaPreciosGlobal(tipoCliente, clienteData = null) {
     const id = String(clienteData?.lp_id || clienteData?.listaPrecio || '').trim();
     const descripcion = String(clienteData?.lp_desc || clienteData?.listaPrecioDescripcion || '').trim();
-    window.establecerListaPrecioActiva(id, descripcion);
-    $('#txtListaPrecioActual').val(
-        id ? `${id}${descripcion ? ` - ${descripcion}` : ''}` : 'Sin lista de precios activa'
-    );
+
+    if (typeof window.establecerListaPrecioActiva === 'function') {
+        window.establecerListaPrecioActiva(id, descripcion);
+    } else {
+        window.listaPrecioActiva = { id, descripcion };
+        window.LP_Id = id;
+        console.log('[Fact] establecerListaPrecioActiva no esta definida en este modulo. Se actualiza listaPrecioActiva local.', window.listaPrecioActiva);
+    }
+
+    const $txtListaPrecioActual = $('#txtListaPrecioActual');
+    if ($txtListaPrecioActual.length > 0) {
+        $txtListaPrecioActual.val(
+            id ? `${id}${descripcion ? ` - ${descripcion}` : ''}` : 'Sin lista de precios activa'
+        );
+    }
 }
 
 window.aplicarListaPrecioAutorizadaUI = function (id, descripcion) {
@@ -1711,6 +1793,10 @@ function confirmarClienteSeleccionado() {
 
     if (!clienteData) {
         mostrarMensajeError('Debe seleccionar un cliente');
+        return;
+    }
+
+    if (!validarClientePermitidoPorModulo(clienteData)) {
         return;
     }
 
@@ -1895,5 +1981,11 @@ function verificaExistenciaRegistrosCC(ctaid) {
 
     console.log('═══════════════════════════════════════════════════');
 }
+
+
+
+
+
+
 
 

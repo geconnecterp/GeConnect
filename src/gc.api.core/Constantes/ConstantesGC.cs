@@ -1,4 +1,4 @@
-﻿namespace gc.api.core.Constantes
+namespace gc.api.core.Constantes
 {
 	public static class ConstantesGC
 	{
@@ -79,6 +79,10 @@
 			public const string SP_CAJA_REND = "SPGECO_CAJA_Rend_Ins";
 			public const string SP_CAJA_REND_NOMIN= "SPGECO_CAJA_REND_Ins_Nominaciones";
 			public const string SP_CAJA_REND_CARGA = "SPGECO_CAJA_Rend_Carga";
+
+			//anulacion de cobranza
+			public const string SP_CAJA_B_COBRANZAS = "SPGECO_CAJA_B_Cobranzas";
+			public const string SP_CAJA_OPE_ANULA_COBRANZA = "SPGECO_CAJA_Ope_Anula_Cobranza";
             #endregion
 
             #region VTAS
@@ -790,3 +794,5 @@
 	}
 
 }
+
+

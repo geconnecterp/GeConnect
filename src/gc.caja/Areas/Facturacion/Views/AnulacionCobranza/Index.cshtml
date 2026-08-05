@@ -1,0 +1,190 @@
+@{
+    ViewData["Title"] = "Anulacion de Cobranza";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var modulo = ViewBag.Modulo as string ?? "AnulacionCobranza";
+}
+
+<div id="mensajeInicial" class="container-fluid mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="alert alert-info alert-dismissible fade show shadow" role="alert">
+                <h4 class="alert-heading">
+                    <i class="bx bx-info-circle"></i> Informacion
+                </h4>
+                <p class="mb-0">
+                    <strong>@ViewBag.ModuloDesc</strong><br />
+                    Seleccione un cliente registrado para consultar las cobranzas anulables.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+@{
+    var identificarClienteModalViewData = new ViewDataDictionary(ViewData);
+    identificarClienteModalViewData["Modulo"] = modulo;
+}
+@await Html.PartialAsync("~/Areas/Facturacion/Views/Shared/_IdentificarClienteModal.cshtml", null, identificarClienteModalViewData)
+
+<div class="modal fade modal-golden"
+     id="modalAnulacionCobranza"
+     tabindex="-1"
+     aria-labelledby="modalAnulacionCobranzaLabel"
+     aria-hidden="true"
+     data-bs-backdrop="static"
+     data-bs-keyboard="false">
+    <div class="modal-dialog modal-fullscreen">
+        <div class="modal-content">
+            <div class="modal-header bg-gradient-golden text-white">
+                <div>
+                    <h5 class="modal-title mb-0 fw-bold" id="modalAnulacionCobranzaLabel">
+                        <i class="bx bx-receipt"></i>
+                        Anulacion de Cobranza
+                    </h5>
+                    <small class="fw-bold">Busqueda y seleccion de recibo de cuenta corriente</small>
+                </div>
+            </div>
+
+            <div class="modal-body p-4 bg-light">
+                <div class="card card-golden shadow-sm mb-3">
+                    <div class="card-header fw-bold">
+                        <i class="bx bx-user"></i>
+                        Datos del Cliente
+                    </div>
+                    <div class="card-body bg-gradient-golden p-3">
+                        <div class="row g-2 mb-2">
+                            <div class="col-md-5">
+                                <div class="input-group input-group-sm">
+                                    <span class="input-group-text bg-white bg-opacity-25 text-white fw-semibold border-0">Nombre</span>
+                                    <input type="text" class="form-control form-control-sm fw-bold bg-white" id="txtNombreAnulaCob" readonly>
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="input-group input-group-sm">
+                                    <span class="input-group-text bg-white bg-opacity-25 text-white fw-semibold border-0">ID</span>
+                                    <input type="text" class="form-control form-control-sm text-center fw-bold bg-white" id="txtClienteIdAnulaCob" readonly>
+                                </div>
+                            </div>
+                            <div class="col-md-5">
+                                <div class="input-group input-group-sm">
+                                    <span class="input-group-text bg-white bg-opacity-25 text-white fw-semibold border-0">Domicilio</span>
+                                    <input type="text" class="form-control form-control-sm bg-white" id="txtDomicilioAnulaCob" readonly>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row g-2">
+                            <div class="col-md-3">
+                                <div class="input-group input-group-sm">
+                                    <span class="input-group-text bg-white bg-opacity-25 text-white fw-semibold border-0">AFIP</span>
+                                    <input type="text" class="form-control form-control-sm bg-white" id="txtCondicionAfipAnulaCob" readonly>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="input-group input-group-sm">
+                                    <span class="input-group-text bg-white bg-opacity-25 text-white fw-semibold border-0">Tipo/Nro</span>
+                                    <input type="text" class="form-control form-control-sm bg-white" id="txtTipoNumeroAnulaCob" readonly>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="input-group input-group-sm">
+                                    <span class="input-group-text bg-white bg-opacity-25 text-white fw-semibold border-0">Email</span>
+                                    <input type="text" class="form-control form-control-sm bg-white" id="txtEmailAnulaCob" readonly>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="input-group input-group-sm">
+                                    <span class="input-group-text bg-white bg-opacity-25 text-white fw-semibold border-0">Movil</span>
+                                    <input type="text" class="form-control form-control-sm bg-white" id="txtMovilAnulaCob" readonly>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card card-golden shadow-sm">
+                    <div class="card-header d-flex align-items-center justify-content-between gap-3">
+                        <div class="fw-bold">
+                            <i class="bx bx-list-ul"></i>
+                            Cobranzas encontradas
+                        </div>
+                        <div class="d-flex align-items-end gap-2">
+                            <div>
+                                <label class="form-label mb-1 small fw-bold">Fecha</label>
+                                <input type="date" class="form-control form-control-sm" id="txtFechaAnulaCob" autocomplete="off" />
+                            </div>
+                            <button type="button" class="btn btn-golden btn-sm" id="btnBuscarAnulaCob">
+                                <i class="bx bx-search"></i>
+                                Buscar
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive" style="max-height: 58vh; overflow-y: auto;">
+                            <table class="table table-golden table-hover mb-0" id="tbAnulacionCobranzas">
+                                <thead class="table-golden-header">
+                                    <tr>
+                                        <th class="text-center" style="width: 70px;">Sel.</th>
+                                        <th class="text-center" style="width: 130px;">Fecha</th>
+                                        <th style="width: 160px;">Recibo</th>
+                                        <th>Comprobantes</th>
+                                        <th class="text-end" style="width: 160px;">Importe</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tbodyAnulacionCobranzas">
+                                    <tr>
+                                        <td colspan="5" class="text-center text-muted py-4">
+                                            <i class="bx bx-info-circle"></i>
+                                            Seleccione un cliente para buscar cobranzas.
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="card-footer bg-golden-light border-top border-golden">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="fw-bold text-golden-dark" id="lblAnulacionCobranzaEstado">Sin recibo seleccionado</span>
+                            <span class="form-control form-control-lg text-end fw-bold text-success" id="lblAnulacionCobranzaImporte" style="max-width: 280px;">$ 0.00</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer bg-light">
+                <div class="d-flex justify-content-between align-items-center w-100">
+                    <button type="button" class="btn btn-danger btn-lg" id="btnCancelarAnulaCob">
+                        <i class="bx bx-x-circle"></i>
+                        CANCELAR
+                    </button>
+                    <button type="button" class="btn btn-success btn-lg px-5" id="btnAnularCobranza" disabled>
+                        <i class="bx bx-check-circle"></i>
+                        ANULAR
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        var clienteCompleto = null;
+        let clienteActualFactura = null;
+        const coTipo = 'CC';
+
+        const MenuCajaUrl = '@Url.Action("Index", "Home", new { area = "" })';
+        const BuscarClienteUrl = '@Url.Action("BuscarCliente", "Cliente", new { Area = "Facturacion", app = "AC" })';
+        const TraerGrillaClientesUrl = '@Url.Action("TraerGrillaClientes", "Cliente", new { Area = "Facturacion" })';
+        const LimpiarSesionClientesUrl = '@Url.Action("LimpiarSesionClientes", "Cliente", new { Area = "Facturacion" })';
+        const ObtenerClienteActualUrl = '@Url.Action("ObtenerClienteActual", "Cliente", new { Area = "Facturacion" })';
+
+        const verificarExistenciaCuentaCorrienteUrl = '@Url.Action("ValidarClienteRegistrado", "AnulacionCobranza", new { Area = "Facturacion" })';
+        const anulacionCobranzaBuscarUrl = '@Url.Action("BuscarCobranzas", "AnulacionCobranza", new { Area = "Facturacion" })';
+        const anulacionCobranzaAnularUrl = '@Url.Action("Anular", "AnulacionCobranza", new { Area = "Facturacion" })';
+        const anulacionCobranzaMenuUrl = '@Url.Action("Index", "Home", new { area = "" })';
+    </script>
+
+    <script src="~/js/app/fact.js" asp-append-version="true"></script>
+    <script src="~/js/app/anulacionCobranza.js" asp-append-version="true"></script>
+}

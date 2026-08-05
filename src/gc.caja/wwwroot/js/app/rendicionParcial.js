@@ -508,14 +508,25 @@
     }
 
     function construirMensajeExito(response) {
-        const mensaje = response?.mensaje || 'La rendicion parcial fue confirmada correctamente.';
-        return `<div class="text-center">
+        const totalRendido = redondear(
+            instrumentos.reduce(function (acumulado, item) {
+                return acumulado + parsearNumero(item.ins_importe, 0);
+            }, 0)
+        );
+
+        const mensajeServidor = String(response?.mensaje || '').trim();
+        const mensajeVisible = !mensajeServidor || mensajeServidor.toUpperCase() === 'OK'
+            ? `La rendicion parcial fue confirmada correctamente. Se registro un retiro de ${formatearMoneda(totalRendido)}.`
+            : mensajeServidor;
+
+        return `<div class="text-center px-2">
             <i class='bx bx-check-circle text-golden' style="font-size: 4rem;"></i>
-            <h4 class="text-golden mt-3">${escaparHtml(mensaje)}</h4>
-            ${response?.resultado_id ? `<div class="small text-muted mt-2">${escaparHtml(response.resultado_id)}</div>` : ''}
+            <h4 class="text-golden mt-3 mb-2">Rendicion registrada</h4>
+            <p class="fs-5 mb-2">${escaparHtml(mensajeVisible)}</p>
+            <p class="text-muted mb-0">La operacion quedo asentada en la caja actual.</p>
+            ${response?.resultado_id ? `<div class="small text-muted mt-2">Operacion: ${escaparHtml(response.resultado_id)}</div>` : ''}
         </div>`;
     }
-
     function mostrarMensajeCantidad(mensaje) {
         $(SELECTORES.cantidadMensaje)
             .removeClass('d-none')
@@ -641,3 +652,4 @@
         return String(valor || '').replace(/([ #;?%&,.+*~\':"!^$[\]()=>|/@])/g, '\\$1');
     }
 })();
+

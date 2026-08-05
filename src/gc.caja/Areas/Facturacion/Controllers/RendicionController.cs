@@ -1,4 +1,4 @@
-﻿using gc.caja.Controllers;
+using gc.caja.Controllers;
 using gc.caja.core.Servicios.Contratos.Cajas;
 using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Dtos.Cajas.Request;
@@ -202,6 +202,13 @@ namespace gc.caja.Areas.Facturacion.Controllers
                 }
 
                 var total = request.Rendiciones.Sum(x => x.ins_importe);
+                _logger?.LogInformation(
+                    "Rendiciones: request MVC recibido para confirmar. Usuario={Usuario}; Registros={Registros}; Total={Total}; Items={Items}",
+                    UserName,
+                    request.Rendiciones.Count,
+                    total,
+                    JsonConvert.SerializeObject(request.Rendiciones));
+
                 if (total <= 0)
                 {
                     return Json(new { ok = false, mensaje = "Debe cargar al menos un importe para confirmar la rendicion." });
@@ -233,16 +240,27 @@ namespace gc.caja.Areas.Facturacion.Controllers
                 };
 
                 _logger?.LogInformation(
-                    "Rendiciones: confirmando rendicion. Caja={Caja}; Proceso={Proceso}; Cierre={Cierre}; Total={Total}; Registros={Registros}; Usuario={Usuario}",
+                    "Rendiciones: confirmando rendicion. Caja={Caja}; Proceso={Proceso}; Cierre={Cierre}; Adm={Adm}; Total={Total}; Registros={Registros}; Usuario={Usuario}; JsonRendiciones={JsonRendiciones}",
                     requestApi.caja_id,
                     requestApi.caja_nro_proceso,
                     requestApi.caja_nro_cierre,
+                    requestApi.adm_id,
                     total,
                     request.Rendiciones.Count,
-                    UserName);
+                    UserName,
+                    requestApi.json_rendiciones);
 
                 var respuesta = await _rendicionServicio.ConfirmarRendicion(requestApi, token);
                 var entidad = respuesta.Entidad;
+
+                _logger?.LogInformation(
+                    "Rendiciones: response MVC confirmacion. OkServicio={OkServicio}; EsWarn={EsWarn}; EsError={EsError}; Resultado={Resultado}; ResultadoId={ResultadoId}; Mensaje={Mensaje}",
+                    respuesta.Ok,
+                    respuesta.EsWarn,
+                    respuesta.EsError,
+                    entidad?.resultado,
+                    entidad?.resultado_id,
+                    entidad?.resultado_msj ?? respuesta.Mensaje);
 
                 if (entidad == null)
                 {

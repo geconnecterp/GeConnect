@@ -1280,7 +1280,91 @@ $(function () {
             }
         });
     }
-    function abrirModuloAnulaCobranza() { console.log('âŒ Anula Cobranza...'); }
+    function abrirModuloAnulaCobranza() {
+        console.log('Iniciando validacion para Anulacion de Cobranza...');
+
+        if (
+            typeof anulacionCobranzaValidarUrl === 'undefined' ||
+            !anulacionCobranzaValidarUrl ||
+            typeof anulacionCobranzaInicializaUrl === 'undefined' ||
+            !anulacionCobranzaInicializaUrl
+        ) {
+            AbrirMensaje(
+                'Error de configuracion',
+                'No se pudo preparar el modulo de Anulacion de Cobranza.',
+                function () { $('#msjModal').modal('hide'); },
+                false,
+                ['Aceptar'],
+                'error!',
+                null
+            );
+
+            return;
+        }
+
+        mostrarLoader(
+            "Validando datos de caja...<br>" +
+            "<small class='text-muted'>Preparando modulo de Anulacion de Cobranza</small>"
+        );
+
+        $.ajax({
+            url: anulacionCobranzaValidarUrl,
+            type: 'POST',
+            dataType: 'json',
+            timeout: 10000,
+            success: function (response) {
+                ocultarLoader();
+
+                if (!response || response.success !== true) {
+                    AbrirMensaje(
+                        'Error de validacion',
+                        response?.message || 'No fue posible validar los datos de caja para iniciar Anulacion de Cobranza.',
+                        function () { $('#msjModal').modal('hide'); },
+                        false,
+                        ['Aceptar'],
+                        'error!',
+                        null
+                    );
+
+                    return;
+                }
+
+                const menuModal = getModalMenu();
+                if (menuModal) {
+                    menuModal.hide();
+                }
+
+                mostrarLoader(
+                    "Abriendo modulo de Anulacion de Cobranza...<br>" +
+                    "<small class='text-muted'>Por favor, espere...</small>"
+                );
+
+                setTimeout(function () {
+                    window.location.href = anulacionCobranzaInicializaUrl;
+                }, 800);
+            },
+            error: function (xhr, status) {
+                ocultarLoader();
+
+                let mensaje = 'Error al validar los datos de caja para Anulacion de Cobranza.';
+                if (status === 'timeout') {
+                    mensaje = 'La validacion tardo demasiado tiempo. Intente nuevamente.';
+                } else if (xhr?.responseJSON?.message) {
+                    mensaje = xhr.responseJSON.message;
+                }
+
+                AbrirMensaje(
+                    'Error',
+                    mensaje,
+                    function () { $('#msjModal').modal('hide'); },
+                    false,
+                    ['Aceptar'],
+                    'error!',
+                    null
+                );
+            }
+        });
+    }
     function abrirModuloDistribucionFacturacion() { console.log('ðŸ“Š DistribuciÃ³n FacturaciÃ³n...'); }
     function abrirModuloDistribucionCobranza() { console.log('ðŸ“ˆ DistribuciÃ³n Cobranza...'); }
     function abrirModuloCambioValores() { console.log('ðŸ”„ Cambio de Valores...'); }
@@ -1635,5 +1719,6 @@ function actualizarFooterMenu(datos) {
     $("#lblFechaHora").text(datos.caja.caja.caja_apertura || '---');
     
 }
+
 
 
