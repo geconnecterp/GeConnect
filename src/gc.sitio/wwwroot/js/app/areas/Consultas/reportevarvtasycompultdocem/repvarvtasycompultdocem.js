@@ -10,7 +10,7 @@
 	$(document).on("change", "#listaFamilia", ControlalistaFamiliaSelected);
 
 	$("#SucursalesList").on("dblclick", 'option', function () { $(this).remove(); })
-	$("#DepositosList").on("dblclick", 'option', function () { $(this).remove(); })
+	$("#Rel01List").on("dblclick", 'option', function () { $(this).remove(); })
 	$("#FamiliaList").on("dblclick", 'option', function () { $(this).remove(); })
 	$("#RubrosList").on("dblclick", 'option', function () { $(this).remove(); })
 
@@ -149,7 +149,13 @@ function ControlaCancelar() {
 }
 
 function ControlaImprimirSelected() {
-	if ($("#tbGridProductos > tbody > tr").length === 0) {
+	const filasReales = $("#tbGridProductos tbody tr")
+		.filter(function () {
+			// Fila informativa tiene un único TD con colspan
+			return $(this).find("td[colspan]").length === 0;
+		});
+
+	if (filasReales.length === 0) {
 		AbrirMensaje("ATENCIÓN", "No hay datos generar el reporte.", function () {
 			$("#msjModal").modal("hide");
 			return true;
@@ -199,14 +205,13 @@ function ImprimirListaProductosStk_Generada() {
 		var lFam = [];
 		var lRub = [];
 		var temp = ObtenerFiltroLista("#chkSucursales", "#SucursalesList");
-		var lSuc = temp.ids;
+		var lSuc = temp.ids.join(",");
 		temp = ObtenerFiltroLista("#chkRel01", "#Rel01List");
-		var lProv = temp.ids;
-		$("#FamiliaList").children().each(function (i, item) { lFam.push($(item).val()) });
+		var lProv = temp.ids.join(",");
+		temp = ObtenerFiltroLista("#chkFamilias", "#FamiliaList");
+		var lFam = temp.ids.join(",");
 		temp = ObtenerFiltroLista("#chkRubro", "#RubrosList");
-		var lRub = temp.ids;
-		var desde = $("#Desde").val();
-		var hasta = $("#Hasta").val();
+		var lRub = temp.ids.join(",");
 		var agrupador = $("#listaAgrupador").val();
 		var tipoReporte = $("#listaAgrupador option:selected").text();
 
@@ -224,7 +229,7 @@ function ImprimirListaProductosStk_Generada() {
 		// String final
 		var filtrosString = filtrosDesc.join(" | ");
 
-		var data = { lSuc, lProv, lFam, lRub, desde, hasta, agrupador, tipoReporte, filtrosString };
+		var data = { lSuc, lProv, lFam, lRub, agrupador, tipoReporte, filtrosString };
 
 		cargarReporteEnArre(94, data, "REPORTE DE VARIACIÓN DE VENTAS Y COMPRAS EN LOS ÚLTIMOS DOCE MESES", "", "");
 		invocacionGestorDoc({});

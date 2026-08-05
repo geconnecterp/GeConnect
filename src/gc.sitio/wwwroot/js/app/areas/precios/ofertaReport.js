@@ -9,7 +9,54 @@ function inicializarVista() {
         $("#divDetalle").collapse("hide");
     }
     $("#divFiltro").collapse("show");
+
+    $("#divFiltro").on("shown.bs.collapse hidden.bs.collapse", function () {
+        const abierto = $(this).hasClass("show");
+
+        if (abierto) {
+            $("#divDetalle").collapse("hide");
+        } else {
+            $("#divDetalle").collapse("show");
+        }
+    });
 }
+
+function MostrarFiltrosAplicados() {
+    try {
+        // preferir un contenedor flotante si existe, si no usar el container dentro del collapse
+        const floatCont = $("#filtrosAplicadosFloating");
+        const fallback = $("#filtrosAplicadosContainer");
+        const cont = floatCont.length ? floatCont : (fallback.length ? fallback : null);
+        if (!cont) return;
+
+        const oferta = $("#rbOferta").is(":checked");
+        const combo = $("#rbCombo").is(":checked");
+        const tipoTextSele = $("#Tipo option:selected").text();
+        var tipoText = "";
+        if (tipoTextSele && tipoTextSele.toUpperCase() != "SELECCIONAR...")
+            tipoText = $("#Tipo option:selected").text() || "Todos";
+
+        let html = '<div class="d-inline-flex align-items-center" style="gap:8px;white-space:nowrap;">';
+        if (tipoText && tipoText != "") {
+            html += `<span class="badge bg-secondary">Tipo: ${tipoText}</span>`;
+        }
+        if (oferta) {
+            html += `<span class="badge bg-secondary">Incluye Oferta</span>`;
+        }
+        if (combo) {
+            html += `<span class="badge bg-secondary">Incluye Combos</span>`;
+        }
+
+        html += '</div>';
+
+        cont.html(html);
+    } catch (e) {
+        console.error('MostrarFiltrosAplicados error', e);
+    }
+}
+
+// intentar mostrar al cargar
+try { MostrarFiltrosAplicados(); } catch (e) { }
 
 function inicializaEventos() {
     //evento para el boton imprimir
@@ -23,6 +70,8 @@ function inicializaEventos() {
 
     // Configurar el evento click para el botón Buscar/Filtrar
     $("#btnBuscar").on("click", function (e) {
+        // actualizar vista de filtros antes de buscar
+        try { MostrarFiltrosAplicados(); } catch (e) { console.warn('MostrarFiltrosAplicados no disponible:', e); }
         SeleccionReporte(e, $(this));
     });
 
@@ -262,6 +311,8 @@ function cargarOfertasActivas(admId, lpId, pagina) {
             CerrarWaiting();
             $("#divFiltro").collapse("hide");
             $("#divDetalle").html(html).collapse("show");
+            // actualizar filtros aplicados después de renderizar (fallback si partial reemplaza el DOM)
+            try { MostrarFiltrosAplicados(); } catch (e) { console.warn('MostrarFiltrosAplicados no disponible:', e); }
             cargarReporteEnArre(estado.report[0], datosPost, "Reporte de Ofertas Activas");
             configurarVistaDelGrid();
         },

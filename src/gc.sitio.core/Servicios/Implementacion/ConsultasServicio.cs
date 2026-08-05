@@ -54,6 +54,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 		private const string REP_RANKING_RENTA_VENTAS = "/RepRkgRentabVtas";
 		private const string REP_EVO_VTAS_PER_ANTERIORES = "/RepEvoVtasPerAnteriores";
 		private const string REP_VAR_VTAS_Y_COMP_ULT_DOCE_M = "/RepoVarVtasYCompUltDoceM";
+		private const string REP_EVAL_DE_NIVEL_DE_SERVICIO = "/RepoEvalDeNivelDeServicio";
 
 		private readonly AppSettings _appSettings;
         public ConsultasServicio(IOptions<AppSettings> options, ILogger<ConsultasServicio> logger) : base(options, logger)
@@ -1381,6 +1382,37 @@ namespace gc.sitio.core.Servicios.Implementacion
 					return [];
 				}
 				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<ReporteVarVtasYCompUltDoceMDto>>>(stringData) ?? throw new Exception("Error al deserializar la respuesta de la API.");
+				return apiResponse.Data;
+			}
+			else
+			{
+				string stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+				_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+				return new();
+			}
+		}
+
+		public List<ReporteEvalDeNivelDeServicioDto> RepoEvalDeNivelDeServicio(ReporteEvalDeNivelDeServicioRequest request, string token)
+		{
+			ApiResponse<List<ReporteEvalDeNivelDeServicioDto>> apiResponse;
+
+			HelperAPI helper = new();
+			HttpClient client = helper.InicializaCliente(request, token, out StringContent contentData);
+			HttpResponseMessage response;
+
+			var link = $"{_appSettings.RutaBase}{RutaAPI}{REP_EVAL_DE_NIVEL_DE_SERVICIO}";
+
+			response = client.PostAsync(link, contentData).Result;
+
+			if (response.StatusCode == HttpStatusCode.OK)
+			{
+				string stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+				if (string.IsNullOrEmpty(stringData))
+				{
+					_logger.LogWarning($"La API devolvió error.");
+					return [];
+				}
+				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<ReporteEvalDeNivelDeServicioDto>>>(stringData) ?? throw new Exception("Error al deserializar la respuesta de la API.");
 				return apiResponse.Data;
 			}
 			else

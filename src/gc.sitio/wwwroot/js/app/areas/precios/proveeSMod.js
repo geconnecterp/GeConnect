@@ -43,6 +43,8 @@ function inicializaVista() {
 function inicializaEventosModif() {
     // Configurar el evento click para el botón Buscar/Filtrar
     $("#btnBuscar").on("click", function () {
+        // actualizar vista de filtros antes de buscar
+        try { MostrarFiltrosAplicados(); } catch (e) { console.warn('MostrarFiltrosAplicados no disponible:', e); }
         buscarProductosPSMP(this);
     });
 
@@ -62,6 +64,30 @@ function inicializaEventosModif() {
 
     $("#btnImprimir").on("click", imprimirReportePSMP);
 }
+
+function MostrarFiltrosAplicados() {
+    try {
+        // intentar usar el contenedor flotante; si no existe, no hacemos nada (el partial puede contener su propio container)
+        const floatCont = $("#filtrosAplicadosFloating");
+        const fallback = $("#filtrosAplicadosContainer");
+        const cont = floatCont.length ? floatCont : (fallback.length ? fallback : null);
+        if (!cont) return;
+
+        const desde = $("#Date1").val();
+
+        let html = '<div class="d-inline-flex align-items-center" style="gap:8px;white-space:nowrap;">';
+        if (desde) html += `<span class="badge bg-secondary">Desde: ${desde}</span>`;
+
+        html += '</div>';
+
+        cont.html(html);
+    } catch (e) {
+        console.error('MostrarFiltrosAplicados error', e);
+    }
+}
+
+// intentar mostrar al cargar
+try { MostrarFiltrosAplicados(); } catch (e) { }
 
 function setBtnLoading($btn, loading, originalHtml) {
     if (!$btn || !$btn.length) return;
@@ -121,6 +147,8 @@ function buscarProductosPSMP(btn) {
         data: JSON.stringify(fechaISO),
         success: function (response) {
             $("#divDetalle").html(response).collapse("show");
+            // actualizar filtros aplicados después de renderizar (fallback si partial reemplaza el DOM)
+            try { MostrarFiltrosAplicados(); } catch (e) { console.warn('MostrarFiltrosAplicados no disponible:', e); }
             $("#divFiltro").collapse("hide");
             $("#btnImprimir").prop("disabled", false);
             cargarReporteEnArre(indexPrint, datos, "Reporte de Proveedores sin modificaciones de Precios");

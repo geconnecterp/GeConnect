@@ -22,29 +22,14 @@ function MostrarFiltrosAplicados() {
 		const desde = $("#Desde").val();
 		const hasta = $("#Hasta").val();
 
-		// Sucursales seleccionadas
-		const sucursales = [];
-		$("#SucursalesList option").each(function () { sucursales.push($(this).text()); });
-		// Si no hay en la listbox, tomar todas del dropdown
-		if (sucursales.length === 0) {
-			$("#listaSucursales option").each(function () {
-				const v = $(this).val();
-				const t = $(this).text();
-				if (v && v !== "") sucursales.push(t);
-			});
-		}
+		const sucursales = listFrom("SucursalesList");
 
-		let html = "";
-		html += `<span class=\"badge bg-secondary me-1\">DESDE: ${desde || '-'} </span>`;
-		html += `<span class=\"badge bg-secondary me-1\">HASTA: ${hasta || '-'} </span>`;
+		let html = '<div class="d-inline-flex align-items-center" style="gap:8px;white-space:nowrap;">';
+		if (desde) html += `<span class="badge bg-secondary">Desde: ${desde}</span>`;
+		if (hasta) html += `<span class="badge bg-secondary">Hasta: ${hasta}</span>`;
 
-		if (sucursales.length === 1) {
-			html += `<span class=\"badge bg-secondary me-1\">SUCURSAL: ${sucursales[0]}</span>`;
-		} else if (sucursales.length > 1) {
-			html += `\n                <div class=\"dropdown me-1\">\n                    <button class=\"badge bg-secondary dropdown-toggle text-nowrap\" type=\"button\" id=\"sucursalesDrop\" data-bs-toggle=\"dropdown\" aria-expanded=\"false\">\n                        Sucursal: ${sucursales.length} seleccionados\n                    </button>\n                    <ul class=\"dropdown-menu dropdown-menu-end\" aria-labelledby=\"sucursalesDrop\" data-bs-boundary=\"viewport\">`;
-			sucursales.forEach(function (s) { html += `<li><a class=\"dropdown-item\" href=\"#\">${s}</a></li>`; });
-			html += `</ul></div>`;
-		}
+		html += renderGroup('SUC', sucursales);
+		html += '</div>';
 
 		// Render
 		target.html(html);

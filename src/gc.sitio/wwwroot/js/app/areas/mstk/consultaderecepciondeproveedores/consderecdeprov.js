@@ -42,29 +42,16 @@ function MostrarFiltrosAplicados() {
 		const desde = $("#Desde").val();
 		const hasta = $("#Hasta").val();
 
-		const sucursales = [];
-		$("#SucursalesList option").each(function () { sucursales.push($(this).text()); });
+		const sucursales = listFrom("SucursalesList");
+		const proveedores = listFrom("Rel01List");
 
-		const proveedores = [];
-		$("#Rel01List option").each(function () { proveedores.push($(this).text()); });
+		let html = '<div class="d-inline-flex align-items-center" style="gap:8px;white-space:nowrap;">';
+		if (desde) html += `<span class="badge bg-secondary">Desde: ${desde}</span>`;
+		if (hasta) html += `<span class="badge bg-secondary">Hasta: ${hasta}</span>`;
 
-		let html = "";
-		html += `<span class=\"badge bg-secondary me-1\">DESDE: ${desde || '-'} </span>`;
-		html += `<span class=\"badge bg-secondary me-1\">HASTA: ${hasta || '-'} </span>`;
-
-		function makeList(label, items, id) {
-			if (!items || items.length === 0) return '';
-			if (items.length === 1) return `<span class=\"badge bg-secondary me-1\">${label}: ${items[0]}</span>`;
-			let s = `<div class=\"dropdown me-1\">`;
-			s += `<button class=\"badge bg-secondary dropdown-toggle text-nowrap\" type=\"button\" id=\"${id}\" data-bs-toggle=\"dropdown\" aria-expanded=\"false\">${label}: ${items.length} seleccionados</button>`;
-			s += `<ul class=\"dropdown-menu dropdown-menu-end\" aria-labelledby=\"${id}\" data-bs-boundary=\"viewport\">`;
-			items.forEach(function (it) { s += `<li><a class=\"dropdown-item\" href=\"#\">${it}</a></li>`; });
-			s += `</ul></div>`;
-			return s;
-		}
-
-		html += makeList('SUC', sucursales, 'sucDrop');
-		html += makeList('PROV', proveedores, 'provDrop');
+		html += renderGroup('SUC', sucursales);
+		html += renderGroup('PROV', proveedores);
+		html += '</div>';
 
 		cont.html(html);
 	} catch (e) {

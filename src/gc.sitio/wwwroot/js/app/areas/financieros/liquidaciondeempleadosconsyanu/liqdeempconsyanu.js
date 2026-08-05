@@ -367,9 +367,10 @@ function MostrarFiltrosAplicados() {
 		const desde = $("#Date1").val();
 		const hasta = $("#Date2").val();
 
-		let html = "";
-		html += '<span class="badge bg-secondary me-1">DESDE: ' + (desde || '-') + ' </span>';
-		html += '<span class="badge bg-secondary me-1">HASTA: ' + (hasta || '-') + ' </span>';
+		let html = '<div class="d-inline-flex align-items-center" style="gap:8px;white-space:nowrap;">';
+		if (desde) html += `<span class="badge bg-secondary">Desde: ${desde}</span>`;
+		if (hasta) html += `<span class="badge bg-secondary">Hasta: ${hasta}</span>`;
+		html += '</div>';
 
 		cont.html(html);
 	} catch (e) {

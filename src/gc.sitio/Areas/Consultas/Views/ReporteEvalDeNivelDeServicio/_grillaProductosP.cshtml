@@ -1,0 +1,224 @@
+﻿@model ListadoEvalDeNivelDeServicioModel
+@using gc.infraestructura.Helpers
+@using static gc.infraestructura.Helpers.GridHelper
+@{
+    string grupoActual = string.Empty;
+    string grupoAnterior = string.Empty;
+    string leyendaAgrupador = string.Empty;
+
+    var alt = true;
+    string clase = string.Empty;
+    var alta_rota_si = "SI";
+    var alta_rota_no = "NO";
+    var cien_por_cien = "100%";
+    var no_cien_por_cien = "0%";
+    var productos = new List<ReporteEvalDeNivelDeServicioDto>();
+}
+<style>
+    #containerListaProducto {
+        position: relative;
+        max-height: 60vh;
+        height: auto;
+        overflow-y: auto;
+        overflow-x: auto;
+        z-index: auto;
+    }
+
+    .table-golden {
+        border-collapse: separate;
+        border-spacing: 0;
+        table-layout: fixed;
+    }
+
+        .table-golden thead {
+            position: sticky;
+            top: 0;
+            z-index: 1;
+            background: linear-gradient(to bottom, #b8860b, #daa520) !important;
+            color: #fff !important;
+        }
+
+            .table-golden thead th {
+                position: sticky;
+                top: 0;
+                z-index: 4;
+                background: linear-gradient(to bottom, #b8860b, #daa520);
+                color: #fff;
+                box-shadow: 0 1px 0 rgba(0,0,0,0.05), 0 2px 2px rgba(0,0,0,0.04);
+                background-clip: padding-box;
+            }
+
+            .table-golden thead,
+            .table-golden thead th {
+            }
+
+    #tbGridProductos th,
+    #tbGridProductos td {
+        padding: 0.01rem 0.15rem !important;
+        line-height: 1.2 !important;
+        height: auto !important;
+    }
+
+    #tbGridProductos tr {
+        height: 1.6rem !important;
+    }
+
+    .grid-golden {
+        width: 100%;
+        margin: 0 auto;
+    }
+
+    .grid-golden-body .table-wrapper table {
+        width: 100%;
+    }
+
+    .cell-ellipsis {
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        display: block; /* evita que el contenido fuerce el ancho */
+    }
+
+    .badge.bg-secondary {
+        font-size: 0.70rem;
+        padding: 0.20rem 0.35rem;
+        border-radius: 0.25rem;
+    }
+
+    /* Hover del doble-chevron */
+    #toggleFiltros:hover {
+        color: #000;
+        transform: scale(1.15);
+    }
+</style>
+<div class="grid-golden">
+    <div class="grid-golden-header">
+        <div class="row align-items-md-center">
+            <div class="col-md-10 col-sm-6 d-flex align-items-center">
+                <h5 class="mb-0 flex-grow-1">
+                    <i class="bx bx-package me-2"></i>
+                    <strong>Ranking no agrupado</strong>
+                </h5>
+                <i class="bx bx-chevrons-down fs-4 ms-2"
+                   id="toggleFiltros"
+                   data-bs-toggle="collapse"
+                   data-bs-target="#filtrosCollapse"
+                   role="button"
+                   data-bs-placement="top"
+                   title="Haz click acá para conocer los filtros aplicados"
+                   style="
+                    cursor:pointer;
+                    transition: transform .25s ease, color .25s ease;
+                    color:#666;
+                    ">
+                </i>
+            </div>
+
+            <div class="col-md-2 col-sm-6">
+                <div class="d-flex justify-content-sm-end"></div>
+            </div>
+        </div>
+    </div>
+    <div class="collapse" id="filtrosCollapse">
+        <div class="mt-2">
+            <span class="badge bg-secondary me-1">@Model.LeyendaSuc</span>
+            <span class="badge bg-secondary me-1">@Model.LeyendaProv</span>
+            <span class="badge bg-secondary me-1">@Model.LeyendaFam</span>
+            <span class="badge bg-secondary me-1">@Model.LeyendaRub</span>
+        </div>
+    </div>
+    <div class="grid-golden-body">
+        <div class="table-wrapper" id="containerListaProducto">
+            <table class="table table-sm table-golden" id="tbGridProductos">
+                <thead>
+                    <tr class="header">
+                        <th class="text-center" style="width: 5%;">ID</th>
+                        <th class="text-center" style="width: 60%;">Descripción</th>
+                        <th class="text-center" style="width: 5%;" title="Alta Rotación">Alta Rot.</th>
+                        <th class="text-center" style="width: 5%;">Stock</th>
+                        <th class="text-center" style="width: 10%;" title="Último Comprobante">Ult. Comp.</th>
+                        <th class="text-center" style="width: 10%;" title="Último Rtr.">Ult. Rtr.</th>
+                        <th class="text-center" style="width: 10%;" title="Ventas de los últimos 30 días">Vta. Ult. 30 d.</th>
+                        <th class="text-center" style="width: 10%;" title="Nivel de Servicio">N. de Serv.</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model?.GrillaEvalNivelServicio?.ListaDatos != null && Model.GrillaEvalNivelServicio.ListaDatos.Count > 0)
+                    {
+                        productos = Model.GrillaEvalNivelServicio.ListaDatos.OrderBy(x => x.rub_id).ToList();
+
+                        foreach (var item in productos)
+                        {
+                            grupoActual = item.rub_id;
+                            leyendaAgrupador = $"({item.rub_id}) {item.rub_desc}";
+
+                            if (grupoActual != grupoAnterior)
+                            {
+                                <tr class="table-secondary fw-bold">
+                                    <td colspan="26" class="text-center">
+                                        <i class="bx bx-folder me-1"></i>
+                                        @leyendaAgrupador
+                                    </td>
+                                </tr>
+                                grupoAnterior = grupoActual;
+                                alt = true;
+                            }
+
+                            if (alt) { clase = "alt"; alt = false; } else { clase = ""; alt = true; }
+                            <tr class="@clase" onclick="selectReg(this, 'tbGridProductos')">
+                                <td class="text-center cell-fit-content">@Model.GrillaEvalNivelServicio.FormatearDato(item.p_id, FormatDato.Ninguno)</td>
+                                <td class="@Model.GrillaEvalNivelServicio.ObtenerClase(item.p_desc) cell-fit-content">
+                                    <span class="cell-ellipsis" title="@item.p_desc">
+                                        @Model.GrillaEvalNivelServicio.FormatearDato(item.p_desc, FormatDato.Ninguno)
+                                    </span>
+                                </td>
+                                @if (item.p_alta_rotacion != null && item.p_alta_rotacion == 'S')
+                                {
+                                    <td class="text-center cell-fit-content">@Model.GrillaEvalNivelServicio.FormatearDato(alta_rota_si, FormatDato.Ninguno)</td>
+                                }
+                                else
+                                {
+                                    <td class="text-center cell-fit-content">@Model.GrillaEvalNivelServicio.FormatearDato(alta_rota_no, FormatDato.Ninguno)</td>
+                                }
+                                <td class="@Model.GrillaEvalNivelServicio.ObtenerClase(item.stk) text-right cell-fit-content">@GridHelper.FormatearDato(item.stk, FormatDato.Monto, item.PermiteDecimales)</td>
+                                <td class="text-center cell-fit-content">@Model.GrillaEvalNivelServicio.FormatearDato(item.rp_fecha, FormatDato.Fecha)</td>
+                                <td class="text-center cell-fit-content">@Model.GrillaEvalNivelServicio.FormatearDato(item.re_fecha, FormatDato.Fecha)</td>
+                                <td class="@Model.GrillaEvalNivelServicio.ObtenerClase(item.vta_u30) text-right cell-fit-content">@GridHelper.FormatearDato(item.vta_u30, FormatDato.Monto, item.PermiteDecimales)</td>
+                                @if (item.stk > 0)
+                                {
+                                    <td class="text-center cell-fit-content">@Model.GrillaEvalNivelServicio.FormatearDato(cien_por_cien, FormatDato.Ninguno)</td>
+                                }
+                                else
+                                {
+                                    <td class="text-center cell-fit-content">@Model.GrillaEvalNivelServicio.FormatearDato(no_cien_por_cien, FormatDato.Ninguno)</td>
+                                }
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="26" class="text-center text-muted py-4">
+                                <i class="bx bx-info-circle me-2"></i>
+                                No se encontraron productos con los criterios especificados
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<script>
+    // Rotación del doble-chevron al abrir/cerrar
+    const toggle = document.getElementById('toggleFiltros');
+    const collapse = document.getElementById('filtrosCollapse');
+
+    collapse.addEventListener('show.bs.collapse', () => {
+        toggle.style.transform = 'rotate(180deg)';
+    });
+
+    collapse.addEventListener('hide.bs.collapse', () => {
+        toggle.style.transform = 'rotate(0deg)';
+    });
+</script>

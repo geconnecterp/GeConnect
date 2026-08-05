@@ -38,6 +38,59 @@ function inicializaVista() {
 
     $("#Date2").val(formatearFecha(hoy));
     $("#Date1").val(formatearFecha(tresMesesAtras));
+
+    // intentar mostrar al cargar
+    try { MostrarFiltrosAplicados(); } catch (e) { }
+
+    $("#divFiltro").on("shown.bs.collapse hidden.bs.collapse", function () {
+        const abierto = $(this).hasClass("show");
+
+        if (abierto) {
+            $("#divDetalle").collapse("hide");
+        } else {
+            $("#divDetalle").collapse("show");
+        }
+    });
+}
+
+function MostrarFiltrosAplicados() {
+    try {
+        // preferir un contenedor flotante si existe, si no usar el container dentro del collapse
+        const floatCont = $("#filtrosAplicadosFloating");
+        const fallback = $("#filtrosAplicadosContainer");
+        const cont = floatCont.length ? floatCont : (fallback.length ? fallback : null);
+        if (!cont) return;
+
+        const desde = $("#Date1").val();
+        const hasta = $("#Date2").val();
+
+        const listaPrecio = listFrom("Rel04List");
+        const proveedor = listFrom("Rel01List");
+        const familia = listFrom("Rel03List");
+        const rubro = listFrom("Rel02List");
+
+        const desdeHasta = $("#chkDesdeHasta").is(":checked");
+        const incluyeCosto = $("#chkInCosto").is(":checked");
+
+        let html = '<div class="d-inline-flex align-items-center" style="gap:8px;white-space:nowrap;">';
+        if (desdeHasta) {
+            if (desde) html += `<span class="badge bg-secondary">Desde: ${desde}</span>`;
+            if (hasta) html += `<span class="badge bg-secondary">Hasta: ${hasta}</span>`;
+        }
+        if (incluyeCosto) {
+            html += `<span class="badge bg-secondary">Incluye Costo</span>`;
+        }
+
+        html += renderGroup('LISTA', listaPrecio);
+        html += renderGroup('PROV.', proveedor);
+        html += renderGroup('FAM.', familia);
+        html += renderGroup('RUBRO', rubro);
+        html += '</div>';
+
+        cont.html(html);
+    } catch (e) {
+        console.error('MostrarFiltrosAplicados error', e);
+    }
 }
 
 function inicializaEventosDeVista() {
@@ -207,6 +260,7 @@ function inicializaEventosDeVista() {
     });
     //****** Fin lista de precios*/
     $("#btnBuscar").on("click", function () {
+        try { MostrarFiltrosAplicados(); } catch (e) { console.warn('MostrarFiltrosAplicados no disponible:', e); }
         buscarPrecios(this);
     });
 }
@@ -359,6 +413,10 @@ function buscarPrecios(btn) {
             console.log("✅ Respuesta recibida del servidor");
             
             $("#divDetalle").html(html).collapse("show");
+
+            // actualizar filtros aplicados (si el partial reemplaza el DOM)
+            try { MostrarFiltrosAplicados(); } catch (e) { console.warn('MostrarFiltrosAplicados no disponible:', e); }
+
             $("#divFiltro").collapse("hide");
 
             $("#btnAbmCancelar").show();

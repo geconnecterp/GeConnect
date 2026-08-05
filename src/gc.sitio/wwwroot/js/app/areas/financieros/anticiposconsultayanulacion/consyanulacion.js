@@ -78,61 +78,17 @@ function MostrarFiltrosAplicados() {
 		const hasta = $("#Date2").val();
 		const tipoText = $("#listaTipo option:selected").text() || "Todos";
 
-		// Clientes seleccionados
-		const clientes = [];
-		$("#Rel01List option").each(function () {
-			clientes.push($(this).text());
-		});
+		const clientes = listFrom("Rel01List");
+		const usuarios = listFrom("UsuarioList");
 
-		// Usuarios seleccionados
-		const usuarios = [];
-		$("#UsuarioList option").each(function () {
-			usuarios.push($(this).text());
-		});
+		let html = '<div class="d-inline-flex align-items-center" style="gap:8px;white-space:nowrap;">';
+		if (desde) html += `<span class="badge bg-secondary">Desde: ${desde}</span>`;
+		if (hasta) html += `<span class="badge bg-secondary">Hasta: ${hasta}</span>`;
+		if (tipoText) html += `<span class=\"badge bg-secondary me-1\">Tipo: ${tipoText}</span>`;
 
-		// Reconstruir contenido
-		let html = "";
-		html += `<span class=\"badge bg-secondary me-1\">Desde: ${desde || '-'} </span>`;
-		html += `<span class=\"badge bg-secondary me-1\">Hasta: ${hasta || '-'} </span>`;
-		html += `<span class=\"badge bg-secondary me-1\">Tipo: ${tipoText}</span>`;
-
-		// Clientes: agrupar si hay más de uno
-		if (clientes.length > 0) {
-			if (clientes.length === 1) {
-				html += `<span class=\"badge bg-secondary me-1\">CLIENTE: ${clientes[0]}</span>`;
-			} else {
-				// Dropdown compacto para múltiples clientes: mostrar como badge con dropdown (lista encima)
-				html += `
-					<div class=\"dropup me-1\">
-						<button class=\"badge bg-secondary dropdown-toggle text-nowrap\" type=\"button\" id=\"clientesDrop\" data-bs-toggle=\"dropdown\" aria-expanded=\"false\" title=\"Clientes seleccionados\">
-							Cliente: ${clientes.length} seleccionados
-						</button>
-						<ul class=\"dropdown-menu dropdown-menu-end\" aria-labelledby=\"clientesDrop\" data-bs-boundary=\"viewport\">`;
-				clientes.forEach(function (c) {
-					html += `<li><a class=\"dropdown-item\" href=\"#\">${c}</a></li>`;
-				});
-				html += `</ul></div>`;
-			}
-		}
-
-		// Usuarios: agrupar si hay más de uno
-		if (usuarios.length > 0) {
-			if (usuarios.length === 1) {
-				html += `<span class=\"badge bg-secondary me-1\">USUARIO: ${usuarios[0]}</span>`;
-			} else {
-				// Dropdown compacto para múltiples usuarios: mostrar como badge con dropdown (lista encima)
-				html += `
-					<div class=\"dropup me-1\">
-						<button class=\"badge bg-secondary dropdown-toggle text-nowrap\" type=\"button\" id=\"usuariosDrop\" data-bs-toggle=\"dropdown\" aria-expanded=\"false\" title=\"Usuarios seleccionados\">
-							Usuario: ${usuarios.length} seleccionados
-						</button>
-						<ul class=\"dropdown-menu dropdown-menu-end\" aria-labelledby=\"usuariosDrop\" data-bs-boundary=\"viewport\">`;
-				usuarios.forEach(function (u) {
-					html += `<li><a class=\"dropdown-item\" href=\"#\">${u}</a></li>`;
-				});
-				html += `</ul></div>`;
-			}
-		}
+		html += renderGroup('CLI', clientes);
+		html += renderGroup('USU', usuarios);
+		html += '</div>';
 
 		target.html(html);
 	} catch (e) {

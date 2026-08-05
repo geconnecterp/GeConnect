@@ -48,5 +48,6 @@ namespace gc.api.core.Contratos.Servicios
         List<RepRkgRentabVtasDto> RepRkgRentabVtas(ReporteRankingRentabVtasRequest filtros);
 		List<ReporteEvoVtasPerAnterioresDto> RepEvoVtasPerAnteriores(ReporteEvoVtasPerAnterioresRequest filtros);
 		List<ReporteVarVtasYCompUltDoceMDto> RepoVarVtasYCompUltDoceM(ReporteVarVtasYCompUltDoceMRequest filtros);
+		List<ReporteEvalDeNivelDeServicioDto> RepoEvalDeNivelDeServicio(ReporteEvalDeNivelDeServicioRequest filtros);
 	}
 }

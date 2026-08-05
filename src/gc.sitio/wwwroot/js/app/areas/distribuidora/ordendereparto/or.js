@@ -20,6 +20,16 @@ function InicializaPantallaOrdenDeReparto() {
 
 	initPeriodoFechas();
 
+	$("#divFiltro").on("shown.bs.collapse hidden.bs.collapse", function () {
+		const abierto = $(this).hasClass("show");
+
+		if (abierto) {
+			$("#divDetalle").collapse("hide");
+		} else {
+			$("#divDetalle").collapse("show");
+		}
+	});
+
 	$("#chkDesdeHasta")
 		.prop("checked", true)
 		.prop("disabled", true);
@@ -61,6 +71,37 @@ function InicializaPantallaOrdenDeReparto() {
 
 	$(document).on("change", "#listaEstados", ControlalistaEstadosSelected);
 	$(document).on("change", "#listaRepartidores", ControlalistaRepartidoresSelected);
+
+	// intentar mostrar al cargar
+	try { MostrarFiltrosAplicados(); } catch (e) { }
+}
+
+function MostrarFiltrosAplicados() {
+	try {
+		// preferir un contenedor flotante si existe, si no usar el container dentro del collapse
+		const floatCont = $("#filtrosAplicadosFloating");
+		const fallback = $("#filtrosAplicadosContainer");
+		const cont = floatCont.length ? floatCont : (fallback.length ? fallback : null);
+		if (!cont) return;
+
+		const desde = $("#Desde").val();
+		const hasta = $("#Hasta").val();
+
+		const estados = listFrom("EstadosList");
+		const repartidores = listFrom("RepartidoresList");
+
+		let html = '<div class="d-inline-flex align-items-center" style="gap:8px;white-space:nowrap;">';
+		if (desde) html += `<span class="badge bg-secondary">Desde: ${desde}</span>`;
+		if (hasta) html += `<span class="badge bg-secondary">Hasta: ${hasta}</span>`;
+
+		html += renderGroup('ESTADO', estados);
+		html += renderGroup('REPAR.', repartidores);
+		html += '</div>';
+
+		cont.html(html);
+	} catch (e) {
+		console.error('MostrarFiltrosAplicados error', e);
+	}
 }
 
 function ReseteoDeReportes() {
@@ -130,6 +171,7 @@ function InicializaEventosOrdenDeReparto() {
 
 	// Buscar
 	$("#btnBuscar").on("click", function () {
+		try { MostrarFiltrosAplicados(); } catch (e) { console.warn('MostrarFiltrosAplicados no disponible:', e); }
 		buscarOrdenesDeReparto(1);
 	});
 	funcCallBack = buscarOrdenesDeReparto;
@@ -152,6 +194,8 @@ async function buscarOrdenesDeReparto(pag = 1) {
 
 		PostGenHtml({}, urlInitView, function (html) {
 			$("#divDetalle").html(html).collapse("show");
+			// actualizar filtros aplicados (si el partial reemplaza el DOM)
+			try { MostrarFiltrosAplicados(); } catch (e) { console.warn('MostrarFiltrosAplicados no disponible:', e); }
 			$("#divFiltro").collapse("hide");
 			CerrarWaiting();
 			CargarOrdenesDeReparto(filtros, url);

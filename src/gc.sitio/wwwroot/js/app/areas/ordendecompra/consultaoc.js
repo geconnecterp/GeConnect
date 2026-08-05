@@ -85,32 +85,18 @@ function MostrarFiltrosAplicados() {
 		const desde = $("#Date1").val();
 		const hasta = $("#Date2").val();
 
-		// Recolectar listas seleccionadas
-		const cfo =[];
-		$("#Rel01List option").each(function () { cfo.push($(this).text()); });
-		const cfd =[];
-		$("#Rel03List option").each(function () { cfd.push($(this).text()); });
-		const tt = [];
-		$("#Rel02List option").each(function () { tt.push($(this).text()); });
+		const cfo = listFrom("Rel01List");
+		const cfd = listFrom("Rel03List");
+		const tt = listFrom("Rel02List");
 
-		let html = "";
-		html += `<span class=\"badge bg-secondary me-1\">DESDE: ${desde || '-'} </span>`;
-		html += `<span class=\"badge bg-secondary me-1\">HASTA: ${hasta || '-'} </span>`;
+		let html = '<div class="d-inline-flex align-items-center" style="gap:8px;white-space:nowrap;">';
+		if (desde) html += `<span class="badge bg-secondary">Desde: ${desde}</span>`;
+		if (hasta) html += `<span class="badge bg-secondary">Hasta: ${hasta}</span>`;
 
-		function makeBadgeOrDropdown(label, items, id) {
-			if (!items || items.length === 0) return '';
-			if (items.length === 1) return `<span class=\"badge bg-secondary me-1\">${label}: ${items[0]}</span>`;
-			let s = `<div class=\"dropdown me-1\">`;
-			s += `<button class=\"badge bg-secondary dropdown-toggle text-nowrap\" type=\"button\" id=\"${id}\" data-bs-toggle=\"dropdown\" aria-expanded=\"false\">${label}: ${items.length} seleccionados</button>`;
-			s += `<ul class=\"dropdown-menu dropdown-menu-end\" aria-labelledby=\"${id}\" data-bs-boundary=\"viewport\">`;
-			items.forEach(function (it) { s += `<li><a class=\"dropdown-item\" href=\"#\">${it}</a></li>`; });
-			s += `</ul></div>`;
-			return s;
-		}
-
-		html += makeBadgeOrDropdown('PROV', cfo, 'cfoDrop');
-		html += makeBadgeOrDropdown('TIPO', cfd, 'cfdDrop');
-		html += makeBadgeOrDropdown('USU', tt, 'ttDrop');
+		html += renderGroup('PROV', cfo);
+		html += renderGroup('TIPO', cfd);
+		html += renderGroup('USU', tt);
+		html += '</div>';
 
 		cont.html(html);
 	} catch (e) {

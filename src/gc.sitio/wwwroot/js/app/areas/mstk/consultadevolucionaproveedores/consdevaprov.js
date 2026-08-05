@@ -16,6 +16,11 @@ $(function () {
 	$("#SucursalesList").on("dblclick", 'option', function () { $(this).remove(); })
 	$("#Rel01List").on("dblclick", 'option', function () { $(this).remove(); })
 
+	$("input#Rel01").on("click", function () {
+		$("input#Rel01").val("");
+		$("#Rel01Item").val("");
+	});
+
 	$("#btnFiltro").on("click", function () {
 		if ($("#divFiltros").hasClass("show")) {
 			$("#divFiltros").collapse("hide");
@@ -36,10 +41,43 @@ $(function () {
 			}, false, ["Aceptar"], "error!", null);
 		}
 		else {
+			// actualizar vista de filtros antes de buscar
+			try { MostrarFiltrosAplicados(); } catch (e) { console.warn('MostrarFiltrosAplicados no disponible:', e); }
 			InicializarPantallaPrincipal();
 		}
 	});
 });
+
+function MostrarFiltrosAplicados() {
+	try {
+		// intentar usar el contenedor flotante; si no existe, no hacemos nada (el partial puede contener su propio container)
+		const floatCont = $("#filtrosAplicadosFloating");
+		const fallback = $("#filtrosAplicadosContainer");
+		const cont = floatCont.length ? floatCont : (fallback.length ? fallback : null);
+		if (!cont) return;
+
+		const desde = $("#Desde").val();
+		const hasta = $("#Hasta").val();
+
+		const suc = listFrom("SucursalesList");
+		const prov = listFrom("Rel01List");
+
+		let html = '<div class="d-inline-flex align-items-center" style="gap:8px;white-space:nowrap;">';
+		if (desde) html += `<span class="badge bg-secondary">Desde: ${desde}</span>`;
+		if (hasta) html += `<span class="badge bg-secondary">Hasta: ${hasta}</span>`;
+
+		html += renderGroup('SUC', suc);
+		html += renderGroup('PROV', prov);
+		html += '</div>';
+
+		cont.html(html);
+	} catch (e) {
+		console.error('MostrarFiltrosAplicados error', e);
+	}
+}
+
+// intentar mostrar al cargar
+try { MostrarFiltrosAplicados(); } catch (e) { }
 
 function cargaPaginacion() {
 	$("#divPaginacion").pagination({
@@ -69,6 +107,8 @@ function InicializarPantallaPrincipal() {
 	AbrirWaiting("Cargando información...");
 	PostGenHtml({ sucursalesText, provText, f_desde, f_hasta }, inicializarPantallPrincipalURL, function (obj) {
 		$("#divDetalle").html(obj);
+		// actualizar filtros aplicados después de renderizar (fallback si partial reemplaza el DOM)
+		try { MostrarFiltrosAplicados(); } catch (e) { console.warn('MostrarFiltrosAplicados no disponible:', e); }
 		$(document).on('shown.bs.tab', 'button[data-bs-toggle="tab"]', function (e) {
 			const tabId = $(e.target).attr("data-bs-target").replace("#", "");
 			EvaluarBotonImprimir(tabId);

@@ -105,6 +105,51 @@ function InicializaPantallaPedido() {
     $(document).on("change", "#listaEstados", ControlalistaEstadosSelected);
     $(document).on("change", "#listaVendedores", ControlalistaVendedoresSelected);
     $(document).on("change", "#listaRepartidores", ControlalistaRepartidoresSelected);
+
+    // intentar mostrar al cargar
+    try { MostrarFiltrosAplicados(); } catch (e) { }
+
+    $("#divFiltro").on("shown.bs.collapse hidden.bs.collapse", function () {
+        const abierto = $(this).hasClass("show");
+
+        if (abierto) {
+            $("#divDetalle").collapse("hide");
+        } else {
+            $("#divDetalle").collapse("show");
+        }
+    });
+}
+
+function MostrarFiltrosAplicados() {
+    try {
+        // preferir un contenedor flotante si existe, si no usar el container dentro del collapse
+        const floatCont = $("#filtrosAplicadosFloating");
+        const fallback = $("#filtrosAplicadosContainer");
+        const cont = floatCont.length ? floatCont : (fallback.length ? fallback : null);
+        if (!cont) return;
+
+        const desde = $("#Desde").val();
+        const hasta = $("#Hasta").val();
+
+        const clientes = listFrom("Rel01List");
+        const estados = listFrom("EstadosList");
+        const vendedores = listFrom("VendedoresList");
+        const repartidores = listFrom("RepartidoresList");
+
+        let html = '<div class="d-inline-flex align-items-center" style="gap:8px;white-space:nowrap;">';
+        if (desde) html += `<span class="badge bg-secondary">Desde: ${desde}</span>`;
+        if (hasta) html += `<span class="badge bg-secondary">Hasta: ${hasta}</span>`;
+
+        html += renderGroup('CLIENTE', clientes);
+        html += renderGroup('ESTADO', estados);
+        html += renderGroup('VEND.', vendedores);
+        html += renderGroup('REPAR.', repartidores);
+        html += '</div>';
+
+        cont.html(html);
+    } catch (e) {
+        console.error('MostrarFiltrosAplicados error', e);
+    }
 }
 
 function ControlalistaEstadosSelected() {
@@ -796,6 +841,7 @@ function InicializaEventosPedido() {
 
     // Buscar
     $("#btnBuscar").on("click", function () {
+        try { MostrarFiltrosAplicados(); } catch (e) { console.warn('MostrarFiltrosAplicados no disponible:', e); }
         buscarPedidosDeCliente(1);
     });
     funcCallBack = buscarPedidosDeCliente;
@@ -1341,7 +1387,8 @@ async function buscarPedidosDeCliente(pag = 1) {
         PostGenHtml(filtros, url, function (html) {
             $("#divDetalle").html(html).collapse("show");
             $("#divFiltro").collapse("hide");
-
+            // actualizar filtros aplicados (si el partial reemplaza el DOM)
+            try { MostrarFiltrosAplicados(); } catch (e) { console.warn('MostrarFiltrosAplicados no disponible:', e); }
             configurarEventosSeleccionPedido();
             
             CerrarWaiting();
