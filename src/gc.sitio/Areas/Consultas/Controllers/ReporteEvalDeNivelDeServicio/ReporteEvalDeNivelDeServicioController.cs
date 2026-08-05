@@ -5,9 +5,12 @@ using gc.infraestructura.Dtos.Administracion;
 using gc.infraestructura.Dtos.Almacen;
 using gc.infraestructura.Dtos.Consultas;
 using gc.infraestructura.Dtos.Gen;
+using gc.infraestructura.EntidadesComunes.Options;
+using gc.infraestructura.Enumeraciones;
 using gc.infraestructura.Helpers;
 using gc.sitio.Areas.Consultas.Models;
 using gc.sitio.core.Servicios.Contratos;
+using gc.sitio.core.Servicios.Contratos.DocManager;
 using gc.sitio.core.Servicios.Implementacion;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -25,9 +28,18 @@ namespace gc.sitio.Areas.Consultas.Controllers.ReporteEvalDeNivelDeServicio
 		private readonly IDepositoServicio _depositoServicio;
 		private readonly IAdministracionServicio _administracionServicio;
 
+		//PARA MODULO DE IMPRESION
+		private readonly DocsManager _docsManager; //recupero los datos desde el appsettings.json
+		private AppModulo _modulo; //tengo el AppModulo que corresponde a la consulta de cuentas
+		private string APP_MODULO = AppModulos.REPORTE_DE_EVALUACION_DEL_NIVEL_DE_SERVICIO.ToString();
+		private readonly IDocManagerServicio _docMSv;
+
+		//************************
+
 		public ReporteEvalDeNivelDeServicioController(IOptions<AppSettings> options, IHttpContextAccessor contexto, ILogger<ReporteEvalDeNivelDeServicioController> logger,
 													  IConsultasServicio consultasServicio, IRubroServicio rubroServicio,
-													  IDepositoServicio depositoServicio, IAdministracionServicio administracionServicio, ICuentaServicio cuentaServicio) : base(options, contexto, logger)
+													  IDepositoServicio depositoServicio, IAdministracionServicio administracionServicio, ICuentaServicio cuentaServicio,
+													  IDocManagerServicio docManager, IOptions<DocsManager> docsManager) : base(options, contexto, logger)
 		{
 			_setting = options.Value;
 			_consultasServicio = consultasServicio;
@@ -35,6 +47,11 @@ namespace gc.sitio.Areas.Consultas.Controllers.ReporteEvalDeNivelDeServicio
 			_administracionServicio = administracionServicio;
 			_cuentaServicio = cuentaServicio;
 			_rubroServicio = rubroServicio;
+
+			//PARA MODULO DE IMPRESION
+			_docsManager = docsManager.Value; //recupero los datos desde el appsettings.json
+			_modulo = _docsManager.Modulos.First(x => x.Id == APP_MODULO); //identifico los datos del modulo que necesito: CC_NR_NP
+			_docMSv = docManager; //instancio el servicio de impresión
 		}
 
 		public IActionResult Index()
@@ -50,8 +67,8 @@ namespace gc.sitio.Areas.Consultas.Controllers.ReporteEvalDeNivelDeServicio
 				ViewData["Titulo"] = titulo;
 
 				#region Gestor Impresion - Inicializacion de variables
-				//DocumentManager = _docMSv.InicializaObjeto(titulo, _modulo);
-				//ArchivosCargadosModulo = _docMSv.GeneraArbolArchivos(_modulo);
+				DocumentManager = _docMSv.InicializaObjeto(titulo, _modulo);
+				ArchivosCargadosModulo = _docMSv.GeneraArbolArchivos(_modulo);
 				#endregion
 
 				CargarDatosIniciales(model);

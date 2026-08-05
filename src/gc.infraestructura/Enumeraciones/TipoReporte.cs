@@ -100,6 +100,7 @@ namespace gc.infraestructura.Enumeraciones
 		R092_Reporte_Ranking_Y_Rentabilidad = 92,
 		R093_Reporte_Evo_Ventas_Periodos_Anteriores = 93,
         R094_Reporte_Var_Vtas_Y_Comp_Ult_Doce_M = 94,
+		R095_Reporte_Eval_De_Nivel_De_Servicio = 95,
 
 	}
 }

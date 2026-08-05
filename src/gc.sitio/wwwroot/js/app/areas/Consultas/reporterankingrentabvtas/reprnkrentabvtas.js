@@ -192,7 +192,13 @@ function ControlaCancelar() {
 }
 
 function ControlaImprimirSelected() {
-	if ($("#tbGridProductos > tbody > tr").length === 0) {
+	const filasReales = $("#tbGridProductos tbody tr")
+		.filter(function () {
+			// Fila informativa tiene un único TD con colspan
+			return $(this).find("td[colspan]").length === 0;
+		});
+
+	if (filasReales.length === 0) {
 		AbrirMensaje("ATENCIÓN", "No hay datos generar el reporte.", function () {
 			$("#msjModal").modal("hide");
 			return true;
@@ -210,11 +216,14 @@ function ImprimirListaProductosStk_Generada() {
 		var lProv = [];
 		var lFam = [];
 		var lRub = [];
-		var lSuc = ObtenerFiltroLista("#chkSucursales", "#SucursalesList");
-		$("#DepositosList").children().each(function (i, item) { lDep.push($(item).val()) });
-		var lProv = ObtenerFiltroLista("#chkRel01", "#Rel01List");
-		$("#FamiliaList").children().each(function (i, item) { lFam.push($(item).val()) });
-		var lRub = ObtenerFiltroLista("#chkRubro", "#RubrosList");
+		var temp = ObtenerFiltroLista("#chkSucursales", "#SucursalesList");
+		var lSuc = temp.ids.join(",");
+		temp = ObtenerFiltroLista("#chkRel01", "#Rel01List");
+		var lProv = temp.ids.join(",");
+		temp = ObtenerFiltroLista("#chkFamilias", "#FamiliaList");
+		var lFam = temp.ids.join(",");
+		temp = ObtenerFiltroLista("#chkRubro", "#RubrosList");
+		var lRub = temp.ids.join(",");
 		var desde = $("#Desde").val();
 		var hasta = $("#Hasta").val();
 		var agrupador = $("#listaAgrupador").val();

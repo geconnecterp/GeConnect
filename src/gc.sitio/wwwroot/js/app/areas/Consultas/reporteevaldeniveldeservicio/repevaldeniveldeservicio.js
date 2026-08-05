@@ -2,7 +2,7 @@
 
 	InicializarCamposEnFiltros(false);
 
-	$(document).on("click", "#btnImprimir", ControlaImprimirSelected);
+	$(document).on("click", "#btnImprimir", ControlaImprimirProductosEvalSelected);
 	$(document).on("click", "#btnCancel", ControlaCancelar);
 	$(document).on("change", "#listaSucursales", ControlalistaSucursalesSelected);
 	$(document).on("change", "#listaDepositos", ControlalistaDepositosSelected);
@@ -347,8 +347,14 @@ $("#Rel01").autocomplete({
 	}
 });
 
-function ControlaImprimirSelected() {
-	if ($("#tbGridProductos > tbody > tr").length === 0) {
+function ControlaImprimirProductosEvalSelected() {
+	const filasReales = $("#tbGridProductos tbody tr")
+		.filter(function () {
+			// Fila informativa tiene un único TD con colspan
+			return $(this).find("td[colspan]").length === 0;
+		});
+
+	if (filasReales.length === 0) {
 		AbrirMensaje("ATENCIÓN", "No hay datos generar el reporte.", function () {
 			$("#msjModal").modal("hide");
 			return true;
@@ -360,6 +366,42 @@ function ControlaImprimirSelected() {
 }
 
 function ImprimirListaProductosEval_Generada() {
+	ReseteoDeReportes();
+	setTimeout(() => {
+		var lSuc = [];
+		var lProv = [];
+		var lFam = [];
+		var lRub = [];
+		var temp = ObtenerFiltroLista("#chkSucursales", "#SucursalesList");
+		var lSuc = temp.ids.join(",");
+		temp = ObtenerFiltroLista("#chkRel01", "#Rel01List");
+		var lProv = temp.ids.join(",");
+		temp = ObtenerFiltroLista("#chkFamilias", "#FamiliaList");
+		var lFam = temp.ids.join(",");
+		temp = ObtenerFiltroLista("#chkRubro", "#RubrosList");
+		var lRub = temp.ids.join(",");
+		var agrupador = $("#listaAgrupador").val();
+		var tipoReporte = $("#listaAgrupador option:selected").text();
+
+		// 🔥 Construcción del string de filtros
+		var filtrosDesc = [];
+
+		filtrosDesc.push(ConstruirDescripcionFiltro("Sucursales", "#chkSucursales", "#SucursalesList"));
+		filtrosDesc.push(ConstruirDescripcionFiltro("Proveedores", "#chkRel01", "#Rel01List"));
+		filtrosDesc.push(ConstruirDescripcionFiltro("Familias", "#chkFamilias", "#FamiliaList"));
+		filtrosDesc.push(ConstruirDescripcionFiltro("Rubros", "#chkRubro", "#RubrosList"));
+
+		// Limpieza: eliminar vacíos
+		filtrosDesc = filtrosDesc.filter(x => x !== "");
+
+		// String final
+		var filtrosString = filtrosDesc.join(" | ");
+
+		var data = { lSuc, lProv, lFam, lRub, agrupador, tipoReporte, filtrosString };
+
+		cargarReporteEnArre(95, data, "REPORTE DE EVALUACIÓN DEL NIVEL DE SERVICIO", "", "");
+		invocacionGestorDoc({});
+	}, 500);
 }
 
 function ReseteoDeReportes() {
