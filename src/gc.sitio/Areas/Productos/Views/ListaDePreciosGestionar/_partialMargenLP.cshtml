@@ -1,0 +1,71 @@
+﻿@using gc.infraestructura.Dtos
+@model ListaPrecioDto
+
+@{
+    string labelMargen = Model.lp_mgn_principal == "S"
+        ? "% Mg"
+        : "% Mg / Neto LP";
+
+    bool esAsociada = Model.lp_mgn_principal == "N";
+}
+
+<style>
+    .lp-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 8px;
+    }
+
+    .lp-label {
+        min-width: 140px; /* Ajustá según tu estética Golden */
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
+    .lp-input {
+        width: 120px; /* Compacto como tus inputs Golden */
+        text-align: right;
+    }
+
+    .lp-check {
+        margin-left: 10px;
+        margin-top: 4px;
+    }
+</style>
+
+<div class="card mb-3">
+    <div class="card-body p-2">
+
+        <!-- % Mg / Neto LP + Independiente -->
+        <div class="lp-row">
+            <label class="lp-label">@labelMargen:</label>
+            <input type="text" asp-for="lp_margen" class="form-control activable inputEditable lp-input" disabled />
+
+            <div class="form-check lp-check">
+                <input type="checkbox"
+                       class="form-check-input"
+                       id="lp_mgn_principal"
+                       name="lp_mgn_principal"
+                @(esAsociada ? "checked" : "") disabled />
+
+                <label class="form-check-label" for="lp_mgn_principal">
+                    Asociada
+                </label>
+            </div>
+        </div>
+
+        <!-- % Sobre Margen -->
+        <div class="lp-row">
+            <label class="lp-label">% Sobre Margen:</label>
+            <input type="text" asp-for="lp_prevision_tot" class="form-control activable inputEditable lp-input" disabled />
+        </div>
+
+        <!-- % Sobre Margen II -->
+        <div class="lp-row">
+            <label class="lp-label">% Sobre Margen II:</label>
+            <input type="text" asp-for="lp_prevision_pin" class="form-control activable inputEditable lp-input" disabled />
+        </div>
+
+    </div>
+</div>

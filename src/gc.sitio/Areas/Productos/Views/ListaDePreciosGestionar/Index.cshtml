@@ -1,0 +1,74 @@
+﻿@model ListaDePreciosGestionarModel
+@using gc.infraestructura.Dtos
+@using static gc.infraestructura.Constantes.Constantes
+@{
+    Layout = "~/views/shared/_Layout.cshtml";
+	var filtro = new QueryFilters()
+    {
+        Rel01 = new List<string>(),
+        Rel02 = new List<string>(),
+        Rel03 = new List<ComboGenDto>(),
+		//Modelo = ModeloFilter.PRODUCTO_CARGA_PRECIO,
+        Modelo = "HOLA",
+        Opt1 = true, //destinado a la opcion "Incluir Discontinuos"
+        Opt2 = false, //destinados a la opcion "Archivo"
+    };
+	
+}
+@section styles {
+    <link rel="stylesheet" href="~/css/simplePagination.css" />
+    <link rel="stylesheet" href="~/lib/jstree/themes/default/style.min.css" />
+}
+<style>
+    #containerListaProducto {
+        max-height: 325px;
+        min-height: 325px;
+        overflow-y: auto;
+        margin-bottom: 25px;
+    }
+</style>
+<partial name="_botonera" model="filtro" />
+<div id="divDetalle" class="container-fluid">
+    <div class="row">
+        <!-- Columna izquierda (col-5) -->
+        <div class="col-5">
+            <!-- Bloque superior -->
+            <div id="divLP" class="mb-3">
+                @Html.Partial("_partialLP", Model.GrillaListaDePrecios)
+                
+            </div>
+            <!-- Bloque inferior -->
+            <div id="divDatosLP" class="mb-3">
+                <!-- Se cargará dinámicamente -->
+                @Html.Partial("_partialMargenLP", Model.LPSelected)
+            </div>
+        </div>
+        <!-- Columna derecha (col-7) -->
+        <div class="col-7">
+            <!-- Bloque superior -->
+            <div id="divRubrosProv" class="mb-3">
+                <!-- Se cargará dinámicamente -->
+            </div>
+
+            <!-- Bloque inferior -->
+            <div id="divDatosRubrosProv" class="mb-3">
+                <!-- Se cargará dinámicamente -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="modalGestorDocumental"></div>
+
+@section scripts {
+    <script type="text/javascript">
+        let cargarDatosDeListaDePrecioURL = "@Url.Action("CargarDatosDeListaDePrecio", "ListaDePreciosGestionar", new { area = "Productos" })";
+        let cargarDatosDeListaDePrecioRubCtaURL = "@Url.Action("CargarDatosDeListaDePrecioRubCta", "ListaDePreciosGestionar", new { area = "Productos" })";
+    </script>
+
+    <script src="~/lib/jstree/jstree.min.js"></script>
+    <script src="~/js/plugins/jquery.simplePagination.js"></script>
+    <script src="~/js/app/areas/docmngr/docmanager.js"></script>
+
+    <script src="~/js/app/areas/precios/gestionarListaPrecio.js"></script>
+}

@@ -1,10 +1,6 @@
 ﻿using gc.infraestructura.Core.EntidadesComunes;
+using gc.infraestructura.Dtos;
 using gc.infraestructura.Dtos.Productos.Precio;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace gc.api.core.Contratos.Servicios.Ofertas
 {
@@ -12,5 +8,7 @@ namespace gc.api.core.Contratos.Servicios.Ofertas
     {
         List<PrecioListaDto> ObtenerListaPrecios();
         List<PrecioListaDetalleDto> ObtenerDetallePrecios(QueryFilters filters);
-    }
+        List<ListaPrecioRubCtaDto> ObtenerListaPreciosRubCta(string lp_id);
+
+	}
 }

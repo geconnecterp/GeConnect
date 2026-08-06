@@ -20,8 +20,9 @@ namespace gc.sitio.core.Servicios.Implementacion
         private const string RutaAPI = "/api/apipreciolista";
         private const string OBTENER_LISTA_PRECIOS = "/ObtenerListaPrecios/";
         private const string OBTENER_LISTA_DETALLE = "/ObtenerDetallePrecios";
-        
-        public PrecioListaServicio(IOptions<AppSettings> options, ILogger<EtiquetaServicio> logger) : base(options, logger)
+		private const string OBTENER_LISTA_RUB_CTA = "/ObtenerListaPreciosRubCta";
+
+		public PrecioListaServicio(IOptions<AppSettings> options, ILogger<EtiquetaServicio> logger) : base(options, logger)
         {
 
         }
@@ -87,6 +88,19 @@ namespace gc.sitio.core.Servicios.Implementacion
             }
         }
 
-       
-    }
+		public async Task<RespuestaGenerica<ListaPrecioRubCtaDto>> ObtenerListaPreciosRubCta(string lp_id, string token)
+		{
+			try
+			{
+
+				var link = $"{_appSettings.RutaBase}{RutaAPI}{OBTENER_LISTA_RUB_CTA}?id={lp_id}";
+				return await GetListaAsync<ListaPrecioRubCtaDto>(link, token, "Error al indicar la administración");
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError($"{GetType().Name}-{MethodBase.GetCurrentMethod()?.Name} - {ex}");
+				return new() { Ok = false, Mensaje = "Error al obtener la Lista de Precios Por Rubro/Cuenta" };
+			}
+		}
+	}
 }

@@ -4,6 +4,7 @@ using gc.api.core.Contratos.Servicios.Ofertas;
 using gc.api.core.Entidades;
 using gc.api.core.Interfaces.Datos;
 using gc.infraestructura.Core.EntidadesComunes;
+using gc.infraestructura.Dtos;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.Productos.Precio;
 using Microsoft.Data.SqlClient;
@@ -29,7 +30,18 @@ namespace gc.api.core.Servicios.Ofertas
             return [.. regs.Where(x=>!string.IsNullOrEmpty(x.lp_id))];
         }
 
-        public List<PrecioListaDetalleDto> ObtenerDetallePrecios(QueryFilters filters)
+		public List<ListaPrecioRubCtaDto> ObtenerListaPreciosRubCta(string id)
+		{
+			var sp = ConstantesGC.StoredProcedures.SP_LP_RUB_CTA;
+			var ps = new List<SqlParameter>
+			{
+				new SqlParameter("@lp_id", id)
+			};
+			var regs = _repository.EjecutarLstSpExt<ListaPrecioRubCtaDto>(sp, ps, true);
+			return regs;
+		}
+
+		public List<PrecioListaDetalleDto> ObtenerDetallePrecios(QueryFilters filters)
         {
             var sp = ConstantesGC.StoredProcedures.SP_LP_DETALLE;
             List<SqlParameter> ps = [];

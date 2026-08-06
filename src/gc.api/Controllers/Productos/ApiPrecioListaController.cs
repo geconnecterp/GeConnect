@@ -1,6 +1,7 @@
 ﻿using gc.api.core.Contratos.Servicios.Ofertas;
 using gc.infraestructura.Core.EntidadesComunes;
 using gc.infraestructura.Core.Responses;
+using gc.infraestructura.Dtos;
 using gc.infraestructura.Dtos.Productos.Precio;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -33,5 +34,13 @@ namespace gc.api.Controllers.Ofertas
 
             return Ok(new ApiResponse<List<PrecioListaDetalleDto>>(resultado));
         }
-    }
+
+		[HttpGet("ObtenerListaPreciosRubCta")]
+		public IActionResult GetListaPreciosRubCta(string id)
+		{
+			var resultado = _plSv.ObtenerListaPreciosRubCta(id);
+
+			return Ok(new ApiResponse<List<ListaPrecioRubCtaDto>>(resultado));
+		}
+	}
 }

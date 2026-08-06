@@ -29,8 +29,17 @@ namespace gc.api.core.Servicios
                     lp_id = x.Lp_id,
                     lp_desc = x.Lp_desc,
                     lp_lista = x.Lp_lista,
-                    #endregion
-                }).ToList();
+					#region Datos complentarios
+                    lp_actu = x.Lp_actu,
+                    lp_margen = x.Lp_margen,
+                    lp_mgn_principal = x.Lp_mgn_principal,
+                    lp_mgn_principal_porc = x.Lp_mgn_principal_porc,
+                    lp_por_defecto = x.Lp_por_defecto,
+                    lp_prevision_tot = x.Lp_prevision_tot,
+                    lp_prevision_pin = x.Lp_prevision_pin
+					#endregion
+					#endregion
+				}).ToList();
         }
     }
 }

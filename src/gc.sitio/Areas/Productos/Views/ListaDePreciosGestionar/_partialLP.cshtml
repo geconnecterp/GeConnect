@@ -1,0 +1,70 @@
+﻿@using gc.infraestructura.Dtos
+@model GridCoreSmart<ListaPrecioDto>
+@{
+    var alt = true;
+    string clase = string.Empty;
+	var lp = new List<ListaPrecioDto>();
+}
+<div class="grid-golden">
+	<div class="grid-golden-header">
+		<div class="row align-items-md-center">
+			<div class="col-md-10 col-sm-6 d-flex align-items-center">
+				<h5 class="mb-0 flex-grow-1">
+					<i class="bx bx-package me-2"></i>
+					<strong>Listas de Precios</strong>
+				</h5>
+			</div>
+		</div>
+	</div>
+	<div class="grid-golden-body">
+		<div class="table-wrapper" id="containerListaProducto">
+			<table class="table table-sm table-golden" id="tbGridListaPrecios">
+				<thead>
+					<tr class="header">
+						<th class="text-center" style="width: 10%;">ID</th>
+						<th class="text-center" style="width: 40%;">Descripción</th>
+						<th class="text-center" style="width: 10%;">Asociada</th>
+					</tr>
+				</thead>
+				<tbody>
+					@if (Model != null && Model.ListaDatos != null && Model.ListaDatos.Count > 0)
+					{
+						lp = Model.ListaDatos.ToList();
+
+						@foreach (var item in lp)
+						{
+							if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+							<tr class="@clase" 
+								data-lp-id="@item.lp_id"
+								data-lp-mgn-principal="@item.lp_mgn_principal">
+								<td class="text-center cell-fit-content">@Model.FormatearDato(item.lp_id, FormatDato.Ninguno)</td>
+								<td class="@Model.ObtenerClase(item.lp_desc) cell-fit-content">@Model.FormatearDato(item.lp_desc, FormatDato.Ninguno)</td>
+								@if (item.lp_mgn_principal == "N")
+								{
+									<td>
+										<input type="checkbox" checked disabled />
+									</td>
+								}
+								else
+								{
+									<td>
+										<input type="checkbox" disabled />
+									</td>
+								}
+							</tr>
+						}
+					}
+					else
+					{
+						<tr>
+							<td colspan="11" class="text-center text-muted py-4">
+								<i class="bx bx-info-circle me-2"></i>
+								No se encontraron Listas de Precios
+							</td>
+						</tr>
+					}
+				</tbody>
+			</table>
+		</div>
+	</div>
+</div>

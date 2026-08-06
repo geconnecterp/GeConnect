@@ -1,0 +1,109 @@
+﻿@using gc.infraestructura.Dtos
+@using gc.infraestructura.Helpers
+@model GridCoreSmart<ListaPrecioRubCtaDto>
+@{
+    var alt = true;
+    string clase = string.Empty;
+    var lp = new List<ListaPrecioRubCtaDto>();
+}
+<style>
+
+	/* Botón compacto */
+	.btn-icon-compact {
+		padding: 2px 6px; /* menos padding */
+		font-size: 0.75rem; /* fuente más chica */
+		line-height: 1; /* altura mínima */
+	}
+
+		/* Ícono dentro del botón */
+		.btn-icon-compact i {
+			font-size: 0.9rem; /* ícono más chico */
+		}
+
+	#containerListaMgnRubCta {
+		max-height: 325px;
+		min-height: 325px;
+		overflow-y: auto;
+		margin-bottom: 25px;
+	}
+
+	/* Sticky header con estilo Golden restaurado */
+	#tbGridListaMgnRubCta thead th {
+		position: sticky;
+		top: 0;
+		z-index: 20;
+		/* Restauración del estilo Golden */
+		background: linear-gradient(to bottom, #b8860b, #daa520);
+		color: #fff;
+		font-weight: 600; /* Golden header font */
+		border-bottom: 2px solid #d0d0d0; /* Golden header bottom border */
+		padding-top: 10px;
+		padding-bottom: 10px;
+	}
+
+	.td-btn-icon{
+		padding-top: 1px !important;
+		padding-bottom: 1px !important;
+	}
+</style>
+<div class="grid-golden">
+	<div class="grid-golden-header">
+		<div class="row align-items-md-center">
+			<div class="col-md-10 col-sm-6 d-flex align-items-center">
+				<h5 class="mb-0 flex-grow-1">
+					<i class="bx bx-package me-2"></i>
+					<strong>Márgen por Rubro y Proveedor</strong>
+				</h5>
+			</div>
+		</div>
+	</div>
+	<div class="grid-golden-body">
+		<div class="table-wrapper" id="containerListaMgnRubCta">
+			<table class="table table-sm table-golden" id="tbGridListaMgnRubCta">
+				<thead>
+					<tr class="header">
+						<th class="text-center" style="width: 40%;">Rubro</th>
+						<th class="text-center" style="width: 40%;">Proveedor</th>
+						<th class="text-center" style="width: 20%;">%Mgn / Neto LP</th>
+						<th class="text-center" style="width: 5%;">Acc.</th>
+					</tr>
+				</thead>
+				<tbody>
+					@if (Model != null && Model.ListaDatos != null && Model.ListaDatos.Count > 0)
+					{
+						lp = Model.ListaDatos.ToList();
+
+						@foreach (var item in lp)
+						{
+							if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+							<tr class="@clase"
+								data-lp-id="@item.lp_id"
+								data-rub-id="@item.rub_id"
+								data-cta-id="@item.cta_id">
+								<td class="@Model.ObtenerClase(item.rub_desc) cell-fit-content">@Model.FormatearDato(item.rub_desc, FormatDato.Ninguno)</td>
+								<td class="@Model.ObtenerClase(item.cta_denominacion) cell-fit-content">@Model.FormatearDato(item.cta_denominacion, FormatDato.Ninguno)</td>
+								<td class="@Model.ObtenerClase(item.lpp_mgn_principal_porc) cell-fit-content">@GridHelper.FormatearDato(item.lpp_mgn_principal_porc, FormatDato.Monto, true)</td>
+								<td class="text-center align-middle td-btn-icon">
+									<div class="d-flex justify-content-center gap-1">
+										<button type="button" class="btn btn-danger btn-icon-compact" title="Quitar elemento" onclick="eliminarItemRubroCta('@item.rub_id','@item.cta_id')">
+											<i class="bx bx-trash"></i>
+										</button>
+									</div>
+								</td>
+							</tr>
+						}
+					}
+					else
+					{
+						<tr>
+							<td colspan="11" class="text-center text-muted py-4">
+								<i class="bx bx-info-circle me-2"></i>
+								No se encontraron items Rub/Cta
+							</td>
+						</tr>
+					}
+				</tbody>
+			</table>
+		</div>
+	</div>
+</div>
