@@ -1576,13 +1576,22 @@ namespace gc.infraestructura.Helpers
 
 		public static void CargarTablaConceptosCancelados(Document pdf, List<ConsOrdPagoDetExtendDto> regs, Font fuenteEtiqueta, Font fuenteValor)
 		{
-			List<string> _campos = ["Descripcion", "Importe",];
-			List<string> _titulosTabla = ["Concepto", "Comprobante", "CuentaGastoRelacionada", "Fecha", "Importe",];
-			float[] _anchosTitulosTabla = [30f, 15f, 15, 20, 20f];
-			PdfPTable tablaTitulo = GeneraTabla(1, [100f], 100, 10, 0);
+			List<string> _campos = new List<string> { "Descripcion", "Importe" };
+			List<string> _titulosTabla = new List<string>
+			{
+				"Concepto",
+				"Comprobante",
+				"CuentaGastoRelacionada",
+				"Fecha",
+				"Importe"
+			};
+			float[] _anchosTitulosTabla = new float[] { 30f, 20f, 20f, 10f, 20f };
 
-			// FILA 1
-			PdfPCell celdaTitulo = new PdfPCell(new Phrase("Conceptos Cancelados", HelperPdf.FontNormalPredeterminado(true)))
+			// FILA 1 - Título
+			PdfPTable tablaTitulo = GeneraTabla(1, new float[] { 100f }, 100, 10, 0);
+
+			PdfPCell celdaTitulo = new PdfPCell(
+				new Phrase("Conceptos Cancelados", HelperPdf.FontNormalPredeterminado(true)))
 			{
 				Border = Rectangle.NO_BORDER,
 				HorizontalAlignment = Element.ALIGN_LEFT,
@@ -1590,30 +1599,85 @@ namespace gc.infraestructura.Helpers
 				PaddingTop = 0f,
 				PaddingBottom = -2f
 			};
+
 			tablaTitulo.AddCell(celdaTitulo);
 			pdf.Add(tablaTitulo);
 
-			Chunk linebreak = new Chunk(new LineSeparator(1f, 17f, BaseColor.Black, Element.ALIGN_LEFT, -4));
-			pdf.Add(linebreak);
+			// Separador con Paragraph (opción 3)
+			Paragraph separador = new Paragraph();
+			LineSeparator linea = new LineSeparator(1f, 100f, BaseColor.Black, Element.ALIGN_LEFT, 0);
+			separador.Add(new Chunk(linea));
+			separador.SpacingBefore = 2f;  // espacio debajo del título
+			separador.SpacingAfter = 4f;   // espacio encima de la cabecera
+			pdf.Add(separador);
 
-			// FILA 2
+			// FILA 2 - Cabecera de la tabla
 			HelperPdf.GeneraCabeceraLista(pdf, _titulosTabla, _anchosTitulosTabla, HelperPdf.FontNormalPredeterminado(true));
 
-			// FILA 3
-			//hago el modelo de dato aca ya que necesito los datos de la cuenta
-			var regsAux = regs.Where(x => x.Grupo.Equals("1")).Select(x => new
-			{
-				x.Concepto,
-				Comprobante = x.Cm_compte,
-				CuentaGastoRelacionada = x.Ctag_motivo,
-				Fecha = x.Cc_fecha_carga.ToString("dd/MM/yyyy"),
-				Importe = x.Cc_importe
-			}).ToList();
-			HelperPdf.GenerarListadoDesdeLista(pdf, regsAux, _titulosTabla, _anchosTitulosTabla, fuenteEtiqueta);
+			// FILA 3 - Datos
+			var regsAux = regs
+				.Where(x => x.Grupo.Equals("1"))
+				.Select(x => new
+				{
+					Concepto = x.Concepto,
+					Comprobante = x.Cm_compte,
+					CuentaGastoRelacionada = x.Ctag_motivo,
+					Fecha = x.Cc_fecha_carga.ToString("dd/MM/yyyy"),
+					Importe = x.Cc_importe
+				})
+				.ToList();
 
-			// FILA 4
-			PdfPTable tablaTotal = GeneraTabla(1, [100f], 100, 0, 10);
-			PdfPCell celdaTotal = new PdfPCell(new Phrase($"Total Conceptos Cancelados: {regs.Where(x => x.Grupo.Equals("1")).Sum(y => y.Op_importe)}", HelperPdf.FontNormalPredeterminado(true)))
+			// FILA 3 - Datos con alineación por columna
+			PdfPTable tablaDatos = new PdfPTable(_titulosTabla.Count);
+			tablaDatos.WidthPercentage = 100;
+			tablaDatos.SetWidths(_anchosTitulosTabla);
+
+			// Alineaciones por columna
+			int[] alineaciones = new int[]
+			{
+				Element.ALIGN_LEFT,   // Concepto
+				Element.ALIGN_CENTER, // Comprobante
+				Element.ALIGN_LEFT,   // CuentaGastoRelacionada
+				Element.ALIGN_CENTER, // Fecha
+				Element.ALIGN_RIGHT   // Importe
+			};
+
+			foreach (var item in regsAux)
+			{
+				object[] valores = new object[]
+				{
+					item.Concepto,
+					item.Comprobante,
+					item.CuentaGastoRelacionada,
+					item.Fecha,
+					item.Importe.ToString("N2")
+				};
+
+				for (int i = 0; i < valores.Length; i++)
+				{
+					PdfPCell celda = new PdfPCell(new Phrase(valores[i].ToString(), fuenteEtiqueta))
+					{
+						HorizontalAlignment = alineaciones[i],
+						VerticalAlignment = Element.ALIGN_MIDDLE,
+						PaddingTop = 2f,
+						PaddingBottom = 2f
+					};
+
+					tablaDatos.AddCell(celda);
+				}
+			}
+
+			pdf.Add(tablaDatos);
+
+			// FILA 4 - Total
+			PdfPTable tablaTotal = GeneraTabla(1, new float[] { 100f }, 100, 0, 10);
+
+			decimal totalConceptosCancelados = regs
+				.Where(x => x.Grupo.Equals("1"))
+				.Sum(y => y.Op_importe);
+
+			PdfPCell celdaTotal = new PdfPCell(
+				new Phrase($"Total Conceptos Cancelados: {totalConceptosCancelados}", HelperPdf.FontNormalPredeterminado(true)))
 			{
 				Border = Rectangle.NO_BORDER,
 				HorizontalAlignment = Element.ALIGN_RIGHT,
@@ -1624,6 +1688,57 @@ namespace gc.infraestructura.Helpers
 			tablaTotal.AddCell(celdaTotal);
 			pdf.Add(tablaTotal);
 		}
+
+		//public static void CargarTablaConceptosCancelados(Document pdf, List<ConsOrdPagoDetExtendDto> regs, Font fuenteEtiqueta, Font fuenteValor)
+		//{
+		//	List<string> _campos = ["Descripcion", "Importe",];
+		//	List<string> _titulosTabla = ["Concepto", "Comprobante", "CuentaGastoRelacionada", "Fecha", "Importe",];
+		//	float[] _anchosTitulosTabla = [30f, 15f, 15, 20, 20f];
+		//	PdfPTable tablaTitulo = GeneraTabla(1, [100f], 100, 10, 0);
+
+		//	// FILA 1
+		//	PdfPCell celdaTitulo = new PdfPCell(new Phrase("Conceptos Cancelados", HelperPdf.FontNormalPredeterminado(true)))
+		//	{
+		//		Border = Rectangle.NO_BORDER,
+		//		HorizontalAlignment = Element.ALIGN_LEFT,
+		//		VerticalAlignment = Element.ALIGN_MIDDLE,
+		//		PaddingTop = 0f,
+		//		PaddingBottom = -2f
+		//	};
+		//	tablaTitulo.AddCell(celdaTitulo);
+		//	pdf.Add(tablaTitulo);
+
+		//	Chunk linebreak = new Chunk(new LineSeparator(1f, 17f, BaseColor.Black, Element.ALIGN_LEFT, 3));
+		//	pdf.Add(linebreak);
+
+		//	// FILA 2
+		//	HelperPdf.GeneraCabeceraLista(pdf, _titulosTabla, _anchosTitulosTabla, HelperPdf.FontNormalPredeterminado(true));
+
+		//	// FILA 3
+		//	//hago el modelo de dato aca ya que necesito los datos de la cuenta
+		//	var regsAux = regs.Where(x => x.Grupo.Equals("1")).Select(x => new
+		//	{
+		//		x.Concepto,
+		//		Comprobante = x.Cm_compte,
+		//		CuentaGastoRelacionada = x.Ctag_motivo,
+		//		Fecha = x.Cc_fecha_carga.ToString("dd/MM/yyyy"),
+		//		Importe = x.Cc_importe
+		//	}).ToList();
+		//	HelperPdf.GenerarListadoDesdeLista(pdf, regsAux, _titulosTabla, _anchosTitulosTabla, fuenteEtiqueta);
+
+		//	// FILA 4
+		//	PdfPTable tablaTotal = GeneraTabla(1, [100f], 100, 0, 10);
+		//	PdfPCell celdaTotal = new PdfPCell(new Phrase($"Total Conceptos Cancelados: {regs.Where(x => x.Grupo.Equals("1")).Sum(y => y.Op_importe)}", HelperPdf.FontNormalPredeterminado(true)))
+		//	{
+		//		Border = Rectangle.NO_BORDER,
+		//		HorizontalAlignment = Element.ALIGN_RIGHT,
+		//		VerticalAlignment = Element.ALIGN_MIDDLE,
+		//		PaddingTop = 0f
+		//	};
+
+		//	tablaTotal.AddCell(celdaTotal);
+		//	pdf.Add(tablaTotal);
+		//}
 
 		public static void CargarTablaFormaDePago(Document pdf, List<ConsOrdPagoDetExtendDto> regs, Font fuenteEtiqueta, Font fuenteValor)
 		{

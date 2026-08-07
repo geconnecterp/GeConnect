@@ -6,11 +6,21 @@
 }
 <style>
 	thead th {
-	position: sticky;
-	top: 0px;
+		position: sticky;
+		top: 0px;
+	}
+	.table-wrapper-300 {
+		max-height: 330px;
+		max-width: 98%;
+		overflow: auto;
+	}
+	#tbListaCreditos tbody td {
+		padding-top: 2px !important;
+		padding-bottom: 2px !important;
+		line-height: 1.6 !important;
 	}
 </style>
-<div class="table-responsive table-wrapper-230" id="containerListaCreditos" style="padding-right:0px;">
+<div class="table-responsive table-wrapper-300" id="containerListaCreditos" style="padding-right:0px;">
 	<table class="table table-bordered table-hover" id="tbListaCreditos">
 		<thead style="background: dodgerblue;">
 			<tr>

@@ -12,10 +12,49 @@
 	<link rel="stylesheet" href="~/css/simplePagination.css" />
 	<link rel="stylesheet" href="~/lib/jstree/themes/default/style.min.css" />
 }
-<div class="container">
+<style>
+	.container-fluid {
+		padding-left: 10px !important;
+		padding-right: 10px !important;
+	}
+
+	#divDetalle {
+		min-height: calc(100vh - 140px);
+		overflow-y: auto;
+		overflow-x: hidden; /* evitar scroll horizontal */
+	}
+	html, body {
+		overflow-x: hidden;
+	}
+	.inputFechaCompacta {
+		width: 110px !important;
+		max-width: 110px !important;
+	}
+
+	.inputTipoCompte {
+		width: 200px !important;
+		max-width: 200px !important;
+	}
+	#tbListaObligaciones_Paso1 tbody td {
+		padding-top: 2px !important;
+		padding-bottom: 2px !important;
+		line-height: 1.6 !important;
+	}
+	#tbListaObligaciones_Paso2 tbody td {
+		padding-top: 2px !important;
+		padding-bottom: 2px !important;
+		line-height: 1.6 !important;
+	}
+	#tbListaValores_Paso2 tbody td {
+		padding-top: 2px !important;
+		padding-bottom: 2px !important;
+		line-height: 1.6 !important;
+	}
+</style>
+<div class="container-fluid">
 	<div class="row mb-2">
 		<div class="col-md-6">
-			<div class="d-flex justify-content-sm-around">
+			<div class="d-flex justify-content-sm-around align-items-center">
 				<button id="btnFiltro" class="btn btn-primary btn-sm mt-1 me-1" type="button" data-bs-toggle="collapse" data-bs-target="#divFiltro" aria-expanded="true" aria-controls="divFiltro">
 					<i class="bx bx-filter bx-xs"></i>
 				</button>
@@ -23,6 +62,9 @@
 				<button class="btn btn-primary btn-sm mt-1 me-1" type="button" id="btnDetalle" data-bs-toggle="collapse" data-bs-target="#divDetalle" aria-expanded="true" aria-controls="divDetalle" hidden>
 					<i class="bx bx-caret-down"></i>
 				</button>
+
+				<!-- 🔥 Aquí se insertarán los botones dinámicos -->
+				<div id="contenedorBotoneraDinamica" class="d-flex align-items-center"></div>
 			</div>
 		</div>
 		<div class="col-md-2">
@@ -60,6 +102,30 @@
 
 <!-- para el modal del geston de impresion -->
 <div id="modalGestorDocumental"></div>
+
+<!-- 🔹 Botonera para HTML1 -->
+<div id="templateBotoneraHTML1" style="display:none;">
+    <button id="btnCancelar1" class="btn btn-danger btn-sm mt-1 me-1" type="button">
+        <i class="bx bx-x-circle"></i>Cancelar
+    </button>
+    <button id="btnSiguiente1" class="btn btn-primary btn-sm mt-1 me-1" type="button">
+        <i class="bx bx-chevron-right"></i>Siguiente
+    </button>
+</div>
+
+<!-- 🔹 Botonera para HTML2 -->
+<div id="templateBotoneraHTML2" style="display:none;">
+    <button id="btnAnterior2" class="btn btn-secondary btn-sm mt-1 me-1" type="button">
+        <i class="bx bx-chevron-left"></i>Anterior
+    </button>
+    <button id="btnCancelar2" class="btn btn-danger btn-sm mt-1 me-1" type="button">
+        <i class="bx bx-x-circle"></i>Cancelar
+    </button>
+    <button id="btnConfirmar" class="btn btn-success btn-sm mt-1 me-1" type="button">
+        <i class="bx bx-badge-check"></i>Confirmar
+    </button>
+</div>
+
 
 @section scripts {
 	<script type="text/javascript">

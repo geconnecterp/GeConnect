@@ -12,10 +12,25 @@
 	<link rel="stylesheet" href="~/css/simplePagination.css" />
 	<link rel="stylesheet" href="~/lib/jstree/themes/default/style.min.css" />
 }
-<div class="container">
+<style>
+	.container-fluid {
+		padding-left: 10px !important;
+		padding-right: 10px !important;
+	}
+
+	#divDetalle {
+		min-height: calc(100vh - 140px);
+		overflow-y: auto;
+		overflow-x: hidden; /* evitar scroll horizontal */
+	}
+	html, body {
+		overflow-x: hidden;
+	}
+</style>
+<div class="container-fluid">
 	<div class="row mb-2">
 		<div class="col-md-6">
-			<div class="d-flex justify-content-sm-around">
+			<div class="d-flex justify-content-sm-around align-items-center">
 				<button id="btnFiltro" class="btn btn-primary btn-sm mt-1 me-1" type="button" data-bs-toggle="collapse" data-bs-target="#divFiltro" aria-expanded="true" aria-controls="divFiltro">
 					<i class="bx bx-filter bx-xs"></i>
 				</button>
@@ -23,6 +38,9 @@
 				<button class="btn btn-primary btn-sm mt-1 me-1" type="button" id="btnDetalle" data-bs-toggle="collapse" data-bs-target="#divDetalle" aria-expanded="true" aria-controls="divDetalle" hidden>
 					<i class="bx bx-caret-down"></i>
 				</button>
+
+				<!-- NUEVO: contenedor para los botones dinámicos -->
+				<div id="contenedorBotoneraDinamica" class="d-flex"></div>
 			</div>
 		</div>
 		<div class="col-md-2">
@@ -47,12 +65,36 @@
 			</div>
 		</div>
 	</div>
-	<div class="collapse" id="divFiltro" style="">
+	<div class="collapse" id="divFiltro">
 		<partial name="_filtroBase" model="filtro" />
 		@Html.Hidden("pagEstado", false);
 	</div>
-	<div class="collapse" id="divDetalle" style="">
+	<div class="collapse" id="divDetalle">
 	</div>
+</div>
+
+<div id="templateBotoneraHTML1" style="display:none;">
+    <button id="btnAnterior1" class="btn btn-primary btn-sm mt-1 me-1" type="button" title="Anterior" disabled>
+        <i class="bx bx-arrow-to-left bx-xs"></i>Anterior
+    </button>
+    <button id="btnSiguiente1" class="btn btn-primary btn-sm mt-1 me-1" type="button" title="Siguiente">
+        <i class="bx bx-arrow-to-right bx-xs"></i>Siguiente
+    </button>
+    <button id="btnCancelar1" class="btn btn-danger btn-sm mt-1 me-1" type="button" title="Cancelar">
+        <i class="bx bx-x-circle bx-xs"></i>Cancelar
+    </button>
+</div>
+
+<div id="templateBotoneraHTML2" style="display:none;">
+    <button id="btnAnterior2" class="btn btn-primary btn-sm mt-1 me-1" type="button" title="Anterior">
+        <i class="bx bx-arrow-to-left bx-xs"></i>Anterior
+    </button>
+    <button id="btnConfirmar2" class="btn btn-success btn-sm mt-1 me-1" type="button" title="Confirmar">
+        <i class="bx bx-check-circle"></i>Confirmar
+    </button>
+    <button id="btnCancelar2" class="btn btn-danger btn-sm mt-1 me-1" type="button" title="Cancelar">
+        <i class="bx bx-x-circle bx-xs"></i>Cancelar
+    </button>
 </div>
 
 <div id="modalSeleccionValores"></div>

@@ -33,12 +33,12 @@
 @Html.Hidden("Paso")
 @Html.Hidden("CtaId")
 <div class="row mt-2">
-	<div class="col-md-5">
+	<div class="col-md-6">
 		<div class="input-group input-group-sm mt-1" id="divProveedorSeleccionado">
 			<h5>OPD - Gastos Corrientes </h5>
 		</div>
 	</div>
-	<div class="col-md-7">
+	<div class="col-md-6">
 		<div class="input-group input-group-sm mt-1">
 			<span class="input-group-text fixed-lbl-for-abm-100" title="Obligaciones a Cancelar">Obl. a Cancelar: </span>
 			<input type="text" id="txtObligACancelar" class="form-control align-right" style="background-color: darkred; color: white;" value="0" disabled />
@@ -50,7 +50,7 @@
 	</div>
 </div>
 <div class="row mt-2">
-	<div class="col-6" style="height: 500px;">
+	<div class="col-7" style="height: 500px;">
 		<fieldset style="height: 280px;">
 			<legend>Obligaciones</legend>
 			<div class="row" id="divObligaciones" style="height: 220px;">
@@ -59,9 +59,9 @@
 						<thead style="background: darkred;">
 							<tr>
 								<th style="width:25%;" class="col-header-small align-center tiny-row">Comprobante</th>
-								<th style="width:10%;" class="col-header-small align-center tiny-row">Vencimiento</th>
-								<th style="width:25%;" class="col-header-small align-center tiny-row">Gasto</th>
-								<th style="width:30%;" class="col-header-small align-center tiny-row">Motivo</th>
+								<th style="width:7%;" class="col-header-small align-center tiny-row">Venc.</th>
+								<th style="width:38%;" class="col-header-small align-center tiny-row">Gasto</th>
+								<th style="width:20%;" class="col-header-small align-center tiny-row">Motivo</th>
 								<th style="width:10%;" class="col-header-small align-center tiny-row">Imputado</th>
 								<th style="width:0%;display:none;" class="col-header-small align-center tiny-row">afip_id</th>
 								<th style="width:0%;display:none;" class="col-header-small align-center tiny-row">cm_compte</th>
@@ -94,7 +94,7 @@
 					</table>
 				</div>
 			</div>
-			<div class="row justify-content-sm-center mb-1">
+			@* <div class="row justify-content-sm-center mb-1">
 				<div class="col-md-2">
 					<div class="d-flex justify-content-sm-center">
 						<button id="btnCancelar1" class="btn btn-danger btn-sm mt-1 me-1" type="button" title="Cancelar">
@@ -105,7 +105,7 @@
 						</button>
 					</div>
 				</div>
-			</div>
+			</div> *@
 		</fieldset>
 		<fieldset style="height: 212px;padding-top: 15px;">
 			<legend>Detalle</legend>
@@ -136,7 +136,7 @@
 					</div>
 				</div>
 				<div class="col-6  d-flex justify-content-center">
-					<div class="d-grid gap-1" style="width: 75%;">
+					<div class="d-grid gap-1" style="width: 30%;">
 						<button id="btnAbmAgregarItem" class="btn btn-primary btn-sm" type="button" title="Agregar nueva Obligación">
 							<i class="bx bx-plus-circle"></i>Agregar
 						</button>
@@ -147,7 +147,7 @@
 							<i class="bx bx-trash"></i>Eliminar
 						</button>
 						<button id="btnAbmAceptarItem" class="btn btn-success btn-sm" type="button" title="Guardar cambios">
-							<i class="bx bx-badge-check"></i>Guardar
+							<i class="bx bx-badge-check"></i>Cargar
 						</button>
 						<button id="btnAbmCancelarItem" class="btn btn-danger btn-sm" type="button" title="Cancelar cambios">
 							<i class="bx bx-x-circle bx-xs"></i>Cancelar
@@ -157,7 +157,7 @@
 			</div>
 		</fieldset>
 	</div>
-	<div class="col-6" style="height: 500px;">
+	<div class="col-5" style="height: 500px;">
 		<fieldset>
 			<legend>Detalle</legend>
 			<div>
@@ -166,7 +166,7 @@
 						<div class="input-group input-group-sm">
 							<span class="input-group-text fixed-lbl-for-abm-100">Condición AFIP: </span>
 							@Html.DropDownListFor(m => m.itemOPD.afip_id, listaCondAfip, "Seleccionar...", new { @id = "listaCondAfip", @class = "form-control activable", @onchange = "onChangeCondAfip(this);" })
-							<span class="input-group-text fixed-lbl-for-abm-100">CUIT: </span>
+							<span id="lblCuit" class="input-group-text fixed-lbl-for-abm-100">CUIT: </span>
 							<input type="text" asp-for="itemOPD.cm_cuit" class="form-control activable inputEditable" />
 						</div>
 					</div>
@@ -186,10 +186,10 @@
 							</div>
 							<span class="input-group-text fixed-lbl-for-abm-100">N° Compte:</span>
 							<input type="text" asp-for="itemOPD.cm_compte_pto_vta" style="max-width:50px;border-color: rgb(70,196,104);text-align: left;font-weight: 700;" class="form-control activable" />
-							<span class="input-group-text" style="display: block;float: right;text-align: right;">-</span>
+							<span class="input-group-text" style="display: block;float: right;text-align: right;padding-left: 2px;padding-right: 2px;">-</span>
 							<input type="text" asp-for="itemOPD.cm_compte_pto_nro" style="max-width:78px;border-color: rgb(70,196,104);text-align: left;font-weight: 700;" class="form-control activable" />
-							<span class="input-group-text fixed-lbl-for-abm-100">Fecha: </span>
-							@Html.TextBoxFor(m => m.itemOPD.cm_fecha, "{0:yyyy-MM-dd}", new { type = "date", @class = "form-control activable inputEditable", @onchange = "onChangeFechaCompte(this);" })
+							<span class="input-group-text fixed-lbl-for-abm-50">Fecha: </span>
+							@Html.TextBoxFor(m => m.itemOPD.cm_fecha, "{0:yyyy-MM-dd}", new { type = "date", @class = "form-control activable inputEditable inputFechaCompacta", @onchange = "onChangeFechaCompte(this);" })
 						</div>
 					</div>
 					<div class="row mt-1">

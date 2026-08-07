@@ -13,7 +13,7 @@
 		{
 			estiloFieldSetRefDePago = "height: 190px; width: 100%;margin-top: 15px;";
 			estiloDivSeccionPagos = "height: 230px;padding-left: 15px;";
-			estiloDivObligacionesParaAgregar = "height: 200px;";
+			estiloDivObligacionesParaAgregar = "height: 250px;";
 			estilocontainerListaObligacionesParaAgregar = "";
 		}
 		else
@@ -30,7 +30,7 @@
 		{
 			estiloFieldSetRefDePago = "height: 225px; width: 100%;";
 			estiloDivSeccionPagos = "height: 230px;padding-left: 15px;";
-			estiloDivObligacionesParaAgregar = "height: 200px;";
+			estiloDivObligacionesParaAgregar = "height: 250px;";
 			estilocontainerListaObligacionesParaAgregar = "";
 		}
 		else
@@ -46,36 +46,62 @@
 }
 <style>
 	fieldset {
-	margin: 8px;
-	border: 1px solid silver;
-	padding: 8px;
-	border-radius: 4px;
-	max-width: 100%;
-	margin-top: 8px;
-	margin-left: 0px;
-	margin-right: 0px;
-	margin-bottom: 0px;
-	height: 500px;
+		margin: 8px;
+		border: 1px solid silver;
+		padding: 8px;
+		border-radius: 4px;
+		max-width: 100%;
+		margin-top: 8px;
+		margin-left: 0px;
+		margin-right: 0px;
+		margin-bottom: 0px;
+		height: 550px;
 	}
 
 	legend {
-	padding: 2px;
-	margin-top: -22px;
-	background: #f3f5f7 !important;
-	width: 25%;
-	text-align: center;
-	font-size: small;
+		padding: 2px;
+		margin-top: -22px;
+		background: #f3f5f7 !important;
+		width: 25%;
+		text-align: center;
+		font-size: small;
 	}
+	#tbListaObligacionesParaAgregar_Paso2 tbody td {
+		padding-top: 2px !important;
+		padding-bottom: 2px !important;
+		line-height: 1.6 !important;
+	}
+	#tbListaCreditosParaAgregar_Paso2 tbody td {
+		padding-top: 2px !important;
+		padding-bottom: 2px !important;
+		line-height: 1.6 !important;
+	}
+	#tbListaRetenciones_Paso2 tbody td {
+		padding-top: 2px !important;
+		padding-bottom: 2px !important;
+		line-height: 1.6 !important;
+	}
+	#tbListaMedioDePago_Paso2 tbody td {
+		padding-top: 2px !important;
+		padding-bottom: 2px !important;
+		line-height: 1.6 !important;
+	}
+	#tbListaValores_Paso2 tbody td {
+		padding-top: 2px !important;
+		padding-bottom: 2px !important;
+		line-height: 1.6 !important;
+	}
+	
 </style>
 <div class="row mt-2">
-	<div class="col-md-5">
+	<div class="col-md-6">
 		<div class="input-group input-group-sm mt-1" id="divProveedorSeleccionado">
 			<span class="input-group-text fixed-lbl-for-abm-70">Cuenta: </span>
 			<input type="text" id="CtaID" class="form-control" style="max-width: 100px;text-align: right;" disabled />
 			<input type="text" id="CtaDesc" class="form-control" disabled />
 		</div>
 	</div>
-	<div class="col-md-7">
+	<div class="col-md-6">
 		<div class="input-group input-group-sm mt-1">
 			<span class="input-group-text fixed-lbl-for-abm-100" title="Obligaciones a Cancelar">Obl. a Cancelar: </span>
 			<input type="text" id="txtObligACancelar" class="form-control align-right" style="background-color: darkred; color: white;" value="0" disabled />
@@ -87,7 +113,7 @@
 	</div>
 </div>
 <div class="row mt-2">
-	<div class="col-6" style="height: 500px;">
+	<div class="col-6" style="height: 550px;">
 		<fieldset>
 			<legend>Obligaciones</legend>
 			<div class="row" id="divObligacionesParaAgregar" style="@estiloDivObligacionesParaAgregar">
@@ -129,7 +155,7 @@
 					</table>
 				</div>
 			</div>
-			<div class="row justify-content-sm-center mb-1">
+			@* <div class="row justify-content-sm-center mb-1">
 				<div class="col-md-2">
 					<div class="d-flex justify-content-sm-center">
 						<button id="btnAnterior2" class="btn btn-primary btn-sm mt-1 me-1" type="button" title="Anterior">
@@ -143,7 +169,7 @@
 						</button>
 					</div>
 				</div>
-			</div>
+			</div> *@
 			<div class="row" id="divSeccionPagos" style="@estiloDivSeccionPagos">
 				<div style="padding-left: 0px;">
 					@if (Model.EsPagoAnticipado)
@@ -236,10 +262,10 @@
 			</div>
 		</fieldset>
 	</div>
-	<div class="col-6" style="height: 500px;">
+	<div class="col-6" style="height: 550px;">
 		<fieldset>
 			<legend>Créditos y Valores</legend>
-			<div class="row" id="divCreditosParaAgregar" style="height: 200px;">
+			<div class="row" id="divCreditosParaAgregar" style="height: 250px;">
 				<div class="table-responsive table-wrapper-200" id="containerListaCreditosParaAgregar_Paso2" style="padding-right: 0px;">
 					<table class="table table-bordered table-hover" id="tbListaCreditosParaAgregar_Paso2">
 						<thead style="background: dodgerblue;">

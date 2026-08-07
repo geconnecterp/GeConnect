@@ -18,20 +18,23 @@
     }
 
     .lp-label {
-        min-width: 140px; /* Ajustá según tu estética Golden */
+        min-width: 140px; 
         font-weight: 600;
         white-space: nowrap;
-    }
+    } 
 
     .lp-input {
-        width: 120px; /* Compacto como tus inputs Golden */
+        width: 120px;
         text-align: right;
+        padding: 2px 4px; /* menos padding */
+        height: 24px; /* más compacto */
+        font-size: 0.80rem; /* texto más chico */
     }
 
     .lp-check {
         margin-left: 10px;
         margin-top: 4px;
-    }
+        }
 </style>
 
 <div class="card mb-3">
@@ -44,7 +47,7 @@
 
             <div class="form-check lp-check">
                 <input type="checkbox"
-                       class="form-check-input"
+                       class="form-check-input activable"
                        id="lp_mgn_principal"
                        name="lp_mgn_principal"
                 @(esAsociada ? "checked" : "") disabled />

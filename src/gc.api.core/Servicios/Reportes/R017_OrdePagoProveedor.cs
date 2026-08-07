@@ -58,7 +58,8 @@ namespace gc.api.core.Servicios.Reportes
 
 				string ctaId;
 				string tit;
-				List<ConsOrdPagoDetExtendDto> registros = ObtenerDatos(solicitud, out ctaId, out tit);
+				string subtit;
+				List<ConsOrdPagoDetExtendDto> registros = ObtenerDatos(solicitud, out ctaId, out tit, out subtit);
 
 				if (registros == null || registros.Count == 0)
 				{
@@ -80,6 +81,7 @@ namespace gc.api.core.Servicios.Reportes
 				//COMPLETAMOS EL TITULO DEL REPORTE AGREGANDO LA DENOMINACIÓN DE LA CUENTA
 				//tit += cliente.Cta_Denominacion;
 				solicitud.Titulo = tit;
+				solicitud.SubTitulo = subtit;
 				solicitud.Cuenta = cliente;
 
 
@@ -191,6 +193,7 @@ namespace gc.api.core.Servicios.Reportes
 				string reporteMasivo = string.Empty;
 				string ctaId;
 				string tit;
+				string subtit;
 				//Primero obtenemos la lista de objetos del tipo [cm_compte, cta_id]
 				var listaTemp = ObtenerDatos(solicitud);
 
@@ -204,7 +207,7 @@ namespace gc.api.core.Servicios.Reportes
 					Document pdf;
 
 					#region Obteniendo registros desde la base de datos
-					List<ConsOrdPagoDetExtendDto> registros = ObtenerDatos(item, out ctaId, out tit);
+					List<ConsOrdPagoDetExtendDto> registros = ObtenerDatos(item, out ctaId, out tit, out subtit);
 
 					if (registros == null || registros.Count == 0)
 					{
@@ -227,6 +230,7 @@ namespace gc.api.core.Servicios.Reportes
 					//COMPLETAMOS EL TITULO DEL REPORTE AGREGANDO LA DENOMINACIÓN DE LA CUENTA
 					//tit += cliente.Cta_Denominacion;
 					solicitud.Titulo = tit;
+					solicitud.SubTitulo = subtit;
 					solicitud.Cuenta = cliente;
 
 
@@ -343,22 +347,24 @@ namespace gc.api.core.Servicios.Reportes
 			return ids;
 		}
 
-		private List<ConsOrdPagoDetExtendDto> ObtenerDatos(IdCollection item, out string ctaId, out string titulo)
+		private List<ConsOrdPagoDetExtendDto> ObtenerDatos(IdCollection item, out string ctaId, out string titulo, out string subtit)
 		{
 			ctaId = item.Id2;
 			string cmptId = item.Id1;
 			var comprobanteLista = _consultaServicio.ConsultaOrdenDePagoProveedor(cmptId);
-			titulo = $"Orden de Pago a Proveedores {comprobanteLista.First().Opt_desc} N° {cmptId}";
+			titulo = $"Orden de Pago a Proveedores";
+			subtit = $"{comprobanteLista.First().Opt_desc} N° {cmptId}";
 			return comprobanteLista;
 		}
 
-		private List<ConsOrdPagoDetExtendDto> ObtenerDatos(ReporteSolicitudDto solicitud, out string ctaId, out string titulo)
+		private List<ConsOrdPagoDetExtendDto> ObtenerDatos(ReporteSolicitudDto solicitud, out string ctaId, out string titulo, out string subtit)
 		{
 			//Se obtienen los parámetros del reporte
 			ctaId = solicitud.Parametros.GetValueOrDefault("ctaId", "").ToString() ?? "";
 			string cmptId = solicitud.Parametros.GetValueOrDefault("op_compte", "").ToString();
 			var comprobanteLista = _consultaServicio.ConsultaOrdenDePagoProveedor(cmptId);
-			titulo = $"Orden de Pago a Proveedores {comprobanteLista.First().Opt_desc} N° {cmptId}";
+			titulo = $"Orden de Pago a Proveedores";
+			subtit = $"{comprobanteLista.First().Opt_desc} N° {cmptId}";
 			return comprobanteLista;
 		}
 
@@ -367,7 +373,8 @@ namespace gc.api.core.Servicios.Reportes
 			#region Obteniendo registros desde la base de datos
 			string ctaId;
 			string tit;
-			List<ConsOrdPagoDetExtendDto> registros = ObtenerDatos(solicitud, out ctaId, out tit);
+			string subtit;
+			List<ConsOrdPagoDetExtendDto> registros = ObtenerDatos(solicitud, out ctaId, out tit, out subtit);
 
 			if (registros == null || registros.Count == 0)
 			{
@@ -394,7 +401,8 @@ namespace gc.api.core.Servicios.Reportes
 			#region Obteniendo registros desde la base de datos
 			string ctaId;
 			string tit;
-			List<ConsOrdPagoDetExtendDto> registros = ObtenerDatos(solicitud, out ctaId, out tit);
+			string subtit;
+			List<ConsOrdPagoDetExtendDto> registros = ObtenerDatos(solicitud, out ctaId, out tit, out subtit);
 
 			if (registros == null || registros.Count == 0)
 			{

@@ -448,7 +448,7 @@
 			PdfPCell celdaTitulo = new PdfPCell(new Phrase(solicitud.Titulo, titulo))
 			{
 				Border = Rectangle.NO_BORDER,
-				HorizontalAlignment = Element.ALIGN_RIGHT,
+				HorizontalAlignment = Element.ALIGN_CENTER,
 				VerticalAlignment = Element.ALIGN_MIDDLE,
 				PaddingTop = 10f
 			};
@@ -460,7 +460,7 @@
 				celdaSubTitulo = new PdfPCell(new Phrase(solicitud.SubTitulo, titulo))
 				{
 					Border = Rectangle.NO_BORDER,
-					HorizontalAlignment = Element.ALIGN_RIGHT,
+					HorizontalAlignment = Element.ALIGN_CENTER,
 					VerticalAlignment = Element.ALIGN_MIDDLE,
 					PaddingTop = 10f
 				};

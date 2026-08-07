@@ -7,37 +7,37 @@
 }
 <style>
 	fieldset {
-	margin: 8px;
-	border: 1px solid silver;
-	padding: 8px;
-	border-radius: 4px;
-	max-width: 100%;
-	margin-top: 8px;
-	margin-left: 0px;
-	margin-right: 0px;
-	margin-bottom: 0px;
-	height: 500px;
+		margin: 8px;
+		border: 1px solid silver;
+		padding: 8px;
+		border-radius: 4px;
+		max-width: 100%;
+		margin-top: 8px;
+		margin-left: 0px;
+		margin-right: 0px;
+		margin-bottom: 0px;
+		height: 600px;
 	}
 
 	legend {
-	padding: 2px;
-	margin-top: -22px;
-	background: #f3f5f7 !important;
-	width: 25%;
-	text-align: center;
-	font-size: small;
+		padding: 2px;
+		margin-top: -22px;
+		background: #f3f5f7 !important;
+		width: 25%;
+		text-align: center;
+		font-size: small;
 	}
 </style>
 @Html.Hidden("valoresANombreDe", Model.valoresANombreDe)
 <div class="row mt-2">
-	<div class="col-md-5">
+	<div class="col-md-6">
 		<div class="input-group input-group-sm mt-1" id="divProveedorSeleccionado">
 			<span class="input-group-text fixed-lbl-for-abm-70">Cuenta: </span>
 			<input type="text" id="CtaID" class="form-control" style="max-width: 100px;text-align: right;" disabled />
 			<input type="text" id="CtaDesc" class="form-control" disabled />
 		</div>
 	</div>
-	<div class="col-md-7">
+	<div class="col-md-6">
 		<div class="input-group input-group-sm mt-1">
 			<span class="input-group-text fixed-lbl-for-abm-100" title="Obligaciones a Cancelar">Obl. a Cancelar: </span>
 			<input type="text" id="txtObligACancelar" class="form-control align-right" style="background-color: darkred; color: white;" value="0" disabled />
@@ -49,19 +49,19 @@
 	</div>
 </div>
 <div class="row mt-2">
-	<div class="col-6" style="height: 500px;">
+	<div class="col-6" style="height: 600px;">
 		<fieldset>
 			<legend>Obligaciones</legend>
-			<div class="row" id="divObligacionesParaAgregar" style="height: 200px;">
+			<div class="row" id="divObligacionesParaAgregar" style="height: 245px;">
 				<div class="table-responsive table-wrapper-200" id="containerListaObligacionesParaAgregar">
 					<table class="table table-bordered table-hover table-golden" id="tbListaObligacionesParaAgregar">
 						<thead style="background: darkred;">
 							<tr class="header">
-								<th style="width:60%;" class="col-header-small align-center tiny-row">Comprobante</th>
+								<th style="width:50%;" class="col-header-small align-center tiny-row">Comprobante</th>
 								<th style="width:10%;" class="col-header-small align-center tiny-row">Cuota</th>
 								<th style="width:10%;" class="col-header-small align-center tiny-row">Vencimiento</th>
-								<th style="width:10%;" class="col-header-small align-center tiny-row">Importe</th>
-								<th style="width:10%;" class="col-header-small align-center tiny-row">Imputado</th>
+								<th style="width:15%;" class="col-header-small align-center tiny-row">Importe</th>
+								<th style="width:15%;" class="col-header-small align-center tiny-row">Imputado</th>
 								<th style="width:0%;display:none;" class="col-header-small align-center tiny-row">dia_movi</th>
 								<th style="width:0%;display:none;" class="col-header-small align-center tiny-row">cm_compte</th>
 								<th style="width:0%;display:none;" class="col-header-small align-center tiny-row">tco_id</th>
@@ -91,7 +91,7 @@
 					</table>
 				</div>
 			</div>
-			<div class="row justify-content-sm-center mb-1">
+			@* <div class="row justify-content-sm-center mb-1">
 				<div class="col-md-2">
 					<div class="d-flex justify-content-sm-center">
 						<button id="btnAnterior1" class="btn btn-primary btn-sm mt-1 me-1" type="button" title="Anterior" disabled>
@@ -105,12 +105,12 @@
 						</button>
 					</div>
 				</div>
-			</div>
+			</div> *@
 			<div class="row" id="divObligaciones">
 			</div>
 		</fieldset>
 	</div>
-	<div class="col-6" style="height: 500px;">
+	<div class="col-6" style="height: 600px;">
 		<fieldset>
 			<legend>Créditos y Valores</legend>
 			<div class="row" id="divCreditosParaAgregar" style="height: 200px;">
@@ -118,11 +118,11 @@
 					<table class="table table-bordered table-hover" id="tbListaCreditosParaAgregar">
 						<thead style="background: dodgerblue;">
 							<tr>
-								<th style="width:60%;" class="col-header-small align-center tiny-row">Comprobante</th>
+								<th style="width:50%;" class="col-header-small align-center tiny-row">Comprobante</th>
 								<th style="width:10%;" class="col-header-small align-center tiny-row">Cuota</th>
 								<th style="width:10%;" class="col-header-small align-center tiny-row">Vencimiento</th>
-								<th style="width:10%;" class="col-header-small align-center tiny-row">Importe</th>
-								<th style="width:10%;" class="col-header-small align-center tiny-row">Imputado</th>
+								<th style="width:15%;" class="col-header-small align-center tiny-row">Importe</th>
+								<th style="width:15%;" class="col-header-small align-center tiny-row">Imputado</th>
 								<th style="width:0%;display:none;" class="col-header-small align-center tiny-row">dia_movi</th>
 								<th style="width:0%;display:none;" class="col-header-small align-center tiny-row">cm_compte</th>
 								<th style="width:0%;display:none;" class="col-header-small align-center tiny-row">tco_id</th>

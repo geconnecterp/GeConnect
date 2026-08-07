@@ -5,6 +5,7 @@
 @{
 	var alt = true;
 	string clase = string.Empty;
+	var descripcion = "";
 }
 <style>
 	thead th {
@@ -37,9 +38,10 @@
 			{
 				@foreach (var item in Model.ListaDatos)
 				{
+					descripcion = $"({item.ctaf_id}) {item.ctaf_denominacion}";
 					if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
 					<tr class="@clase" onclick="seleccionarFinanciero(this)" ondblclick="seleccionarFinancieroDbl(this)">
-						<td class="@Model.ObtenerClase(item.ctaf_denominacion) tiny-row">@Model.FormatearDato(item.ctaf_denominacion, FormatDato.Ninguno)</td>
+						<td class="@Model.ObtenerClase(item.ctaf_denominacion) tiny-row">@Model.FormatearDato(descripcion, FormatDato.Ninguno)</td>
 						<td class="@Model.ObtenerClase(item.ctaf_saldo) tiny-row">@Model.FormatearDato(item.ctaf_saldo, FormatDato.Monto)</td>
 						<td style="display:none;">@item.ctaf_id</td>
 						<td style="display:none;">@item.ins_id</td>

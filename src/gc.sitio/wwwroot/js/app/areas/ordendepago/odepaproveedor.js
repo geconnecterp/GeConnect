@@ -245,6 +245,7 @@ function btnAnterior2Validar() {
 		ActualizarGrillaCreditosInferior();
 		EvaluarBotonesWizzard();
 		getMaskForMoneyType("#txtValorCtaDirSeleccionada");
+		actualizarBotonera(1);
 		CerrarWaiting();
 	});
 }
@@ -265,11 +266,23 @@ function btnSiguiente1Validar() {
 		MostrarDatosDeCuenta(true);
 		CargarRetencionesDesdeObligYCredSeleccionados();
 		CargarValoresDesdeObligYCredSeleccionados();
+		actualizarBotonera(2);
 		CerrarWaiting();
 		if (esPagoAnticipado) {
 			ControlaMensajeInfo("Es Pago Anticipado.");
 		}
 	});
+}
+
+function actualizarBotonera(tipo) {
+	const $contenedor = $("#contenedorBotoneraDinamica");
+	$contenedor.empty();
+
+	if (tipo === 1) {
+		$contenedor.append($("#templateBotoneraHTML1").html());
+	} else if (tipo === 2) {
+		$contenedor.append($("#templateBotoneraHTML2").html());
+	}
 }
 
 function CargarRetencionesDesdeObligYCredSeleccionados() {
@@ -484,6 +497,7 @@ function AceptarDesdeValidPrev() {
 		});
 		valorANombreDe = $("#valoresANombreDe").val();
 		getMaskForMoneyType("#txtValorCtaDirSeleccionada");
+		actualizarBotonera(1);
 		CerrarWaiting();
 	});
 }

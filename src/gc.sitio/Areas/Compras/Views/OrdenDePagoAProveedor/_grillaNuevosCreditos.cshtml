@@ -6,8 +6,13 @@
 }
 <style>
 	thead th {
-	position: sticky;
-	top: 0px;
+		position: sticky;
+		top: 0px;
+	}
+	#tbListaCreditosParaAgregar tbody td {
+		padding-top: 2px !important;
+		padding-bottom: 2px !important;
+		line-height: 1.6 !important;
 	}
 </style>
 @Html.Hidden("MsgErrorEnCargarOSacarCreditos", Model.MsgErrorEnCargarOSacarCreditos)

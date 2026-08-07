@@ -1,0 +1,82 @@
+﻿@using gc.infraestructura.Dtos
+@model MargenRubrosProvModel
+@{
+}
+<style>
+    .lp-row-mrp {
+        display: flex;
+        align-items: center;
+/*         gap: 10px;
+        margin-bottom: 8px; */
+    }
+
+    .lp-label-mrp {
+        min-width: 70px;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
+    .lp-input {
+        width: 120px;
+        text-align: right;
+    }
+
+    .lp-check {
+        margin-left: 10px;
+        margin-top: 4px;
+    }
+
+    .input-group-input-group-sm{
+        width: 47% !important;
+        max-width: 47% !important;
+    }
+
+    .lp-select-wrapper {
+        width: 180px; /* Ajustá según tu estética Golden */
+    }
+
+    .lp-select {
+        width: 100%;
+    }
+</style>
+<div class="card mb-3">
+    <div class="card-body p-2">
+        <div class="lp-row">
+
+            <div class="lp-row-mrp" id="contenedorSector" style="display:@(Model.CargarPorSector ? "flex" : "none")">
+                <label class="lp-label-mrp">Sector:</label>
+                <div class="input-group input-group-sm lp-select-wrapper">
+                    @Html.DropDownListFor(m => m.SectorSeleccionado, Model.ListaSectores, "Seleccionar",
+                        new { @id = "listaSectores", @disabled = true, @class = "form-control inputEditable activable lp-select" })
+                </div>
+            </div>
+
+            <div class="lp-row-mrp" id="contenedorRubros" style="display:@(!Model.CargarPorSector ? "flex" : "none")">
+                <label class="lp-label-mrp">Rubros:</label>
+                <div class="input-group input-group-sm lp-select-wrapper">
+                    @Html.DropDownListFor(m => m.RubroSeleccionado, Model.ListaRubros, "Seleccionar",
+                        new { @id = "listaRubros", @disabled = true, @class = "form-control inputEditable activable lp-select" })
+                </div>
+            </div>
+
+            <label class="lp-label-mrp">Proveedor:</label>
+            <div class="input-group input-group-sm">
+                <input type="text" class="form-control inputEditable activable" name="Rel01" id="Rel01" disabled />
+                @Html.Hidden("Rel01Item")
+            </div>
+            <button type="button" class="btn btn-primary btn-icon-compact activable" title="Agregar elemento" onclick="agregarItemRubroCta()" disabled>
+                <i class="bx bx-trash"></i>
+            </button>
+        </div>
+        <div class="lp-row">
+            <div class="input-group input-group-sm input-group-input-group-sm">
+                <div class="form-check form-check-inline form-switch mb-2">
+                    <input class="form-check-input activable" type="checkbox" asp-for="CargarPorSector" name="CargarPorSector" id="chkPorSectores" disabled />
+                    <label class="form-check-label" for="chkPorSectores" id="lbPorSectores">Por Sectores</label>
+                </div>
+            </div>
+            <label class="lp-label-mrp">% Mg LP:</label>
+            <input type="text" asp-for="Mgn" value="@Model.Mgn.ToString("0.00")" class="form-control activable inputEditable lp-input" disabled />
+        </div>
+    </div>
+</div>

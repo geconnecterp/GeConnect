@@ -63,12 +63,12 @@ namespace gc.api.core.Entidades
         public char? Cta_Actu { get; set; }
         public char? Tipo { get; set; }
         public char? Habilitada { get; set; }
-
-        //public virtual ICollection<clientes> Clientess { get; set; }
-        //public virtual ICollection<ctacte> Ctactes { get; set; }
-        //public virtual ICollection<cuentas_cortesias> Cuentas_Cortesiass { get; set; }
-        //public virtual ICollection<cuentas_notas> Cuentas_Notass { get; set; }
-        public virtual ICollection<Proveedor> Proveedores { get; set; }
+		public string? Tipo_Desc { get; set; }
+		//public virtual ICollection<clientes> Clientess { get; set; }
+		//public virtual ICollection<ctacte> Ctactes { get; set; }
+		//public virtual ICollection<cuentas_cortesias> Cuentas_Cortesiass { get; set; }
+		//public virtual ICollection<cuentas_notas> Cuentas_Notass { get; set; }
+		public virtual ICollection<Proveedor> Proveedores { get; set; }
 
     }
 }

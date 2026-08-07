@@ -1,4 +1,6 @@
-﻿$(function () {
+﻿const afipConCuit = ["01", "04", "06"];
+
+$(function () {
 	$(document).on("change", "#listaTipoOP", ControlalistaTipoOPSelected);
 	$(document).on("change", "#listaTCompte", ControlalistaTCompteSelected);
 	$(document).on("change", "#listaCondAfip", ControlalistaCondAfipSelected);
@@ -155,12 +157,21 @@ function ControlaKeyUpCompteNro(e) {
 }
 
 function ControlaFocusOutCmCuit() {
-	BuscarCuentaPorCuit($("#itemOPD_cm_cuit").inputmask('unmaskedvalue'));
+	if (CuitCompleto()) {
+		BuscarCuentaPorCuit($("#itemOPD_cm_cuit").inputmask('unmaskedvalue'));
+	}
 }
 function ControlaKeyUpCmCuit(e) {
 	if (e.which == 13 || e.which == 109) {
-		BuscarCuentaPorCuit($("#itemOPD_cm_cuit").inputmask('unmaskedvalue'));
+		if (CuitCompleto()) {
+			BuscarCuentaPorCuit($("#itemOPD_cm_cuit").inputmask('unmaskedvalue'));
+		}
 	}
+}
+
+function CuitCompleto() {
+	const valor = $("#itemOPD_cm_cuit").inputmask('unmaskedvalue');
+	return valor.length === 11; // CUIT completo
 }
 
 function ControlaKeyUpCmNombre(e) {
@@ -267,6 +278,7 @@ function btnAnterior2() {
 		}, 500);
 		ActualizarTotalesSuperiores();
 		$("#Paso").val("Paso1");
+		actualizarBotonera(1);
 		return true;
 	});
 }
@@ -431,6 +443,7 @@ function btnSiguiente1() {
 		$("#divDetalle").html(obj);
 		ActualizarTotalesSuperiores();
 		$("#Paso").val("Paso2");
+		actualizarBotonera(2);
 		return true
 	});
 }
@@ -825,6 +838,7 @@ function AceptarDesdeSeleccionarTipoDeOP() {
 				$("#btnAgregarOtroTributo").prop("disabled", true);
 			}, 500);
 			$("#Paso").val("Paso1");
+			actualizarBotonera(1);
 			return true;
 		}
 		else {
@@ -838,7 +852,8 @@ function AceptarDesdeSeleccionarTipoDeOP() {
 }
 
 function CargarMascaras() {
-	$("#itemOPD_cm_cuit").inputmask("99-99999999-9");
+	//$("#itemOPD_cm_cuit").inputmask("99-99999999-9");
+	AplicarMascaraCuit("00");
 	$("#itemOPD_cm_compte_pto_vta").inputmask("9999");
 	$("#itemOPD_cm_compte_pto_nro").inputmask("99999999");
 
@@ -900,6 +915,43 @@ function onChangeCondAfip(x) {
 			$("#divTipoCompte").html(obj);
 			return true
 		});
+	}
+	AplicarMascaraCuit(condAfip)
+}
+
+function AplicarMascaraCuit(valor) {
+	const requiereCuit = ["01", "04", "06"].includes(valor);
+	const $cuit = $("#itemOPD_cm_cuit");
+	const $label = $("#lblCuit");
+
+	if (requiereCuit) {
+		// Cambiar label
+		$label.text("CUIT:");
+
+		// Aplicar máscara CUIT
+		$cuit.inputmask("99-99999999-9");
+		$cuit.prop("disabled", false);
+
+	} else {
+		// Cambiar label
+		$label.text("Otro Doc.:");
+
+		// Quitar máscara y limpiar
+		$cuit.inputmask("remove");
+		$cuit.val("");
+		// Si querés deshabilitarlo:
+		// $cuit.prop("disabled", true);
+	}
+}
+
+function actualizarBotonera(tipo) {
+	const $contenedor = $("#contenedorBotoneraDinamica");
+	$contenedor.empty();
+
+	if (tipo === 1) {
+		$contenedor.append($("#templateBotoneraHTML1").html());
+	} else if (tipo === 2) {
+		$contenedor.append($("#templateBotoneraHTML2").html());
 	}
 }
 

@@ -1,8 +1,12 @@
 ﻿using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Dtos;
+using gc.infraestructura.Dtos.Almacen;
+using gc.infraestructura.Dtos.Gen;
+using gc.infraestructura.Helpers;
 using gc.sitio.Areas.Productos.Models.ListaDePreciosGestionar;
 using gc.sitio.core.Servicios.Contratos;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Options;
 
 namespace gc.sitio.Areas.Productos.Controllers.ListaDePreciosGestionar
@@ -12,12 +16,19 @@ namespace gc.sitio.Areas.Productos.Controllers.ListaDePreciosGestionar
 	{
 		private readonly IPrecioListaServicio _precioListaSrv;
 		private readonly IListaDePrecioServicio _listaPrcSrv;
+		private readonly ISectorServicio _sectorServicio;
+		private readonly IRubroServicio _rubroServicio;
+		private readonly ICuentaServicio _cuentaServicio;
 		private const string lp_principal = "001";
 		public ListaDePreciosGestionarController(IOptions<AppSettings> options, IHttpContextAccessor contexto, ILogger<ListaDePreciosGestionarController> logger, 
-												 IPrecioListaServicio precioListaSrv, IListaDePrecioServicio listaPrcSrv) : base(options, contexto, logger)
+												 IPrecioListaServicio precioListaSrv, IListaDePrecioServicio listaPrcSrv, ISectorServicio sectorServicio,
+												 IRubroServicio rubroServicio, ICuentaServicio cuentaServicio) : base(options, contexto, logger)
 		{
 			_precioListaSrv = precioListaSrv;
 			_listaPrcSrv = listaPrcSrv;
+			_sectorServicio = sectorServicio;
+			_rubroServicio = rubroServicio;
+			_cuentaServicio = cuentaServicio;
 		}
 
 		public IActionResult Index()
@@ -95,5 +106,48 @@ namespace gc.sitio.Areas.Productos.Controllers.ListaDePreciosGestionar
 				return View();
 			}
 		}
+
+		public IActionResult CargarDatosDeSeccionRubCta()
+		{
+			var model = new MargenRubrosProvModel();
+			try
+			{
+				// Versión optimizada del código de autenticación
+				if (!VerificarAutenticacion(out IActionResult redirectResult))
+					return redirectResult;
+
+				var listaRubros = _rubroServicio.ObtenerListaRubros("%", TokenCookie);
+				model.ListaRubros = ObtenerListaRubros(listaRubros ?? []);
+				var listaSectores = _sectorServicio.GetSectoresLista(TokenCookie);
+				model.ListaSectores = ObtenerListaSectores(listaSectores ?? []);
+				model.Mgn = 0;
+				model.CargarPorSector = true;
+				var listR01 = new List<ComboGenDto>();
+				ViewBag.Rel01List = HelperMvc<ComboGenDto>.ListaGenerica(listR01);
+				if (ProveedoresLista.Count == 0)
+					ObtenerProveedores(_cuentaServicio, "%");
+				return PartialView("_partialMargenRubrosProv", model);
+			}
+			catch (Exception ex)
+			{
+				_logger?.LogError(ex, "Error al cargar la sección de datos de la lista de precios para Rub/Cta especificado.");
+				TempData["error"] = "Hubo un problema al cargar la sección de datos de la lista de precios para Rub/Cta especificado. Si el problema persiste, contacte al administrador.";
+				return View();
+			}
+		}
+
+		#region Metodos Privados
+		private SelectList ObtenerListaRubros(List<RubroListaDto> rub)
+		{
+			var lista = rub.Select(x => new ComboGenDto { Id = x.Rub_Id, Descripcion = x.Rub_Desc });
+			return HelperMvc<ComboGenDto>.ListaGenerica(lista);
+		}
+
+		private SelectList ObtenerListaSectores(List<SectorDto> sectores)
+		{
+			var lista = sectores.Select(x => new ComboGenDto { Id = x.Sec_Id, Descripcion = x.Sec_Desc });
+			return HelperMvc<ComboGenDto>.ListaGenerica(lista);
+		}
+		#endregion
 	}
 }

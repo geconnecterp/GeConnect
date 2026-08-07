@@ -40,11 +40,11 @@ namespace gc.infraestructura.Dtos.Almacen
         public char? Tipo { get; set;}
         public char? Habilitada { get; set; }
 		public string Tdoc_Desc { get; set; } = string.Empty;
-
-        /// <summary>
-        /// Es un dato auxiliar para ser utilizado en los reportes. 
-        /// </summary>
-        public decimal Monto { get; set; }
+		public string Tipo_Desc { get; set; } = string.Empty;
+		/// <summary>
+		/// Es un dato auxiliar para ser utilizado en los reportes. 
+		/// </summary>
+		public decimal Monto { get; set; }
         public string MontoEtiqueta { get; set; } = string.Empty;
     }
 

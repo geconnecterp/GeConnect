@@ -26,6 +26,7 @@
         overflow-y: auto;
         margin-bottom: 25px;
     }
+
 </style>
 <partial name="_botonera" model="filtro" />
 <div id="divDetalle" class="container-fluid">
@@ -64,6 +65,8 @@
     <script type="text/javascript">
         let cargarDatosDeListaDePrecioURL = "@Url.Action("CargarDatosDeListaDePrecio", "ListaDePreciosGestionar", new { area = "Productos" })";
         let cargarDatosDeListaDePrecioRubCtaURL = "@Url.Action("CargarDatosDeListaDePrecioRubCta", "ListaDePreciosGestionar", new { area = "Productos" })";
+        let cargarDatosDeSeccionRubCtaURL = "@Url.Action("CargarDatosDeSeccionRubCta", "ListaDePreciosGestionar", new { area = "Productos" })";
+        let autoComRel01Url = "@Url.Action("BuscarProvs", "cargaprecios", new { area = "productos" })";
     </script>
 
     <script src="~/lib/jstree/jstree.min.js"></script>
