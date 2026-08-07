@@ -1,0 +1,232 @@
+﻿@{
+    ViewData["Title"] = "Rendiciones Parciales de Caja";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container-fluid p-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card card-golden shadow-sm">
+                <div class="card-header bg-gradient-golden">
+                    <h4 class="mb-0 text-white">
+                        <i class="bx bx-money-withdraw me-1"></i>
+                        Rendiciones Parciales de Caja
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-success border-golden ncdev-alert-golden mb-4" role="alert">
+                        <i class="bx bx-check-circle me-1"></i>
+                        <strong>Caja validada correctamente.</strong>
+                        Cargue los importes a rendir por instrumento.
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <label class="form-label">Usuario</label>
+                            <input type="text" class="form-control" value="@ViewBag.Usuario" readonly />
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Caja</label>
+                            <input type="text" class="form-control" value="@ViewBag.CajaNombre" readonly />
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Proceso</label>
+                            <input type="text" class="form-control" value="@ViewBag.Proceso" readonly />
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Cierre</label>
+                            <input type="text" class="form-control" value="@ViewBag.Cierre" readonly />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade modal-golden"
+     id="modalRendicionParcial"
+     tabindex="-1"
+     aria-labelledby="modalRendicionParcialLabel"
+     aria-hidden="true"
+     data-bs-backdrop="static"
+     data-bs-keyboard="false">
+    <div class="modal-dialog modal-fullscreen">
+        <div class="modal-content">
+            <div class="modal-header bg-gradient-golden text-white">
+                <div>
+                    <h5 class="modal-title mb-0" id="modalRendicionParcialLabel">
+                        <i class="bx bx-money-withdraw"></i>
+                        Rendiciones Parciales de Caja
+                    </h5>
+                    <small class="fw-bold">Carga de instrumentos y nominaciones</small>
+                </div>
+            </div>
+
+            <div class="modal-body p-4">
+                <div class="row g-3 mb-3">
+                    <div class="col-md-3">
+                        <label class="form-label">Usuario</label>
+                        <input type="text" class="form-control" value="@ViewBag.Usuario" readonly />
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Caja</label>
+                        <input type="text" class="form-control" value="@ViewBag.CajaNombre" readonly />
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Proceso</label>
+                        <input type="text" class="form-control" value="@ViewBag.Proceso" readonly />
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Cierre</label>
+                        <input type="text" class="form-control" value="@ViewBag.Cierre" readonly />
+                    </div>
+                </div>
+
+                <div class="row g-4">
+                    <div class="col-lg-5">
+                        <div class="card card-golden shadow-sm h-100">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h6 class="mb-0 fw-bold">
+                                    <i class="bx bx-list-ul"></i>
+                                    Instrumentos
+                                </h6>
+                                <span class="badge bg-success" id="lblRendicionInstrumentosCount">0</span>
+                            </div>
+                            <div class="card-body p-0">
+                                <div class="table-responsive rendicion-tabla">
+                                    <table class="table table-golden table-hover mb-0" id="tbRendicionInstrumentos">
+                                        <thead class="table-golden-header">
+                                            <tr>
+                                                <th>ID</th>
+                                                <th>Instrumento</th>
+                                                <th class="text-end">Monto</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="tbodyRendicionInstrumentos">
+                                            <tr>
+                                                <td colspan="3" class="text-center text-muted py-4">
+                                                    <i class="bx bx-loader-alt bx-spin"></i>
+                                                    Cargando instrumentos...
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="card-footer bg-golden-light border-top border-golden">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="fw-bold text-golden-dark fs-5">TOTAL A RENDIR</span>
+                                    <span class="form-control form-control-lg text-end fw-bold text-success rendicion-total-display" id="lblRendicionTotal">$ 0.00</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-7">
+                        <div class="card card-golden shadow-sm h-100">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h6 class="mb-0 fw-bold">
+                                    <i class="bx bx-calculator"></i>
+                                    Nominaciones
+                                </h6>
+                                <span class="text-golden-dark fw-bold" id="lblRendicionInstrumentoSeleccionado">Seleccione un instrumento</span>
+                            </div>
+                            <div class="card-body p-0">
+                                <div class="table-responsive rendicion-tabla">
+                                    <table class="table table-golden table-hover mb-0" id="tbRendicionNominaciones">
+                                        <thead class="table-golden-header">
+                                            <tr>
+                                                <th class="text-end">Nominacion</th>
+                                                <th class="text-end">Cantidad</th>
+                                                <th class="text-end">Importe</th>
+                                                <th class="text-center">Accion</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="tbodyRendicionNominaciones">
+                                            <tr>
+                                                <td colspan="4" class="text-center text-muted py-4">
+                                                    <i class="bx bx-info-circle"></i>
+                                                    Seleccione un instrumento para cargar nominaciones
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer bg-light">
+                <div class="d-flex justify-content-between align-items-center w-100">
+                    <button type="button" class="btn btn-danger btn-lg" id="btnRendicionCancelar">
+                        <i class="bx bx-x-circle"></i>
+                        CANCELAR
+                    </button>
+                    <button type="button" class="btn btn-success btn-lg px-5" id="btnRendicionConfirmar" disabled>
+                        <i class="bx bx-check-circle"></i>
+                        CONFIRMAR
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade modal-golden" id="modalRendicionCantidad" tabindex="-1" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-gradient-golden text-white">
+                <h5 class="modal-title mb-0">
+                    <i class="bx bx-edit"></i>
+                    Editar cantidad
+                </h5>
+                <span id="rendicionCantidadTecladoAncla"
+                      data-teclado-ancla
+                      class="d-inline-block">
+                </span>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="txtRendicionNomIndex" />
+                <div class="mb-3">
+                    <label class="form-label">Nominacion</label>
+                    <input type="text" class="form-control text-end fw-bold" id="txtRendicionNomValor" readonly />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Cantidad</label>
+                    <input type="text"
+                           class="form-control input-integer jsteclado jsinteger text-end fw-bold"
+                           id="txtRendicionCantidad"
+                           inputmode="numeric"
+                           autocomplete="off" />
+                </div>
+                <div class="alert alert-warning border-golden py-2 d-none" id="rendicionCantidadMensaje"></div>
+            </div>
+            <div class="modal-footer bg-light">
+                <button type="button" class="btn btn-secondary" id="btnRendicionCantidadCancelar">
+                    <i class="bx bx-arrow-back"></i>
+                    VOLVER
+                </button>
+                <button type="button" class="btn btn-warning text-dark" id="btnRendicionCantidadBorrar">
+                    <i class="bx bx-trash"></i>
+                    BORRAR
+                </button>
+                <button type="button" class="btn btn-success" id="btnRendicionCantidadAceptar">
+                    <i class="bx bx-check"></i>
+                    ACEPTAR
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        var rendicionCargarInstrumentosUrl = '@Url.Action("CargarRendiciones", "Rendicion", new { area = "Facturacion" })';
+        var rendicionCargarNominacionesUrl = '@Url.Action("CargarNominaciones", "Rendicion", new { area = "Facturacion" })';
+        var rendicionConfirmarUrl = '@Url.Action("Confirmar", "Rendicion", new { area = "Facturacion" })';
+        var rendicionMenuCajaUrl = '@Url.Action("Index", "Home", new { area = "" })';
+    </script>
+    <script src="~/js/app/rendicionParcial.js" asp-append-version="true"></script>
+}

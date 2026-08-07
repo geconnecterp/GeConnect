@@ -1,4 +1,4 @@
-﻿@{
+@{
     ViewData["Title"] = "Nota de Debito, Credito y Factura de Servicio";
     Layout = "~/Views/Shared/_Layout.cshtml";
     var modulo = "NotaDebitoCredito";
@@ -74,7 +74,11 @@
     </div>
 </div>
 
-@await Html.PartialAsync("~/Areas/Facturacion/Views/Shared/_IdentificarClienteModal.cshtml", null, new ViewDataDictionary(ViewData) { { "Modulo", modulo } })
+@{
+    var identificarClienteModalViewData = new ViewDataDictionary(ViewData);
+    identificarClienteModalViewData["Modulo"] = modulo;
+}
+@await Html.PartialAsync("~/Areas/Facturacion/Views/Shared/_IdentificarClienteModal.cshtml", null, identificarClienteModalViewData)
 @await Html.PartialAsync("~/Areas/Facturacion/Views/NotaDebitoCredito/_OperacionConceptos.cshtml")
 @await Html.PartialAsync("~/Areas/Facturacion/Views/NotaDebitoCredito/_Calculo.cshtml")
 

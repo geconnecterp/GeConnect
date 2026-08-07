@@ -1,25 +1,25 @@
-// ============================================
+﻿// ============================================
 // GESTOR PRINCIPAL DEL FLUJO DE CAJA
 // ============================================
 
 $(function () {
-    // Variables para referencias a modales (inicialización lazy)
+    // Variables para referencias a modales (inicializaciÃ³n lazy)
     let modalValidacion = null;
     let modalMenu = null;
     let modalCambiaPV = null;
 
-    // Variable global para control de acceso al menú
+    // Variable global para control de acceso al menÃº
     let nivelAccesoMenu = 'ninguno';
 
     // Variable global para control de cierre intencional del modal Cambio PV
     let cierreIntencional = false;
 
     // ---------------------------------------------------------
-    // FUNCIONES HELPER PARA GESTIÓN DE MODALES
+    // FUNCIONES HELPER PARA GESTIÃ“N DE MODALES
     // ---------------------------------------------------------
 
     /**
-     * Obtiene o inicializa la instancia del modal de validación
+     * Obtiene o inicializa la instancia del modal de validaciÃ³n
      */
     function getModalValidacion() {
         if (!modalValidacion) {
@@ -27,14 +27,14 @@ $(function () {
             if (elemento) {
                 modalValidacion = new bootstrap.Modal(elemento);
             } else {
-                console.error('❌ Elemento modalValidacionIngreso no encontrado en el DOM');
+                console.error('âŒ Elemento modalValidacionIngreso no encontrado en el DOM');
             }
         }
         return modalValidacion;
     }
 
     /**
-     * Obtiene o inicializa la instancia del modal de menú
+     * Obtiene o inicializa la instancia del modal de menÃº
      */
     function getModalMenu() {
         if (!modalMenu) {
@@ -42,7 +42,7 @@ $(function () {
             if (elemento) {
                 modalMenu = new bootstrap.Modal(elemento);
             } else {
-                console.error('❌ Elemento modalMenuCaja no encontrado en el DOM');
+                console.error('âŒ Elemento modalMenuCaja no encontrado en el DOM');
             }
         }
         return modalMenu;
@@ -57,36 +57,36 @@ $(function () {
             if (elemento) {
                 modalCambiaPV = new bootstrap.Modal(elemento);
             } else {
-                console.error('❌ Elemento modalCambiaPV no encontrado en el DOM');
+                console.error('âŒ Elemento modalCambiaPV no encontrado en el DOM');
             }
         }
         return modalCambiaPV;
     }
 
     // ---------------------------------------------------------
-    // INICIO DEL FLUJO: VALIDACIÓN DE INTEGRIDAD
+    // INICIO DEL FLUJO: VALIDACIÃ“N DE INTEGRIDAD
     // ---------------------------------------------------------
     iniciarFlujoValidacion();
 
     // ---------------------------------------------------------
-    // MANEJADORES DE EVENTOS: MODAL VALIDACIÓN
+    // MANEJADORES DE EVENTOS: MODAL VALIDACIÃ“N
     // ---------------------------------------------------------
 
     /**
-     * Botón: HACE APERTURA
+     * BotÃ³n: HACE APERTURA
      */
     $("#btnHaceApertura").on("click", function () {
         const modal = getModalValidacion();
         if (modal) modal.hide();
 
-        // Pequeña pausa para que el modal se cierre antes de procesar
+        // PequeÃ±a pausa para que el modal se cierre antes de procesar
         setTimeout(() => {
             procesarAperturaCaja();
         }, 300);
     });
 
     /**
-     * Botón: OPERA SIN CAJA (solo disponible cuando resultado = 3)
+     * BotÃ³n: OPERA SIN CAJA (solo disponible cuando resultado = 3)
      */
     $("#btnOperaSinCaja").on("click", function () {
         const modal = getModalValidacion();
@@ -101,7 +101,7 @@ $(function () {
     });
 
     /**
-     * Botón: SALIR
+     * BotÃ³n: SALIR
      */
     $("#btnSale").on("click", function () {
         const modal = getModalValidacion();
@@ -114,7 +114,7 @@ $(function () {
     // ---------------------------------------------------------
 
     /**
-     * Botón: CONFIRMAR CAMBIO PV
+     * BotÃ³n: CONFIRMAR CAMBIO PV
      */
     $("#btnConfirmaCambioPV").on("click", function () {
         cierreIntencional = true;
@@ -130,7 +130,7 @@ $(function () {
     });
 
     /**
-     * Botón: CANCELAR CAMBIO PV
+     * BotÃ³n: CANCELAR CAMBIO PV
      */
     $("#btnCancelaCambiaPV").on("click", function () {
         const modal = getModalCambiaPV();
@@ -146,8 +146,8 @@ $(function () {
 
             AbrirMensaje(
                 "Confirmar Salida",
-                "¿Está seguro de que desea cancelar el cambio de punto de venta?<br><br>" +
-                "<small class='text-muted'><i class='bx bx-info-circle'></i> Si cancela, será redirigido al inicio de sesión.</small>",
+                "Â¿EstÃ¡ seguro de que desea cancelar el cambio de punto de venta?<br><br>" +
+                "<small class='text-muted'><i class='bx bx-info-circle'></i> Si cancela, serÃ¡ redirigido al inicio de sesiÃ³n.</small>",
                 function (respuesta) {
                     $("#msjModal").modal("hide");
 
@@ -162,7 +162,7 @@ $(function () {
                     }
                 },
                 true,
-                ["Sí, Salir", "No, Continuar"],
+                ["SÃ­, Salir", "No, Continuar"],
                 "warn!",
                 null
             );
@@ -180,11 +180,11 @@ $(function () {
     });
 
     // ---------------------------------------------------------
-    // MANEJADORES DE EVENTOS: MODAL MENÚ PRINCIPAL
+    // MANEJADORES DE EVENTOS: MODAL MENÃš PRINCIPAL
     // ---------------------------------------------------------
 
     /**
-     * Botón: CERRAR MENÚ
+     * BotÃ³n: CERRAR MENÃš
      */
     $("#btnCerrarMenu").on("click", function () {
         const modal = getModalMenu();
@@ -195,7 +195,7 @@ $(function () {
     });
 
     /**
-     * Manejadores de botones del menú
+     * Manejadores de botones del menÃº
      */
     $('.menu-btn-enhanced').on('click', function () {
         const accion = $(this).data('action');
@@ -207,10 +207,10 @@ $(function () {
     // ---------------------------------------------------------
 
     /**
-     * PASO 1: Inicia el flujo de validación de integridad
+     * PASO 1: Inicia el flujo de validaciÃ³n de integridad
      */
     function iniciarFlujoValidacion() {
-        mostrarLoader("Validando Integridad de Sesión...<br><small class='text-muted'>Verificando configuración de caja</small>");
+        mostrarLoader("Validando Integridad de SesiÃ³n...<br><small class='text-muted'>Verificando configuraciÃ³n de caja</small>");
 
         $.ajax({
             url: ValidacionIntegridadUrl,
@@ -229,8 +229,8 @@ $(function () {
     }
 
     /**
-     * PASO 2: Procesa el resultado de la validación de integridad
-     * resultado = 0: Procede automáticamente con apertura (SIN modal)
+     * PASO 2: Procesa el resultado de la validaciÃ³n de integridad
+     * resultado = 0: Procede automÃ¡ticamente con apertura (SIN modal)
      * resultado = 3: Muestra modal para que usuario decida
      * resultado = 4: Cambiar PV
      * otro: Salir
@@ -243,33 +243,33 @@ $(function () {
         const resultado = response.resultado;
 
         if (resultado === 0) {
-            // ✅ CORRECTO: Procede automáticamente con apertura
-            console.log("✅ Validación OK - Procediendo automáticamente con apertura");
+            // âœ… CORRECTO: Procede automÃ¡ticamente con apertura
+            console.log("âœ… ValidaciÃ³n OK - Procediendo automÃ¡ticamente con apertura");
             mostrarLoader("Procediendo a realizar apertura de caja...<br><small class='text-muted'>Inicializando punto de venta</small>");
 
-            // Pequeña pausa visual para que el usuario vea el mensaje
+            // PequeÃ±a pausa visual para que el usuario vea el mensaje
             setTimeout(() => {
                 procesarAperturaCaja();
             }, 800);
         }
         else if (resultado === 3) {
-            // ✅ CORRECTO: Muestra modal para que usuario evalúe opciones
-            console.log("⚠️ Validación resultado=3 - Mostrando opciones al usuario");
+            // âœ… CORRECTO: Muestra modal para que usuario evalÃºe opciones
+            console.log("âš ï¸ ValidaciÃ³n resultado=3 - Mostrando opciones al usuario");
             mostrarModalValidacionConOpciones(response.mensaje);
         }
         else if (resultado === 4) {
             // Cambiar punto de venta
-            console.log("🔄 Validación resultado=4 - Cambiar PV");
+            console.log("ðŸ”„ ValidaciÃ³n resultado=4 - Cambiar PV");
             mostrarModalCambioPV(response.mensaje);
         }
         else if (resultado < 0) {
-            // Error crítico
-            console.error("❌ Error crítico en validación");
-            mostrarErrorCritico(response.mensaje || "Error crítico al validar integridad.");
+            // Error crÃ­tico
+            console.error("âŒ Error crÃ­tico en validaciÃ³n");
+            mostrarErrorCritico(response.mensaje || "Error crÃ­tico al validar integridad.");
         }
         else {
             // Cualquier otro resultado - Salir
-            console.warn("⚠️ Resultado inesperado - Salir");
+            console.warn("âš ï¸ Resultado inesperado - Salir");
             mostrarAdvertenciaYSalir(response.mensaje || "No se puede continuar. Contacte al administrador.");
         }
     }
@@ -277,7 +277,7 @@ $(function () {
     /**
      * PASO 3: Procesa la apertura de caja
      * resultado = 0: Apertura exitosa - Obtener datos
-     * resultado = 3: Caja ya abierta - Menú solo cierre
+     * resultado = 3: Caja ya abierta - MenÃº solo cierre
      * otro: Error - Salir
      */
     function procesarAperturaCaja() {
@@ -301,9 +301,9 @@ $(function () {
                     $btn.prop("disabled", false).html(originalText);
                 }
 
-                // ✅ CORRECCIÓN: Validar response.ok y redirigir a login
+                // âœ… CORRECCIÃ“N: Validar response.ok y redirigir a login
                 if (!response.ok) {
-                    console.error("❌ No se pudo realizar apertura - Redirigiendo a login");
+                    console.error("âŒ No se pudo realizar apertura - Redirigiendo a login");
                     mostrarMensajeErrorYSalir(response.mensaje || "Error al realizar apertura de caja.");
                     return;
                 }
@@ -312,14 +312,14 @@ $(function () {
 
                 if (resultado === 0) {
                     // Apertura exitosa - Obtener datos de caja
-                    console.log("✅ Apertura exitosa - Obteniendo datos");
+                    console.log("âœ… Apertura exitosa - Obteniendo datos");
                     const modal = getModalValidacion();
                     if (modal) modal.hide();
                     obtenerDatosCaja();
                 }
                 else if (resultado === 3) {
                     // Caja ya abierta - Cerrar modal ANTES de mostrar mensaje
-                    console.log("⚠️ Caja ya abierta - Menú solo cierre");
+                    console.log("âš ï¸ Caja ya abierta - MenÃº solo cierre");
                     const modal = getModalValidacion();
 
                     if (modal) modal.hide();
@@ -328,7 +328,7 @@ $(function () {
 
                     setTimeout(() => {
                         AbrirMensaje(
-                            "Atención",
+                            "AtenciÃ³n",
                             response.mensaje,
                             function () {
                                 $("#msjModal").modal("hide");
@@ -347,8 +347,8 @@ $(function () {
                     }, 500);
                 }
                 else {
-                    // ✅ CORRECCIÓN: Error en apertura - Redirigir a login
-                    console.error("❌ Error en apertura de caja - Resultado:", resultado);
+                    // âœ… CORRECCIÃ“N: Error en apertura - Redirigir a login
+                    console.error("âŒ Error en apertura de caja - Resultado:", resultado);
                     mostrarErrorYSalir(response.mensaje || "No se pudo realizar la apertura de caja.");
                 }
             },
@@ -363,8 +363,8 @@ $(function () {
     }
 
     /**
-    * PASO 4: Obtiene los datos de la caja después de apertura exitosa
-    * resultado = 0: Datos OK - Menú completo
+    * PASO 4: Obtiene los datos de la caja despuÃ©s de apertura exitosa
+    * resultado = 0: Datos OK - MenÃº completo
     * otro: Error - Salir
     * 
     * NUEVO: Maneja advertencias del sistema (mostrar_mensaje = true)
@@ -379,8 +379,8 @@ $(function () {
             success: function (response) {
                 ocultarLoader();
 
-                // 📋 LOGGING: Registrar respuesta completa para trazabilidad
-                console.log("📦 Respuesta ObtenerDatosCaja:", {
+                // ðŸ“‹ LOGGING: Registrar respuesta completa para trazabilidad
+                console.log("ðŸ“¦ Respuesta ObtenerDatosCaja:", {
                     ok: response.ok,
                     resultado: response.resultado,
                     mensaje: response.mensaje,
@@ -389,26 +389,26 @@ $(function () {
                     tiene_datos: !!response.datos
                 });
 
-                // ✅ VALIDACIÓN 1: Respuesta no exitosa o resultado erróneo
+                // âœ… VALIDACIÃ“N 1: Respuesta no exitosa o resultado errÃ³neo
                 if (!response.ok || response.resultado !== 0) {
-                    console.error("❌ Error al obtener datos de caja - Resultado:", response.resultado);
+                    console.error("âŒ Error al obtener datos de caja - Resultado:", response.resultado);
                     mostrarErrorYSalir(response.mensaje || "Error al obtener datos de caja.");
                     return;
                 }
 
-                // ✅ NUEVO: Actualizar el footer del menú con los datos recibidos
+                // âœ… NUEVO: Actualizar el footer del menÃº con los datos recibidos
                 actualizarFooterMenu(response.datos);
 
-                // ✅ VALIDACIÓN 2: Verificar si hay mensaje de advertencia del sistema
+                // âœ… VALIDACIÃ“N 2: Verificar si hay mensaje de advertencia del sistema
                 const tieneAdvertencia = response.mostrar_mensaje === true && response.mensaje_advertencia;
 
                 if (tieneAdvertencia) {
-                    console.warn("⚠️ Advertencia del sistema detectada:", response.mensaje_advertencia);
+                    console.warn("âš ï¸ Advertencia del sistema detectada:", response.mensaje_advertencia);
 
-                    // Construir información adicional según el tipo de controlador
+                    // Construir informaciÃ³n adicional segÃºn el tipo de controlador
                     let datosAdicionales = construirDatosAdvertencia(response.datos);
 
-                    // Mostrar advertencia y continuar después
+                    // Mostrar advertencia y continuar despuÃ©s
                     mostrarAdvertenciaConContinuacion(
                         response.mensaje_advertencia,
                         function () {
@@ -418,8 +418,8 @@ $(function () {
                         datosAdicionales
                     );
                 } else {
-                    // ✅ Sin advertencias: Continuar directamente
-                    console.log("✅ Datos de caja obtenidos sin advertencias - Menú completo");
+                    // âœ… Sin advertencias: Continuar directamente
+                    console.log("âœ… Datos de caja obtenidos sin advertencias - MenÃº completo");
                     continuarConMenuCompleto(response);
                 }
             },
@@ -431,8 +431,8 @@ $(function () {
     }
 
     /**
-     * Construye información adicional para mostrar en advertencias
-     * según el contexto y datos disponibles
+     * Construye informaciÃ³n adicional para mostrar en advertencias
+     * segÃºn el contexto y datos disponibles
      */
     function construirDatosAdvertencia(datos) {
         if (!datos) return null;
@@ -459,10 +459,10 @@ $(function () {
     }
 
     /**
-     * Continúa con el flujo normal: Configura menú completo y lo muestra
+     * ContinÃºa con el flujo normal: Configura menÃº completo y lo muestra
      */
     function continuarConMenuCompleto(response) {
-        console.log("📊 Datos de caja:", response.datos);
+        console.log("ðŸ“Š Datos de caja:", response.datos);
 
         nivelAccesoMenu = 'completo';
 
@@ -480,7 +480,7 @@ $(function () {
      * otro: Error - Salir
      */
     function procesarCambioPV() {
-        // Mostrar loader inmediatamente (modal ya está cerrado)
+        // Mostrar loader inmediatamente (modal ya estÃ¡ cerrado)
         mostrarLoader("Procesando cambio de punto de venta...<br><small class='text-muted'>Por favor espere</small>");
 
         $.ajax({
@@ -499,7 +499,7 @@ $(function () {
                     
                     if (esMock) {
                         // MOCK: Funcionalidad no implementada
-                        console.warn("⚠️ Cambio de PV - MOCK: Funcionalidad no implementada");
+                        console.warn("âš ï¸ Cambio de PV - MOCK: Funcionalidad no implementada");
                         
                         AbrirMensaje(
                             "Funcionalidad en Desarrollo",
@@ -531,7 +531,7 @@ $(function () {
                 }
 
                 // Cambio exitoso (resultado = 0)
-                console.log("✅ Cambio de PV exitoso - Procediendo con apertura automática");
+                console.log("âœ… Cambio de PV exitoso - Procediendo con apertura automÃ¡tica");
                 
                 mostrarLoader("Procediendo a realizar apertura de caja...<br><small class='text-muted'>Nuevo punto de venta configurado</small>");
                 setTimeout(() => {
@@ -544,7 +544,7 @@ $(function () {
                 let mensajeError = "Error al procesar cambio de punto de venta.";
                 
                 if (status === 'timeout') {
-                    mensajeError = "El proceso de cambio de PV tardó demasiado tiempo. Por favor, contacte al administrador.";
+                    mensajeError = "El proceso de cambio de PV tardÃ³ demasiado tiempo. Por favor, contacte al administrador.";
                 }  else if (xhr.status === 500) {
                     mensajeError = "Error interno del servidor. Contacte al administrador.";
                 } else if (xhr.responseJSON && xhr.responseJSON.mensaje) {
@@ -561,7 +561,7 @@ $(function () {
     // ---------------------------------------------------------
 
     /**
-     * Configura el menú según el nivel de acceso
+     * Configura el menÃº segÃºn el nivel de acceso
      */
     function configurarMenuSegunAcceso() {
         const $botones = $('.menu-btn-enhanced');
@@ -571,34 +571,34 @@ $(function () {
 
         switch (nivelAccesoMenu) {
             case 'solo-cierre':
-                // Solo habilitar botón de cierre
+                // Solo habilitar botÃ³n de cierre
                 $botones.not('[data-action="cierre"]').prop('disabled', true).addClass('disabled-menu-item');
-                console.log("🔒 Menú configurado: Solo CIERRE activo");
+                console.log("ðŸ”’ MenÃº configurado: Solo CIERRE activo");
                 break;
 
             case 'parcial':
-                // Deshabilitar funciones críticas que requieren caja abierta
+                // Deshabilitar funciones crÃ­ticas que requieren caja abierta
                 $botones.filter('[data-action="facturacion"], [data-action="cobranza-diferida"], [data-action="cobranza"], [data-action="cierre"]')
                     .prop('disabled', true).addClass('disabled-menu-item');
-                console.log("⚠️ Menú configurado: Acceso PARCIAL");
+                console.log("âš ï¸ MenÃº configurado: Acceso PARCIAL");
                 break;
 
             case 'completo':
                 // Todos los botones habilitados
-                console.log("✅ Menú configurado: Acceso COMPLETO");
+                console.log("âœ… MenÃº configurado: Acceso COMPLETO");
                 break;
 
             default:
                 // Deshabilitar todo por seguridad
                 $botones.prop('disabled', true).addClass('disabled-menu-item');
-                console.warn("🚫 Menú configurado: SIN ACCESO");
+                console.warn("ðŸš« MenÃº configurado: SIN ACCESO");
                 break;
         }
     }
 
     /**
-     * Muestra el modal de validación con opciones (resultado = 3)
-     * Solo se usa cuando el usuario debe tomar una decisión
+     * Muestra el modal de validaciÃ³n con opciones (resultado = 3)
+     * Solo se usa cuando el usuario debe tomar una decisiÃ³n
      */
     function mostrarModalValidacionConOpciones(mensaje) {
         if (mensaje) {
@@ -636,7 +636,7 @@ $(function () {
     /**
      * Muestra un mensaje de advertencia del sistema y ejecuta callback al cerrar
      * @param {string} mensaje - Mensaje a mostrar
-     * @param {function} callback - Función a ejecutar después de cerrar el mensaje
+     * @param {function} callback - FunciÃ³n a ejecutar despuÃ©s de cerrar el mensaje
      * @param {string} datos - Datos adicionales opcionales para mostrar
      */
     function mostrarAdvertenciaConContinuacion(mensaje, callback, datos) {
@@ -670,7 +670,7 @@ $(function () {
             function () {
                 $("#msjModal").modal("hide");
 
-                // Ejecutar callback después de cerrar el modal
+                // Ejecutar callback despuÃ©s de cerrar el modal
                 if (typeof callback === 'function') {
                     setTimeout(() => {
                         callback();
@@ -686,7 +686,7 @@ $(function () {
 
     function mostrarErrorCritico(mensaje) {
         AbrirMensaje(
-            "ATENCIÓN",
+            "ATENCIÃ“N",
             mensaje,
             function () {
                 $("#msjModal").modal("hide");
@@ -716,7 +716,7 @@ $(function () {
 
     function mostrarAdvertenciaYSalir(mensaje) {
         AbrirMensaje(
-            "ATENCIÓN",
+            "ATENCIÃ“N",
             mensaje,
             function () {
                 $("#msjModal").modal("hide");
@@ -729,7 +729,7 @@ $(function () {
         );
     }
 
-    // ✅ NUEVA FUNCIÓN: Muestra error y redirige a login
+    // âœ… NUEVA FUNCIÃ“N: Muestra error y redirige a login
     function mostrarMensajeErrorYSalir(mensaje) {
         AbrirMensaje(
             "informacion",
@@ -738,13 +738,13 @@ $(function () {
                 <p class="mt-3">${mensaje}</p>
                 <hr>
                 <small class="text-muted">
-                    <i class='bx bx-info-circle'></i> Será redirigido al inicio de sesión.
+                    <i class='bx bx-info-circle'></i> SerÃ¡ redirigido al inicio de sesiÃ³n.
                 </small>
             </div>`,
             function () {
                 $("#msjModal").modal("hide");
                 setTimeout(() => {
-                    console.log("🚪 Redirigiendo al login...");
+                    console.log("ðŸšª Redirigiendo al login...");
                     window.location.href = logout;
                 }, 300);
             },
@@ -769,18 +769,18 @@ $(function () {
         );
     }
 
-    // ✅ ACTUALIZADO: Función de manejo de errores AJAX unificada
+    // âœ… ACTUALIZADO: FunciÃ³n de manejo de errores AJAX unificada
     function manejarErrorAjax(xhr, status, error, operacion) {
         let mensajeError = `Error desconocido al ${operacion}.`;
 
-        // ✅ NUEVO: Usar función centralizada de siteGen.js
+        // âœ… NUEVO: Usar funciÃ³n centralizada de siteGen.js
         if (esSesionExpirada(xhr.status)) {
-            manejarSesionExpirada(`La operación de ${operacion} falló porque su sesión ha expirado.`);
+            manejarSesionExpirada(`La operaciÃ³n de ${operacion} fallÃ³ porque su sesiÃ³n ha expirado.`);
             return;
         }
 
         if (status === 'timeout') {
-            mensajeError = `La operación de ${operacion} tardó demasiado tiempo. Por favor, intente nuevamente.`;
+            mensajeError = `La operaciÃ³n de ${operacion} tardÃ³ demasiado tiempo. Por favor, intente nuevamente.`;
         } else if (xhr.status === 500) {
             mensajeError = "Error interno del servidor. Contacte al administrador.";
         } else if (xhr.responseJSON && xhr.responseJSON.mensaje) {
@@ -791,11 +791,11 @@ $(function () {
     }
 
     // ---------------------------------------------------------
-    // GESTOR DE ACCIONES DEL MENÚ PRINCIPAL
+    // GESTOR DE ACCIONES DEL MENÃš PRINCIPAL
     // ---------------------------------------------------------
 
     function manejarAccionMenu(accion) {
-        console.log(`🎯 Acción seleccionada: ${accion}`);
+        console.log(`ðŸŽ¯ AcciÃ³n seleccionada: ${accion}`);
 
         switch (accion) {
             case 'facturacion':
@@ -841,18 +841,18 @@ $(function () {
                 abrirModalTecladoDemo();
                 break;
             default:
-                console.warn(`⚠️ Acción no implementada: ${accion}`);
+                console.warn(`âš ï¸ AcciÃ³n no implementada: ${accion}`);
                 mostrarMensajeNoImplementado(accion);
                 break;
         }
     }
 
-    // Funciones placeholder para módulos
+    // Funciones placeholder para mÃ³dulos
     function abrirModuloFacturacion() {
-        console.log('💵 Iniciando validación para Facturación...');
+        console.log('ðŸ’µ Iniciando validaciÃ³n para FacturaciÃ³n...');
 
         // Mostrar loader
-        mostrarLoader("Validando datos de caja...<br><small class='text-muted'>Preparando módulo de facturación</small>");
+        mostrarLoader("Validando datos de caja...<br><small class='text-muted'>Preparando mÃ³dulo de facturaciÃ³n</small>");
 
         $.ajax({
             url: FacturacionValidarUrl,
@@ -863,17 +863,17 @@ $(function () {
                 ocultarLoader();
 
                 if (!response.success) {
-                    // ❌ Validación fallida
-                    console.error("❌ Validación de datos de caja fallida:", response.message);
+                    // âŒ ValidaciÃ³n fallida
+                    console.error("âŒ ValidaciÃ³n de datos de caja fallida:", response.message);
                     
                     AbrirMensaje(
-                        "Error de Validación",
+                        "Error de ValidaciÃ³n",
                         `<div class="text-center">
                             <i class='bx bx-error-circle text-danger' style='font-size: 3rem;'></i>
                             <p class="mt-3">${response.message}</p>
                             <hr>
                             <small class="text-muted">
-                                Por favor, contacte al administrador o verifique la configuración de la caja.
+                                Por favor, contacte al administrador o verifique la configuraciÃ³n de la caja.
                             </small>
                         </div>`,
                         function () {
@@ -887,17 +887,17 @@ $(function () {
                     return;
                 }
 
-                // ✅ Validación exitosa
-                console.log("✅ Validación exitosa - Abriendo módulo de Facturación");
+                // âœ… ValidaciÃ³n exitosa
+                console.log("âœ… ValidaciÃ³n exitosa - Abriendo mÃ³dulo de FacturaciÃ³n");
                 
-                // Cerrar el modal del menú principal
+                // Cerrar el modal del menÃº principal
                 const menuModal = getModalMenu();
                 if (menuModal) menuModal.hide();
                 
-                // Mostrar loader de transición
-                mostrarLoader("Abriendo módulo de Facturación...<br><small class='text-muted'>Por favor espere</small>");
+                // Mostrar loader de transiciÃ³n
+                mostrarLoader("Abriendo mÃ³dulo de FacturaciÃ³n...<br><small class='text-muted'>Por favor espere</small>");
                 
-                // Redirigir al área de Facturación después de una breve pausa
+                // Redirigir al Ã¡rea de FacturaciÃ³n despuÃ©s de una breve pausa
                 setTimeout(() => {
                     window.location.href = facturacionInicializaUrl;
                 }, 800);
@@ -905,12 +905,12 @@ $(function () {
             error: function (xhr, status, error) {
                 ocultarLoader();
                 
-                console.error("❌ Error al validar datos para Facturación:", error);
+                console.error("âŒ Error al validar datos para FacturaciÃ³n:", error);
                 
-                let mensajeError = "Error al validar los datos de la caja para Facturación.";
+                let mensajeError = "Error al validar los datos de la caja para FacturaciÃ³n.";
                 
                 if (status === 'timeout') {
-                    mensajeError = "La validación tardó demasiado tiempo. Por favor, intente nuevamente.";
+                    mensajeError = "La validaciÃ³n tardÃ³ demasiado tiempo. Por favor, intente nuevamente.";
                 }  else if (xhr.status === 500) {
                     mensajeError = "Error interno del servidor. Contacte al administrador.";
                 } else if (xhr.responseJSON && xhr.responseJSON.message) {
@@ -936,11 +936,11 @@ $(function () {
     }
 
     function abrirModuloCobranzaDiferida() {
-        console.log('💰 Iniciando validación para Cobranza Diferida...');
-        mostrarLoader("Validando datos de caja...<br><small class='text-muted'>Preparando módulo de Cobranza Diferida</small>");
+        console.log('ðŸ’° Iniciando validaciÃ³n para Cobranza Diferida...');
+        mostrarLoader("Validando datos de caja...<br><small class='text-muted'>Preparando mÃ³dulo de Cobranza Diferida</small>");
 
         $.ajax({
-            url: cobranzaDiferidaValidarUrl, // ✅ NUEVA URL
+            url: cobranzaDiferidaValidarUrl, // âœ… NUEVA URL
             type: 'post',
             dataType: 'json',
             timeout: 10000,
@@ -948,15 +948,15 @@ $(function () {
                 ocultarLoader();
 
                 if (!response.success) {
-                    console.error("❌ Validación de datos de caja fallida para Cobranza Diferida:", response.message);
+                    console.error("âŒ ValidaciÃ³n de datos de caja fallida para Cobranza Diferida:", response.message);
                     AbrirMensaje(
-                        "Error de Validación",
+                        "Error de ValidaciÃ³n",
                         `<div class="text-center">
                             <i class='bx bx-error-circle text-danger' style='font-size: 3rem;'></i>
                             <p class="mt-3">${response.message}</p>
                             <hr>
                             <small class="text-muted">
-                                Por favor, contacte al administrador o verifique la configuración de la caja.
+                                Por favor, contacte al administrador o verifique la configuraciÃ³n de la caja.
                             </small>
                         </div>`,
                         function () { $("#msjModal").modal("hide"); },
@@ -965,21 +965,21 @@ $(function () {
                     return;
                 }
 
-                console.log("✅ Validación exitosa - Abriendo módulo de Cobranza Diferida");
+                console.log("âœ… ValidaciÃ³n exitosa - Abriendo mÃ³dulo de Cobranza Diferida");
                 //busca el modal cargado en memoria y lo cierra
                 const menuModal = getModalMenu();
                 if (menuModal) menuModal.hide();
 
-                mostrarLoader("Abriendo módulo de Cobranza Diferida...<br><small class='text-muted'>Por favor, espere...</small>");
+                mostrarLoader("Abriendo mÃ³dulo de Cobranza Diferida...<br><small class='text-muted'>Por favor, espere...</small>");
                 setTimeout(() => {
-                    window.location.href = cobranzaDiferidaInicializaUrl; // ✅ NUEVA URL
+                    window.location.href = cobranzaDiferidaInicializaUrl; // âœ… NUEVA URL
                 }, 800);
             },
             error: function (xhr, status, error) {
                 ocultarLoader();
                 let mensajeError = "Error al validar los datos de la caja para Cobranza Diferida.";
                 if (status === 'timeout') {
-                    mensajeError = "La validación tardó demasiado tiempo. Por favor, intente nuevamente.";
+                    mensajeError = "La validaciÃ³n tardÃ³ demasiado tiempo. Por favor, intente nuevamente.";
                 } else if (xhr.status === 500) {
                     mensajeError = "Error interno del servidor. Contacte al administrador.";
                 } else if (xhr.responseJSON && xhr.responseJSON.message) {
@@ -990,7 +990,7 @@ $(function () {
         });
     }
     function abrirModuloDevolucion() {
-        console.log('↩️ Iniciando validación para Nota de Crédito por Devolución...');
+        console.log('â†©ï¸ Iniciando validaciÃ³n para Nota de CrÃ©dito por DevoluciÃ³n...');
 
         if (
             typeof notaCreditoDevolucionValidarUrl === 'undefined' ||
@@ -999,12 +999,12 @@ $(function () {
             !notaCreditoDevolucionInicializaUrl
         ) {
             console.error(
-                'No están definidas las URLs del módulo Nota de Crédito por Devolución.'
+                'No estÃ¡n definidas las URLs del mÃ³dulo Nota de CrÃ©dito por DevoluciÃ³n.'
             );
 
             AbrirMensaje(
-                'Error de configuración',
-                'No se pudo preparar el módulo de Nota de Crédito por Devolución.',
+                'Error de configuraciÃ³n',
+                'No se pudo preparar el mÃ³dulo de Nota de CrÃ©dito por DevoluciÃ³n.',
                 function () {
                     $('#msjModal').modal('hide');
                 },
@@ -1019,7 +1019,7 @@ $(function () {
 
         mostrarLoader(
             "Validando datos de caja...<br>" +
-            "<small class='text-muted'>Preparando módulo de Nota de Crédito por Devolución</small>"
+            "<small class='text-muted'>Preparando mÃ³dulo de Nota de CrÃ©dito por DevoluciÃ³n</small>"
         );
 
         $.ajax({
@@ -1034,22 +1034,22 @@ $(function () {
                 if (!response || response.success !== true) {
                     const mensaje =
                         response?.message ||
-                        'No fue posible validar los datos de caja para iniciar la devolución.';
+                        'No fue posible validar los datos de caja para iniciar la devoluciÃ³n.';
 
                     console.error(
-                        'Validación fallida para NC por Devolución:',
+                        'ValidaciÃ³n fallida para NC por DevoluciÃ³n:',
                         mensaje
                     );
 
                     AbrirMensaje(
-                        'Error de validación',
+                        'Error de validaciÃ³n',
                         `<div class="text-center">
                         <i class='bx bx-error-circle text-danger'
                            style='font-size: 3rem;'></i>
                         <p class="mt-3">${mensaje}</p>
                         <hr>
                         <small class="text-muted">
-                            Verifique la configuración de caja o contacte al administrador.
+                            Verifique la configuraciÃ³n de caja o contacte al administrador.
                         </small>
                     </div>`,
                         function () {
@@ -1065,7 +1065,7 @@ $(function () {
                 }
 
                 console.log(
-                    'Validación exitosa. Abriendo módulo de Nota de Crédito por Devolución.'
+                    'ValidaciÃ³n exitosa. Abriendo mÃ³dulo de Nota de CrÃ©dito por DevoluciÃ³n.'
                 );
 
                 const menuModal = getModalMenu();
@@ -1075,7 +1075,7 @@ $(function () {
                 }
 
                 mostrarLoader(
-                    "Abriendo módulo de Nota de Crédito por Devolución...<br>" +
+                    "Abriendo mÃ³dulo de Nota de CrÃ©dito por DevoluciÃ³n...<br>" +
                     "<small class='text-muted'>Por favor, espere...</small>"
                 );
 
@@ -1088,7 +1088,7 @@ $(function () {
                 ocultarLoader();
 
                 console.error(
-                    'Error al validar datos para NC por Devolución:',
+                    'Error al validar datos para NC por DevoluciÃ³n:',
                     {
                         status: xhr?.status,
                         textStatus: status,
@@ -1097,11 +1097,11 @@ $(function () {
                 );
 
                 let mensaje =
-                    'Error al validar los datos de caja para Nota de Crédito por Devolución.';
+                    'Error al validar los datos de caja para Nota de CrÃ©dito por DevoluciÃ³n.';
 
                 if (status === 'timeout') {
                     mensaje =
-                        'La validación tardó demasiado tiempo. Intente nuevamente.';
+                        'La validaciÃ³n tardÃ³ demasiado tiempo. Intente nuevamente.';
                 } else if (xhr?.status === 500) {
                     mensaje =
                         'Error interno del servidor. Contacte al administrador.';
@@ -1224,11 +1224,11 @@ $(function () {
         });
     }
     function abrirModuloCobranzacc() {
-        console.log('💰 Iniciando Módulo Cobranza en Cuenta Corriente');
-        mostrarLoader("Validando datos de caja...<br><small class='text-muted'>Preparando módulo de Cobranza en Cuenta Corriente</small>");
+        console.log('ðŸ’° Iniciando MÃ³dulo Cobranza en Cuenta Corriente');
+        mostrarLoader("Validando datos de caja...<br><small class='text-muted'>Preparando mÃ³dulo de Cobranza en Cuenta Corriente</small>");
 
         $.ajax({
-            url: validarModuloCCUrl, // ✅ NUEVA URL
+            url: validarModuloCCUrl, // âœ… NUEVA URL
             type: 'post',
             dataType: 'json',
             timeout: 10000,
@@ -1236,41 +1236,41 @@ $(function () {
                 ocultarLoader();
 
                 if (!response.success) {
-                    console.error("❌ Validación de autenticación fallida para Cobranza en Cuenta Corriente:", response.message);
+                    console.error("âŒ ValidaciÃ³n de autenticaciÃ³n fallida para Cobranza en Cuenta Corriente:", response.message);
                     AbrirMensaje(
-                        "Error de Validación",
+                        "Error de ValidaciÃ³n",
                         `<div class="text-center">
                             <i class='bx bx-error-circle text-danger' style='font-size: 3rem;'></i>
                             <p class="mt-3">${response.message}</p>
                             <hr>
                             <small class="text-muted">
-                                Por favor, contacte al administrador o verifique la configuración o autentiquese nuevamente..
+                                Por favor, contacte al administrador o verifique la configuraciÃ³n o autentiquese nuevamente..
                             </small>
                         </div>`,
                         function () {
                             setTimeout(() => {
-                                window.location.href = MenuCajaUrl; // ✅ verifica que no esta autenticado y reenvia a Login
+                                window.location.href = MenuCajaUrl; // âœ… verifica que no esta autenticado y reenvia a Login
                             }, 100); },
                         false, ["Continuar"], "error!", null
                     );
                     return;
                 }
 
-                console.log("✅ Validación exitosa - Abriendo módulo de Cobranza en Cuenta Corriente");
+                console.log("âœ… ValidaciÃ³n exitosa - Abriendo mÃ³dulo de Cobranza en Cuenta Corriente");
                 //busca el modal cargado en memoria y lo cierra
                 const menuModal = getModalMenu();
                 if (menuModal) menuModal.hide();
 
-                mostrarLoader("Abriendo módulo de Cobranza en CUENTA CORRIENTE...<br><small class='text-muted'>Por favor, espere...</small>");
+                mostrarLoader("Abriendo mÃ³dulo de Cobranza en CUENTA CORRIENTE...<br><small class='text-muted'>Por favor, espere...</small>");
                 setTimeout(() => {
-                    window.location.href = accesoModuloCCUrl; // ✅ NUEVA URL
+                    window.location.href = accesoModuloCCUrl; // âœ… NUEVA URL
                 }, 800);
             },
             error: function (xhr, status, error) {
                 ocultarLoader();
                 let mensajeError = "Error al validar los datos de la caja para Cobranza Diferida.";
                 if (status === 'timeout') {
-                    mensajeError = "La validación tardó demasiado tiempo. Por favor, intente nuevamente.";
+                    mensajeError = "La validaciÃ³n tardÃ³ demasiado tiempo. Por favor, intente nuevamente.";
                 } else if (xhr.status === 500) {
                     mensajeError = "Error interno del servidor. Contacte al administrador.";
                 } else if (xhr.responseJSON && xhr.responseJSON.message) {
@@ -1280,19 +1280,196 @@ $(function () {
             }
         });
     }
-    function abrirModuloAnulaCobranza() { console.log('❌ Anula Cobranza...'); }
-    function abrirModuloDistribucionFacturacion() { console.log('📊 Distribución Facturación...'); }
-    function abrirModuloDistribucionCobranza() { console.log('📈 Distribución Cobranza...'); }
-    function abrirModuloCambioValores() { console.log('🔄 Cambio de Valores...'); }
-    function abrirModuloRendiciones() { console.log('📄 Rendiciones...'); }
+    function abrirModuloAnulaCobranza() {
+        console.log('Iniciando validacion para Anulacion de Cobranza...');
+
+        if (
+            typeof anulacionCobranzaValidarUrl === 'undefined' ||
+            !anulacionCobranzaValidarUrl ||
+            typeof anulacionCobranzaInicializaUrl === 'undefined' ||
+            !anulacionCobranzaInicializaUrl
+        ) {
+            AbrirMensaje(
+                'Error de configuracion',
+                'No se pudo preparar el modulo de Anulacion de Cobranza.',
+                function () { $('#msjModal').modal('hide'); },
+                false,
+                ['Aceptar'],
+                'error!',
+                null
+            );
+
+            return;
+        }
+
+        mostrarLoader(
+            "Validando datos de caja...<br>" +
+            "<small class='text-muted'>Preparando modulo de Anulacion de Cobranza</small>"
+        );
+
+        $.ajax({
+            url: anulacionCobranzaValidarUrl,
+            type: 'POST',
+            dataType: 'json',
+            timeout: 10000,
+            success: function (response) {
+                ocultarLoader();
+
+                if (!response || response.success !== true) {
+                    AbrirMensaje(
+                        'Error de validacion',
+                        response?.message || 'No fue posible validar los datos de caja para iniciar Anulacion de Cobranza.',
+                        function () { $('#msjModal').modal('hide'); },
+                        false,
+                        ['Aceptar'],
+                        'error!',
+                        null
+                    );
+
+                    return;
+                }
+
+                const menuModal = getModalMenu();
+                if (menuModal) {
+                    menuModal.hide();
+                }
+
+                mostrarLoader(
+                    "Abriendo modulo de Anulacion de Cobranza...<br>" +
+                    "<small class='text-muted'>Por favor, espere...</small>"
+                );
+
+                setTimeout(function () {
+                    window.location.href = anulacionCobranzaInicializaUrl;
+                }, 800);
+            },
+            error: function (xhr, status) {
+                ocultarLoader();
+
+                let mensaje = 'Error al validar los datos de caja para Anulacion de Cobranza.';
+                if (status === 'timeout') {
+                    mensaje = 'La validacion tardo demasiado tiempo. Intente nuevamente.';
+                } else if (xhr?.responseJSON?.message) {
+                    mensaje = xhr.responseJSON.message;
+                }
+
+                AbrirMensaje(
+                    'Error',
+                    mensaje,
+                    function () { $('#msjModal').modal('hide'); },
+                    false,
+                    ['Aceptar'],
+                    'error!',
+                    null
+                );
+            }
+        });
+    }
+    function abrirModuloDistribucionFacturacion() { console.log('ðŸ“Š DistribuciÃ³n FacturaciÃ³n...'); }
+    function abrirModuloDistribucionCobranza() { console.log('ðŸ“ˆ DistribuciÃ³n Cobranza...'); }
+    function abrirModuloCambioValores() { console.log('ðŸ”„ Cambio de Valores...'); }
+    function abrirModuloRendiciones() {
+        console.log('Iniciando validacion para Rendiciones Parciales de Caja...');
+
+        if (
+            typeof rendicionParcialValidarUrl === 'undefined' ||
+            !rendicionParcialValidarUrl ||
+            typeof rendicionParcialInicializaUrl === 'undefined' ||
+            !rendicionParcialInicializaUrl
+        ) {
+            AbrirMensaje(
+                'Error de configuracion',
+                'No se pudo preparar el modulo de Rendiciones Parciales de Caja.',
+                function () {
+                    $('#msjModal').modal('hide');
+                },
+                false,
+                ['Aceptar'],
+                'error!',
+                null
+            );
+
+            return;
+        }
+
+        mostrarLoader(
+            "Validando datos de caja...<br>" +
+            "<small class='text-muted'>Preparando modulo de Rendiciones Parciales</small>"
+        );
+
+        $.ajax({
+            url: rendicionParcialValidarUrl,
+            type: 'POST',
+            dataType: 'json',
+            timeout: 10000,
+            success: function (response) {
+                ocultarLoader();
+
+                if (!response || response.success !== true) {
+                    AbrirMensaje(
+                        'Error de validacion',
+                        response?.message ||
+                        'No fue posible validar los datos de caja para iniciar rendiciones parciales.',
+                        function () {
+                            $('#msjModal').modal('hide');
+                        },
+                        false,
+                        ['Aceptar'],
+                        'error!',
+                        null
+                    );
+
+                    return;
+                }
+
+                const menuModal = getModalMenu();
+
+                if (menuModal) {
+                    menuModal.hide();
+                }
+
+                mostrarLoader(
+                    "Abriendo modulo de Rendiciones Parciales...<br>" +
+                    "<small class='text-muted'>Por favor, espere...</small>"
+                );
+
+                setTimeout(function () {
+                    window.location.href = rendicionParcialInicializaUrl;
+                }, 800);
+            },
+            error: function (xhr, status) {
+                ocultarLoader();
+
+                let mensaje = 'Error al validar los datos de caja para Rendiciones Parciales.';
+
+                if (status === 'timeout') {
+                    mensaje = 'La validacion tardo demasiado tiempo. Intente nuevamente.';
+                } else if (xhr?.responseJSON?.message) {
+                    mensaje = xhr.responseJSON.message;
+                }
+
+                AbrirMensaje(
+                    'Error',
+                    mensaje,
+                    function () {
+                        $('#msjModal').modal('hide');
+                    },
+                    false,
+                    ['Aceptar'],
+                    'error!',
+                    null
+                );
+            }
+        });
+    }
 
     function abrirModuloCierre() {
-        console.log('🔒 Iniciando proceso de cierre de caja...');
+        console.log('ðŸ”’ Iniciando proceso de cierre de caja...');
 
         AbrirMensaje(
             "CONFIRMAR CIERRE DE CAJA",
-            "¿Está seguro de que desea cerrar la caja?<br><br>" +
-            "<strong class='text-danger'>⚠️ Esta acción finalizará su sesión y cerrará la caja.</strong>",
+            "Â¿EstÃ¡ seguro de que desea cerrar la caja?<br><br>" +
+            "<strong class='text-danger'>âš ï¸ Esta acciÃ³n finalizarÃ¡ su sesiÃ³n y cerrarÃ¡ la caja.</strong>",
             function (confirmado) {
                 $("#msjModal").modal("hide");
 
@@ -1303,14 +1480,14 @@ $(function () {
                 }
             },
             true,
-            ["Sí, Cerrar Caja", "Cancelar"],
+            ["SÃ­, Cerrar Caja", "Cancelar"],
             "warn!",
             null
         );
     }
 
-    function abrirModuloAdministrador() { console.log('🛡️ Administrador...'); }
-    function abrirModuloReportesZ() { console.log('📊 Reportes Z...'); }
+    function abrirModuloAdministrador() { console.log('ðŸ›¡ï¸ Administrador...'); }
+    function abrirModuloReportesZ() { console.log('ðŸ“Š Reportes Z...'); }
 
     function abrirModalTecladoDemo() {
         const menuModal = getModalMenu();
@@ -1321,7 +1498,7 @@ $(function () {
     }
 
     function mostrarMensajeNoImplementado(nombreModulo) {
-        console.info(`ℹ️ ${nombreModulo} - Módulo en desarrollo`);
+        console.info(`â„¹ï¸ ${nombreModulo} - MÃ³dulo en desarrollo`);
     }
 
     // ---------------------------------------------------------
@@ -1347,10 +1524,10 @@ $(function () {
                 const resultado = response.resultado;
 
                 if (resultado === 0) {
-                    console.log("✅ Cierre exitoso");
+                    console.log("âœ… Cierre exitoso");
                     mostrarResumenCierre(response);
                 } else {
-                    console.error("❌ Error en cierre - Resultado:", resultado);
+                    console.error("âŒ Error en cierre - Resultado:", resultado);
                     mostrarErrorCierre(response.mensaje || "No se pudo completar el cierre de caja.");
                 }
             },
@@ -1360,7 +1537,7 @@ $(function () {
                 let mensajeError = "Error al procesar cierre de caja.";
 
                 if (status === 'timeout') {
-                    mensajeError = "El proceso de cierre tardó demasiado tiempo. Por favor, contacte al administrador para verificar el estado de la caja.";
+                    mensajeError = "El proceso de cierre tardÃ³ demasiado tiempo. Por favor, contacte al administrador para verificar el estado de la caja.";
                 }  else if (xhr.status === 500) {
                     mensajeError = "Error interno del servidor al procesar el cierre. Contacte al administrador.";
                 } else if (xhr.responseJSON && xhr.responseJSON.mensaje) {
@@ -1420,8 +1597,8 @@ $(function () {
         const mensajeResumen = `
             <div class="text-center">
                 <i class='bx bx-check-circle text-success' style='font-size: 3.5rem;'></i>
-                <h4 class="mt-3 mb-3 text-success">✅ Cierre de Caja Exitoso</h4>
-                <p class="text-muted mb-3">${response.mensaje || 'El proceso se completó correctamente'}</p>
+                <h4 class="mt-3 mb-3 text-success">âœ… Cierre de Caja Exitoso</h4>
+                <p class="text-muted mb-3">${response.mensaje || 'El proceso se completÃ³ correctamente'}</p>
                 <hr>
             </div>
             ${tablaResumen}
@@ -1444,7 +1621,7 @@ $(function () {
                 if (menuModal) menuModal.hide();
 
                 setTimeout(() => {
-                    console.log("🚪 Redirigiendo al login después del cierre...");
+                    console.log("ðŸšª Redirigiendo al login despuÃ©s del cierre...");
                     window.location.href = logout;
                 }, 500);
             },
@@ -1505,8 +1682,8 @@ $(function () {
 
     //        AbrirMensaje(
     //            "Confirmar Salida",
-    //            "¿Está seguro de que desea cancelar el cambio de punto de venta?<br><br>" +
-    //            "<small class='text-muted'><i class='bx bx-info-circle'></i> Si cancela, será redirigido al inicio de sesión.</small>",
+    //            "Â¿EstÃ¡ seguro de que desea cancelar el cambio de punto de venta?<br><br>" +
+    //            "<small class='text-muted'><i class='bx bx-info-circle'></i> Si cancela, serÃ¡ redirigido al inicio de sesiÃ³n.</small>",
     //            function (respuesta) {
     //                $("#msjModal").modal("hide");
 
@@ -1516,7 +1693,7 @@ $(function () {
     //                }
     //            },
     //            true,
-    //            ["Sí, Salir", "No, Continuar"],
+    //            ["SÃ­, Salir", "No, Continuar"],
     //            "warn!",
     //            null
     //        );
@@ -1527,12 +1704,12 @@ $(function () {
 });
 
 /**
- * ✅ NUEVO: Actualiza la información del footer en el modal del menú.
+ * âœ… NUEVO: Actualiza la informaciÃ³n del footer en el modal del menÃº.
  * @param {object} datos - El objeto 'datos' de la respuesta AJAX.
  */
 function actualizarFooterMenu(datos) {
     if (!datos) {
-        console.warn("⚠️ No se proporcionaron datos para actualizar el footer del menú.");
+        console.warn("âš ï¸ No se proporcionaron datos para actualizar el footer del menÃº.");
         return;
     }
 
@@ -1542,3 +1719,6 @@ function actualizarFooterMenu(datos) {
     $("#lblFechaHora").text(datos.caja.caja.caja_apertura || '---');
     
 }
+
+
+

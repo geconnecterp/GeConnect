@@ -1,4 +1,4 @@
-﻿@{
+@{
     ViewData["Title"] = "Facturación";
     Layout = "~/Views/Shared/_Layout.cshtml";
     BusquedaProducto busquedaProducto = new();
@@ -60,7 +60,11 @@
 
 
 @* @await Html.PartialAsync("_IdentificarClienteModal") *@
-@await Html.PartialAsync("~/Areas/Facturacion/Views/Shared/_IdentificarClienteModal.cshtml", null, new ViewDataDictionary(ViewData) { { "Modulo", @modulo } })
+@{
+    var identificarClienteModalViewData = new ViewDataDictionary(ViewData);
+    identificarClienteModalViewData["Modulo"] = modulo;
+}
+@await Html.PartialAsync("~/Areas/Facturacion/Views/Shared/_IdentificarClienteModal.cshtml", null, identificarClienteModalViewData)
 
 @await Html.PartialAsync("_ClienteUpdate")
 @await Html.PartialAsync("~/Areas/Facturacion/Views/ProductoFact/_productoFactura.cshtml")

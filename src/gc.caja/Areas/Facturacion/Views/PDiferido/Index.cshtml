@@ -1,4 +1,4 @@
-﻿@*
+@*
     ✅ ACTUALIZADO v3.1: Vista principal para el módulo de Cobranza Diferida.
     
     CAMBIO RADICAL v3.0:
@@ -56,7 +56,11 @@
 </div>
 
 @* Modales necesarios *@
-@await Html.PartialAsync("~/Areas/Facturacion/Views/Shared/_IdentificarClienteModal.cshtml", null, new ViewDataDictionary(ViewData) { { "Modulo", @modulo } })
+@{
+    var identificarClienteModalViewData = new ViewDataDictionary(ViewData);
+    identificarClienteModalViewData["Modulo"] = modulo;
+}
+@await Html.PartialAsync("~/Areas/Facturacion/Views/Shared/_IdentificarClienteModal.cshtml", null, identificarClienteModalViewData)
 @await Html.PartialAsync("_verFacturasPendientes")
 @await Html.PartialAsync("_FacturasPendientesModal")
 

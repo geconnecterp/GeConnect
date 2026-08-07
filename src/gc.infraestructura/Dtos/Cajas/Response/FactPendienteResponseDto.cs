@@ -35,6 +35,12 @@ namespace gc.infraestructura.Dtos.Cajas.Response
 
         public string carga_obligatoria { get; set; } = string.Empty;
 
+        public string caja_nro_proceso { get; set; } = string.Empty;
+        public short caja_nro_cierre { get; set; }
+        public int caja_nro_operacion { get; set; }
+
         public bool seleccionado { get; set; }
+
+
     }
 }
