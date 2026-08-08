@@ -67,7 +67,7 @@ namespace gc.pocket.site.Areas.Gestion.Controllers
         }
 
         [HttpPost]
-        public async Task<JsonResult> BusquedaBase(string busqueda,bool validarEstado=false, bool acumularProductos = false,string modulo = "RPR")
+        public async Task<JsonResult> BusquedaBase(string busqueda, bool validarEstado = false, bool acumularProductos = false, string modulo = "GENERAL")
         {
             try
             {                
@@ -78,6 +78,12 @@ namespace gc.pocket.site.Areas.Gestion.Controllers
                 }
 
                 InicializaVariablesBusquedaBase();
+                var moduloNormalizado = string.IsNullOrWhiteSpace(modulo)
+                    ? "GENERAL"
+                    : modulo.Trim().ToUpperInvariant();
+
+                _logger.LogInformation("Búsqueda base de producto. Búsqueda: {Busqueda}; módulo: {Modulo}; validar estado: {ValidarEstado}",
+                    busqueda, moduloNormalizado, validarEstado);
 
                 if (busqueda.Trim().Length < 6)
                 {
@@ -96,6 +102,9 @@ namespace gc.pocket.site.Areas.Gestion.Controllers
 
                 if (producto != null && !string.IsNullOrEmpty(producto.P_id))
                 {
+                    _logger.LogInformation("Producto encontrado en búsqueda base. Producto: {Producto}; módulo: {Modulo}; estado: {Estado}",
+                        producto.P_id, moduloNormalizado, producto.P_activo);
+
                     bool warn = false;
                     string msg = string.Empty;
                     //validación de Estado
@@ -104,27 +113,43 @@ namespace gc.pocket.site.Areas.Gestion.Controllers
                         //se valida que no esta activo. Valores Noactivo Discontinuo
                         return Json(new { error = true, msg = $"El producto {producto.P_desc} se encuentra {producto.Msj}" });
                     }
-                    //Validación si pertenece o no al proveedor
-                    if (!modulo.Trim().ToUpper().Equals("INV"))
+                    // Las reglas de pertenencia dependen del módulo. No deben inferirse
+                    // a partir de validarEstado porque son controles de negocio distintos.
+                    if (moduloNormalizado.Equals("RTI"))
                     {
-                        if (modulo.ToUpper().Equals("RTI"))
+                        _logger.LogInformation("Validando pertenencia del producto {Producto} al remito RTI {Remito}",
+                            producto.P_id, RemitoActual.re_compte);
+
+                        var resp = await _remitoSv.VerificaProductoEnRemito(rm: RemitoActual.re_compte, pId: producto.P_id, TokenCookie);
+                        if (resp.resultado != 0)
                         {
-                            //verificamos si el producto se encuentra en el remito.
-                            var resp = await _remitoSv.VerificaProductoEnRemito(rm: RemitoActual.re_compte, pId: producto.P_id, TokenCookie);
-                            if (resp.resultado != 0)
-                            {
-                                return Json(new { error = true, msg = resp.resultado_msj });
-                            }
+                            _logger.LogWarning("Producto rechazado por validación RTI. Producto: {Producto}; remito: {Remito}; mensaje: {Mensaje}",
+                                producto.P_id, RemitoActual.re_compte, resp.resultado_msj);
+                            return Json(new { error = true, msg = resp.resultado_msj });
                         }
-                        else
+                    }
+                    else if (moduloNormalizado.Equals("RPR"))
+                    {
+                        var autorizacionRpr = AutorizacionPendienteSeleccionada;
+                        if (string.IsNullOrWhiteSpace(autorizacionRpr.Cta_id))
                         {
-                            if (AutorizacionPendienteSeleccionada != null &&
-                                !AutorizacionPendienteSeleccionada.Cta_id.Equals(producto.Cta_id) && validarEstado)
-                            {
-                                warn = true;
-                                msg = $"El Producto NO pertenece al actual proveedor. Pertenece al Proveedor {producto.Cta_denominacion}.";
-                            }
+                            _logger.LogWarning("No se pudo validar proveedor RPR porque no existe una autorización seleccionada. Producto: {Producto}",
+                                producto.P_id);
+                            return Json(new { error = true, msg = "No se pudo determinar la autorización RPR actual. Reingrese al módulo." });
                         }
+
+                        if (!string.Equals(autorizacionRpr.Cta_id, producto.Cta_id, StringComparison.OrdinalIgnoreCase))
+                        {
+                            warn = true;
+                            msg = $"El Producto NO pertenece al actual proveedor. Pertenece al Proveedor {producto.Cta_denominacion}.";
+                            _logger.LogWarning("Producto de otro proveedor en RPR. Producto: {Producto}; proveedor RPR: {ProveedorRpr}; proveedor producto: {ProveedorProducto}",
+                                producto.P_id, autorizacionRpr.Cta_id, producto.Cta_id);
+                        }
+                    }
+                    else
+                    {
+                        _logger.LogInformation("El módulo {Modulo} no requiere validación de proveedor o remito para el producto {Producto}",
+                            moduloNormalizado, producto.P_id);
                     }
 
                     //se resguarda el producto recien buscado.
