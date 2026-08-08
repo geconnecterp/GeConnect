@@ -178,7 +178,7 @@ namespace gc.api.core.Servicios.Reportes
 
 			var t_fecha_texto = GetTipoTexto(tipo_fecha);
 			var filtros = GetCadenaDeEstadosSeleccionados(solicitud);
-			titulo = $"Listado de Cheques {t_fecha_texto} desde el {fDesdePrint} hasta el {fHastaPrint} {filtros}";
+			titulo = $"Listado de Cheques {t_fecha_texto}\ndesde el {fDesdePrint} hasta el {fHastaPrint}\n{filtros}";
 
 			return _financieroServicio.GetFinancieroBcoVencChequeEmitidoLista(new FinancieroBcoVencChequeEmitidoListaRequest() 
 			{ 

@@ -173,14 +173,29 @@
 		<div class="row">
 			@if (Model != null && Model.GrillaBcoLibro_Cero != null && Model.GrillaBcoLibro_Cero.ListaDatos != null && Model.GrillaBcoLibro_Cero.ListaDatos.Count > 0)
 			{
-				<div class="table-responsive mt-3">
+				<div class="table-responsive mt-3" style="max-width: 89%;">
 					<table class="table table-bordered mb-0 table-golden" id="tabGrillaCero">
 						<tbody>
 							@foreach (var item in Model.GrillaBcoLibro_Cero.ListaDatos)
 							{
-								var importeFormateado = item.importe < 0 ? $"({Math.Abs(item.importe):N2})" : $"{item.importe:N2}";
+								var concepto = item.concepto ?? "";
+								var idx = concepto.LastIndexOf(" ");
+
+								string textoFijo = "Saldo Extracto al";
+								string fecha = "";
+
+								if (idx > -1)
+								{
+									fecha = concepto.Substring(idx + 1);   // obtiene la fecha
+								}
+
+								var importeFormateado = item.importe < 0
+									? $"({Math.Abs(item.importe):N2})"
+									: $"{item.importe:N2}";
+
 								<tr>
-									<td class="texto-uniforme">@item.concepto</td>
+									<td class="texto-uniforme" style="width:80%;text-align: end;">@textoFijo</td>
+									<td class="texto-uniforme">@fecha</td>
 									<td class="text-end texto-uniforme">@importeFormateado</td>
 								</tr>
 							}

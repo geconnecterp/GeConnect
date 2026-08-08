@@ -154,7 +154,7 @@ namespace gc.api.core.Servicios.Reportes
 			var ctaf_id = solicitud.Parametros.GetValueOrDefault("ctaf_id", "").ToString();
 			var ctaf_desc = solicitud.Parametros.GetValueOrDefault("ctaf_desc", "").ToString();
 			titulo = $"Libro Banco al {fHastaPrint}";
-			subTitulo = $"Cuenta: {ctaf_id} - {ctaf_desc}";
+			subTitulo = $"Cuenta: {ctaf_desc}";
 			return _financieroServicio.GetFinancieroBcoLibro(new FinancieroBcoLibroRequest() 
 			{ 
 				hasta = DateTime.Parse(fHasta),

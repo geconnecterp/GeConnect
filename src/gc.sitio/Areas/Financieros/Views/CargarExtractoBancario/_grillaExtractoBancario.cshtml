@@ -1,80 +1,92 @@
-﻿@using static gc.infraestructura.Helpers.GridHelper
+﻿@using gc.infraestructura.Helpers
+@using static gc.infraestructura.Helpers.GridHelper
 @model CrudExtractoBancarioModel
 @{
-	var alt = true;
-	string clase = string.Empty;
+    var alt = true;
+    string clase = string.Empty;
 }
 <style>
-	.btn-icon-compact {
-		padding: 0.15rem 0.3rem;
-		font-size: 0.7rem;
-		line-height: 1;
-	}
+    /* Asegurar que los botones no inflen la fila */
+    #tbListaCrudExtracto td .btn-icon-compact {
+        height: 16px !important;
+        width: 20px !important;
+        line-height: 16px !important;
+        padding: 0 !important;
+        margin: 0 auto !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
 
-		.btn-icon-compact i {
-			font-size: 0.9rem;
-		}
+        /* Ícono aún más compacto */
+        #tbListaCrudExtracto td .btn-icon-compact i {
+            font-size: 0.70rem !important;
+            line-height: 1 !important;
+            padding: 0 !important;
+            margin: 0 !important;
+        }
 
-	#tbListaCrudExtracto td,
-	#tbListaCrudExtracto th {
-		padding-top: 0.25rem;
-		padding-bottom: 0.25rem;
-		font-size: 0.75rem;
-	}
+    #tbListaCrudExtracto td,
+    #tbListaCrudExtracto th {
+        padding-top: 0.10rem !important;
+        padding-bottom: 0.10rem !important;
+        font-size: 0.70rem !important;
+        line-height: 1 !important;
+    }
 </style>
 <div class="table-responsive table-wrapper-500-full-width" id="containerCrudExtracto">
-	<table class="table table-bordered table-hover table-golden" id="tbListaCrudExtracto">
-		<thead>
-			<tr class="header">
-				<th class="text-center" scope="col">Fecha Mov.</th>
-				<th class="text-center" scope="col">Fecha</th>
-				<th class="text-center" scope="col">Código Mov.</th>
-				<th class="text-center" scope="col">Origen Mov.</th>
-				<th class="text-center" scope="col">N° Comprobante</th>
-				<th class="text-center" scope="col">Debe</th>
-				<th class="text-center" scope="col">Haber</th>
-				<th class="text-center" scope="col">Saldo</th>
-				<th class="text-center" scope="col">Conciliado</th>
-				<th class="text-center" scope="col">Ctrl. Cierre</th>
-				<th style="width:5%;"></th>
-			</tr>
-		</thead>
-		<tbody>
-			@if (Model != null && Model.GrillaExtracto != null && Model.GrillaExtracto.ListaDatos != null && Model.GrillaExtracto.ListaDatos.Count > 0)
-			{
-				@foreach (var item in Model.GrillaExtracto.ListaDatos)
-				{
-					if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
-					<tr class="@clase" data-orden="@item.orden" data-extr-id="@item.extr_id" data-ctaf-id="@item.ctaf_id" onclick="selectItemExtracto(this);">
-						<td class="@Model.GrillaExtracto.ObtenerClase(item.ext_fecha_movi)">@Model.GrillaExtracto.FormatearDato(item.ext_fecha_movi, FormatDato.Fecha)</td>
-						<td class="@Model.GrillaExtracto.ObtenerClase(item.ext_fecha)">@Model.GrillaExtracto.FormatearDato(item.ext_fecha, FormatDato.Fecha)</td>
-						<td class="@Model.GrillaExtracto.ObtenerClase(item.extr_id)">@Model.GrillaExtracto.FormatearDato(item.extr_id, FormatDato.Ninguno)</td>
-						<td class="@Model.GrillaExtracto.ObtenerClase(item.extr_desc)">@Model.GrillaExtracto.FormatearDato(item.extr_desc, FormatDato.Ninguno)</td>
-						<td class="@Model.GrillaExtracto.ObtenerClase(item.ext_concepto)">@Model.GrillaExtracto.FormatearDato(item.ext_concepto, FormatDato.Ninguno)</td>
-						<td class="@Model.GrillaExtracto.ObtenerClase(item.ext_debe)">@Model.GrillaExtracto.FormatearDato(item.ext_debe, FormatDato.Monto)</td>
-						<td class="@Model.GrillaExtracto.ObtenerClase(item.ext_haber)">@Model.GrillaExtracto.FormatearDato(item.ext_haber, FormatDato.Monto)</td>
-						<td class="@Model.GrillaExtracto.ObtenerClase(item.ext_saldo)">@Model.GrillaExtracto.FormatearDato(item.ext_saldo, FormatDato.Monto)</td>
-						<td class="@Model.GrillaExtracto.ObtenerClase(item.ext_conciliado) text-center">@Model.GrillaExtracto.FormatearDato(item.ext_conciliado, FormatDato.Ninguno)</td>
-						<td class="@Model.GrillaExtracto.ObtenerClase(item.ctl_cierre) text-center">@Model.GrillaExtracto.FormatearDato(item.ctl_cierre, FormatDato.Ninguno)</td>
-						@if (!item.ext_conciliado_bool && !item.ctl_cierre_bool)
-						{
-							<td class="text-center align-middle">
-								<button type="button" class="btn btn-danger btn-icon-compact" title="Eliminar" onclick="eliminarItem('@item.ctaf_id', '@item.extr_id','@item.orden')">
-									<i class="bx bx-trash"></i>
-								</button>
-							</td>
-						}
-						else
-						{
-							<td class="text-center align-middle">
-								<button type="button" class="btn btn-icon-compact invisible" tabindex="-1">
-									<i class="bx bx-dots-horizontal-rounded"></i>
-								</button>
-							</td>
-						}
-					</tr>
-				}
-			}
-		</tbody>
-	</table>
+    <table class="table table-bordered table-hover table-golden" id="tbListaCrudExtracto">
+        <thead>
+            <tr class="header">
+                <th class="text-center" scope="col">Fecha Mov.</th>
+                <th class="text-center" scope="col">Fecha</th>
+                <th class="text-center" scope="col">Código Mov.</th>
+                <th class="text-center" scope="col">Origen Mov.</th>
+                <th class="text-center" scope="col">N° Comprobante</th>
+                <th class="text-center" scope="col">Debe</th>
+                <th class="text-center" scope="col">Haber</th>
+                <th class="text-center" scope="col">Saldo</th>
+                <th class="text-center" scope="col">Conciliado</th>
+                <th class="text-center" scope="col">Ctrl. Cierre</th>
+                <th style="width:5%;"></th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model != null && Model.GrillaExtracto != null && Model.GrillaExtracto.ListaDatos != null && Model.GrillaExtracto.ListaDatos.Count > 0)
+            {
+                @foreach (var item in Model.GrillaExtracto.ListaDatos)
+                {
+                    if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+                    <tr class="@clase" data-orden="@item.orden" data-extr-id="@item.extr_id" data-ctaf-id="@item.ctaf_id" onclick="selectItemExtracto(this);">
+                        <td class="@Model.GrillaExtracto.ObtenerClase(item.ext_fecha_movi)">@Model.GrillaExtracto.FormatearDato(item.ext_fecha_movi, FormatDato.Fecha)</td>
+                        <td class="@Model.GrillaExtracto.ObtenerClase(item.ext_fecha)">@Model.GrillaExtracto.FormatearDato(item.ext_fecha, FormatDato.Fecha)</td>
+                        <td class="@Model.GrillaExtracto.ObtenerClase(item.extr_id)">@Model.GrillaExtracto.FormatearDato(item.extr_id, FormatDato.Ninguno)</td>
+                        <td class="@Model.GrillaExtracto.ObtenerClase(item.extr_desc)">@Model.GrillaExtracto.FormatearDato(item.extr_desc, FormatDato.Ninguno)</td>
+                        <td class="@Model.GrillaExtracto.ObtenerClase(item.ext_concepto)">@Model.GrillaExtracto.FormatearDato(item.ext_concepto, FormatDato.Ninguno)</td>
+                        <td class="@Model.GrillaExtracto.ObtenerClase(item.ext_debe)">@GridHelper.FormatearDato(item.ext_debe, FormatDato.Monto, true)</td>
+                        <td class="@Model.GrillaExtracto.ObtenerClase(item.ext_haber)">@GridHelper.FormatearDato(item.ext_haber, FormatDato.Monto, true)</td>
+                        <td class="@Model.GrillaExtracto.ObtenerClase(item.ext_saldo)">@GridHelper.FormatearDato(item.ext_saldo, FormatDato.Monto, true)</td>
+                        <td class="@Model.GrillaExtracto.ObtenerClase(item.ext_conciliado) text-center">@Model.GrillaExtracto.FormatearDato(item.ext_conciliado, FormatDato.Ninguno)</td>
+                        <td class="@Model.GrillaExtracto.ObtenerClase(item.ctl_cierre) text-center">@Model.GrillaExtracto.FormatearDato(item.ctl_cierre, FormatDato.Ninguno)</td>
+                        @if (!item.ext_conciliado_bool && !item.ctl_cierre_bool)
+                        {
+                            <td class="text-center align-middle">
+                                <button type="button" class="btn btn-danger btn-icon-compact" title="Eliminar" onclick="eliminarItem('@item.ctaf_id', '@item.extr_id','@item.orden')">
+                                    <i class="bx bx-trash"></i>
+                                </button>
+                            </td>
+                        }
+                        else
+                        {
+                            <td class="text-center align-middle">
+                                <button type="button" class="btn btn-icon-compact invisible" tabindex="-1">
+                                    <i class="bx bx-dots-horizontal-rounded"></i>
+                                </button>
+                            </td>
+                        }
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
 </div>

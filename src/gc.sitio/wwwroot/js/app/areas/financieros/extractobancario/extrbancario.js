@@ -561,7 +561,7 @@ function validarFechas() {
 	if (mDesde.isBefore(mMinima) || mHasta.isBefore(mMinima)) {
 		$desde.val(now);
 		$hasta.val(now);
-		AbrirMensaje("ATENCIÓN", `Las fechas no pueden ser menor a la fecha del extracto (${mMinima})`, function () {
+		AbrirMensaje("ATENCIÓN", `Las fechas no pueden ser menor a la fecha del extracto (${mMinima.format("DD/MM/YYYY")})`, function () {
 			$("#msjModal").modal("hide");
 			return true;
 		}, false, ["Aceptar"], "error!", null);
@@ -574,23 +574,37 @@ function eliminarItem(ctaf_id, extr_id, orden) {
 	var data = {
 		orden
 	};
-	AbrirWaiting();
-	PostGen(data, quitarItemExtractoUrl, function (obj) {
-		CerrarWaiting();
-		if (obj.error === true) {
-			CerrarWaiting();
-			AbrirMensaje("ATENCIÓN", obj.msg, function () {
-				$("#msjModal").modal("hide");
-				return true;
-			}, false, ["Aceptar"], "error!", null);
+	AbrirMensaje("ATENCIÓN", `¿Esta seguro que desea eliminar el registro seleccionado?`, function (e) {
+		$("#msjModal").modal("hide");
+		switch (e) {
+			case "SI": //Confirmar
+				AbrirWaiting();
+				PostGen(data, quitarItemExtractoUrl, function (obj) {
+					CerrarWaiting();
+					if (obj.error === true) {
+						CerrarWaiting();
+						AbrirMensaje("ATENCIÓN", obj.msg, function () {
+							$("#msjModal").modal("hide");
+							return true;
+						}, false, ["Aceptar"], "error!", null);
+					}
+					else {
+						setTimeout(() => {
+							$('#modalAgregarItemExtracto').modal('hide');
+							obtenerListaExtractoBancario();
+						}, 200);
+					}
+				});
+				break;
+			case "NO":
+				break;
+			default: //NO
+				break;
 		}
-		else {
-			setTimeout(() => {
-				$('#modalAgregarItemExtracto').modal('hide');
-				obtenerListaExtractoBancario();
-			}, 200);
-		}
-	});
+		return true;
+
+	}, true, ["Aceptar", "Cancelar"], "question!", null);
+	
 }
 
 function InicializarCamposEnFiltros() {

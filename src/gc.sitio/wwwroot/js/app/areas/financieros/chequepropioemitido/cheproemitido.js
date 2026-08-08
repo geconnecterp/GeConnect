@@ -567,6 +567,11 @@ function verDetalleModificado(ctaf_id, che_emision) {
 
 function verModalDetalleChequeModificar(ctaf_id, che_emision, che_nro, che_fecha, che_anombre) {
 	console.log("Ver detalle de cheque modificar:", ctaf_id, che_emision, che_nro, che_fecha, che_anombre);
+	window.filaChequeSeleccionada = {
+		ctaf_id,
+		che_emision,
+		che_nro
+	};
 	// Lógica para mostrar modal o cargar datos
 	AbrirWaiting();
 	var datos = { ctaf_id, che_emision, che_nro, che_fecha, che_anombre };
@@ -661,13 +666,40 @@ function ActualizarListaCheques() {
 	PostGenHtml(data, buscarChequesPropiosEmitidosUrl, function (obj) {
 		$("#divChequesPropiosEmitidos").html(obj);
 		restaurarSeleccionados();
+		RestaurarSeleccionCheque();
 		CerrarWaiting();
 		return true
 	});
 }
 
+function RestaurarSeleccionCheque() {
+
+	if (!window.filaChequeSeleccionada) return;
+
+	const { ctaf_id, che_emision, che_nro } = window.filaChequeSeleccionada;
+
+	// Buscar la fila en la nueva grilla
+	const $fila = $("#tbListaDetalleCheques tbody tr")
+		.filter(`[data-ctaf-id='${ctaf_id}'][data-che-emision='${che_emision}'][data-che-nro='${che_nro}']`);
+
+	if ($fila.length) {
+		// Simular selección
+		selectReg($fila[0], 'tbListaDetalleCheques');
+
+		// Scroll automático hacia la fila
+		const cont = document.getElementById("containerChequeEmitidoPropioLista");
+		cont.scrollTop = $fila.position().top - 50;
+	}
+}
+
+
 function verDetalleEntrega(ctaf_id, che_nro, che_emision) {
 	console.log("Ver detalle de cheque:", ctaf_id);
+	window.filaChequeSeleccionada = {
+		ctaf_id,
+		che_emision,
+		che_nro
+	};
 	// Lógica para mostrar modal o cargar datos
 	AbrirMensaje("ATENCIÓN", `¿Esta seguro que desea registrar la entrega el cheque seleccionado? N°: ${che_nro}`, function (e) {
 		$("#msjModal").modal("hide");
@@ -687,6 +719,11 @@ function verDetalleEntrega(ctaf_id, che_nro, che_emision) {
 
 function verDetalleRechazar(ctaf_id, che_nro, che_emision) {
 	console.log("Ver detalle de cheque:", ctaf_id, che_nro, che_emision);
+	window.filaChequeSeleccionada = {
+		ctaf_id,
+		che_emision,
+		che_nro
+	};
 	// Lógica para mostrar modal o cargar datos
 	AbrirMensaje("ATENCIÓN", `¿Esta seguro que desea rechazar el cheque seleccionado? N°: ${che_nro}`, function (e) {
 		$("#msjModal").modal("hide");

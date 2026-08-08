@@ -65,7 +65,7 @@ namespace gc.sitio.Areas.Financieros.Controllers
 				if (!auth.Item1 || auth.Item2 < DateTime.Now)
 					return RedirectToAction("Login", "Token", new { area = "seguridad" });
 
-				var titulo = "BANCOS";
+				var titulo = "CONSULTA LIBRO BANCO";
 				ViewData["Titulo"] = titulo;
 
 				CargarDatosIniciales(model);

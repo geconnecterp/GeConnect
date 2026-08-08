@@ -1,4 +1,5 @@
 ﻿@model HistoricoLibroModel
+@using gc.infraestructura.Helpers
 @using static gc.infraestructura.Helpers.GridHelper
 @{
     var alt = true;
@@ -83,12 +84,12 @@
                 <thead>
                     <tr class="header">
                         <th style="width: 5%;" class="text-sm-center" scope="col">N° MOV.</th>
-                        <th style="width: 9%;" class="text-sm-center" scope="col">FECHA</th>
-                        <th style="width: 9%;" class="text-sm-center" scope="col">VENCIMIENTO</th>
-                        <th style="width: 9%;" class="text-sm-center" scope="col">PERCIBIDO</th>
-                        <th style="width: 30%;" class="text-sm-center" scope="col">CONCEPTO</th>
-                        <th style="width: 15%;" class="text-sm-center" scope="col">DEBE</th>
-                        <th style="width: 15%;" class="text-sm-center" scope="col">HABER</th>
+                        <th style="width: 8%;" class="text-sm-center" scope="col">FECHA</th>
+                        <th style="width: 8%;" class="text-sm-center" scope="col">VENCIMIENTO</th>
+                        <th style="width: 8%;" class="text-sm-center" scope="col">PERCIBIDO</th>
+                        <th style="width: 35%;" class="text-sm-center" scope="col">CONCEPTO</th>
+                        <th style="width: 10%;" class="text-sm-center" scope="col">DEBE</th>
+                        <th style="width: 10%;" class="text-sm-center" scope="col">HABER</th>
                         <th style="width: 8%;" class="text-sm-center" scope="col">CONCILIADO</th>
                     </tr>
                 </thead>
@@ -105,8 +106,8 @@
                                 <td class="@Model.GrillaHistorico.ObtenerClase(item.fecha_cheque) align-center">@Model.GrillaHistorico.FormatearDato(item.fecha_cheque, FormatDato.Fecha)</td>
                                 <td class="@Model.GrillaHistorico.ObtenerClase(item.cf_fecha_concilia) align-center">@Model.GrillaHistorico.FormatearDato(item.cf_fecha_concilia, FormatDato.Fecha)</td>
                                 <td class="@Model.GrillaHistorico.ObtenerClase(item.cf_concepto) align-left">@Model.GrillaHistorico.FormatearDato(item.cf_concepto, FormatDato.Ninguno)</td>
-                                <td class="@Model.GrillaHistorico.ObtenerClase(item.cf_debe) align-right">@Model.GrillaHistorico.FormatearDato(item.cf_debe, FormatDato.Monto)</td>
-                                <td class="@Model.GrillaHistorico.ObtenerClase(item.cf_haber) align-right">@Model.GrillaHistorico.FormatearDato(item.cf_haber, FormatDato.Monto)</td>
+                                <td class="@Model.GrillaHistorico.ObtenerClase(item.cf_debe) align-right">@GridHelper.FormatearDato(item.cf_debe, FormatDato.Monto, true)</td>
+                                <td class="@Model.GrillaHistorico.ObtenerClase(item.cf_haber) align-right">@GridHelper.FormatearDato(item.cf_haber, FormatDato.Monto, true)</td>
                                 <td class="align-center">
                                     @if (item.strConciliado)
                                     {

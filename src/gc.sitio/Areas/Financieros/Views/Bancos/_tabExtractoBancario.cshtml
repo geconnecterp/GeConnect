@@ -1,4 +1,5 @@
 ﻿@model ExtractoBancarioModel
+@using gc.infraestructura.Helpers
 @using static gc.infraestructura.Helpers.GridHelper
 @{
     var alt = true;
@@ -104,9 +105,9 @@
                                 <td class="@Model.GrillaExtracto.ObtenerClase(item.extr_id) align-center">@Model.GrillaExtracto.FormatearDato(item.extr_id, FormatDato.Ninguno)</td>
                                 <td class="@Model.GrillaExtracto.ObtenerClase(item.extr_desc) align-left">@Model.GrillaExtracto.FormatearDato(item.extr_desc, FormatDato.Ninguno)</td>
                                 <td class="@Model.GrillaExtracto.ObtenerClase(item.ext_concepto) align-left">@Model.GrillaExtracto.FormatearDato(item.ext_concepto, FormatDato.Ninguno)</td>
-                                <td class="@Model.GrillaExtracto.ObtenerClase(item.ext_debe) align-right">@Model.GrillaExtracto.FormatearDato(item.ext_debe, FormatDato.Monto)</td>
-                                <td class="@Model.GrillaExtracto.ObtenerClase(item.ext_haber) align-right">@Model.GrillaExtracto.FormatearDato(item.ext_haber, FormatDato.Monto)</td>
-                                <td class="@Model.GrillaExtracto.ObtenerClase(item.ext_saldo) align-right">@Model.GrillaExtracto.FormatearDato(item.ext_saldo, FormatDato.Monto)</td>
+                                <td class="@Model.GrillaExtracto.ObtenerClase(item.ext_debe) align-right">@GridHelper.FormatearDato(item.ext_debe, FormatDato.Monto, true)</td>
+                                <td class="@Model.GrillaExtracto.ObtenerClase(item.ext_haber) align-right">@GridHelper.FormatearDato(item.ext_haber, FormatDato.Monto, true)</td>
+                                <td class="@Model.GrillaExtracto.ObtenerClase(item.ext_saldo) align-right">@GridHelper.FormatearDato(item.ext_saldo, FormatDato.Monto, true)</td>
                                 <td class="align-center">
                                     @if (item.strConciliado)
                                     {

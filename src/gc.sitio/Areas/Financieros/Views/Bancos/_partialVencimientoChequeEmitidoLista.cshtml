@@ -1,7 +1,8 @@
 ﻿@model VencimientoChequeEmitidoModel
+@using gc.infraestructura.Helpers
 @using static gc.infraestructura.Helpers.GridHelper
 @{
-	var alt = true;
+    var alt = true;
 	string clase = string.Empty;
 	//string sortDirInv = Model.GrillaHistorico.SortDir.Equals("ASC") ? "DESC" : "ASC";
 }
@@ -79,12 +80,12 @@
 	<table class="table table-bordered table-sm mb-0 table-golden" id="tbGridChequesDetalle">
 		<thead>
 			<tr class="header">
-				<th class="align-center">Fec. Vto.</th>
-				<th class="align-center">Fec. Emi.</th>
-				<th class="align-center">N° Cheque</th>
+				<th class="align-center" style="width: 8%;">Fec. Vto.</th>
+				<th class="align-center" style="width: 8%;">Fec. Emi.</th>
+				<th class="align-center" style="width: 8%;">N° Cheque</th>
 				<th class="align-center">A Nombre de</th>
-				<th class="align-center">Estado</th>
-				<th class="align-center">Importe</th>
+				<th class="align-center" style="width: 10%;">Estado</th>
+				<th class="align-center" style="width: 12%;">Importe</th>
 			</tr>
 		</thead>
 		<tbody>
@@ -98,8 +99,8 @@
 						<td class="@Model.GrillaChequesDetalle.ObtenerClase(item.che_fecha_emi) align-center cell-fit-content">@Model.GrillaChequesDetalle.FormatearDato(item.che_fecha_emi, FormatDato.Fecha)</td>
 						<td class="@Model.GrillaChequesDetalle.ObtenerClase(item.che_nro) align-center cell-fit-content">@Model.GrillaChequesDetalle.FormatearDato(item.che_nro, FormatDato.Ninguno)</td>
 						<td class="@Model.GrillaChequesDetalle.ObtenerClase(item.che_anombre) align-left cell-fit-content">@Model.GrillaChequesDetalle.FormatearDato(item.che_anombre, FormatDato.Ninguno)</td>
-						<td class="@Model.GrillaChequesDetalle.ObtenerClase(item.che_estado_desc) align-center cell-fit-content">@Model.GrillaChequesDetalle.FormatearDato(item.che_estado_desc, FormatDato.Ninguno)</td>
-						<td class="@Model.GrillaChequesDetalle.ObtenerClase(item.che_importe) align-right cell-fit-content">@Model.GrillaChequesDetalle.FormatearDato(item.che_importe, FormatDato.Monto)</td>
+						<td class="@Model.GrillaChequesDetalle.ObtenerClase(item.che_estado_desc) align-left cell-fit-content">@Model.GrillaChequesDetalle.FormatearDato(item.che_estado_desc, FormatDato.Ninguno)</td>
+						<td class="@Model.GrillaChequesDetalle.ObtenerClase(item.che_importe) align-right cell-fit-content">@GridHelper.FormatearDato(item.che_importe, FormatDato.Monto, true)</td>
 					</tr>
 				}
 			}

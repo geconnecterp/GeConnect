@@ -2,6 +2,16 @@
 @{
 	var movi = Model.Movimiento;
 }
+<style>
+	.label-block-120 {
+		width: 100px; /* Ajustá según tu estética */
+		display: flex;
+		align-items: center;
+		justify-content: flex-end; /* Texto alineado a la derecha */
+		white-space: nowrap; /* Evita saltos de línea */
+		font-weight: 500;
+	}
+</style>
 @Html.Hidden("orden", Model.orden)
 @Html.Hidden("abm", Model.abm)
 <div class="modal-header">
@@ -15,7 +25,7 @@
 				<div class="row col-12">
 					<div class="col-6">
 						<div class="input-group input-group-sm mt-2">
-							<span class="input-group-text" id="lbIdDesde">Fecha Mov.:</span>
+							<span class="input-group-text label-block-120" id="lbIdDesde">Fecha Mov.:</span>
 							@if (Model.abm != "A")
 							{
 								<input type="date" class="form-control inputEditable" asp-for="Fecha_Movi" style="background-color:rgb(251,255,195);font-weight:900;" disabled/>
@@ -43,9 +53,9 @@
 					</div>
 				</div>
 				<div class="row col-12">
-					<div class="col-6">
+					<div class="col-6" style="padding-left: 0px;padding-right: 25px;">
 						<div class="input-group input-group-sm mt-2">
-							<span class="input-group-text" id="lbIdDesde">Fecha Ext.:</span>
+							<span class="input-group-text label-block-120" id="lbIdDesde">Fecha Ext.:</span>
 							@if (Model.abm != "A")
 							{
 								<input type="date" class="form-control inputEditable" asp-for="Fecha" style="background-color:rgb(251,255,195);font-weight:900;" disabled />
@@ -58,17 +68,17 @@
 					</div>
 				</div>
 				<div class="input-group input-group-sm mt-2">
-					<span class="input-group-text fixed-lbl-for-abm-100">Movimiento: </span>
+					<span class="input-group-text label-block-120">Movimiento: </span>
 					@Html.DropDownListFor(m => m.selected, movi, "Seleccionar...", new { @id = "listaMovimientos", @class = "form-control activable" })
 				</div>
 				<div class="input-group input-group-sm mt-2">
-					<span class="input-group-text">Comprobante: </span>
-					<input type="text" asp-for="Comprobante" class="form-control activable inputEditable" />
+					<span class="input-group-text label-block-120">Comprobante: </span>
+					<input type="text" asp-for="Comprobante" class="form-control activable inputEditable" maxlength="20" />
 				</div>
 				<div class="row col-12">
 					<div class="col-6" style="padding-left: 0px;">
 						<div class="input-group input-group-sm mt-2">
-							<span class="input-group-text">Debe: </span>
+							<span class="input-group-text label-block-120">Debe: </span>
 							<input type="text" asp-for="Debe" class="form-control activable inputEditable" />
 						</div>
 					</div>
@@ -77,7 +87,7 @@
 				<div class="row col-12">
 					<div class="col-6" style="padding-left: 0px;">
 						<div class="input-group input-group-sm mt-2">
-							<span class="input-group-text">Haber: </span>
+							<span class="input-group-text label-block-120">Haber: </span>
 							<input type="text" asp-for="Haber" class="form-control activable inputEditable" />
 						</div>
 					</div>
@@ -88,10 +98,10 @@
 	</div>
 </div>
 <div class="modal-footer">
-	<button type="button" class="btn btn-success btn-sm mt-1 me-1" id="btnConfirmarAgregarExtracto">
-		<i class="bx bx-badge-check"></i> Confirmar
+	<button type="button" class="btn btn-success btn-sm mt-1 me-1" id="btnConfirmarAgregarExtracto" style="width:10px;">
+		<i class="bx bx-badge-check"></i> Cargar
 	</button>
-	<button type="button" class="btn btn-outline-secondary btn-sm mt-1 me-1" data-bs-dismiss="modal">
+	<button type="button" class="btn btn-outline-secondary btn-sm mt-1 me-1" data-bs-dismiss="modal" style="width:10px;">
 		<i class="bx bx-log-out-circle"></i> Cerrar
 	</button>
 </div>

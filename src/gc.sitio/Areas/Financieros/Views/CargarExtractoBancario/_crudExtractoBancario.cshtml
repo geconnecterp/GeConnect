@@ -1,26 +1,83 @@
-﻿@using static gc.infraestructura.Helpers.GridHelper
+﻿@using gc.infraestructura.Helpers
+@using static gc.infraestructura.Helpers.GridHelper
 @model CrudExtractoBancarioModel
 @{
 	var alt = true;
 	string clase = string.Empty;
 }
 <style>
-	.btn-icon-compact {
-		padding: 0.15rem 0.3rem;
-		font-size: 0.7rem;
-		line-height: 1;
+	/* Asegurar que los botones no inflen la fila */
+	#tbListaCrudExtracto td .btn-icon-compact {
+		height: 16px !important;
+		width: 20px !important;
+		line-height: 16px !important;
+		padding: 0 !important;
+		margin: 0 auto !important;
+		display: flex !important;
+		align-items: center !important;
+		justify-content: center !important;
 	}
 
-		.btn-icon-compact i {
-			font-size: 0.9rem;
+		/* Ícono aún más compacto */
+		#tbListaCrudExtracto td .btn-icon-compact i {
+			font-size: 0.70rem !important;
+			line-height: 1 !important;
+			padding: 0 !important;
+			margin: 0 !important;
 		}
 
-	#tbListaCrudExtracto td,
-	#tbListaCrudExtracto th {
-		padding-top: 0.25rem;
-		padding-bottom: 0.25rem;
-		font-size: 0.75rem;
+	#tbListaCrudExtracto td {
+		padding-top: 0.10rem !important;
+		padding-bottom: 0.10rem !important;
+		font-size: 0.70rem !important;
+		line-height: 1 !important;
 	}
+
+	/* El contenedor debe ser el scroll real y generar contexto */
+	#containerCrudExtracto {
+		position: relative;
+		/* height: 600px;
+				max-height: 600px; */
+		max-height: 60vh; /* ocupa como máximo el 80% de la altura visible */
+		height: auto; /* deja que se ajuste dinámicamente */
+		overflow-y: auto; /* vertical */
+		overflow-x: auto; /* horizontal si hace falta */
+		z-index: auto; /* no fuerza stacking context */
+	}
+
+	/* Evitar collapse para que sticky funcione mejor en thead/th */
+	.table-golden {
+		border-collapse: separate;
+		border-spacing: 0;
+		table-layout: fixed; /* estabiliza anchos con tus width% */
+	}
+
+		/* Fijar el thead y darle fondo del tema */
+		.table-golden thead {
+			position: sticky;
+			top: 0;
+			z-index: 1; /* suficiente para estar sobre las filas */
+			background: linear-gradient(to bottom, #b8860b, #daa520) !important;
+			color: #fff !important;
+		}
+
+			/* Redundancia intencional: asegurar cada th sticky y el mismo fondo */
+			.table-golden thead th {
+				position: sticky;
+				top: 0;
+				z-index: 4;
+				background: linear-gradient(to bottom, #b8860b, #daa520);
+				color: #fff;
+				box-shadow: 0 1px 0 rgba(0,0,0,0.05), 0 2px 2px rgba(0,0,0,0.04);
+				background-clip: padding-box; /* evita “sangrados” con border-spacing */
+			}
+
+			/* Alinear colores: si tu app usa dorado para cabecera */
+			.table-golden thead,
+			.table-golden thead th {
+				/*background-color: #b8860b;  tu dorado */
+				/* color: #333; */
+			}
 </style>
 <div class="row align-items-center mb-2">
 	<div class="col-12 d-flex justify-content-start">
@@ -31,20 +88,20 @@
 </div>
 <div class="row mt-2">
 	<div class="col-md-10" id="divGridCrudExtracto">
-		<div class="table-responsive table-wrapper-500-full-width" id="containerCrudExtracto">
+		<div class="table-responsive table-wrapper-600-full-width" id="containerCrudExtracto" style="max-height: 600px !important;">
 			<table class="table table-bordered table-hover table-golden" id="tbListaCrudExtracto">
 				<thead>
 					<tr class="header">
-						<th class="text-center" scope="col">Fecha Mov.</th>
-						<th class="text-center" scope="col">Fecha</th>
-						<th class="text-center" scope="col">Código Mov.</th>
-						<th class="text-center" scope="col">Origen Mov.</th>
-						<th class="text-center" scope="col">N° Comprobante</th>
-						<th class="text-center" scope="col">Debe</th>
-						<th class="text-center" scope="col">Haber</th>
-						<th class="text-center" scope="col">Saldo</th>
-						<th class="text-center" scope="col">Conciliado</th>
-						<th class="text-center" scope="col">Ctrl. Cierre</th>
+						<th class="text-center" style="width:6%;">Fecha Mov.</th>
+						<th class="text-center" style="width:6%;">Fecha</th>
+						<th class="text-center" style="width:6%;">Código Mov.</th>
+						<th class="text-center" style="width:20%;">Origen Mov.</th>
+						<th class="text-center" style="width:15%;">N° Comprobante</th>
+						<th class="text-center" style="width:10%;">Debe</th>
+						<th class="text-center" style="width:10%;">Haber</th>
+						<th class="text-center" style="width:10%;">Saldo</th>
+						<th class="text-center" style="width:5%;">Conc.</th>
+						<th class="text-center" style="width:5%;">Ctrl. Cierre</th>
 						<th style="width:5%;"></th>
 					</tr>
 				</thead>
@@ -60,9 +117,9 @@
 								<td class="@Model.GrillaExtracto.ObtenerClase(item.extr_id)">@Model.GrillaExtracto.FormatearDato(item.extr_id, FormatDato.Ninguno)</td>
 								<td class="@Model.GrillaExtracto.ObtenerClase(item.extr_desc)">@Model.GrillaExtracto.FormatearDato(item.extr_desc, FormatDato.Ninguno)</td>
 								<td class="@Model.GrillaExtracto.ObtenerClase(item.ext_concepto)">@Model.GrillaExtracto.FormatearDato(item.ext_concepto, FormatDato.Ninguno)</td>
-								<td class="@Model.GrillaExtracto.ObtenerClase(item.ext_debe)">@Model.GrillaExtracto.FormatearDato(item.ext_debe, FormatDato.Monto)</td>
-								<td class="@Model.GrillaExtracto.ObtenerClase(item.ext_haber)">@Model.GrillaExtracto.FormatearDato(item.ext_haber, FormatDato.Monto)</td>
-								<td class="@Model.GrillaExtracto.ObtenerClase(item.ext_saldo)">@Model.GrillaExtracto.FormatearDato(item.ext_saldo, FormatDato.Monto)</td>
+								<td class="@Model.GrillaExtracto.ObtenerClase(item.ext_debe) text-right">@GridHelper.FormatearDato(item.ext_debe, FormatDato.Monto, true)</td>
+								<td class="@Model.GrillaExtracto.ObtenerClase(item.ext_haber) text-right">@GridHelper.FormatearDato(item.ext_haber, FormatDato.Monto, true)</td>
+								<td class="@Model.GrillaExtracto.ObtenerClase(item.ext_saldo) text-right">@GridHelper.FormatearDato(item.ext_saldo, FormatDato.Monto, true)</td>
 								<td class="@Model.GrillaExtracto.ObtenerClase(item.ext_conciliado) text-center">@Model.GrillaExtracto.FormatearDato(item.ext_conciliado, FormatDato.Ninguno)</td>
 								<td class="@Model.GrillaExtracto.ObtenerClase(item.ctl_cierre) text-center">@Model.GrillaExtracto.FormatearDato(item.ctl_cierre, FormatDato.Ninguno)</td>
 								@if (!item.ext_conciliado_bool && !item.ctl_cierre_bool)
