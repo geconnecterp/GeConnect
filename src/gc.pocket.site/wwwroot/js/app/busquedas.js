@@ -131,7 +131,7 @@ function busquedaAvanzadaProductos(pag) {
     return true;
 }
 
-function buscarProducto(mod = "RPR") {
+function buscarProducto(mod) {
     AbrirWaiting();
     var _post = busquedaProdBaseUrl;
     var valor = $("#Busqueda").val();
@@ -147,19 +147,35 @@ function buscarProducto(mod = "RPR") {
     }
     
     var valEst = false;
+    var moduloSolicitado = mod;
 
-    if (typeof modulo !== 'undefined') {
-        mod = modulo;
+    if ((!moduloSolicitado || moduloSolicitado.trim() === "") && typeof modulo !== "undefined") {
+        moduloSolicitado = modulo;
     }
 
     if (typeof validarEstado !== 'undefined') {
         valEst = validarEstado;
     }
 
-    var datos = { busqueda: valor, validarEstado: valEst, modulo: mod };
+    moduloSolicitado = (moduloSolicitado || "GENERAL").trim().toUpperCase();
+    var datos = { busqueda: valor, validarEstado: valEst, modulo: moduloSolicitado };
+
+    console.info("[Pocket][BusquedaProducto] Solicitando busqueda", {
+        busqueda: valor,
+        modulo: moduloSolicitado,
+        validarEstado: valEst
+    });
 
     PostGen(datos, _post, function (obj) {
         CerrarWaiting();
+
+        console.info("[Pocket][BusquedaProducto] Respuesta recibida", {
+            modulo: moduloSolicitado,
+            error: obj.error === true,
+            advertencia: obj.warn === true,
+            producto: obj.producto ? (obj.producto.p_id || obj.producto.P_id || null) : null,
+            mensaje: obj.msg || null
+        });
 
         if (obj.error === true) {
             AbrirMensaje("ATENCIÓN", obj.msg, function () {
