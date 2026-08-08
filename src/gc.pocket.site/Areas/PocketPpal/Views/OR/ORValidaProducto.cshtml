@@ -55,6 +55,8 @@
         var productoActualOR = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(producto));
         var funcionBusquedaAvanzada = false;
         var busquedaProdBaseUrl = "@Url.Action("BusquedaBase", "producto", new { area = "gestion" })";
+        var modulo = "OR";
+        var validarEstado = false;
         var validarProductoIngresadoUrl = "@Url.Action("ValidarProductoIngresado", "or", new { area = "pocketppal" })";
         var buscarFechaVtoUrl = "@Url.Action("BuscarFechaVto", "trint", new { area = "pocketppal" })";
         var ResguardarProductoCarritoORUrl = "@Url.Action("ResguardarProductoCarritoOR", "or", new { area = "pocketppal" })";
