@@ -214,10 +214,11 @@ function cargarProductosRTI02() {
 
     var _post = reguardarProductoEnListaUrl;
     var datos = null;
-    var up = $("#up").val();
+    console.info("[Pocket][RTI] Preparando carga de producto");
+    var up = NormalizarNumeroEntrada($("#up").val(), "RTI.unidadesPorBulto");
     var vto = null;
-    var box = $("#box").val();
-    var un = $("#unid").val();
+    var box = NormalizarNumeroEntrada($("#box").val(), "RTI.bultos");
+    var un = NormalizarNumeroEntrada($("#unid").val(), "RTI.unidadesSueltas");
     if (productoBase.p_con_vto !== "N") {
         vto = $("#fvto").val();
         datos = { up, vto, bulto: box, unidad: un };

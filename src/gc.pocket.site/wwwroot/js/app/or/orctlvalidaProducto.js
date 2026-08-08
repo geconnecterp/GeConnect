@@ -169,9 +169,10 @@ function agregaProductoAListaOrCtl() {
 
     // Obtener valores de los controles
     const upId = productoBase.up_id;
-    const up = parseInt($("#up").val()) || 0;
-    const bulto = parseInt($("#box").val()) || 0;
-    const unid = parseFloat($("#unid").val()) || 0;
+    console.info("[Pocket][ControlOrdenReparto] Calculando cantidad para el control");
+    const up = parseInt(NormalizarNumeroEntrada($("#up").val(), "ControlOrdenReparto.unidadesPorBulto")) || 0;
+    const bulto = parseInt(NormalizarNumeroEntrada($("#box").val(), "ControlOrdenReparto.bultos")) || 0;
+    const unid = parseFloat(NormalizarNumeroEntrada($("#unid").val(), "ControlOrdenReparto.unidadesSueltas")) || 0;
     const fv = $("#fvto").val();
     const pId = productoBase.p_id;
     const pDesc = productoBase.p_desc || '';

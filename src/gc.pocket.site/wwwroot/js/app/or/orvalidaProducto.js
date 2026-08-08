@@ -402,9 +402,10 @@ function cargarCarritoOR() {
     if (desarma === true) {
         var upId = productoBase.up_id;
         var cantidad = 0;
-        var up = parseInt($("#up").val());
-        var bulto = parseInt($("#box").val());
-        var unid = parseFloat($("#unid").val())
+        console.info("[Pocket][OrdenReparto] Calculando cantidad para el carrito");
+        var up = parseInt(NormalizarNumeroEntrada($("#up").val(), "OrdenReparto.unidadesPorBulto"));
+        var bulto = parseInt(NormalizarNumeroEntrada($("#box").val(), "OrdenReparto.bultos"));
+        var unid = parseFloat(NormalizarNumeroEntrada($("#unid").val(), "OrdenReparto.unidadesSueltas"))
         var fv = $("#fvto").val();
         if (upId === "07") {
             cantidad = (up * bulto) + unid;
