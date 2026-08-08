@@ -1,6 +1,6 @@
 ﻿$(function () {
 	CerrarWaiting();
-	ValidarTipoTR();
+	//ValidarTipoTR();
 });
 
 function regresarATRLista() {
