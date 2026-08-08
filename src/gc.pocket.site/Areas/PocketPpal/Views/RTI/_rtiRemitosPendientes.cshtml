@@ -7,15 +7,17 @@
     string sortDirInv = Model.SortDir.Equals("ASC") ? "DESC" : "ASC";
     int cont = 0;
 }
-<div class="table-responsive table-wrapper">
-    <table class="table table-sm mb-0 table-hover table-wrapper-fixed-head" id="tbRemPend">
-        <thead class=" table-dark">
+<div class="grid-golden h-100">
+    <div class="grid-golden-body p-0">
+    <div class="table-responsive table-wrapper">
+    <table class="table table-sm mb-0 table-hover table-wrapper-fixed-head table-golden" id="tbRemPend">
+        <thead class="sticky-top table-golden-header-compact">
             <tr class="header">
-                <th scope="col" style="width:1%; display:none"></th>
-                <th scope="col">Remito N°</th>
-                <th scope="col">TR N°</th>
-                <th scope="col">Suc.Origen</th>
-                <th scope="col">Fecha</th>
+                <th scope="col" class="th-compact" style="width:1%; display:none"></th>
+                <th scope="col" class="th-compact">Remito N°</th>
+                <th scope="col" class="th-compact">TR N°</th>
+                <th scope="col" class="th-compact">Suc.Origen</th>
+                <th scope="col" class="th-compact">Fecha</th>
                 @* <th scope="col"></th> *@
             </tr>
         </thead>
@@ -26,11 +28,11 @@
                 if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
 
                 <tr class="@clase" onclick="seleccionaRegistroRP(this)">
-                    <td style="display:none;">@cont </td>
-                    <td style="min-width:200px;">@item.re_compte</td>
-                    <td>@item.ti</td>
-                    <td class="corta-linea">@item.adm_nombre</td>
-                    <td>@item.re_fecha</td>
+                    <td class="td-compact" style="display:none;">@cont </td>
+                    <td class="td-compact" style="min-width:200px;">@item.re_compte</td>
+                    <td class="td-compact">@item.ti</td>
+                    <td class="td-compact corta-linea">@item.adm_nombre</td>
+                    <td class="td-compact">@item.re_fecha</td>
                     @* <td><a asp-action="ResguardarAutorizacionProveedor" asp-controller="rpr" asp-area="pocketppal" class="btn btn-xs btn-secondary" asp-route-rp="@item.Rp"> <i class="bx bxs-send bx-xs"></i></a></td> *@
                 </tr>
             }
@@ -48,4 +50,6 @@
             </tr> *@
         </tbody>
     </table>
+    </div>
+    </div>
 </div>
