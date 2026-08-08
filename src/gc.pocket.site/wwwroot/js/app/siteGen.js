@@ -1,4 +1,20 @@
 ﻿var inventarioSeleccionado = null;
+// Las mascaras muestran la coma como separador de miles (por ejemplo, 1,250),
+// pero los controladores esperan recibir el valor numerico sin formato.
+function NormalizarNumeroEntrada(valor, contexto) {
+    if (valor === null || typeof valor === "undefined") {
+        console.info("[Pocket][Numeros][" + (contexto || "general") + "] Valor sin normalizar", { recibido: valor });
+        return valor;
+    }
+
+    var normalizado = String(valor).replace(/,/g, "");
+    console.info("[Pocket][Numeros][" + (contexto || "general") + "] Normalizacion", {
+        recibido: valor,
+        normalizado: normalizado
+    });
+    return normalizado;
+}
+
 estado = {
     inv_lista: '',
     inv_box: '',

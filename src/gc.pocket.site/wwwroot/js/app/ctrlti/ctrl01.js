@@ -63,10 +63,11 @@ function cargarProductos() {
 
     var _post = reguardarProductoEnListaUrl;
     var datos = null;
-    var up = $("#up").val();
+    console.info("[Pocket][ControlTI] Preparando carga de producto");
+    var up = NormalizarNumeroEntrada($("#up").val(), "ControlTI.unidadesPorBulto");
     var vto = null;
-    var box = $("#box").val();
-    var un = $("#unid").val();
+    var box = NormalizarNumeroEntrada($("#box").val(), "ControlTI.bultos");
+    var un = NormalizarNumeroEntrada($("#unid").val(), "ControlTI.unidadesSueltas");
     if (productoBase.p_con_vto !== "N") {
         vto = $("#fvto").val();
         datos = { up, vto, bulto: box, unidad: un };

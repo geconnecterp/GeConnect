@@ -164,10 +164,11 @@ function cargarProductosASTK() {
 
     var _post = reguardarProductoEnListaUrl;
     var datos = null;
-    var up = $("#up").val();
+    console.info("[Pocket][DevolucionProveedor] Preparando carga de producto");
+    var up = NormalizarNumeroEntrada($("#up").val(), "DevolucionProveedor.unidadesPorBulto");
     var vto = null;
-    var box = $("#box").val();
-    var un = $("#unid").val();
+    var box = NormalizarNumeroEntrada($("#box").val(), "DevolucionProveedor.bultos");
+    var un = NormalizarNumeroEntrada($("#unid").val(), "DevolucionProveedor.unidadesSueltas");
     var sig = $("#chkSigno").is(":checked");
     //if (productoBase.p_con_vto !== "N") {
     //    vto = $("#fvto").val();
