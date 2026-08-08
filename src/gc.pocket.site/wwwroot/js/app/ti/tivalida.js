@@ -131,9 +131,10 @@ function cargarCarrito() {
     if (desarma === true) {
         var upId = productoBase.up_id;
         var cantidad = 0;
-        var up = parseInt($("#up").val());
-        var bulto = parseInt($("#box").val());
-        var unid = parseFloat($("#unid").val())
+        console.info("[Pocket][TI] Calculando cantidad para el carrito");
+        var up = parseInt(NormalizarNumeroEntrada($("#up").val(), "TI.unidadesPorBulto"));
+        var bulto = parseInt(NormalizarNumeroEntrada($("#box").val(), "TI.bultos"));
+        var unid = parseFloat(NormalizarNumeroEntrada($("#unid").val(), "TI.unidadesSueltas"))
         var fv = $("#fvto").val();
         if (upId === "07") {
             cantidad = (up * bulto) + unid;

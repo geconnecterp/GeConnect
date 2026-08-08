@@ -592,10 +592,17 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 {
                     throw new NegocioException("No se recepcionó la UL. Verifique");
                 }
-                var res = await _productoServicio.ValidarUL(ul.ToUpper(), AdministracionId, "RC", TokenCookie);  //para RPR es RC, para RTR es RI
+                var (ulValidada, res) = await ValidarUlRprExacta(ul);
                 if (res.resultado == 0)
                 {
-                    return Json(new { error = false, warn = false, msg = "La validación del UL fue exitosa." });
+                    return Json(new
+                    {
+                        error = false,
+                        warn = false,
+                        msg = "La validación del UL fue exitosa.",
+                        ul = ulValidada,
+                        fueNormalizada = !ulValidada.Equals(ul.Trim(), StringComparison.OrdinalIgnoreCase)
+                    });
                 }
                 else
                 {
@@ -613,6 +620,26 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
             }
         }
 
+        private async Task<(string UlValidada, RespuestaDto Respuesta)> ValidarUlRprExacta(string ul)
+        {
+            var ulIngresada = ul.Trim().ToUpperInvariant();
+            _logger.LogInformation("Validando UL RPR exacta para almacenaje. UL: {Ul}; administración: {Administracion}",
+                ulIngresada, AdministracionId);
+
+            var respuesta = await _productoServicio.ValidarUL(ulIngresada, AdministracionId, "RC", TokenCookie);
+            if (respuesta.resultado == 0)
+            {
+                _logger.LogInformation("UL RPR exacta validada para almacenaje. UL: {Ul}", ulIngresada);
+            }
+            else
+            {
+                _logger.LogWarning("UL RPR exacta rechazada. UL: {Ul}; resultado: {Resultado}; mensaje: {Mensaje}",
+                    ulIngresada, respuesta.resultado, respuesta.resultado_msj);
+            }
+
+            return (ulIngresada, respuesta);
+        }
+
         [HttpPost]
         public async Task<JsonResult> ValidarBox(string box)
         {
@@ -622,13 +649,26 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 {
                     throw new NegocioException("No se recepcionó el Box. Verifique");
                 }
-                var res = await _productoServicio.ValidarBox(box, AdministracionId, TokenCookie);
+                var boxIngresado = box.Trim().ToUpperInvariant();
+                _logger.LogInformation("Validando BOX para almacenaje RPR. Ingresado: {Box}; administración: {Administracion}",
+                    boxIngresado, AdministracionId);
+
+                var res = await _productoServicio.ValidarBox(boxIngresado, AdministracionId, TokenCookie);
                 if (res.Resultado == 0)
                 {
-                    return Json(new { error = false, warn = false, msg = "La validación del Box fue exitosa.", box = res.Box_id_sugerido });
+                    var boxValidado = string.IsNullOrWhiteSpace(res.Box_id_sugerido)
+                        ? boxIngresado
+                        : res.Box_id_sugerido.Trim().ToUpperInvariant();
+
+                    _logger.LogInformation("BOX validado para almacenaje RPR. Ingresado: {BoxIngresado}; utilizado: {BoxValidado}",
+                        boxIngresado, boxValidado);
+
+                    return Json(new { error = false, warn = false, msg = "La validación del Box fue exitosa.", box = boxValidado });
                 }
                 else
                 {
+                    _logger.LogWarning("BOX rechazado para almacenaje RPR. Ingresado: {Box}; resultado: {Resultado}; mensaje: {Mensaje}",
+                        boxIngresado, res.Resultado, res.Resultado_msj);
                     throw new NegocioException(res.Resultado_msj);
                 }
 
@@ -640,7 +680,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, $"Error al validar el Box {box}");
-                return Json(new { error = true, msg = "Algo no fué bien en la Validación de la UL. Intente nuevamente." });
+                return Json(new { error = true, msg = "Algo no fue bien en la validación del Box. Intente nuevamente." });
             }
         }
 
@@ -657,13 +697,50 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 {
                     throw new NegocioException("No se recepcionó el Box. Verifique");
                 }
-                var res = await _productoServicio.ConfirmaBoxUl(box, ul.ToUpper(), AdministracionId, sm: "RC", TokenCookie);
+                var (ulValidada, validacion) = await ValidarUlRprExacta(ul);
+                if (validacion.resultado != 0)
+                {
+                    throw new NegocioException(validacion.resultado_msj);
+                }
+
+                var boxIngresado = box.Trim().ToUpperInvariant();
+                _logger.LogInformation("Revalidando BOX antes de almacenar UL RPR. Ingresado: {Box}; administración: {Administracion}",
+                    boxIngresado, AdministracionId);
+
+                var validacionBox = await _productoServicio.ValidarBox(boxIngresado, AdministracionId, TokenCookie);
+                if (validacionBox.Resultado != 0)
+                {
+                    _logger.LogWarning("BOX rechazado al confirmar almacenaje RPR. Ingresado: {Box}; resultado: {Resultado}; mensaje: {Mensaje}",
+                        boxIngresado, validacionBox.Resultado, validacionBox.Resultado_msj);
+                    throw new NegocioException(validacionBox.Resultado_msj);
+                }
+
+                var boxValidado = string.IsNullOrWhiteSpace(validacionBox.Box_id_sugerido)
+                    ? boxIngresado
+                    : validacionBox.Box_id_sugerido.Trim().ToUpperInvariant();
+
+                _logger.LogInformation("Confirmando almacenaje RPR. UL: {Ul}; BOX ingresado: {BoxIngresado}; BOX utilizado: {BoxValidado}; administración: {Administracion}",
+                    ulValidada, boxIngresado, boxValidado, AdministracionId);
+
+                var res = await _productoServicio.ConfirmaBoxUl(boxValidado, ulValidada, AdministracionId, sm: "RC", TokenCookie);
                 if (res.Resultado == 0)
                 {
-                    return Json(new { error = false, warn = false, msg = "Se realizó exitosamente el ingreso de Stock de la Unidad de Lectura." });
+                    _logger.LogInformation("Almacenaje RPR completado. UL: {Ul}; BOX: {Box}; administración: {Administracion}",
+                        ulValidada, boxValidado, AdministracionId);
+
+                    return Json(new
+                    {
+                        error = false,
+                        warn = false,
+                        msg = "Se realizó exitosamente el ingreso de Stock de la Unidad de Lectura.",
+                        ul = ulValidada,
+                        box = boxValidado
+                    });
                 }
                 else
                 {
+                    _logger.LogWarning("No se pudo almacenar la UL RPR. UL: {Ul}; BOX: {Box}; resultado: {Resultado}; mensaje: {Mensaje}",
+                        ulValidada, boxValidado, res.Resultado, res.Resultado_msj);
                     throw new NegocioException(res.Resultado_msj);
                 }
             }
@@ -674,7 +751,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, $"Error al Confirmar el Box {box} Ul {ul}");
-                return Json(new { error = true, msg = "Algo no fué bien en la Validación de la UL. Intente nuevamente." });
+                return Json(new { error = true, msg = "Algo no fue bien al almacenar la UL en el Box. Intente nuevamente." });
             }
         }
     }
