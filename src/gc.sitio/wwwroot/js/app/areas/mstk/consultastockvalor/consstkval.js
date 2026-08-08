@@ -179,16 +179,35 @@ $("#Rel01").autocomplete({
 			success: function (obj) {
 				response($.map(obj, function (item) {
 					var texto = item.descripcion;
-					return { label: texto, value: item.descripcion, id: item.id, prov: item.provId };
+					return {
+						label: texto,
+						value: item.descripcion,
+						id: item.id,
+						prov: item.provId
+					};
 				}));
 			}
 		})
 	},
 	minLength: 3,
+
+	focus: function (event, ui) {
+		// evita que el # aparezca mientras navegas con flechas
+		const partes = ui.item.value.split("#");
+		$("#Rel01").val(partes.join(" "));
+		return false;
+	},
+
 	select: function (event, ui) {
+		const partes = ui.item.value.split("#");
+		const textoSinSeparador = partes.join(" ");
+
+		// Mostrar SIN el "#"
+		$("#Rel01").val(textoSinSeparador);
+
 		if ($("#Rel01List").has('option:contains("' + ui.item.id + '")').length === 0) {
 			$("#Rel01Item").val(ui.item.id);
-			var opc = "<option value=" + ui.item.id + ">" + ui.item.value + "</option>"
+			var opc = "<option value=" + ui.item.id + ">" + textoSinSeparador + "</option>"
 			$("#Rel01List").append(opc);
 		}
 		if ($("#Rel01List")[0].length === 1) {
@@ -202,9 +221,29 @@ $("#Rel01").autocomplete({
 			$("#chkFamilias")[0].checked = false;
 		}
 
+		event.preventDefault();
 		return true;
 	}
-});
+}).autocomplete("instance")._renderItem = function (ul, item) {
+
+	const partes = item.label.split("#");
+
+	const ctaLista = partes[0];
+	const tipoDesc = partes[1];
+
+	return $("<li>")
+		.append(
+			`<div>
+                <span style="font-weight:bold; font-size:14px;">
+                    ${ctaLista}
+                </span>
+                <span style="font-size:13px; color:#555;">
+                    ${tipoDesc}
+                </span>
+            </div>`
+		)
+		.appendTo(ul);
+};
 
 function InicializarCamposEnFiltros(vieneDeCancelar) {
 	if (!vieneDeCancelar) {

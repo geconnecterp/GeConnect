@@ -579,13 +579,13 @@ namespace gc.sitio.Areas.Compras.Controllers
 				if (abrirComo == NecesidadesCompra)
 				{
 					model.EsOC = true;
-					model.Titulo = "Determinación Automática de Compra (NC)";
+					model.Titulo = "Determinación Automática de Compra";
 					model.MostrarExcluirOCPendientes = true;
 				}
 				else
 				{
 					model.EsOC = false;
-					model.Titulo = "Determinación Automática de Compra (PI)";
+					model.Titulo = "Determinación Automática de Compra";
 					model.MostrarExcluirOCPendientes = false;
 				}
 				model.DiasAprov = 30;

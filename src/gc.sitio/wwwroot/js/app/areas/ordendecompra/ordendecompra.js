@@ -1291,10 +1291,45 @@ function MostrarDatosDeCuenta(mostrar) {
 	}
 }
 
+// $("#Rel01").autocomplete({
+// 	source: function (request, response) {
+
+// 		data = { prefix: request.term }; Rel01
+
+// 		$.ajax({
+// 			url: autoComRel01Url,
+// 			type: "POST",
+// 			dataType: "json",
+// 			data: data,
+// 			success: function (obj) {
+// 				response($.map(obj, function (item) {
+// 					var texto = item.descripcion;
+// 					return { label: texto, value: item.descripcion, id: item.id, prov: item.provId };
+// 				}));
+// 			}
+// 		})
+// 	},
+// 	minLength: 3,
+// 	select: function (event, ui) {
+// 		ctaIdSelected = ui.item.id;
+// 		ctaDescSelected = ui.item.value;
+// 		$("#Rel01List").empty();
+// 		$("#Rel01Item").val(ui.item.id);
+// 		var opc = "<option value=" + ui.item.id + ">" + ui.item.value + "</option>"
+// 		$("#Rel01List").append(opc);
+// 		$("#chkRel03").prop("disabled", false);
+
+// 		CargarFamiliaLista(ui.item.id);
+// 		CargarOCLista(ui.item.id);
+
+// 		return true;
+// 	}
+// });
+
 $("#Rel01").autocomplete({
 	source: function (request, response) {
 
-		data = { prefix: request.term }; Rel01
+		const data = { prefix: request.term };
 
 		$.ajax({
 			url: autoComRel01Url,
@@ -1303,28 +1338,76 @@ $("#Rel01").autocomplete({
 			data: data,
 			success: function (obj) {
 				response($.map(obj, function (item) {
-					var texto = item.descripcion;
-					return { label: texto, value: item.descripcion, id: item.id, prov: item.provId };
+					return {
+						label: item.descripcion,   // Ej: "UNILEVER PC#BIENES DE CAMBIO"
+						value: item.descripcion,
+						id: item.id,
+						prov: item.provId
+					};
 				}));
 			}
-		})
+		});
 	},
 	minLength: 3,
+
+	focus: function (event, ui) {
+		// evita que el # aparezca mientras navegas con flechas
+		const partes = ui.item.value.split("#");
+		$("#Rel01").val(partes.join(" "));
+		return false;
+	},
+
 	select: function (event, ui) {
+
+		const partes = ui.item.value.split("#");
+		const textoSinSeparador = partes.join(" ");
+
 		ctaIdSelected = ui.item.id;
-		ctaDescSelected = ui.item.value;
+		ctaDescSelected = textoSinSeparador;
+
+		// Mostrar SIN el "#"
+		$("#Rel01").val(textoSinSeparador);
+
 		$("#Rel01List").empty();
 		$("#Rel01Item").val(ui.item.id);
-		var opc = "<option value=" + ui.item.id + ">" + ui.item.value + "</option>"
-		$("#Rel01List").append(opc);
+
+		$("#Rel01List").append(
+			`<option value="${ui.item.id}">${textoSinSeparador}</option>`
+		);
+
 		$("#chkRel03").prop("disabled", false);
 
 		CargarFamiliaLista(ui.item.id);
 		CargarOCLista(ui.item.id);
 
-		return true;
+		// *** CLAVE ***
+		// Evita que jQuery UI vuelva a poner el value original con "#"
+		event.preventDefault();
+		return false;
 	}
-});
+})
+	.autocomplete("instance")._renderItem = function (ul, item) {
+
+		const partes = item.label.split("#");
+
+		const ctaLista = partes[0];
+		const tipoDesc = partes[1];
+
+		return $("<li>")
+			.append(
+				`<div>
+                <span style="font-weight:bold; font-size:14px;">
+                    ${ctaLista}
+                </span>
+                <span style="font-size:13px; color:#555;">
+                    ${tipoDesc}
+                </span>
+            </div>`
+			)
+			.appendTo(ul);
+	};
+
+
 
 //codigo generico para autocomplete 03
 $("#Rel03").autocomplete({

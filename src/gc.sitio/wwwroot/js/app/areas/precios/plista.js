@@ -548,3 +548,76 @@ function setBtnLoading($btn, loading, originalHtml) {
         $btn.prop("disabled", false).html(originalHtml ?? "Buscar");
     }
 }
+
+$("#Rel01").autocomplete({
+    source: function (request, response) {
+
+        data = { prefix: request.term }; Rel01
+
+        $.ajax({
+            url: autoComRel01Url,
+            type: "POST",
+            dataType: "json",
+            data: data,
+            success: function (obj) {
+                response($.map(obj, function (item) {
+                    var texto = item.descripcion;
+                    return {
+                        label: texto,
+                        value: item.descripcion,
+                        id: item.id,
+                        prov: item.provId, tipo: "P"
+                    };
+                }));
+            }
+        })
+    },
+    minLength: 3,
+
+    focus: function (event, ui) {
+        // evita que el # aparezca mientras navegas con flechas
+        const partes = ui.item.value.split("#");
+        $("#Rel01").val(partes.join(" "));
+        return false;
+    },
+
+    select: function (event, ui) {
+        const partes = ui.item.value.split("#");
+        const textoSinSeparador = partes.join(" ");
+
+        // Mostrar SIN el "#"
+        $("#Rel01").val(textoSinSeparador);
+
+        if ($("#Rel01List").has('option:contains("' + ui.item.id + '")').length === 0) {
+            $("#Rel01Item").val(ui.item.id);
+            var opc = "<option value=" + ui.item.id + ">" + textoSinSeparador + "</option>"
+            $("#Rel01List").append(opc);
+            $("#Rel01List").trigger("change");
+            consCta = ui.item.id;
+            consRrss = ui.item.label;
+            consTipo = ui.item.tipo;
+        }
+
+        event.preventDefault();
+        return true;
+    }
+}).autocomplete("instance")._renderItem = function (ul, item) {
+
+    const partes = item.label.split("#");
+
+    const ctaLista = partes[0];
+    const tipoDesc = partes[1];
+
+    return $("<li>")
+        .append(
+            `<div>
+                <span style="font-weight:bold; font-size:14px;">
+                    ${ctaLista}
+                </span>
+                <span style="font-size:13px; color:#555;">
+                    ${tipoDesc}
+                </span>
+            </div>`
+        )
+        .appendTo(ul);
+};

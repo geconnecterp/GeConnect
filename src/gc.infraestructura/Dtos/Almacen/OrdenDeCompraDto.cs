@@ -17,7 +17,7 @@ namespace gc.infraestructura.Dtos.Almacen
 	public class OrdenDeCompraListDto : Dto
 	{
 		public string oc_compte { get; set; } = string.Empty;
-		public string oc_fecha { get; set; } = string.Empty;
+		public DateTime oc_fecha { get; set; }
 		public string adm_id { get; set; } = string.Empty;
 		public string adm_nombre { get; set; } = string.Empty;
 		public char? oce_id { get; set; }

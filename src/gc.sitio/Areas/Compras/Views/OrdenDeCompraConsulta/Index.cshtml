@@ -16,6 +16,7 @@
 }
 @section styles {
 	<link rel="stylesheet" href="~/css/simplePagination.css" />
+	<link rel="stylesheet" href="~/lib/jstree/themes/default/style.min.css" />
 }
 <style>
 	/* Estilos para el recuadro flotante de filtros aplicados */
@@ -71,11 +72,6 @@
 					RPR Asociadas
 				</button>
 			</li>
-			<li class="nav-item" role="presentation" id="tabRprAsociadaDetalle">
-				<button type="button" class="nav-link" role="tab" data-bs-toggle="tab" data-bs-target="#navs-top-resume" aria-controls="navs-top-detail" aria-selected="false" tabindex="-1" id="btnTabRprAsociadaDetalle">
-					RPR Asociadas Detalle
-				</button>
-			</li>
 		</ul>
 		<!-- Contenedor flotante para filtros aplicados -->
 		<div id="filtrosAplicadosFloating" class="border rounded d-flex align-items-center" style="position:absolute; right:105px; left:auto; top:155px; height:auto; width:auto; border-color:#d9534f; background-color:#fff; z-index:1050; padding:6px 10px; overflow:visible; gap:6px; display:inline-flex; white-space:nowrap;">
@@ -94,13 +90,12 @@
 				<div id="divRprAsociadas">
 				</div>
 			</div>
-			<div class="tab-pane fade tab-content-golden" id="navs-top-detail" role="tabpanel">
-				<div id="divRprAsociadaDetalle">
-				</div>
-			</div>
 		</div>
 	</div>
 </div>
+
+<!-- para el modal del geston de impresion -->
+<div id="modalGestorDocumental"></div>
 
 @section scripts {
 	<script type="text/javascript">
@@ -125,7 +120,18 @@
 		var inicializarDatosEnSesionURL = "@Url.Action("InicializarDatosEnSesion", "ordendecompraconsulta", new { area = "Compras" })";
 		var actualizarListaDeEstadosURL = "@Url.Action("ActualizarListaDeEstados", "ordendecompraconsulta", new { area = "Compras" })";
 		var actualizarListaDeSucursalesURL = "@Url.Action("ActualizarListaSucursal", "ordendecompraconsulta", new { area = "Compras" })";
+
+		// Gestor de impresión
+		var repoApiUrl = '@Url.Action("ObtenerPdfDesdeAPI", "GestorImpresion", new { area = "ControlComun" })';
+		var OrquestadorDeModulosUrl = "@Url.Action("OrquestadorDeModulos", "GestorImpresion", new { area = "ControlComun" })";
+		var presentarArchivosUrl = "@Url.Action("presentarArchivos", "GestorImpresion", new { area = "ControlComun" })";
+		var enviarEmailUrl = "@Url.Action("EnviarEmail", "GestorImpresion", new { area = "ControlComun" })";
+		var enviarWhatsAppUrl = "@Url.Action("EnviarWhatsApp", "GestorImpresion", new { area = "ControlComun" })";
+		var generadorArchivoUrl = "@Url.Action("GeneradorArchivo", "GestorImpresion", new { area = "ControlComun" })";
 	</script>
+	<script src="~/lib/jstree/jstree.min.js"></script>
+	<script src="~/js/app/areas/docmngr/docmanager.js"></script>
 	<script src="~/js/plugins/jquery.simplePagination.js"></script>
+
 	<script src="~/js/app/areas/ordendecompra/consultaoc.js"></script>
 }

@@ -748,7 +748,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 
 		protected SelectList ComboOcPendientes()
 		{
-			var lista = OrdenDeCompraLista.Select(x => new ComboGenDto { Id = x.oc_compte.ToString(), Descripcion = $"{x.oc_compte} {DateTime.Parse(x.oc_fecha).ToShortDateString()}" });
+			var lista = OrdenDeCompraLista.Select(x => new ComboGenDto { Id = x.oc_compte.ToString(), Descripcion = $"{x.oc_compte} {x.oc_fecha.ToShortDateString()}" });
 			return HelperMvc<ComboGenDto>.ListaGenerica(lista);
 		}
 

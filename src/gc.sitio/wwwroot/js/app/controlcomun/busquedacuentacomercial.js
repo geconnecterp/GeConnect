@@ -419,10 +419,19 @@ function GuardarDetalleDeProductos(guardado) {
 				return true;
 			}, false, ["Aceptar"], "warn!", null);
 		} else {
-			AbrirMensaje("Atención", "La Autorización se guardó crrectamente.", function () {
-				$("#msjModal").modal("hide");
-				window.location.href = volverAListaDeAutorizacionesUrl;
-			}, false, ["Aceptar"], "warn!", null);
+			if (guardado) {
+				AbrirMensaje("Atención", "La Autorización se guardó crrectamente.", function () {
+					$("#msjModal").modal("hide");
+					window.location.href = volverAListaDeAutorizacionesUrl;
+				}, false, ["Aceptar"], "warn!", null);
+			}
+			else {
+				AbrirMensaje("Atención", "Los cambios se cancelaron correctamente.", function () {
+					$("#msjModal").modal("hide");
+					window.location.href = volverAListaDeAutorizacionesUrl;
+				}, false, ["Aceptar"], "warn!", null);
+			}
+			
 		}
 	});
 }
@@ -627,23 +636,69 @@ $("#Rel01").autocomplete({
 			success: function (obj) {
 				response($.map(obj, function (item) {
 					var texto = item.descripcion;
-					return { label: texto, value: item.descripcion, id: item.id, prov: item.provId };
+					return {
+						label: texto,
+						value: item.descripcion,
+						id: item.id,
+						prov: item.provId
+					};
 				}));
 			}
 		})
 	},
 	minLength: 3,
+
+	focus: function (event, ui) {
+		// evita que el # aparezca mientras navegas con flechas
+		const partes = ui.item.value.split("#");
+		$("#Rel01").val(partes.join(" "));
+		return false;
+	},
+
 	select: function (event, ui) {
-		$("#razonsocial").val(ui.item.value);
+		const partes = ui.item.value.split("#");
+		const textoSinSeparador = partes.join(" ");
+
+		// Mostrar SIN el "#"
+		$("#Rel01").val(textoSinSeparador);
+
+		$("#razonsocial").val(partes[0]);
 		$("#Cuenta").val(ui.item.id)
 		$("#Rel01List").empty();
 		$("#Rel01Item").val(ui.item.id);
-		var opc = "<option value=" + ui.item.id + ">" + ui.item.value + "</option>"
+		var opc = "<option value=" + ui.item.id + ">" + textoSinSeparador + "</option>"
 		$("#Rel01List").append(opc);
 		CargarComboTiposComptes(ui.item.id);
+
+		event.preventDefault();
 		return true;
 	}
 });
+
+// 🔥 VALIDACIÓN CRÍTICA: solo asignar _renderItem si la instancia existe
+const ac = $("#Rel01").autocomplete("instance");
+
+if (ac) {
+	ac._renderItem = function (ul, item) {
+
+		const partes = item.label.split("#");
+		const ctaLista = partes[0];
+		const tipoDesc = partes[1];
+
+		return $("<li>")
+			.append(
+				`<div>
+                    <span style="font-weight:bold; font-size:14px;">
+                        ${ctaLista}
+                    </span>
+                    <span style="font-size:13px; color:#555;">
+                        ${tipoDesc}
+                    </span>
+                </div>`
+			)
+			.appendTo(ul);
+	};
+}
 
 function buscarCuentasComercial() {
 	if ($("#CtaId").val() !== "" && $("#CtaId").val() !== undefined) {

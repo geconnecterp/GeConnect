@@ -38,11 +38,25 @@
 		padding-right: 0.25rem !important;
 	}
 
+	.container-fluid {
+		padding-left: 10px !important;
+		padding-right: 10px !important;
+	}
+
+	#divDetalle {
+		min-height: calc(100vh - 140px);
+		overflow-y: auto;
+		overflow-x: hidden; /* evitar scroll horizontal */
+	}
+
+	html, body {
+		overflow-x: hidden;
+	}
 </style>
 <input type="hidden" id="hdnPid" value="@Model.p_id" />
 <input type="hidden" id="hdnCtaId" value="@Model.cta_id" />
 <input type="hidden" id="hdnCtaDeno" value="@Model.cta_denominacion" />
-<div class="container">
+<div class="container-fluid">
 	<div class="row">
 		<div class="col-md-6">
 			<div class="d-flex justify-content-sm-around">

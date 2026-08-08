@@ -101,7 +101,7 @@
 	<table class="table table-sm mb-0 table-hover table-golden" id="tbListaProducto">
 		<thead>
 			<tr class="header">
-				<th style="width:5%;" class="align-center tiny-row">Código</th>
+				<th style="width:4%;" class="align-center tiny-row">Código</th>
 				<th class="th-descripcion">
 					<span class="th-title">Descripción</span>
 					<button type="button"
@@ -111,7 +111,7 @@
 						<i class="bx bx-info-circle"></i>
 					</button>
 				</th>
-				<th style="width:5%;" class="align-center">Id. Barrado</th>
+				<th style="width:6%;" class="align-center">Id. Barrado</th>
 				<th style="width:5%;" class="align-center tiny-row">Cod. Prov</th>
 				@if (Model.Tipo == "PI")
 				{
@@ -127,11 +127,11 @@
 				<th style="width:5%;" class="align-center tiny-row">Stock Tot</th>
 				<th style="width:0%; display:none;" class="align-center tiny-row">Stock a Facturar</th>
 				<th style="width:5%;" class="align-center tiny-row">Unidad Pres.</th>
-				<th style="width:5%;" class="align-center tiny-row">Unidad Pallet</th>
+				<th style="width:4%;" class="align-center tiny-row">Unidad Pallet</th>
 				<th style="width:5%;" class="align-center tiny-row">Pedido Bultos</th> @* 10 *@
 				<th style="width:5%;" class="align-center tiny-row">Pedido Cantidad</th>
-				<th style="width:5%;" class="align-center tiny-row">Precio Costo</th>
-				<th style="width:5%;" class="align-center tiny-row">Total Costo</th>
+				<th style="width:7%;" class="align-center tiny-row">Precio Costo</th>
+				<th style="width:7%;" class="align-center tiny-row">Total Costo</th>
 				<th style="width:5%;" class="align-center tiny-row">Total Pallet</th>
 				<th style="width:0%; display:none;">pg_id</th>
 				<th style="width:0%; display:none;">rub_id</th>
@@ -144,7 +144,6 @@
 				@foreach (var item in productos)
 				{
 					grupoActual = item.cta_id + item.pg_id;
-					// Si cambia la cuenta+grupo, insertamos una fila de encabezado
 					if (grupoActual != grupoAnterior)
 					{
 						var leyenda = $"Prov: {item.cta_id} {item.cta_denominacion} Familia: {item.pg_id} {item.pg_desc}";
@@ -155,7 +154,7 @@
 							</td>
 						</tr>
 						grupoAnterior = grupoActual;
-						alt = true; // Reiniciar alternancia de colores después de cada familia
+						alt = true; 
 					}
 
 					if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
@@ -186,14 +185,6 @@
 							<td class="align-right tiny-row">@item.rp_dias</td>
 							<td class="align-right tiny-row" style="font-weight:bold;">@item.oc_pendiente</td>
 						}
-						@* @if (item.oc_pendiente == 0)
-						{
-							<td class="align-right tiny-row"></td>
-						}
-						else
-						{
-							<td class="align-right tiny-row" style="font-weight:bold;">@item.oc_pendiente</td>
-						} *@
 						<td class="align-right tiny-row">@GridHelper.FormatearDato(item.stk_suc, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
 						<td class="align-right tiny-row">@GridHelper.FormatearDato(item.stk, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
 						<td style="display:none;">@item.stk_suc_comprometido</td>
@@ -218,8 +209,8 @@
 							<td class="align-right tiny-row">
 								@GridHelper.FormatearPrecio(item.costo, TipoPrecio.Costo)
 							</td>
-							<td class="align-right tiny-row">
-								@GridHelper.FormatearPrecio(item.costo_total, TipoPrecio.Costo)
+							<td class="align-right tiny-row" style="font-weight:bold;">
+								@GridHelper.FormatearPrecio(item.costo_total, TipoPrecio.Venta)
 							</td>
 						}
 						else
@@ -228,13 +219,13 @@
 							{
 								<td class="align-right tiny-row" style="background-color: lightgreen;">@item.cantidad</td>
 								<td class="align-right tiny-row" style="background-color: lightgreen;">@GridHelper.FormatearPrecio(item.costo, TipoPrecio.Costo)</td>
-								<td class="align-right tiny-row" style="background-color: lightgreen;">@GridHelper.FormatearPrecio(item.costo_total, TipoPrecio.Costo)</td>
+								<td class="align-right tiny-row" style="background-color: lightgreen;font-weight:bold;">@GridHelper.FormatearPrecio(item.costo_total, TipoPrecio.Venta)</td>
 							}
 							else
 							{
 								<td class="align-right tiny-row" style="background-color: #6cc6f3;">@item.cantidad</td>
 								<td class="align-right tiny-row" style="background-color: #6cc6f3;">@GridHelper.FormatearPrecio(item.costo, TipoPrecio.Costo)</td>
-								<td class="align-right tiny-row" style="background-color: #6cc6f3;">@GridHelper.FormatearPrecio(item.costo_total, TipoPrecio.Costo)</td>
+								<td class="align-right tiny-row" style="background-color: #6cc6f3;font-weight:bold;">@GridHelper.FormatearPrecio(item.costo_total, TipoPrecio.Venta)</td>
 							}
 						}
 						<td class="align-right tiny-row">@item.paletizado</td>
@@ -242,6 +233,28 @@
 						<td style="display:none;">@item.rub_id</td>
 					</tr>
 				}
+				
+				decimal totalCosto = productos.Sum(x => x.costo_total);
+				decimal totalPallet = productos.Sum(x => x.paletizado);
+				<tr class="table-secondary fw-bold">
+					<!-- Label Total -->
+					<td colspan="13" class="text-end">Total:</td>
+
+					<!-- Total Costo -->
+					<td class="align-right tiny-row" style="font-weight:bold;">
+						@GridHelper.FormatearPrecio(totalCosto, TipoPrecio.Costo)
+					</td>
+
+					<!-- Total Pallet -->
+					<td class="align-right tiny-row" style="font-weight:bold;">
+						@totalPallet
+					</td>
+
+					<!-- Columnas ocultas -->
+					<td style="display:none;"></td>
+					<td style="display:none;"></td>
+				</tr>
+
 			}
 		</tbody>
 	</table>

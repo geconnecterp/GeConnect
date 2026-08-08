@@ -40,8 +40,22 @@
 		overflow-y: auto;
 	}
 
+	.container-fluid {
+		padding-left: 10px !important;
+		padding-right: 10px !important;
+	}
+
+	#divDetalle {
+		min-height: calc(100vh - 140px);
+		overflow-y: auto;
+		overflow-x: hidden; /* evitar scroll horizontal */
+	}
+
+	html, body {
+		overflow-x: hidden;
+	}
 </style>
-<div class="container">
+<div class="container-fluid">
 	<div class="row">
 		<div class="col-md-6">
 			<div class="d-flex justify-content-sm-around">
@@ -52,10 +66,10 @@
 		</div>
 		<div class="col-md-6">
 			<div class="collapse" style="text-align: right;align-content: center;padding-bottom:5px;" id="divBtnOpciones">
-				<button type="button" class="btn btn-sm btn-primary btn-sm mt-1 me-1" style="margin-left:5px;" id="btnPasarAOC" title="Pasar a Orden de Compra">
+				<button type="button" class="btn btn-sm btn-primary btn-sm mt-1 me-1" style="margin-left:5px;width: 100px;" id="btnPasarAOC" title="Pasar a Orden de Compra">
 					<i class="bx bx-check-circle"></i> Pasar a OC
 				</button>
-				<button type="button" class="btn btn-sm btn-primary btn-sm mt-1 me-1" style="margin-left:5px;" id="btnOCAuto" title="Orden de Compra Automática">
+				<button type="button" class="btn btn-sm btn-primary btn-sm mt-1 me-1" style="margin-left:5px;width: 100px;" id="btnOCAuto" title="Orden de Compra Automática">
 					<i class="bx bx-check-circle"></i> OC Auto
 				</button>
 			</div>

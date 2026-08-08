@@ -491,7 +491,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 		public IActionResult VerDetalleDeComprobanteDeRP(string idTipoCompte, string nroCompte, string depoSelec, string notaAuto, string turno, string ponerEnCurso, string ulCantidad, string rp = "", string ctaId = "", char tipoCuenta = char.MinValue, string fechaCompte = "", string monto = "", string descTipoCompte = "")
 		{
 			var compte = new RPRComptesDeRPDto();
-			if (CuentaComercialSeleccionada == null)
+			if (CuentaComercialSeleccionada == null || CuentaComercialSeleccionada.Cta_Id == null || CuentaComercialSeleccionada.Cta_Id != ctaId)
 			{
 				CuentaComercialSeleccionada = BuscarCuentaComercial(ctaId, tipoCuenta).Result.FirstOrDefault();
 			}

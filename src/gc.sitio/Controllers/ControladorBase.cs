@@ -2928,7 +2928,7 @@ namespace gc.sitio.Controllers
             //var nombres = await _provSv.BuscarAsync(new QueryFilters { Search = prefix }, TokenCookie);
             //var lista = nombres.Item1.Select(c => new EmpleadoVM { Nombre = c.NombreCompleto, Id = c.Id, Cuil = c.CUIT });
             var prov = ProveedoresLista.Where(x => x.Cta_Lista.ToUpperInvariant().Contains(prefix.ToUpperInvariant()));
-            var proveedores = prov.Select(x => new ComboGenDto { Id = x.Cta_Id, Descripcion = x.Cta_Lista });
+            var proveedores = prov.Select(x => new ComboGenDto { Id = x.Cta_Id, Descripcion = $"{x.Cta_Lista}#{x.Tipo_Desc}" });
             return Json(proveedores);
         }
 

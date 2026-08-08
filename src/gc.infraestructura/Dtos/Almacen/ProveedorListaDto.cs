@@ -11,6 +11,7 @@ namespace gc.infraestructura.Dtos.Almacen
         public string Cta_Id { get; set; }=string.Empty;
         public string Cta_Denominacion { get; set; } = string.Empty;
         public string Cta_Lista { get; set; } = string.Empty;
-
-    }
+		public string Tipo { get; set; } = string.Empty;
+		public string Tipo_Desc { get; set; } = string.Empty;
+	}
 }

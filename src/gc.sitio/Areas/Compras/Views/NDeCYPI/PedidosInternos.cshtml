@@ -20,8 +20,23 @@
 	<link rel="stylesheet" href="~/css/simplePagination.css" />
 	<link rel="stylesheet" href="~/lib/jstree/themes/default/style.min.css" />
 }
+<style>
+	.container-fluid {
+		padding-left: 10px !important;
+		padding-right: 10px !important;
+	}
 
-<div class="container">
+	#divDetalle {
+		min-height: calc(100vh - 140px);
+		overflow-y: auto;
+		overflow-x: hidden; /* evitar scroll horizontal */
+	}
+
+	html, body {
+		overflow-x: hidden;
+	}
+</style>
+<div class="container-fluid">
 	<div class="row">
 		<div class="col-md-6">
 			<div class="d-flex justify-content-sm-around">

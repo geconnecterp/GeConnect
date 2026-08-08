@@ -160,6 +160,87 @@ function LimpiarDatosDelFiltroInicial() {
 	$("#chkRel03").prop("disabled", false);
 }
 
+$("#Rel01").autocomplete({
+	source: function (request, response) {
+
+		const data = { prefix: request.term };
+
+		$.ajax({
+			url: autoComRel01Url,
+			type: "POST",
+			dataType: "json",
+			data: data,
+			success: function (obj) {
+				response($.map(obj, function (item) {
+					return {
+						label: item.descripcion,   // Ej: "UNILEVER PC#BIENES DE CAMBIO"
+						value: item.descripcion,
+						id: item.id,
+						prov: item.provId
+					};
+				}));
+			}
+		});
+	},
+	minLength: 3,
+
+	focus: function (event, ui) {
+		// evita que el # aparezca mientras navegas con flechas
+		const partes = ui.item.value.split("#");
+		$("#Rel01").val(partes.join(" "));
+		return false;
+	},
+
+	select: function (event, ui) {
+
+		const partes = ui.item.value.split("#");
+		const textoSinSeparador = partes.join(" ");
+
+		ctaIdSelected = ui.item.id;
+		ctaDescSelected = textoSinSeparador;
+
+		// Mostrar SIN el "#"
+		$("#Rel01").val(textoSinSeparador);
+
+		$("#Rel01List").empty();
+		$("#Rel01Item").val(ui.item.id);
+
+		$("#Rel01List").append(
+			`<option value="${ui.item.id}">${textoSinSeparador}</option>`
+		);
+
+		$("#chkRel03").prop("disabled", false);
+
+		// CargarFamiliaLista(ui.item.id);
+		// CargarOCLista(ui.item.id);
+
+		// *** CLAVE ***
+		// Evita que jQuery UI vuelva a poner el value original con "#"
+		event.preventDefault();
+		return false;
+	}
+})
+	.autocomplete("instance")._renderItem = function (ul, item) {
+
+		const partes = item.label.split("#");
+
+		const ctaLista = partes[0];
+		const tipoDesc = partes[1];
+
+		return $("<li>")
+			.append(
+				`<div>
+                <span style="font-weight:bold; font-size:14px;">
+                    ${ctaLista}
+                </span>
+                <span style="font-size:13px; color:#555;">
+                    ${tipoDesc}
+                </span>
+            </div>`
+			)
+			.appendTo(ul);
+	};
+
 function InicializarDatosEnSesion() {
 	PostGen({}, inicializarDatosEnSesionURL, function (obj) {
 		if (obj.error === true) {
@@ -350,7 +431,7 @@ function selectListaOCRow(x) {
 		admIdSeleccionado = "";
 		provSeleccionado = "";
 	}
-	ActivarBotonesTabPrincipal(oceIdSeleccionado);
+	ActivarBotonesTabPrincipal(oceIdSeleccionado, ocIdSeleccionado);
 }
 
 function AddEventListenerToGrid(tabla) {
@@ -409,7 +490,7 @@ function InicializaPantalla() {
 	return true;
 }
 
-function ActivarBotonesTabPrincipal(estado) {
+function ActivarBotonesTabPrincipal(estado, id) {
 	$("#btnActivarOC").prop("disabled", true);
 	$("#btnCerrarOC").prop("disabled", true);
 	$("#btnAnularOC").prop("disabled", true);
@@ -518,6 +599,7 @@ function BuscarOrdenesDeCompra(pag = 1) {
 		$("#btnAnularOC").on("click", function () { ModificarOC(AccionesOC.ANULAR); });
 		$("#btnLevantarOC").on("click", function () { ModificarOC(AccionesOC.LEVANTAR); });
 		$("#btnModiAdm").on("click", function () { ModificarOC(AccionesOC.MODIFICAR_ADM); });
+		$("#btnImprimir").on("click", function () { ImprimirOC_Generada(); });
 		//FormatearValores("#tbListaOC", 6)
 		$("#Importe").val(formatter.format($("#Importe").val()));
 		//formatter.format(td[idx].innerText);
@@ -544,6 +626,37 @@ function BuscarOrdenesDeCompra(pag = 1) {
 		CerrarWaiting();
 		return true
 	});
+}
+
+function ReseteoDeReportes() {
+	console.log("Reseto de reportes");
+	ReporteResetArre();
+}
+
+function ImprimirOC_Generada() {
+	// Buscar la fila seleccionada
+	const fila = $("#tbListaOC tr.selected-row");
+
+	if (fila.length === 0) {
+		AbrirMensaje("ATENCIÓN", "Debe seleccionar una Orden de Compra.", function () {
+			$("#msjModal").modal("hide");
+			return true;
+		}, false, ["Aceptar"], "error!", null);
+		return;
+	}
+
+	// Capturar los atributos data-*
+	const ocCompte = fila.data("oc-compte");
+	const ctaId = fila.data("cta-id");
+
+	// Ahora sí podés armar el objeto data
+	let data = { oc_compte: ocCompte, ctaId: ctaId };
+	ReseteoDeReportes();
+	setTimeout(() => {
+		let data = { oc_compte: ocCompte, ctaId: ctaId };
+		cargarReporteEnArre(21, data, "ORDEN DE COMPRA", "", "");
+		invocacionGestorDoc({});
+	}, 500);
 }
 
 function ActualizarListaDeEstados() {
