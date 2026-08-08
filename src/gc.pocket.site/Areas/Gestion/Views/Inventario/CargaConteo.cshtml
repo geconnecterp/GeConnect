@@ -36,31 +36,31 @@
     </div>
     <div class="card-body">
         <div class="row mb-1">
-            <div class="col-md-7 col-sd-6">
+            <div class="col-md-7 col-sm-6">
                 <partial name="~/areas/gestion/views/producto/_ctrbuscarproducto.cshtml" model="@buscar" />
                 @Html.Hidden("estadoFuncion", false)
             </div>
         </div>
         <div class="row mb-3">
-            <div class="col-md-2 col-sd-3">
+            <div class="col-md-2 col-sm-3">
                 <div class="input-group  input-group-sm">
                     <span class="input-group-text" style="width:50px">Id:</span>
                     <input type="text" class="form-control inputEditable" nae="pId" id="pId" readonly />
                 </div>
             </div>
-            <div class="col-md-2 col-sd-2">
+            <div class="col-md-2 col-sm-2">
                 <div class="input-group  input-group-sm">
                     <span class="input-group-text" style="width:50px">Bto:</span>
                     <input type="text" class="form-control inputEditable" name="btos" id="btos" readonly />
                 </div>
             </div>
-            <div class="col-md-2 col-sd-2">
+            <div class="col-md-2 col-sm-2">
                 <div class="input-group  input-group-sm">
                     <span class="input-group-text" style="width:50px">Un:</span>
                     <input type="text" class="form-control inputEditable" name="uns" id="uns" readonly />
                 </div>
             </div>
-            <div class="col-md-1 col-sd-2">
+            <div class="col-md-1 col-sm-2">
                 <button type="button" id="btnCargaConteo"
                         class="btn btn-success btn-sm btn-block" disabled
                         title="Cargar producto">

@@ -244,31 +244,40 @@ th, td {
     z-index: 9999999 !important;
 }
 
+/* ====== BASE RESPONSIVA PARA DISPOSITIVOS TACTILES ====== */
 @media screen and (max-width: 768px) {
-    .textoEncabezado, .form-check, button[type="button"] {
+    .textoEncabezado,
+    .form-check {
         font-weight: 500;
-        font-size: 0.7em;
+        font-size: 0.875rem;
     }
-}
 
-@media screen and (max-width: 600px) {
-    .textoEncabezado, .form-check, button[type="button"] {
-        font-weight: 500;
-        font-size: 0.6em;
+    button[type="button"]:not(.btn-close),
+    button[type="submit"]:not(.btn-close),
+    a.btn {
+        min-width: 44px;
+        min-height: 44px;
+        font-size: 0.875rem;
     }
-}
 
-@media screen and (max-width: 480px) {
-    .textoEncabezado, .form-check, button[type="button"] {
-        font-weight: 500;
-        font-size: 0.5em;
+    .form-control:not(textarea),
+    .form-select,
+    .input-group-text {
+        min-height: 44px;
     }
-}
 
-@media screen and (max-width: 400px) {
-    .textoEncabezado, .form-check, button[type="button"] {
-        font-weight: 500;
-        font-size: 0.4em;
+    .form-control:not(textarea),
+    .form-select {
+        font-size: 16px;
+    }
+
+    .form-check-input {
+        width: 1.25rem;
+        height: 1.25rem;
+    }
+
+    .table-fontsize {
+        font-size: 0.85rem !important;
     }
 }
 
@@ -811,25 +820,25 @@ th, td {
 /* Responsive - Ajustes para pantallas pequeñas */
 @media (max-width: 992px) {
     .th-compact {
-        padding: 0.25rem 0.35rem !important;
-        font-size: 0.75rem !important;
+        padding: 0.3rem 0.4rem !important;
+        font-size: 0.8rem !important;
     }
 
     .td-compact {
-        padding: 0.25rem 0.35rem !important;
-        font-size: 0.7rem !important;
+        padding: 0.3rem 0.4rem !important;
+        font-size: 0.8rem !important;
     }
 }
 
 @media (max-width: 768px) {
     .th-compact {
-        padding: 0.2rem 0.25rem !important;
-        font-size: 0.7rem !important;
+        padding: 0.3rem 0.4rem !important;
+        font-size: 0.85rem !important;
     }
 
     .td-compact {
-        padding: 0.2rem 0.25rem !important;
-        font-size: 0.65rem !important;
+        padding: 0.3rem 0.4rem !important;
+        font-size: 0.85rem !important;
     }
 }
 /* ====== OPTIMIZACIONES MOBILE-FIRST PARA GRID DE ÓRDENES ====== */
@@ -871,17 +880,17 @@ th, td {
     }
 
     #tbGridOrdenesReparto .th-compact {
-        font-size: 0.7rem;
+        font-size: 0.85rem;
         padding: 0.3rem 0.4rem !important;
     }
 
     #tbGridOrdenesReparto .td-compact {
-        font-size: 0.75rem;
+        font-size: 0.85rem;
         padding: 0.4rem 0.5rem !important;
     }
 
     #tbGridOrdenesReparto .badge {
-        font-size: 0.7rem;
+        font-size: 0.8rem;
         padding: 0.3rem 0.5rem;
     }
 
@@ -902,17 +911,17 @@ th, td {
     }
 
     #tbGridOrdenesReparto .th-compact {
-        font-size: 0.65rem;
-        padding: 0.25rem 0.3rem !important;
+        font-size: 0.85rem;
+        padding: 0.3rem 0.4rem !important;
     }
 
     #tbGridOrdenesReparto .td-compact {
-        font-size: 0.7rem;
-        padding: 0.35rem 0.4rem !important;
+        font-size: 0.85rem;
+        padding: 0.4rem 0.5rem !important;
     }
 
     .grid-golden-footer small {
-        font-size: 0.65rem;
+        font-size: 0.75rem;
     }
 }
 
@@ -1018,3 +1027,176 @@ th, td {
         .table-responsive::-webkit-scrollbar-thumb:hover {
             background: var(--bs-golden-secondary);
         }
+
+/* ====================================================================== */
+/* BASE VISUAL GLOBAL PARA LAS VISTAS OPERATIVAS DE POCKET                */
+/* ====================================================================== */
+
+.pocket-body {
+    background-color: #fdfbf3;
+    min-height: 100vh;
+    min-height: 100dvh;
+    padding-right: env(safe-area-inset-right, 0);
+    padding-left: env(safe-area-inset-left, 0);
+}
+
+.pocket-body .btn,
+.pocket-body button {
+    touch-action: manipulation;
+}
+
+.pocket-content {
+    width: 100%;
+    max-width: 1600px;
+    margin-right: auto;
+    margin-left: auto;
+}
+
+.pocket-view {
+    width: 100%;
+    min-width: 0;
+    margin-bottom: 1rem;
+    padding: 0.75rem;
+    background-color: #fff;
+    border: 1px solid var(--bs-golden-light, #e6d690);
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(139, 105, 20, 0.08);
+}
+
+.pocket-view > h1,
+.pocket-view > h2,
+.pocket-view > h3,
+.pocket-view > h4,
+.pocket-view > h5,
+.pocket-view > h6 {
+    color: var(--bs-golden-dark, #8b7355);
+}
+
+/* Evita el doble limite de ancho de las vistas legacy. */
+.pocket-view > .container {
+    width: 100%;
+    max-width: none !important;
+    padding-right: 0;
+    padding-left: 0;
+}
+
+.pocket-view > .container-fluid {
+    padding-right: 0 !important;
+    padding-left: 0 !important;
+}
+
+.pocket-header {
+    width: 100%;
+}
+
+.pocket-header-main,
+.pocket-header-module {
+    min-width: 0;
+}
+
+.pocket-header-brand,
+.pocket-header-user,
+.pocket-module-title {
+    min-width: 0;
+}
+
+.pocket-header-user {
+    max-width: 42%;
+}
+
+.pocket-module-title {
+    flex: 1 1 auto;
+}
+
+/* Los controles heredados adoptan la misma identidad GOLDEN. */
+.pocket-view .input-group-text {
+    color: var(--bs-golden-dark, #8b7355) !important;
+    background-color: var(--bs-golden-bg-badge, #f5e6a3) !important;
+    border-color: var(--bs-golden-light, #e6d690) !important;
+    font-weight: 600;
+}
+
+.pocket-view .form-label,
+.pocket-view label:not(.form-check-label) {
+    color: var(--bs-golden-dark, #8b7355);
+    font-weight: 600;
+}
+
+.pocket-view .table > thead > tr > th {
+    color: #fff !important;
+    background: linear-gradient(135deg, #b8860b 0%, #daa520 100%) !important;
+    border-color: #8b6914 !important;
+    vertical-align: middle;
+}
+
+.pocket-view .table > tbody > tr:hover > * {
+    background-color: rgba(212, 175, 55, 0.12);
+}
+
+.pocket-view .nav-pills .nav-link.active,
+.pocket-view .nav-pills .show > .nav-link {
+    color: #fff !important;
+    background-color: var(--bs-golden-primary, #d4af37) !important;
+}
+
+.pocket-view .modal-header,
+.pocket-body .cabeceraModal,
+.pocket-body .cabeceraBarra01,
+.pocket-body .cabeceraBarra02 {
+    color: #fff !important;
+    background: linear-gradient(135deg, #b8860b 0%, #daa520 100%) !important;
+}
+
+@media (max-width: 768px) {
+    .pocket-body {
+        margin-bottom: 0;
+    }
+
+    .pocket-footer {
+        display: none;
+    }
+
+    .pocket-content {
+        padding-right: 0.5rem !important;
+        padding-left: 0.5rem !important;
+    }
+
+    .pocket-view {
+        padding: 0.5rem;
+    }
+
+    .pocket-view .row {
+        --bs-gutter-x: 0.75rem;
+        --bs-gutter-y: 0.5rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .pocket-header-main {
+        padding: 0.5rem 0.75rem !important;
+    }
+
+    .pocket-header-brand {
+        flex: 1 1 auto;
+    }
+
+    .pocket-header-user {
+        flex: 0 1 48%;
+        max-width: 48%;
+        text-align: right;
+    }
+
+    .pocket-header-branch {
+        order: 3;
+        flex: 1 0 100%;
+        text-align: center;
+    }
+
+    .pocket-header-module {
+        padding: 0.5rem 0.75rem !important;
+    }
+
+    .pocket-module-title {
+        font-size: 0.875rem;
+    }
+}

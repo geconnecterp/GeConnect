@@ -7,14 +7,16 @@
     string sortDirInv = Model.SortDir.Equals("ASC") ? "DESC" : "ASC";
     int cont = 0;
 }
-<div class="table-responsive table-wrapper  table-wrapper">
-    <table class="table table-sm mb-0 table-hover table-wrapper-fixed-head" id="tbRTRxUL">
-        <thead class=" table-dark">
+<div class="grid-golden h-100">
+    <div class="grid-golden-body p-0">
+    <div class="table-responsive table-wrapper">
+    <table class="table table-sm mb-0 table-hover table-wrapper-fixed-head table-golden" id="tbRTRxUL">
+        <thead class="sticky-top table-golden-header-compact">
             <tr class="header">
-                <th scope="col" style="width:1%"></th>
-                <th scope="col">UL</th>
-                <th scope="col">Usuario</th>
-                <th scope="col">Estado</th>
+                <th scope="col" class="th-compact" style="width:1%"></th>
+                <th scope="col" class="th-compact">UL</th>
+                <th scope="col" class="th-compact">Usuario</th>
+                <th scope="col" class="th-compact">Estado</th>
             </tr>
         </thead>
         <tbody>
@@ -24,14 +26,16 @@
                 if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
 
                 <tr class="@clase" onclick="seleccionaRegistroUL(this)">
-                    <td>@cont </td>
-                    <td style="min-width:200px;">@item.ul_id</td>
-                    <td class="corta-linea">@item.usu_apellidoynombre
+                    <td class="td-compact">@cont </td>
+                    <td class="td-compact" style="min-width:200px;">@item.ul_id</td>
+                    <td class="td-compact corta-linea">@item.usu_apellidoynombre
                         @Html.Hidden("ul" + @cont, item.ul_id)
                     </td>
-                    <td>@item.ule_desc</td>
+                    <td class="td-compact">@item.ule_desc</td>
                 </tr>
             }
         </tbody>
     </table>
+    </div>
+    </div>
 </div>
