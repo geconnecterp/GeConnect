@@ -22,6 +22,7 @@ namespace gc.caja.core.Servicios.Implementacion.Seguridad
         private const string POST_VALIDA_INTEGRIDAD = "/ValidaIntegridadUsuarioCaja";
         private const string POST_APERTURA_CAJA = "/AperturaCaja";
         private const string POST_CIERRE_CAJA = "/CierreCaja";
+        private const string POST_CIERRE_CAJA_RENDICION = "/CierreCajaConRendicion";
         private const string GET_BUSQUEDA_CUENTA = "/BusquedaClientes";
         private const string GET_BUSQUEDA_DATOS_CLIENTE = "/BuscarDatosCliente";
         private const string POST_CONFIRMA_CONSUMIDOR_FINAL = "/ConfirmaConsumidorFinal";
@@ -243,6 +244,80 @@ namespace gc.caja.core.Servicios.Implementacion.Seguridad
             }
         }
 
+
+        public async Task<RespuestaGenerica<RespuestaDto>> CierreCajaConRendicion(CierreCajaRequestDto req, string token)
+        {
+            try
+            {
+                _logger.LogInformation($"CierreCajaConRendicion - request:{JsonConvert.SerializeObject(req)}");
+
+                var helper = new HelperAPI();
+                var client = helper.InicializaCliente(req, token, out StringContent contentData);
+                var link = $"{_appSettings.RutaBase}{RutaAPI}{POST_CIERRE_CAJA_RENDICION}";
+
+                using var response = await client.PostAsync(link, contentData);
+                var stringData = await response.Content.ReadAsStringAsync();
+                _logger.LogInformation($"CierreCajaConRendicion - status:{response.StatusCode}; response:{stringData}");
+
+                if (response.StatusCode == HttpStatusCode.OK)
+                {
+                    if (string.IsNullOrEmpty(stringData))
+                    {
+                        return new() { Ok = false, Mensaje = "No se recibio respuesta valida de la API" };
+                    }
+
+                    var apiResponse = JsonConvert.DeserializeObject<ApiResponse<RespuestaDto>>(stringData);
+                    if (apiResponse == null || apiResponse.Data == null)
+                    {
+                        return new() { Ok = false, Mensaje = "Error deserializando la respuesta de la API" };
+                    }
+
+                    var resp = apiResponse.Data;
+                    if (resp.resultado == 0)
+                    {
+                        return new RespuestaGenerica<RespuestaDto>
+                        {
+                            Ok = true,
+                            Mensaje = "OK",
+                            Entidad = apiResponse.Data
+                        };
+                    }
+                    else if (resp.resultado > 0)
+                    {
+                        return new RespuestaGenerica<RespuestaDto>
+                        {
+                            Ok = false,
+                            EsWarn = true,
+                            EsError = false,
+                            Mensaje = resp.resultado_msj,
+                            Entidad = apiResponse.Data
+                        };
+                    }
+                    else
+                    {
+                        return new RespuestaGenerica<RespuestaDto>
+                        {
+                            Ok = false,
+                            EsWarn = false,
+                            EsError = true,
+                            Mensaje = resp.resultado_msj,
+                            Entidad = apiResponse.Data
+                        };
+                    }
+                }
+                else
+                {
+                    var msg = string.IsNullOrWhiteSpace(stringData) ? await ReadApiErrorAsync(response) : stringData;
+                    _logger.LogWarning($"Error API ({response.StatusCode}): {msg}");
+                    return new() { Ok = false, Mensaje = msg };
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"{this.GetType().Name}-{MethodBase.GetCurrentMethod()?.Name} - {ex}");
+                return new() { Ok = false, Mensaje = "Hubo un error al intentar realizar el cierre de caja." };
+            }
+        }
         public async Task<RespuestaGenerica<CuentaBusquedaResultadoDto>> BusquedaClientes(string busqueda, string adm_id, string usu_id, string app, string token)
         {
             try
@@ -768,3 +843,4 @@ namespace gc.caja.core.Servicios.Implementacion.Seguridad
         }
     }
 }
+
