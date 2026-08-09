@@ -78,6 +78,33 @@ namespace gc.api.core.Servicios.LineaCaja
             return new() { resultado = -1, resultado_msj = "Hubo un error al cerrar la caja." };
         }
 
+
+        public RespuestaDto CierreCajaConRendicion(CierreCajaRequestDto reqDto)
+        {
+            _logger.Log(TraceEventType.Information, $"{MethodBase.GetCurrentMethod().Name} - request:{JsonConvert.SerializeObject(reqDto)}");
+            var sp = ConstantesGC.StoredProcedures.SP_CAJA_CIERRE;
+            var ps = new List<SqlParameter>() {
+                new SqlParameter("@usu_id", reqDto.usu_id),
+                new SqlParameter("@caja_id", reqDto.caja_id),
+                new SqlParameter("@adm_id", reqDto.adm_id),
+                new SqlParameter("@json_rendiciones", reqDto.json_rendiciones)
+            };
+
+            _logger.Log(
+                TraceEventType.Information,
+                $"{MethodBase.GetCurrentMethod().Name} - ejecutando {sp}. Caja={reqDto.caja_id}; Adm={reqDto.adm_id}; Usuario={reqDto.usu_id}; JsonRendiciones={reqDto.json_rendiciones}");
+
+            var res = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps);
+            if (res != null && res.Count > 0)
+            {
+                _logger.Log(TraceEventType.Information, $"{MethodBase.GetCurrentMethod().Name} - response:{JsonConvert.SerializeObject(res[0])}");
+                return res[0];
+            }
+
+            var sinRespuesta = new RespuestaDto { resultado = -1, resultado_msj = "El SP de cierre no devolvio respuesta." };
+            _logger.Log(TraceEventType.Warning, $"{MethodBase.GetCurrentMethod().Name} - response vacio:{JsonConvert.SerializeObject(sinRespuesta)}");
+            return sinRespuesta;
+        }
         /// <summary>
         /// esta metodo puede devolver 0,1 o mas registros 
         /// </summary>
@@ -252,3 +279,4 @@ namespace gc.api.core.Servicios.LineaCaja
         }
     }
 }
+
