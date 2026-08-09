@@ -328,7 +328,7 @@ $(function () {
 
                     setTimeout(() => {
                         AbrirMensaje(
-                            "AtenciÃ³n",
+                            "Atención",
                             response.mensaje,
                             function () {
                                 $("#msjModal").modal("hide");
@@ -686,7 +686,7 @@ $(function () {
 
     function mostrarErrorCritico(mensaje) {
         AbrirMensaje(
-            "ATENCIÃ“N",
+            "ATENCIÓN",
             mensaje,
             function () {
                 $("#msjModal").modal("hide");
@@ -716,7 +716,7 @@ $(function () {
 
     function mostrarAdvertenciaYSalir(mensaje) {
         AbrirMensaje(
-            "ATENCIÃ“N",
+            "ATENCIÓN",
             mensaje,
             function () {
                 $("#msjModal").modal("hide");

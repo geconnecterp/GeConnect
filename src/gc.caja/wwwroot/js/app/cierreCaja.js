@@ -48,12 +48,21 @@
 
     function registrarEventos() {
         $(document).on('click', '.cierre-instrumento-row', function () {
+            if (confirmando) {
+                return;
+            }
+
             seleccionarInstrumento($(this).data('ins-id'));
         });
 
         $(document).on('click', '.btn-cierre-editar-cantidad', function (event) {
             event.preventDefault();
             event.stopPropagation();
+
+            if (confirmando) {
+                return;
+            }
+
             abrirEditorCantidad($(this).data('index'));
         });
 
@@ -356,7 +365,8 @@
             function (respuesta) {
                 $('#msjModal').modal('hide');
                 if (respuesta === 'SI') {
-                    ejecutarConfirmacion();
+                    bloquearPantallaCierre('Confirmando cierre de caja. Aguarde, no toque nada hasta que el proceso termine...');
+                    setTimeout(ejecutarConfirmacion, 150);
                 }
             },
             true,
@@ -369,6 +379,7 @@
     function ejecutarConfirmacion() {
         const url = String(window.cierreConfirmarUrl || '').trim();
         if (!url) {
+            desbloquearPantallaCierre();
             mostrarMensaje('Error', 'No se encontro la URL de confirmacion.', 'error!');
             return;
         }
@@ -385,7 +396,7 @@
 
         logPaso('Confirmando cierre', payload);
         confirmando = true;
-        mostrarLoaderCierre('Confirmando cierre de caja. Aguarde, no toque nada hasta que el proceso termine...');
+        bloquearPantallaCierre('Confirmando cierre de caja. Aguarde, no toque nada hasta que el proceso termine...');
         $(SELECTORES.btnConfirmar).prop('disabled', true).html('<i class="bx bx-loader-alt bx-spin"></i> CERRANDO');
 
         $.ajax({
@@ -414,6 +425,7 @@
                 }
 
                 cierreFinalizado = true;
+                ocultarBloqueoPantallaCierre();
                 $(SELECTORES.btnCancelar).prop('disabled', true);
                 $(SELECTORES.btnConfirmar).prop('disabled', true).html('<i class="bx bx-check-circle"></i> CERRADO');
 
@@ -440,6 +452,7 @@
                     return;
                 }
 
+                desbloquearPantallaCierre();
                 confirmando = false;
                 $(SELECTORES.btnConfirmar).html('<i class="bx bx-check-circle"></i> CERRAR PV');
                 actualizarTotalGeneral();
@@ -669,6 +682,43 @@
         if (typeof ocultarLoader === 'function') {
             ocultarLoader();
         }
+    }
+
+    function bloquearPantallaCierre(mensaje) {
+        const texto = mensaje || 'Procesando cierre de caja. Aguarde, no toque nada hasta que el proceso termine...';
+        mostrarLoaderCierre(texto);
+
+        let $overlay = $('#cierreBloqueoPantalla');
+        if (!$overlay.length) {
+            $overlay = $('<div id="cierreBloqueoPantalla" role="status" aria-live="polite"></div>');
+            $overlay.css({
+                position: 'fixed',
+                inset: 0,
+                zIndex: 999998,
+                display: 'none',
+                background: 'rgba(0, 0, 0, 0.48)',
+                pointerEvents: 'auto'
+            });
+            $overlay.html('<div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);min-width:360px;max-width:560px;background:#fff;border:2px solid #d6a319;border-radius:8px;padding:26px;text-align:center;box-shadow:0 18px 50px rgba(0,0,0,.35);"><i class="bx bx-loader-alt bx-spin text-golden" style="font-size:3.5rem;"></i><div style="font-size:1.35rem;font-weight:700;margin-top:12px;color:#8a6410;">Cerrando PV</div><div class="cierre-bloqueo-mensaje" style="margin-top:8px;color:#333;"></div></div>');
+            $('body').append($overlay);
+        }
+
+        $overlay.find('.cierre-bloqueo-mensaje').text(texto);
+        $overlay.show();
+        $('#modalCierreCaja button, #modalCierreCaja input, #modalCierreCaja select, #modalCierreCaja textarea').prop('disabled', true);
+        $(SELECTORES.modal).addClass('cierre-confirmando');
+    }
+
+    function ocultarBloqueoPantallaCierre() {
+        ocultarLoaderCierre();
+        $('#cierreBloqueoPantalla').hide();
+        $(SELECTORES.modal).removeClass('cierre-confirmando');
+    }
+
+    function desbloquearPantallaCierre() {
+        ocultarBloqueoPantallaCierre();
+        $('#modalCierreCaja button, #modalCierreCaja input, #modalCierreCaja select, #modalCierreCaja textarea').prop('disabled', false);
+        actualizarTotalGeneral();
     }
 
     function mostrarMensaje(titulo, mensaje, tipo) {
