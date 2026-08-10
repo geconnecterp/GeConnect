@@ -7,12 +7,50 @@ let productoActualEnLista = null;
 // ✅ CORREGIDO: Solo mantener la variable de control principal
 let procesamientoMasivoActivo = false;
 
+// La botonera general solo corresponde a una carga manual ya iniciada.
+let cargaPreciosDetalleActivo = false;
+let cargaPreciosTieneCambiosTemporales = false;
+
+function actualizarVisibilidadBotoneraCargaPrecios() {
+    const $botonera = $("#botoneraProcesoCargaPrecios");
+    if (!$botonera.length) return;
+
+    const puedeConfirmar = cargaPreciosDetalleActivo && cargaPreciosTieneCambiosTemporales;
+
+    $("#btnAbmAceptar")
+        .toggleClass("d-none", !puedeConfirmar)
+        .prop("disabled", !puedeConfirmar);
+
+    $("#btnAbmCancelar").toggleClass("d-none", !cargaPreciosDetalleActivo);
+    $botonera.toggleClass("d-none", !cargaPreciosDetalleActivo);
+}
+
+function activarBotoneraCargaPrecios() {
+    cargaPreciosDetalleActivo = true;
+    cargaPreciosTieneCambiosTemporales = $("#tbProdDet tbody tr[data-carga='1']").length > 0;
+    actualizarVisibilidadBotoneraCargaPrecios();
+}
+
+function registrarCambioTemporalCargaPrecios() {
+    if (!cargaPreciosDetalleActivo) return;
+
+    cargaPreciosTieneCambiosTemporales = true;
+    actualizarVisibilidadBotoneraCargaPrecios();
+}
+
+function ocultarBotoneraCargaPrecios() {
+    cargaPreciosDetalleActivo = false;
+    cargaPreciosTieneCambiosTemporales = false;
+    actualizarVisibilidadBotoneraCargaPrecios();
+}
+
 // Variable global para almacenar filas modificadas durante procesamiento masivo
 window.filasModificadasGlobal = [];
 
 // REEMPLAZAR TODO EL BLOQUE DE ESTILOS EN $(function()) POR ESTO:
 $(function () {
-    
+    ocultarBotoneraCargaPrecios();
+
     // Inicializar el observador DOM para detectar cambios
     inicializarObservadorDOM();
 
@@ -66,6 +104,19 @@ $(function () {
             });
         }
     });
+
+    // Habilitar la confirmación solo cuando el servidor resguardó al menos un cambio temporal.
+    $(document).ajaxSuccess(function (event, xhr, settings, response) {
+        const url = (settings.url || "").toLowerCase();
+        const urlProducto = (resguardarCambiosProductoUrl || "").toLowerCase();
+        const urlLista = (resguardarCambiosProductoListaUrl || "").toLowerCase();
+        const esResguardo = (urlProducto && url.includes(urlProducto)) ||
+            (urlLista && url.includes(urlLista));
+
+        if (esResguardo && response && response.error !== true && response.warn !== true) {
+            registrarCambioTemporalCargaPrecios();
+        }
+    });
 });
 
 // Función para aplicar los cambios de _datosGenerales a todas las filas seleccionadas
@@ -96,6 +147,16 @@ function aplicarCambiosDatosGenerales() {
     if ($('#chkBon').is(':checked')) cambios.bon = $('#txtBon').val();
     if ($('#chkFl').is(':checked')) cambios.fl = $('#txtFl').val();
 
+    if (Object.prototype.hasOwnProperty.call(cambios, 'bon')) {
+        const validacionBonificacion = validarBonificacion(cambios.bon);
+        if (!validacionBonificacion.valida) {
+            mostrarErrorBonificacion($('#txtBon'), validacionBonificacion.mensaje);
+            return;
+        }
+        cambios.bon = validacionBonificacion.normalizada;
+        $('#txtBon').val(validacionBonificacion.normalizada);
+    }
+
     // Verificar que hay cambios para aplicar
     if (Object.keys(cambios).length === 0) {
         AbrirMensaje("Atención", "No hay cambios para aplicar. Seleccione al menos un campo y modifique su valor.",
@@ -120,6 +181,48 @@ function aplicarCambiosDatosGenerales() {
         // Si son pocas filas, proceder directamente
         iniciarProcesamiento(filasSeleccionadas, cambios, totalFilas);
     }
+}
+
+function validarBonificacion(valor) {
+    const bonificacion = (valor || '').trim();
+    if (!bonificacion || bonificacion === '0') {
+        return { valida: true, normalizada: '', mensaje: '' };
+    }
+
+    const coincidencia = bonificacion.match(/^(\d{1,3})\/(\d{1,3})$/);
+    if (!coincidencia) {
+        return {
+            valida: false,
+            normalizada: bonificacion,
+            mensaje: 'La bonificación debe tener el formato NNN/NNN.'
+        };
+    }
+
+    const numerador = parseInt(coincidencia[1], 10);
+    const denominador = parseInt(coincidencia[2], 10);
+    if (numerador <= 0 || denominador <= numerador) {
+        return {
+            valida: false,
+            normalizada: bonificacion,
+            mensaje: 'El denominador de la bonificación debe ser mayor que el numerador.'
+        };
+    }
+
+    return {
+        valida: true,
+        normalizada: `${String(numerador).padStart(3, '0')}/${String(denominador).padStart(3, '0')}`,
+        mensaje: ''
+    };
+}
+
+function mostrarErrorBonificacion($campo, mensaje) {
+    AbrirMensaje('Bonificación inválida', mensaje, function () {
+        $('#msjModal').modal('hide');
+        setTimeout(function () {
+            $campo.prop('readonly', false).prop('disabled', false).trigger('focus');
+            if ($campo[0]) $campo[0].select();
+        }, 100);
+    }, false, ['Corregir'], 'warn!', null);
 }
 
 // NUEVO: Función mejorada para iniciar el procesamiento por lotes
@@ -559,6 +662,7 @@ function calcularYResguardarListaSincrono(lp_id, datosProducto, $fila) {
             tp_pcosto: datosProducto.tp_pcosto || 0,
             p_pneto_base: datosProducto.tp_pneto || 0,
             lp_porc_mg: parseFloat($fila.find('input[name="lp_porc_mg"]').val()) || 0,
+            tp_margen: parseFloat($fila.find('.input-tp_margen_lista').val().replace(/,/g, '')) || 0,
             iva_situacion: $fila.find('input[name="iva_situacion"]').val() || 'E',
             iva_alicuota: parseFloat($fila.find('input[name="iva_alicuota"]').val()) || 0,
             in_alicuota: parseFloat($fila.find('input[name="in_alicuota"]').val()) || 0
@@ -580,7 +684,7 @@ function calcularYResguardarListaSincrono(lp_id, datosProducto, $fila) {
             iva_situacion: datosCalculo.iva_situacion || 'E',
             iva_alicuota: datosCalculo.iva_alicuota || 0,
             in_alicuota: datosCalculo.in_alicuota || 0,
-            tp_margen: parseFloat(response.pvta.p_margen) || 0,
+            tp_margen: datosCalculo.tp_margen,
             tp_pvta: parseFloat(response.pvta.p_pvta) || 0,
             tp_iva: parseFloat(response.pvta.p_iva) || 0,
             tp_in: parseFloat(response.pvta.p_in) || 0
@@ -598,7 +702,7 @@ function calcularYResguardarListaSincrono(lp_id, datosProducto, $fila) {
         return {
             success: resguardoResult.success,
             precio: parseFloat(response.pvta.p_pvta).toFixed(2),
-            margen: parseFloat(response.pvta.p_margen).toFixed(2),
+            margen: datosCalculo.tp_margen.toFixed(1),
             error: resguardoResult.error || null
         };
 
@@ -803,13 +907,13 @@ function resguardarCambiosProductoRapido(row) {
     // ✅ RECOPILAR: Datos de forma eficiente
     const datos = {
         p_id: productId,
-        tp_plista: parseFloat(row.find('.input-tp_plista').val().replace(/,/g, '')) || 0,
-        tp_dto1: parseFloat(row.find('.input-tp_dto1').val().replace(/,/g, '')) || 0,
-        tp_dto2: parseFloat(row.find('.input-tp_dto2').val().replace(/,/g, '')) || 0,
-        tp_dto3: parseFloat(row.find('.input-tp_dto3').val().replace(/,/g, '')) || 0,
-        tp_dto4: parseFloat(row.find('.input-tp_dto4').val().replace(/,/g, '')) || 0,
-        tp_dto_pa: parseFloat(row.find('.input-tp_dto_pa').val().replace(/,/g, '')) || 0,
-        tp_porc_flete: parseFloat(row.find('.input-tp_porc_flete').val().replace(/,/g, '')) || 0,
+        tp_plista: obtenerValorNumericoCampo(row.find('.input-tp_plista')),
+        tp_dto1: obtenerValorNumericoCampo(row.find('.input-tp_dto1')),
+        tp_dto2: obtenerValorNumericoCampo(row.find('.input-tp_dto2')),
+        tp_dto3: obtenerValorNumericoCampo(row.find('.input-tp_dto3')),
+        tp_dto4: obtenerValorNumericoCampo(row.find('.input-tp_dto4')),
+        tp_dto_pa: obtenerValorNumericoCampo(row.find('.input-tp_dto_pa')),
+        tp_porc_flete: obtenerValorNumericoCampo(row.find('.input-tp_porc_flete')),
         tp_boni: row.find('.input-tp_boni').val() || '',
         tp_pcosto: parseFloat(row.find('.input-tp_pcosto').val().replace(/,/g, '')) || 0,
         tp_margen: parseFloat(row.find('.input-tp_margen').val().replace(/,/g, '')) || 0,
@@ -855,13 +959,13 @@ function calcularCostoSincronoRapido(row) {
     // Recopilar datos
     const datos = {
         p_id: productId,
-        tp_plista: parseFloat(row.find('.input-tp_plista').val().replace(/,/g, '')) || 0,
-        tp_dto1: parseFloat(row.find('.input-tp_dto1').val().replace(/,/g, '')) || 0,
-        tp_dto2: parseFloat(row.find('.input-tp_dto2').val().replace(/,/g, '')) || 0,
-        tp_dto3: parseFloat(row.find('.input-tp_dto3').val().replace(/,/g, '')) || 0,
-        tp_dto4: parseFloat(row.find('.input-tp_dto4').val().replace(/,/g, '')) || 0,
-        tp_dto_pa: parseFloat(row.find('.input-tp_dto_pa').val().replace(/,/g, '')) || 0,
-        tp_porc_flete: parseFloat(row.find('.input-tp_porc_flete').val().replace(/,/g, '')) || 0,
+        tp_plista: obtenerValorNumericoCampo(row.find('.input-tp_plista')),
+        tp_dto1: obtenerValorNumericoCampo(row.find('.input-tp_dto1')),
+        tp_dto2: obtenerValorNumericoCampo(row.find('.input-tp_dto2')),
+        tp_dto3: obtenerValorNumericoCampo(row.find('.input-tp_dto3')),
+        tp_dto4: obtenerValorNumericoCampo(row.find('.input-tp_dto4')),
+        tp_dto_pa: obtenerValorNumericoCampo(row.find('.input-tp_dto_pa')),
+        tp_porc_flete: obtenerValorNumericoCampo(row.find('.input-tp_porc_flete')),
         tp_boni: row.find('.input-tp_boni').val() || ''
     };
 
@@ -1775,6 +1879,23 @@ function configuracionInputMaskOptimizada() {
         }
     };
 
+    const maskConfigMargen = {
+        alias: "numeric",
+        groupSeparator: ",",
+        radixPoint: ".",
+        autoGroup: true,
+        digits: 1,
+        digitsOptional: false,
+        integerDigits: 3,
+        min: 0,
+        max: 999.9,
+        rightAlign: true,
+        placeholder: "0",
+        clearMaskOnLostFocus: false,
+        showMaskOnHover: false,
+        showMaskOnFocus: false
+    };
+
     const maskConfigBoni = {
         mask: "999/999",
         placeholder: "",
@@ -1785,7 +1906,8 @@ function configuracionInputMaskOptimizada() {
     // Aplicar máscaras de forma eficiente con selección optimizada
     Inputmask(maskConfig3Decimales).mask('.input-tp_plista, .input-tp_pcosto, .input-tp_pneto');
     Inputmask(maskConfig1Decimal).mask('.input-tp_dto1, .input-tp_dto2, .input-tp_dto3, .input-tp_dto4, .input-tp_dto_pa, .input-tp_porc_flete');
-    Inputmask(maskConfig2Decimales).mask('.input-tp_margen, .input-tin_alicuota, .input-tp_pvta');
+    Inputmask(maskConfigMargen).mask('.input-tp_margen');
+    Inputmask(maskConfig2Decimales).mask('.input-tin_alicuota, .input-tp_pvta');
     Inputmask(maskConfigBoni).mask('.input-tp_boni');
 
     // Configurar eventos de edición
@@ -1910,13 +2032,11 @@ function calcularPrecioVentaMargenLista(row, lpId, pId, nuevoPrecioVenta) {
                     // *** PASO 2: ACTUALIZAR EL CAMPO VISIBLE DE MARGEN ***
                     const campoMargenVisible = row.find('.input-tp_margen_lista');
                     if (campoMargenVisible.length > 0) {
-                        campoMargenVisible.val(parseFloat(response.pvta.p_margen).toFixed(2));
-                        campoMargenVisible.data('original-value', parseFloat(response.pvta.p_margen));
+                        campoMargenVisible.val(parseFloat(response.pvta.p_margen).toFixed(1));
                         marcarCampoModificadoLista(campoMargenVisible);
                     }
 
                     // *** PASO 3: MARCAR EL CAMPO DE PRECIO DE VENTA COMO MODIFICADO ***
-                    campoPVenta.data('original-value', nuevoPrecioVenta);
                     marcarCampoModificadoLista(campoPVenta);
 
                     // *** PASO 4: RESGUARDAR AUTOMÁTICAMENTE LOS CAMBIOS USANDO FUNCIÓN UNIFICADA ***
@@ -1938,9 +2058,6 @@ function calcularPrecioVentaMargenLista(row, lpId, pId, nuevoPrecioVenta) {
                         callback: function (response, success) {
                             if (success && response) {
                                 console.log('Cambios de margen calculado resguardados exitosamente');
-                                // Actualizar valores originales después del resguardo exitoso
-                                campoMargenVisible.data('original-value', parseFloat(response.pvta.p_margen));
-                                campoPVenta.data('original-value', nuevoPrecioVenta);
                             } else {
                                 console.error('Error al resguardar cambios calculados');
                             }
@@ -1998,11 +2115,7 @@ function resguardarCambiosListaCalculados(row, lpId, pId, nuevoPrecioVenta, dato
         logDetallado: true,
         callback: function (response, success) {
             if (success && response) {
-                // Actualizar valores originales
-                const campoMargen = row.find('.input-tp_margen_lista');
-                const campoPVenta = row.find('.input-tp_pvta_lista');
-                campoMargen.data('original-value', parseFloat(datosCalculados.p_margen));
-                campoPVenta.data('original-value', nuevoPrecioVenta);
+                console.log('Cambios calculados de la lista resguardados correctamente.');
             }
         }
     });
@@ -2291,7 +2404,15 @@ function cargarDatosEnVistaPrevia(productoId) {
         dto4: $fila.find('.input-tp_dto4').data('original-value') || '',
         dpo: $fila.find('.input-tp_dto_pa').data('original-value') || '',
         bon: $fila.find('.input-tp_boni').data('original-value') || '',
-        fl: $fila.find('.input-tp_porc_flete').data('original-value') || ''
+        fl: $fila.find('.input-tp_porc_flete').data('original-value') || '',
+        pcosto: $fila.find('.input-tp_pcosto').data('original-value') || '',
+        margen: $fila.find('.input-tp_margen').data('original-value') || '',
+        pneto: $fila.find('.input-tp_pneto').data('original-value') || '',
+        pvta: $fila.find('.input-tp_pvta').data('original-value') || '',
+        iva: $fila.find('input[name="p_iva"]').val() || '',
+        internos: $fila.find('input[name="p_in"]').val() || '',
+        fechaActualizacion: ($fila.data('actu-fecha') || '').toString().trim(),
+        usuarioActualizacion: ($fila.data('usuario-actu') || '').toString().trim()
     };
 
     // Verificar si existe la vista previa (_datosGenerales)
@@ -2305,6 +2426,14 @@ function cargarDatosEnVistaPrevia(productoId) {
         $('.input-DpoValor').val(datosOriginales.dpo);
         $('.input-BonValor').val(datosOriginales.bon);
         $('.input-FlValor').val(datosOriginales.fl);
+        $('.input-PCostoValor').val(formatearNumeroVistaPrevia(datosOriginales.pcosto, 3));
+        $('.input-MargenValor').val(formatearNumeroVistaPrevia(datosOriginales.margen, 1));
+        $('.input-PNetoValor').val(formatearNumeroVistaPrevia(datosOriginales.pneto, 3));
+        $('.input-PVentaValor').val(formatearNumeroVistaPrevia(datosOriginales.pvta, 2));
+        $('.input-IvaValor').val(formatearNumeroVistaPrevia(datosOriginales.iva, 3));
+        $('.input-InternosValor').val(formatearNumeroVistaPrevia(datosOriginales.internos, 3));
+        $('.input-FechaActuValor').val(datosOriginales.fechaActualizacion);
+        $('.input-UsuarioActuValor').val(datosOriginales.usuarioActualizacion);
 
         console.log("Datos originales cargados en vista previa:", datosOriginales);
     } else {
@@ -2412,7 +2541,6 @@ function configurarBotonesProdCP() {
         AbrirWaiting("Cargando productos...");
         buscarProductosDetalle();
         inicializaControlCuenta();
-        $("#btnAbmAceptar").prop("disabled", false);
     });
 
     // Configuración de estados iniciales
@@ -2427,7 +2555,7 @@ function configurarBotonesProdCP() {
                 }                
             }, true, ["Continuar", "Cancelar"], "info!", null);
 
-    }).prop("disabled", true);
+    });
 
     //$("#lbRel01, #lbRel02, #lbRel03").text((i, txt) => ["PROVEEDOR", "RUBRO", "FAMILIA"][i]);
     $("#lbRel01").text("PROVEEDOR");
@@ -2642,6 +2770,9 @@ function limpiarEstadoTemporalLocal() {
         window.filasModificadasGlobal = [];
     }
 
+    cargaPreciosTieneCambiosTemporales = false;
+    actualizarVisibilidadBotoneraCargaPrecios();
+
     console.log("✅ Estado temporal limpiado");
 }
 
@@ -2736,6 +2867,7 @@ function buscarProductosDetalle() {
                 // Configurar visualización
                 $("#divFiltro").removeClass("show");
                 $("#divDetalle").addClass("show");
+                activarBotoneraCargaPrecios();
 
                 // Inicializar con método optimizado
                 inicializarTablaProductos();
@@ -2856,8 +2988,21 @@ function procesarLote(filas, inicio, tamanoLote, totalFilas) {
             }
         });
 
-        // Formatear campos con 2 decimales
-        $fila.find('.input-tp_margen, .input-tin_alicuota, .input-tp_pvta').each(function () {
+        // Formatear margen con 1 decimal
+        $fila.find('.input-tp_margen').each(function () {
+            const $input = $(this);
+            let originalValue = $input.data('original-value');
+
+            if (originalValue !== undefined && !$input.hasClass('campo-modificado')) {
+                let numValue = parseFloat(originalValue);
+                if (!isNaN(numValue)) {
+                    $input.val(numValue.toFixed(1));
+                }
+            }
+        });
+
+        // Formatear impuestos y precio de venta con 2 decimales
+        $fila.find('.input-tin_alicuota, .input-tp_pvta').each(function () {
             const $input = $(this);
             let originalValue = $input.data('original-value');
 
@@ -3019,8 +3164,8 @@ function asegurarEstilosCamposModificados() {
             .html(`
                 /* Estilo para campos modificados */
                 .campo-modificado {
-                    background-color: #d4f1f9 !important; /* Celeste pastel claro */
-                    border-color: #a8e1f5 !important;
+                    background-color: #d1e7dd !important;
+                    border-color: #75b798 !important;
                 }
                 
                 /* Indicador visual de cambio */
@@ -3032,7 +3177,7 @@ function asegurarEstilosCamposModificados() {
                     height: 0;
                     border-style: solid;
                     border-width: 0 8px 8px 0;
-                    border-color: transparent #4bacc6 transparent transparent;
+                    border-color: transparent #198754 transparent transparent;
                 }
                 
                 /* Contenedor para posicionar el indicador */
@@ -3230,7 +3375,26 @@ function configurarInputsListaPreciosOptimizado() {
         .prop('readonly', true)
         .addClass('campo-readonly');
 
-    // Una sola configuración de InputMask para todos los campos
+    // Margen: tres enteros y un decimal
+    Inputmask({
+        alias: "numeric",
+        groupSeparator: ",",
+        radixPoint: ".",
+        autoGroup: true,
+        digits: 1,
+        digitsOptional: false,
+        integerDigits: 3,
+        min: 0,
+        max: 999.9,
+        rightAlign: true,
+        prefix: '',
+        placeholder: "0",
+        clearMaskOnLostFocus: false,
+        showMaskOnHover: false,
+        showMaskOnFocus: false
+    }).mask('.input-tp_margen_lista');
+
+    // Precio de venta: dos decimales
     Inputmask({
         alias: "numeric",
         groupSeparator: ",",
@@ -3239,12 +3403,11 @@ function configurarInputsListaPreciosOptimizado() {
         digits: 2,
         digitsOptional: false,
         rightAlign: true,
-        prefix: '',
         placeholder: "0",
         clearMaskOnLostFocus: false,
         showMaskOnHover: false,
         showMaskOnFocus: false
-    }).mask('.input-tp_margen_lista, .input-tp_pvta_lista');
+    }).mask('.input-tp_pvta_lista');
 
     // Función para activar el siguiente campo en la tabla de listas
     function activarSiguienteCampoLista(campoActual) {
@@ -3322,6 +3485,25 @@ function configurarInputsListaPreciosOptimizado() {
         })
         .off('keydown.enterCamposLista')
         .on('keydown.enterCamposLista', '.input-tp_margen_lista, .input-tp_pvta_lista', function (e) {
+            if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+                e.preventDefault();
+
+                const $actual = $(this);
+                const selector = $actual.hasClass('input-tp_margen_lista')
+                    ? '.input-tp_margen_lista'
+                    : '.input-tp_pvta_lista';
+                const $filaDestino = e.key === 'ArrowUp'
+                    ? $actual.closest('tr').prevAll('tr').first()
+                    : $actual.closest('tr').nextAll('tr').first();
+                const $destino = $filaDestino.find(selector);
+
+                $actual.trigger('blur');
+                if ($destino.length) {
+                    setTimeout(function () { $destino.trigger('click'); }, 0);
+                }
+                return;
+            }
+
             if (e.key === 'Enter' || e.key === 'Tab') {
                 e.preventDefault();
 
@@ -3335,20 +3517,23 @@ function configurarInputsListaPreciosOptimizado() {
                 let numValue = parseFloat(value);
 
                 if (!isNaN(numValue)) {
-                    $this.val(numValue.toFixed(2));
+                    $this.val(numValue.toFixed($this.hasClass('input-tp_margen_lista') ? 1 : 2));
                 }
 
-                // Determinar el tipo de campo y procesar
-                if ($this.hasClass('input-tp_margen_lista')) {
-                    // Actualizar margen con debounce
-                    actualizarMargenListaDebounced(row, lpId, pId, numValue);
-                } else if ($this.hasClass('input-tp_pvta_lista')) {
-                    // *** CORREGIDO: Solo calcular margen, no llamar a actualizarPrecioVentaListaDebounced ***
-                    if (!isNaN(numValue) && numValue > 0) {
-                        console.log(`Precio de venta confirmado con Enter/Tab, calculando margen: ${numValue}`);
-                        calcularPrecioVentaMargenLista(row, lpId, pId, numValue);
-                    } else {
-                        console.warn(`Valor de precio de venta inválido: ${numValue}, no se realizará cálculo`);
+                const estabaModificado = $this.hasClass('campo-modificado');
+                const habiaCambiosEnFila = row.find('.campo-modificado').length > 0;
+                const fueModificado = marcarCampoModificadoLista($this);
+                if (fueModificado || estabaModificado || habiaCambiosEnFila) {
+                    // Determinar el tipo de campo y procesar
+                    if ($this.hasClass('input-tp_margen_lista')) {
+                        actualizarMargenListaDebounced(row, lpId, pId, numValue);
+                    } else if ($this.hasClass('input-tp_pvta_lista')) {
+                        if (!isNaN(numValue) && numValue > 0) {
+                            console.log(`Precio de venta confirmado con Enter/Tab, calculando margen: ${numValue}`);
+                            calcularPrecioVentaMargenLista(row, lpId, pId, numValue);
+                        } else {
+                            console.warn(`Valor de precio de venta inválido: ${numValue}, no se realizará cálculo`);
+                        }
                     }
                 }
 
@@ -3372,14 +3557,17 @@ function configurarInputsListaPreciosOptimizado() {
             let numValue = parseFloat(value);
 
             if (!isNaN(numValue)) {
-                $this.val(numValue.toFixed(2));
+                $this.val(numValue.toFixed(1));
             }
 
             // Volver a readonly
             $this.prop('readonly', true).addClass('campo-readonly');
 
-            // Actualizar con debounce
-            actualizarMargenListaDebounced(row, lpId, pId, numValue);
+            const estabaModificado = $this.hasClass('campo-modificado');
+            const habiaCambiosEnFila = row.find('.campo-modificado').length > 0;
+            if (marcarCampoModificadoLista($this) || estabaModificado || habiaCambiosEnFila) {
+                actualizarMargenListaDebounced(row, lpId, pId, numValue);
+            }
         })
         .off('blur.pvtaLista')
         .on('blur.pvtaLista', '.input-tp_pvta_lista', function () {
@@ -3403,12 +3591,15 @@ function configurarInputsListaPreciosOptimizado() {
             // Volver a readonly
             $this.prop('readonly', true).addClass('campo-readonly');
 
-            // *** CORREGIDO: Solo calcular margen, no llamar a actualizarPrecioVentaListaDebounced ***
-            if (!isNaN(numValue) && numValue > 0) {
-                console.log(`Precio de venta editado en lista, calculando margen: ${numValue}`);
-                calcularPrecioVentaMargenLista(row, lpId, pId, numValue);
-            } else {
-                console.warn(`Valor de precio de venta inválido: ${numValue}, no se realizará cálculo`);
+            const estabaModificado = $this.hasClass('campo-modificado');
+            const habiaCambiosEnFila = row.find('.campo-modificado').length > 0;
+            if (marcarCampoModificadoLista($this) || estabaModificado || habiaCambiosEnFila) {
+                if (!isNaN(numValue) && numValue > 0) {
+                    console.log(`Precio de venta editado en lista, calculando margen: ${numValue}`);
+                    calcularPrecioVentaMargenLista(row, lpId, pId, numValue);
+                } else {
+                    console.warn(`Valor de precio de venta inválido: ${numValue}, no se realizará cálculo`);
+                }
             }
         })
         .off('click.desactivarCamposLista')
@@ -3466,22 +3657,41 @@ function configurarEventosEdicionOptimizado() {
 
     // Evento keydown unificado
     $(document).on('keydown.camposEditables', camposEditables, function (e) {
+        const $campo = $(this);
+
+        if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+            e.preventDefault();
+
+            if ($campo.hasClass('input-tp_boni')) {
+                const validacionBonificacion = validarBonificacion($campo.val());
+                if (!validacionBonificacion.valida) {
+                    mostrarErrorBonificacion($campo, validacionBonificacion.mensaje);
+                    return;
+                }
+                $campo.val(validacionBonificacion.normalizada);
+            }
+
+            $campo.trigger('blur');
+            setTimeout(function () {
+                activarCampoVertical($campo, e.key === 'ArrowUp' ? -1 : 1);
+            }, 0);
+            return;
+        }
+
         if (e.key === 'Enter' || e.key === 'Tab') {
             e.preventDefault();
 
-            const row = $(this).closest('tr');
-            const esSecuencia01 = $(this).is(camposSecuencia01);
-            const esMargen = $(this).hasClass('input-tp_margen');
-            const esPrecioVenta = $(this).hasClass('input-tp_pvta');
+            if ($campo.hasClass('input-tp_boni')) {
+                const validacionBonificacion = validarBonificacion($campo.val());
+                if (!validacionBonificacion.valida) {
+                    mostrarErrorBonificacion($campo, validacionBonificacion.mensaje);
+                    return;
+                }
+                $campo.val(validacionBonificacion.normalizada);
+            }
 
-            marcarCampoModificado(this);
-            actualizarEstadoCarga(row);
-            activarSiguienteCampo(this);
-
-            // Aplicar cálculos según tipo
-            if (esSecuencia01) calcularCostoAPIDebounced(row);
-            else if (esMargen) calcularPrecioVentaAPIDebounced(row);
-            else if (esPrecioVenta) calcularPrecioVentaMargenAPIDebounced(row);
+            $campo.trigger('blur');
+            setTimeout(function () { activarSiguienteCampo($campo); }, 0);
         }
     });
 
@@ -3498,19 +3708,81 @@ function configurarEventosEdicionOptimizado() {
             if ($(this).prop('readonly')) return;
 
             const row = $(this).closest('tr');
+
+            if ($(this).hasClass('input-tp_boni')) {
+                const validacionBonificacion = validarBonificacion($(this).val());
+                if (!validacionBonificacion.valida) {
+                    mostrarErrorBonificacion($(this), validacionBonificacion.mensaje);
+                    return;
+                }
+
+                $(this).val(validacionBonificacion.normalizada);
+                const estabaModificado = $(this).hasClass('campo-modificado');
+                const habiaCambiosEnFila = row.find('.campo-modificado').length > 0;
+                const fueModificado = marcarCampoModificado(this);
+                $(this).prop('readonly', true).addClass('campo-readonly');
+                if (fueModificado || estabaModificado || habiaCambiosEnFila) {
+                    actualizarEstadoCarga(row);
+                    getCallback()(row);
+                }
+                return;
+            }
+
             const value = $(this).val().replace(/,/g, '');
             const numValue = parseFloat(value);
 
             if (!isNaN(numValue)) {
                 const decimals = $(this).hasClass('input-tp_plista') || $(this).hasClass('input-tp_pcosto') || $(this).hasClass('input-tp_pneto') ? 3 :
-                    $(this).hasClass('input-tp_dto1') || $(this).hasClass('input-tp_dto2') || $(this).hasClass('input-tp_dto3') || $(this).hasClass('input-tp_dto4') || $(this).hasClass('input-tp_dto_pa') || $(this).hasClass('input-tp_porc_flete') ? 1 : 2;
+                    $(this).hasClass('input-tp_dto1') || $(this).hasClass('input-tp_dto2') || $(this).hasClass('input-tp_dto3') || $(this).hasClass('input-tp_dto4') || $(this).hasClass('input-tp_dto_pa') || $(this).hasClass('input-tp_porc_flete') || $(this).hasClass('input-tp_margen') ? 1 : 2;
                 $(this).val(numValue.toFixed(decimals));
             }
 
+            const estabaModificado = $(this).hasClass('campo-modificado');
+            const habiaCambiosEnFila = row.find('.campo-modificado').length > 0;
+            const fueModificado = marcarCampoModificado(this);
             $(this).prop('readonly', true).addClass('campo-readonly');
-            getCallback()(row);
+            if (fueModificado || estabaModificado || habiaCambiosEnFila) {
+                actualizarEstadoCarga(row);
+                getCallback()(row);
+            }
         });
     });
+}
+
+function formatearNumeroVistaPrevia(valor, decimales) {
+    const numero = parseFloat(valor);
+    return Number.isFinite(numero) ? numero.toFixed(decimales) : '';
+}
+
+function activarCampoVertical(campoActual, direccion) {
+    const $campoActual = $(campoActual);
+    const $filaActual = $campoActual.closest('tr');
+    const clases = [
+        'input-tp_plista', 'input-tp_dto1', 'input-tp_dto2', 'input-tp_dto3',
+        'input-tp_dto4', 'input-tp_dto_pa', 'input-tp_porc_flete', 'input-tp_boni',
+        'input-tp_margen', 'input-tin_alicuota', 'input-tp_pvta'
+    ];
+    const claseCampo = clases.find(clase => $campoActual.hasClass(clase));
+    if (!claseCampo) return;
+
+    const $filaDestino = direccion < 0
+        ? $filaActual.prevAll('tr[data-p-id]').first()
+        : $filaActual.nextAll('tr[data-p-id]').first();
+    const $campoDestino = $filaDestino.find(`.${claseCampo}`).first();
+    if (!$campoDestino.length) return;
+
+    const productoDestino = $filaDestino.data('p-id');
+    if (productoDestino && productoDestino !== productoActualEnLista) {
+        productoActualEnLista = productoDestino;
+        $('#divProdLista').attr('data-producto-actual', productoDestino);
+        destacarFilaSeleccionada(productoDestino);
+        cargarDatosEnVistaPrevia(productoDestino);
+        buscarProductoListaOptimizado(productoDestino);
+    }
+
+    $campoDestino.prop('readonly', false).removeClass('campo-readonly');
+    $campoDestino.trigger('focus');
+    if ($campoDestino[0]) $campoDestino[0].select();
 }
 
 // ✅ FUNCIÓN AUXILIAR: Activar siguiente campo
@@ -3542,13 +3814,13 @@ function resguardarCambiosProducto(row) {
     // Recopilar todos los valores del producto
     const datos = {
         p_id: row.data('p-id'),
-        tp_plista: parseFloat(row.find('.input-tp_plista').val().replace(/,/g, '')),
-        tp_dto1: parseFloat(row.find('.input-tp_dto1').val().replace(/,/g, '')),
-        tp_dto2: parseFloat(row.find('.input-tp_dto2').val().replace(/,/g, '')),
-        tp_dto3: parseFloat(row.find('.input-tp_dto3').val().replace(/,/g, '')),
-        tp_dto4: parseFloat(row.find('.input-tp_dto4').val().replace(/,/g, '')),
-        tp_dto_pa: parseFloat(row.find('.input-tp_dto_pa').val().replace(/,/g, '')),
-        tp_porc_flete: parseFloat(row.find('.input-tp_porc_flete').val().replace(/,/g, '')),
+        tp_plista: obtenerValorNumericoCampo(row.find('.input-tp_plista')),
+        tp_dto1: obtenerValorNumericoCampo(row.find('.input-tp_dto1')),
+        tp_dto2: obtenerValorNumericoCampo(row.find('.input-tp_dto2')),
+        tp_dto3: obtenerValorNumericoCampo(row.find('.input-tp_dto3')),
+        tp_dto4: obtenerValorNumericoCampo(row.find('.input-tp_dto4')),
+        tp_dto_pa: obtenerValorNumericoCampo(row.find('.input-tp_dto_pa')),
+        tp_porc_flete: obtenerValorNumericoCampo(row.find('.input-tp_porc_flete')),
         tp_boni: row.find('.input-tp_boni').val(),
         tp_pcosto: parseFloat(row.find('.input-tp_pcosto').val().replace(/,/g, '')),
         tp_margen: parseFloat(row.find('.input-tp_margen').val().replace(/,/g, '')),
@@ -3640,7 +3912,23 @@ function calcularCostoAPI(row) {
 }
 
 function calcularPrecioVentaAPI(row) {
-    calcularProductoCompleto(row);
+    const productId = row.data('p-id');
+    if (row.data('processing') === true) return;
+
+    row.data('processing', true);
+    try {
+        // Un cambio de margen no debe recalcular el costo: usa el costo vigente de la fila.
+        const resultadoPrecio = calcularPrecioVentaSincrono(row);
+        if (!resultadoPrecio.success) return;
+
+        actualizarListasIndividual(productId, resultadoPrecio.datos);
+        marcarCamposModificados(row, resultadoPrecio.datos);
+        resguardarCambiosProducto(row);
+    } catch (error) {
+        console.error(`Error al recalcular el precio del producto ${productId}:`, error);
+    } finally {
+        row.data('processing', false);
+    }
 }
 
 function calcularPrecioVentaMargenAPI(row) {
@@ -3883,11 +4171,17 @@ function marcarCampoModificado(input) {
                     $input.hasClass('input-tp_dto3') ||
                     $input.hasClass('input-tp_dto4') ||
                     $input.hasClass('input-tp_dto_pa') ||
-                    $input.hasClass('input-tp_porc_flete')) {
-                    tolerancia = 0.09; // Para campos con 1 decimal
-                } else if ($input.hasClass('input-tp_plista') ||
-                    $input.hasClass('input-tp_pcosto') ||
+                    $input.hasClass('input-tp_porc_flete') ||
+                    $input.hasClass('input-tp_margen')) {
+                    // La grilla muestra un decimal: comparar los valores tal como los ve el usuario.
+                    numOriginal = Math.round((numOriginal + Number.EPSILON) * 10) / 10;
+                    numActual = Math.round((numActual + Number.EPSILON) * 10) / 10;
+                    tolerancia = 0.0001;
+                } else if ($input.hasClass('input-tp_pcosto') ||
                     $input.hasClass('input-tp_pneto')) {
+                    // Los cálculos de GECO pueden diferir una milésima por redondeo intermedio.
+                    tolerancia = 0.0011;
+                } else if ($input.hasClass('input-tp_plista')) {
                     tolerancia = 0.0009; // Para campos con 3 decimales
                 }
 
@@ -3901,6 +4195,12 @@ function marcarCampoModificado(input) {
             console.error("Error al comparar valores:", e);
             esModificado = false; // En caso de error, no marcar como modificado
         }
+    }
+
+    if (!esModificado &&
+        ($input.hasClass('input-tp_pcosto') || $input.hasClass('input-tp_pneto')) &&
+        Number.isFinite(parseFloat(valorOriginal))) {
+        $input.val(parseFloat(valorOriginal).toFixed(3));
     }
 
     // Aplicar o quitar la clase según corresponda
@@ -3958,8 +4258,11 @@ function marcarCampoModificadoLista(input) {
         // Si no hay valor original, considerar modificado si hay valor actual
         esModificado = !isNaN(numActual) && numActual !== 0;
     } else {
-        // Consideramos diferente si hay una diferencia mayor a 0.01
-        esModificado = Math.abs(numOriginal - numActual) > 0.01;
+        const decimalesVisibles = $input.hasClass('input-tp_margen_lista') ? 1 : 2;
+        const factor = Math.pow(10, decimalesVisibles);
+        const originalVisible = Math.round((numOriginal + Number.EPSILON) * factor) / factor;
+        const actualVisible = Math.round((numActual + Number.EPSILON) * factor) / factor;
+        esModificado = Math.abs(originalVisible - actualVisible) > 0.0001;
     }
 
     // Aplicar o quitar la clase según corresponda
@@ -4023,34 +4326,9 @@ function actualizarEstadoCarga(row) {
         let hayAlgunCampoModificado = false;
 
         row.find('input[data-original-value]').each(function () {
-            const $input = $(this);
-            const valorOriginal = $input.data('original-value');
-            const valorActual = $input.val().replace(/,/g, '');
-
-            // Verificar si está modificado según el tipo de campo
-            if ($input.hasClass('input-tp_boni')) {
-                // Lógica para bonificación
-                const originalTrim = (valorOriginal || '').toString().trim();
-                const actualTrim = (valorActual || '').toString().trim();
-
-                if (!((originalTrim === actualTrim) ||
-                    (originalTrim === "0" && actualTrim === "") ||
-                    (originalTrim === "" && actualTrim === "0"))) {
-                    hayAlgunCampoModificado = true;
-                    return false; // Salir del bucle
-                }
-            } else {
-                // Lógica para campos numéricos (simplificada para rendimiento)
-                try {
-                    const numOriginal = parseFloat(valorOriginal);
-                    const numActual = parseFloat(valorActual);
-
-                    if (!isNaN(numOriginal) && !isNaN(numActual) &&
-                        Math.abs(numOriginal - numActual) > 0.0001) {
-                        hayAlgunCampoModificado = true;
-                        return false; // Salir del bucle
-                    }
-                } catch (e) { }
+            if (marcarCampoModificado(this)) {
+                hayAlgunCampoModificado = true;
+                return false;
             }
         });
 
@@ -4075,23 +4353,58 @@ function actualizarEstadoCarga(row) {
 // Función para actualizar el margen en una lista
 function actualizarMargenLista(row, lpId, pId, nuevoMargen) {
     const campoMargen = row.find('.input-tp_margen_lista');
-    
-    if (!marcarCampoModificadoLista(campoMargen)) return;
+    const margenModificado = marcarCampoModificadoLista(campoMargen);
+    const margenOriginal = parseFloat(campoMargen.data('original-value'));
+    const margenCalculo = !margenModificado && Number.isFinite(margenOriginal)
+        ? margenOriginal
+        : nuevoMargen;
+
+    const calculo = realizarLlamadaSincrona(calcularPrecioVentaBaseUrl, {
+        p_id: pId,
+        tp_pcosto: parseFloat(row.find('input[name="p_pcosto"]').val()) || 0,
+        lp_prevision_tot: parseFloat(row.find('input[name="lp_prevision_tot"]').val()) || 0,
+        lp_prevision_pin: parseFloat(row.find('input[name="lp_prevision_pin"]').val()) || 0,
+        tp_margen: margenCalculo,
+        iva_situacion: row.find('input[name="iva_situacion"]').val() || 'E',
+        iva_alicuota: parseFloat(row.find('input[name="iva_alicuota"]').val()) || 0,
+        in_alicuota: parseFloat(row.find('input[name="in_alicuota"]').val()) || 0
+    });
+
+    if (!calculo || calculo.error || calculo.warn || !calculo.pvta) {
+        console.error('No se pudo recalcular la lista:', calculo?.msg || 'Respuesta inválida');
+        return;
+    }
+
+    const campoPVenta = row.find('.input-tp_pvta_lista');
+    const nuevoPrecioVenta = parseFloat(calculo.pvta.p_pvta) || 0;
+    campoPVenta
+        .val(nuevoPrecioVenta.toFixed(2))
+        .prop('readonly', true)
+        .addClass('campo-readonly');
+    row.find('input[name="tp_pneto"]').val(calculo.pvta.p_pneto);
+    row.find('input[name="tp_margen"]').val(margenCalculo);
+    row.find('input[name="tp_iva"]').val(calculo.pvta.p_iva);
+    row.find('input[name="tp_in"]').val(calculo.pvta.p_in);
+
+    marcarCampoModificadoLista(campoPVenta);
 
     const datosBase = extraerDatosDesdeFilaLista(row);
     const datos = construirDatosResguardoLista({
         ...datosBase,
         p_id: pId,
-        tp_margen: nuevoMargen,
-        tp_pvta: parseFloat(row.find('.input-tp_pvta_lista').val().replace(/,/g, ''))
+        tp_margen: margenCalculo,
+        tp_pvta: nuevoPrecioVenta,
+        p_pneto: parseFloat(calculo.pvta.p_pneto) || 0,
+        tp_iva: parseFloat(calculo.pvta.p_iva) || 0,
+        tp_in: parseFloat(calculo.pvta.p_in) || 0
     }, lpId);
 
     resguardarCambiosListaUnificado(datos, {
         modo: 'sync',
         callback: (response, success) => {
             if (success) {
-                campoMargen.data('original-value', nuevoMargen);
-                row.data('carga', 1).attr('data-carga', '1');
+                const tieneCambios = row.find('.campo-modificado').length > 0;
+                row.data('carga', tieneCambios ? 1 : 0).attr('data-carga', tieneCambios ? '1' : '0');
             }
         }
     });
@@ -4168,9 +4481,6 @@ function actualizarPrecioVentaLista(row, lpId, pId, nuevoPrecioVenta) {
 
             console.log(`Datos que se enviarán:`, datos);
 
-            // Actualizar el valor original para futuras comparaciones
-            campoPrecioVenta.data('original-value', nuevoPrecioVenta);
-
             // Llamar al servidor para resguardar los cambios
             console.log(`Iniciando llamada AJAX a: ${resguardarCambiosProductoListaUrl}`);
 
@@ -4195,7 +4505,7 @@ function actualizarPrecioVentaLista(row, lpId, pId, nuevoPrecioVenta) {
                         if (response.margen) {
                             const campoMargen = row.find('.input-tp_margen_lista');
                             campoMargen.val(parseFloat(response.margen).toFixed(2));
-                            campoMargen.data('original-value', parseFloat(response.margen));
+                            marcarCampoModificadoLista(campoMargen);
                         }
                     }
                 },
@@ -4520,6 +4830,7 @@ function calcularPrecioListaParaGrilla(lp_id, datosProducto, $fila) {
             tp_pcosto: datosProducto.tp_pcosto || 0,
             p_pneto_base: datosProducto.tp_pneto || 0,
             lp_porc_mg: parseFloat($fila.find('input[name="lp_porc_mg"]').val()) || 0,
+            tp_margen: parseFloat($fila.find('.input-tp_margen_lista').val().replace(/,/g, '')) || 0,
             iva_situacion: $fila.find('input[name="iva_situacion"]').val() || 'E',
             iva_alicuota: parseFloat($fila.find('input[name="iva_alicuota"]').val()) || 0,
             in_alicuota: parseFloat($fila.find('input[name="in_alicuota"]').val()) || 0
@@ -4537,7 +4848,7 @@ function calcularPrecioListaParaGrilla(lp_id, datosProducto, $fila) {
             success: true,
             datos: {
                 tp_pvta: parseFloat(response.pvta.p_pvta).toFixed(2),
-                tp_margen: parseFloat(response.pvta.p_margen).toFixed(2),
+                tp_margen: datosCalculo.tp_margen.toFixed(1),
                 tp_pneto: parseFloat(response.pvta.p_pneto).toFixed(3),
                 tp_iva: parseFloat(response.pvta.p_iva).toFixed(2),
                 tp_in: parseFloat(response.pvta.p_in).toFixed(2)
@@ -4558,8 +4869,6 @@ function actualizarCamposVisiblesEnGrilla($fila, datosCalculados) {
             const valorAnterior = $campoPVenta.val();
             $campoPVenta.val(datosCalculados.tp_pvta);
 
-            // ✅ CRÍTICO: SIEMPRE marcar como modificado cuando es calculado automáticamente
-            $campoPVenta.data('original-value', parseFloat(datosCalculados.tp_pvta));
             marcarCampoModificadoLista($campoPVenta);
 
             console.log(`📝 Campo PVenta lista marcado como modificado: ${valorAnterior} → ${datosCalculados.tp_pvta}`);
@@ -4571,8 +4880,6 @@ function actualizarCamposVisiblesEnGrilla($fila, datosCalculados) {
             const valorAnterior = $campoMargen.val();
             $campoMargen.val(datosCalculados.tp_margen);
 
-            // ✅ CRÍTICO: SIEMPRE marcar como modificado cuando es calculado automáticamente
-            $campoMargen.data('original-value', parseFloat(datosCalculados.tp_margen));
             marcarCampoModificadoLista($campoMargen);
 
             console.log(`📝 Campo Margen lista marcado como modificado: ${valorAnterior} → ${datosCalculados.tp_margen}`);
@@ -4594,6 +4901,18 @@ function actualizarCamposVisiblesEnGrilla($fila, datosCalculados) {
     }
 }
 
+function obtenerValorNumericoCampo($input) {
+    if (!$input || !$input.length) return 0;
+
+    if (!$input.hasClass('campo-modificado')) {
+        const original = parseFloat($input.data('original-value'));
+        if (Number.isFinite(original)) return original;
+    }
+
+    const actual = parseFloat(($input.val() || '').toString().replace(/,/g, ''));
+    return Number.isFinite(actual) ? actual : 0;
+}
+
 // ✅ FUNCIÓN SÍNCRONA: Calcular costo
 function calcularCostoSincrono(row) {
     const productId = row.data('p-id');
@@ -4603,13 +4922,13 @@ function calcularCostoSincrono(row) {
     // Recopilar datos
     const datos = {
         p_id: productId,
-        tp_plista: parseFloat(row.find('.input-tp_plista').val().replace(/,/g, '')) || 0,
-        tp_dto1: parseFloat(row.find('.input-tp_dto1').val().replace(/,/g, '')) || 0,
-        tp_dto2: parseFloat(row.find('.input-tp_dto2').val().replace(/,/g, '')) || 0,
-        tp_dto3: parseFloat(row.find('.input-tp_dto3').val().replace(/,/g, '')) || 0,
-        tp_dto4: parseFloat(row.find('.input-tp_dto4').val().replace(/,/g, '')) || 0,
-        tp_dto_pa: parseFloat(row.find('.input-tp_dto_pa').val().replace(/,/g, '')) || 0,
-        tp_porc_flete: parseFloat(row.find('.input-tp_porc_flete').val().replace(/,/g, '')) || 0,
+        tp_plista: obtenerValorNumericoCampo(row.find('.input-tp_plista')),
+        tp_dto1: obtenerValorNumericoCampo(row.find('.input-tp_dto1')),
+        tp_dto2: obtenerValorNumericoCampo(row.find('.input-tp_dto2')),
+        tp_dto3: obtenerValorNumericoCampo(row.find('.input-tp_dto3')),
+        tp_dto4: obtenerValorNumericoCampo(row.find('.input-tp_dto4')),
+        tp_dto_pa: obtenerValorNumericoCampo(row.find('.input-tp_dto_pa')),
+        tp_porc_flete: obtenerValorNumericoCampo(row.find('.input-tp_porc_flete')),
         tp_boni: row.find('.input-tp_boni').val()
     };
 
@@ -4932,6 +5251,7 @@ function procesarListaIndividualOptimizado(lp_id, datosProducto, $fila) {
         tp_pcosto: datosProducto.tp_pcosto || 0,
         p_pneto_base: datosProducto.tp_pneto || 0,
         lp_porc_mg: parseFloat($fila.find('input[name="lp_porc_mg"]').val()) || 0,
+        tp_margen: parseFloat($fila.find('.input-tp_margen_lista').val().replace(/,/g, '')) || 0,
         iva_situacion: $fila.find('input[name="iva_situacion"]').val() || 'E',
         iva_alicuota: parseFloat($fila.find('input[name="iva_alicuota"]').val()) || 0,
         in_alicuota: parseFloat($fila.find('input[name="in_alicuota"]').val()) || 0
@@ -4952,7 +5272,7 @@ function procesarListaIndividualOptimizado(lp_id, datosProducto, $fila) {
         return {
             success: resguardoResult.success,
             precio: parseFloat(response.pvta.p_pvta).toFixed(2),
-            margen: parseFloat(response.pvta.p_margen).toFixed(2)
+            margen: datosCalculo.tp_margen.toFixed(1)
         };
 
     } catch (error) {
@@ -4965,7 +5285,7 @@ function construirDatosResguardo(datosProducto, lp_id, datosCalculo, pvtaCalcula
     return {
         p_id: datosProducto.p_id,
         lp_id: lp_id,
-        tp_margen: parseFloat(pvtaCalculado.p_margen) || 0,
+        tp_margen: datosCalculo.tp_margen,
         tp_pvta: parseFloat(pvtaCalculado.p_pvta) || 0,
         p_pcosto: datosProducto.tp_pcosto || 0,
         p_pneto: parseFloat(pvtaCalculado.p_pneto) || 0,

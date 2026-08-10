@@ -144,8 +144,8 @@ input[readonly]:not(.campo-readonly) {
 
 /* Estilo para campos modificados */
 .campo-modificado {
-    background-color: #d4f1f9 !important;
-    border-color: #a8e1f5 !important;
+    background-color: #d1e7dd !important;
+    border-color: #75b798 !important;
 }
 
 /* Indicador visual de cambio - Optimizado para ocupar menos espacio */
@@ -157,7 +157,7 @@ input[readonly]:not(.campo-readonly) {
     height: 0;
     border-style: solid;
     border-width: 0 6px 6px 0;
-    border-color: transparent #4bacc6 transparent transparent;
+    border-color: transparent #198754 transparent transparent;
 }
 
 /* NUEVO: Optimización para encabezados de tabla que contienen campos de 3 decimales */
@@ -282,6 +282,20 @@ input[readonly]:not(.campo-readonly) {
 /* NUEVO: Estilo especial para destacar valores numéricos importantes */
 .input-tp_pcosto, .input-tp_pneto, .input-tp_pvta {
     font-weight: 500; /* Ligeramente más grueso */
+}
+
+.formacion-vigente-campos {
+    flex-wrap: wrap;
+    gap: 0.4rem 0.75rem;
+}
+
+.formacion-vigente-campos .campo-edicion-texto {
+    min-width: 140px;
+}
+
+.formacion-vigente-campos .campo-edicion-texto input {
+    min-width: 135px;
+    font-size: 0.75rem;
 }
 
 /* NUEVO: Asegurar que la tabla se renderiza con anchos fijos */

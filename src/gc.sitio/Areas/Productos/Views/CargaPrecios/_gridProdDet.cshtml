@@ -14,12 +14,9 @@
 @functions {
     public string GeneraStyle(decimal ratioNum)
     {
-        if (ratioNum > 1)
-            return "color: blue; font-weight: bold;";
-        else if (ratioNum < 1)
-            return "color: red; font-weight: bold;";
-        else
-            return "color: black; font-weight: normal;";
+        return ratioNum > 0 && ratioNum != 1
+            ? "color: #198754; font-weight: bold;"
+            : "color: black; font-weight: normal;";
     }
     // public int GetColspan(PrecioListaDetalleDto reg)
     // {
@@ -125,7 +122,9 @@
                             // Verificar si estamos en modo de carga temporal
                             bool modoTemporal = item.carga == 1;
 
-                            <tr class="@clase" data-p-id="@item.p_id" data-carga="@item.carga">
+                            <tr class="@clase" data-p-id="@item.p_id" data-carga="@item.carga"
+                                data-actu-fecha="@item.p_actu_fecha.ToString("dd/MM/yyyy HH:mm")"
+                                data-usuario-actu="@item.usu_id">
                                 <!-- CORREGIDO: Celda para checkbox de selección individual con mejor estructura -->
                                 <td class="check-column">
                                     <div class="check-producto-container">
@@ -225,7 +224,7 @@
                                 <td class="@Model.ObtenerClase(item.tp_margen)">
                                     <div class="input-container">
                                         <input type="text" class="form-control form-control-sm input-tp_margen input-numeric"
-                                               value="@(item.tp_margen.ToString("F2"))"
+                                               value="@(item.tp_margen.ToString("F1"))"
                                                data-p-id="@item.p_id"
                                                data-original-value="@item.p_margen" />
                                         @Html.Hidden("p_margen", item.p_margen)

@@ -37,7 +37,8 @@
         Model.Modelo != ModeloFilter.PRECIO_LISTA &&
         Model.Modelo != ModeloFilter.VENTA_SORTEO_CONSULTA)
         {
-            <div class="col-md-2 col-sm-6">
+            <div id="@(Model.Modelo == ModeloFilter.PRODUCTO_CARGA_PRECIO ? "botoneraProcesoCargaPrecios" : null)"
+                 class="col-md-2 col-sm-6 @(Model.Modelo == ModeloFilter.PRODUCTO_CARGA_PRECIO ? "d-none" : null)">
                 <div class="d-flex justify-content-sm-center">
                     @if (Model.Modelo != ModeloFilter.ETIQUETA)
                     {
