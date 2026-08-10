@@ -267,7 +267,12 @@ function ActualizarLinkBotonVerDetalle() {
 	var descTipoCompte = $("#tco_id option:selected").text();//
 	var cta = $("#Cuenta").val();
 	var link = VerDetalleDeCompteDeRPUrl + "?idTipoCompte=" + tipoCompte + "&nroCompte=" + nroCompte + "&depoSelec=" + depoSelec + "&notaAuto=" + notaAuto + "&turno=" + turno + "&ponerEnCurso=" + ponerEnCurso + "&ulCantidad=" + ul + "&rp=" + rp + "&ctaId=" + cta + "&tipoCuenta=" + tipoCuenta + "&fechaCompte=" + fechaCompte + "&monto=" + monto + "&descTipoCompte=" + descTipoCompte;
-	linkVerDetalle = link;
+	if (!tipoCompte || tipoCompte.trim() === "" || !nroCompte || nroCompte.trim() === "" || nroCompte === "-") {
+		linkVerDetalle = "";
+	}
+	else {
+		linkVerDetalle = link;
+	}
 	$("#VerDetalle").prop("href", link);
 }
 
@@ -501,6 +506,7 @@ function ValidarCamposEnComprobantesDeRP(cuenta, tipo, nroCompte, monto) {
 	if (cuenta == "") {
 		AbrirMensaje("Atención", "Debe seleccionar una cuenta.", function () {
 			$("#msjModal").modal("hide");
+			$("#Rel01").trigger('focus');
 			return true;
 		}, false, ["Aceptar"], "error!", null);
 		return false;
@@ -508,20 +514,15 @@ function ValidarCamposEnComprobantesDeRP(cuenta, tipo, nroCompte, monto) {
 	if (tipo == "") {
 		AbrirMensaje("Atención", "Debe seleccionar un tipo de comprobante.", function () {
 			$("#msjModal").modal("hide");
+			$("#tco_id").trigger('focus');
 			return true;
 		}, false, ["Aceptar"], "error!", null);
 		return false;
 	}
-	if (nroCompte == "") {
+	if (nroCompte == "" || nroCompte.length < 12) {
 		AbrirMensaje("Atención", "Debe ingresar un número de comprobante válido.", function () {
 			$("#msjModal").modal("hide");
-			return true;
-		}, false, ["Aceptar"], "error!", null);
-		return false;
-	}
-	if (nroCompte.length < 12) {
-		AbrirMensaje("Atención", "Debe ingresar un número de comprobante válido.", function () {
-			$("#msjModal").modal("hide");
+			$("#NroComprobantePtoVta").trigger('focus');
 			return true;
 		}, false, ["Aceptar"], "error!", null);
 		return false;
@@ -529,7 +530,7 @@ function ValidarCamposEnComprobantesDeRP(cuenta, tipo, nroCompte, monto) {
 	if (monto == 0) {
 		AbrirMensaje("Atención", "Debe ingresar un monto mayor a 0.", function () {
 			$("#msjModal").modal("hide");
-
+			$("#txtMonto").trigger('focus');
 			return true;
 		}, false, ["Aceptar"], "error!", null);
 		return false;
@@ -539,7 +540,7 @@ function ValidarCamposEnComprobantesDeRP(cuenta, tipo, nroCompte, monto) {
 		if (cantComptes >= 7) {
 			AbrirMensaje("Atención", "Máximo de 6 comprobantes.", function () {
 				$("#msjModal").modal("hide");
-
+				$("#tbComptesDeRP").trigger('focus');
 				return true;
 			}, false, ["Aceptar"], "error!", null);
 			return false;

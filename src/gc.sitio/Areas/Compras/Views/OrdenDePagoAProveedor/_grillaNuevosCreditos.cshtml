@@ -41,8 +41,8 @@
 						<td class="@Model.GrillaCreditosNueva.ObtenerClase(item.concepto) cell-fit-content">@Model.GrillaCreditosNueva.FormatearDato(item.concepto, FormatDato.Ninguno)</td>
 						<td class="@Model.GrillaCreditosNueva.ObtenerClase(item.cm_compte_cuota) cell-fit-content">@Model.GrillaCreditosNueva.FormatearDato(item.cm_compte_cuota, FormatDato.Ninguno)</td>
 						<td class="@Model.GrillaCreditosNueva.ObtenerClase(item.cv_fecha_vto) cell-fit-content">@Model.GrillaCreditosNueva.FormatearDato(item.cv_fecha_vto, FormatDato.Fecha)</td>
-						<td class="@Model.GrillaCreditosNueva.ObtenerClase(item.cv_importe) cell-fit-content">@Model.GrillaCreditosNueva.FormatearDato(item.cv_importe, FormatDato.Monto)</td>
-						<td class="@Model.GrillaCreditosNueva.ObtenerClase(item.cv_imputado) cell-fit-content">@Model.GrillaCreditosNueva.FormatearDato(item.cv_imputado, FormatDato.Monto)</td>
+						<td class="@Model.GrillaCreditosNueva.ObtenerClase(item.cv_importe) text-end cell-fit-content">@GridHelper.FormatearDato(item.cv_importe, FormatDato.Monto, true)</td>
+						<td class="@Model.GrillaCreditosNueva.ObtenerClase(item.cv_imputado) text-end cell-fit-content">@GridHelper.FormatearDato(item.cv_imputado, FormatDato.Monto, true)</td>
 						<td style="display:none;">@item.dia_movi</td>
 						<td style="display:none;">@item.cm_compte</td>
 						<td style="display:none;">@item.tco_id</td>

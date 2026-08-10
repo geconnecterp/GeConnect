@@ -78,8 +78,8 @@
 										<td class="@Model.GrillaObligacionesNuevas.ObtenerClase(item.concepto) cell-fit-content">@Model.GrillaObligacionesNuevas.FormatearDato(item.concepto, FormatDato.Ninguno)</td>
 										<td class="@Model.GrillaObligacionesNuevas.ObtenerClase(item.cm_compte_cuota) cell-fit-content">@Model.GrillaObligacionesNuevas.FormatearDato(item.cm_compte_cuota, FormatDato.Ninguno)</td>
 										<td class="@Model.GrillaObligacionesNuevas.ObtenerClase(item.cv_fecha_vto) cell-fit-content">@Model.GrillaObligacionesNuevas.FormatearDato(item.cv_fecha_vto, FormatDato.Fecha)</td>
-										<td class="@Model.GrillaObligacionesNuevas.ObtenerClase(item.cv_importe) cell-fit-content">@Model.GrillaObligacionesNuevas.FormatearDato(item.cv_importe, FormatDato.Monto)</td>
-										<td class="@Model.GrillaObligacionesNuevas.ObtenerClase(item.cv_imputado) cell-fit-content">@Model.GrillaObligacionesNuevas.FormatearDato(item.cv_imputado, FormatDato.Monto)</td>
+										<td class="@Model.GrillaObligacionesNuevas.ObtenerClase(item.cv_importe) text-end cell-fit-content">@GridHelper.FormatearDato(item.cv_importe, FormatDato.Monto, true)</td>
+										<td class="@Model.GrillaObligacionesNuevas.ObtenerClase(item.cv_imputado) text-end cell-fit-content">@GridHelper.FormatearDato(item.cv_imputado, FormatDato.Monto, true)</td>
 										<td style="display:none;">@item.dia_movi</td>
 										<td style="display:none;">@item.cm_compte</td>
 										<td style="display:none;">@item.tco_id</td>
@@ -91,21 +91,6 @@
 					</table>
 				</div>
 			</div>
-			@* <div class="row justify-content-sm-center mb-1">
-				<div class="col-md-2">
-					<div class="d-flex justify-content-sm-center">
-						<button id="btnAnterior1" class="btn btn-primary btn-sm mt-1 me-1" type="button" title="Anterior" disabled>
-							<i class="bx bx-arrow-to-left bx-xs"></i>Anterior
-						</button>
-						<button id="btnSiguiente1" class="btn btn-primary btn-sm mt-1 me-1" type="button" title="Siguiente">
-							<i class="bx bx-arrow-to-right bx-xs"></i>Siguiente
-						</button>
-						<button id="btnAbmCancelar" class="btn btn-danger btn-sm mt-1 me-1" type="button" title="Cancelar" onclick="btnAbmCancelar_click();">
-							<i class="bx bx-x-circle bx-xs"></i>Cancelar
-						</button>
-					</div>
-				</div>
-			</div> *@
 			<div class="row" id="divObligaciones">
 			</div>
 		</fieldset>
@@ -139,8 +124,8 @@
 										<td class="@Model.GrillaCreditosNueva.ObtenerClase(item.concepto) cell-fit-content">@Model.GrillaCreditosNueva.FormatearDato(item.concepto, FormatDato.Ninguno)</td>
 										<td class="@Model.GrillaCreditosNueva.ObtenerClase(item.cm_compte_cuota) cell-fit-content">@Model.GrillaCreditosNueva.FormatearDato(item.cm_compte_cuota, FormatDato.Ninguno)</td>
 										<td class="@Model.GrillaCreditosNueva.ObtenerClase(item.cv_fecha_vto) cell-fit-content">@Model.GrillaCreditosNueva.FormatearDato(item.cv_fecha_vto, FormatDato.Fecha)</td>
-										<td class="@Model.GrillaCreditosNueva.ObtenerClase(item.cv_importe) cell-fit-content">@Model.GrillaCreditosNueva.FormatearDato(item.cv_importe, FormatDato.Monto)</td>
-										<td class="@Model.GrillaCreditosNueva.ObtenerClase(item.cv_imputado) cell-fit-content">@Model.GrillaCreditosNueva.FormatearDato(item.cv_imputado, FormatDato.Monto)</td>
+										<td class="@Model.GrillaCreditosNueva.ObtenerClase(item.cv_importe) text-end cell-fit-content">@GridHelper.FormatearDato(item.cv_importe, FormatDato.Monto, true)</td>
+										<td class="@Model.GrillaCreditosNueva.ObtenerClase(item.cv_imputado) text-end cell-fit-content">@GridHelper.FormatearDato(item.cv_imputado, FormatDato.Monto, true)</td>
 										<td style="display:none;">@item.dia_movi</td>
 										<td style="display:none;">@item.cm_compte</td>
 										<td style="display:none;">@item.tco_id</td>

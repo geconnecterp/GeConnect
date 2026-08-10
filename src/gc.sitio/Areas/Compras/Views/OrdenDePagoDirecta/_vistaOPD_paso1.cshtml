@@ -81,7 +81,7 @@
 										<td class="@Model.GrillaObligaciones.ObtenerClase(item.fecha_vencimiento) cell-fit-content">@Model.GrillaObligaciones.FormatearDato(item.fecha_vencimiento, FormatDato.Fecha)</td>
 										<td class="@Model.GrillaObligaciones.ObtenerClase(item.gasto) cell-fit-content">@Model.GrillaObligaciones.FormatearDato(item.gasto, FormatDato.Ninguno)</td>
 										<td class="@Model.GrillaObligaciones.ObtenerClase(item.motivo) cell-fit-content">@Model.GrillaObligaciones.FormatearDato(item.motivo, FormatDato.Ninguno)</td>
-										<td class="@Model.GrillaObligaciones.ObtenerClase(item.imputado) cell-fit-content">@Model.GrillaObligaciones.FormatearDato((item.imputado * item.signo), FormatDato.Monto)</td>
+										<td class="@Model.GrillaObligaciones.ObtenerClase(item.imputado) text-end cell-fit-content">@GridHelper.FormatearDato((item.imputado * item.signo), FormatDato.Monto, true)</td>
 										<td style="display:none;">@item.afip_id</td>
 										<td style="display:none;">@item.cm_compte</td>
 										<td style="display:none;">@item.tco_id</td>

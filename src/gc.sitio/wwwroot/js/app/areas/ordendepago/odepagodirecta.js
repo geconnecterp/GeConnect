@@ -853,7 +853,13 @@ function AceptarDesdeSeleccionarTipoDeOP() {
 
 function CargarMascaras() {
 	//$("#itemOPD_cm_cuit").inputmask("99-99999999-9");
-	AplicarMascaraCuit("00");
+	var tipo = $("#listaCondAfip").val();
+	if (tipo != "") {
+		AplicarMascaraCuit(tipo);
+	}
+	else {
+		AplicarMascaraCuit("00");
+	}
 	$("#itemOPD_cm_compte_pto_vta").inputmask("9999");
 	$("#itemOPD_cm_compte_pto_nro").inputmask("99999999");
 

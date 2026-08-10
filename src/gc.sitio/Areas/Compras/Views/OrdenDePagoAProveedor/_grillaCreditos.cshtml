@@ -44,7 +44,7 @@
 						<td class="@Model.ObtenerClase(item.concepto) cell-fit-content">@Model.FormatearDato(item.concepto, FormatDato.Ninguno)</td>
 						<td class="@Model.ObtenerClase(item.cm_compte_cuota) cell-fit-content">@Model.FormatearDato(item.cm_compte_cuota, FormatDato.Ninguno)</td>
 						<td class="@Model.ObtenerClase(item.cv_fecha_vto) cell-fit-content">@Model.FormatearDato(item.cv_fecha_vto, FormatDato.Fecha)</td>
-						<td class="@Model.ObtenerClase(item.cv_importe) cell-fit-content">@Model.FormatearDato(item.cv_importe, FormatDato.Monto)</td>
+						<td class="@Model.ObtenerClase(item.cv_importe) cell-fit-content text-end">@GridHelper.FormatearDato(item.cv_importe, FormatDato.Monto, true)</td>
 						<td style="display:none;">@item.dia_movi</td>
 						<td style="display:none;">@item.cm_compte</td>
 						<td style="display:none;">@item.tco_id</td>

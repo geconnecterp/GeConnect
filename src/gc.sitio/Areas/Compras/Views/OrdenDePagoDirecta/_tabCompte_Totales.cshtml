@@ -1,4 +1,5 @@
-﻿@model GridCoreSmart<OrdenDeCompraConceptoDto>
+﻿@using static gc.infraestructura.Helpers.GridHelper
+@model GridCoreSmart<OrdenDeCompraConceptoDto>
 @{
 	var alt = true;
 	string clase = string.Empty;
@@ -19,7 +20,7 @@
 					if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
 					<tr class="@clase">
 						<td class="align-left">@item.Concepto</td>
-						<td class="align-right font-bold">@item.Importe</td>
+						<td class="align-right font-bold">@GridHelper.FormatearDato(item.Importe, FormatDato.Monto, true)</td>
 					</tr>
 				}
 			}

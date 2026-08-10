@@ -20,7 +20,7 @@
 					if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
 					<tr class="@clase" onclick="selectReg(this, 'tbListaRetenciones_Paso2')" ondblclick="selectRegDbl(this, 'tbListaRetenciones_Paso2')">
 						<td class="@Model.ObtenerClase(item.concepto_retencion) cell-fit-content">@Model.FormatearDato(item.concepto_retencion, FormatDato.Ninguno)</td>
-						<td class="@Model.ObtenerClase(item.retencion) cell-fit-content">@Model.FormatearDato(item.retencion, FormatDato.Monto)</td>
+						<td class="@Model.ObtenerClase(item.retencion) text-end cell-fit-content">@GridHelper.FormatearDato(item.retencion, FormatDato.Monto, true)</td>
 					</tr>
 				}
 			}
