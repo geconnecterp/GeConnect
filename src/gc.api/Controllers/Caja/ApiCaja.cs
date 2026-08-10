@@ -75,6 +75,37 @@ namespace gc.api.Controllers.Caja
             return Ok(new ApiResponse<RespuestaDto>(res));
         }
 
+
+        [HttpPost]
+        [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<RespuestaDto>))]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        [Route("[action]")]
+        public IActionResult CierreCajaConRendicion(CierreCajaRequestDto req)
+        {
+            if (string.IsNullOrEmpty(req.usu_id) ||
+                string.IsNullOrEmpty(req.caja_id) ||
+                string.IsNullOrEmpty(req.adm_id) ||
+                string.IsNullOrWhiteSpace(req.json_rendiciones))
+            {
+                return BadRequest("Los parametros usu_id, caja_id, adm_id y json_rendiciones son requeridos.");
+            }
+
+            _logger.LogInformation(
+                "CierreCajaConRendicion request. Caja={Caja}; Adm={Adm}; Usuario={Usuario}; JsonRendiciones={JsonRendiciones}",
+                req.caja_id,
+                req.adm_id,
+                req.usu_id,
+                req.json_rendiciones);
+
+            var res = _apiCajaServicio.CierreCajaConRendicion(req);
+
+            _logger.LogInformation(
+                "CierreCajaConRendicion response. Resultado={Resultado}; Mensaje={Mensaje}",
+                res.resultado,
+                res.resultado_msj);
+
+            return Ok(new ApiResponse<RespuestaDto>(res));
+        }
         [HttpGet]
         [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<CuentaBusquedaResultadoDto>))]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
@@ -214,3 +245,4 @@ namespace gc.api.Controllers.Caja
         }
     }
 }
+

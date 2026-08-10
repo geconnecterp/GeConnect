@@ -1,0 +1,272 @@
+﻿@{
+    ViewData["Title"] = "Cierre de Caja";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container-fluid p-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card card-golden shadow-sm">
+                <div class="card-header bg-gradient-golden">
+                    <h4 class="mb-0 text-white">
+                        <i class="bx bx-lock-alt me-1"></i>
+                        Cierre de Caja
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-success border-golden ncdev-alert-golden mb-4" role="alert">
+                        <i class="bx bx-check-circle me-1"></i>
+                        <strong>Caja validada correctamente.</strong>
+                        El sistema verificara pendientes y luego solicitara la rendicion final.
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <label class="form-label">Usuario</label>
+                            <input type="text" class="form-control" value="@ViewBag.Usuario" readonly />
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Caja</label>
+                            <input type="text" class="form-control" value="@ViewBag.CajaNombre" readonly />
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Proceso</label>
+                            <input type="text" class="form-control" value="@ViewBag.Proceso" readonly />
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Cierre</label>
+                            <input type="text" class="form-control" value="@ViewBag.Cierre" readonly />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade modal-golden"
+     id="modalCierreCaja"
+     tabindex="-1"
+     aria-labelledby="modalCierreCajaLabel"
+     aria-hidden="true"
+     data-bs-backdrop="static"
+     data-bs-keyboard="false">
+    <div class="modal-dialog modal-fullscreen">
+        <div class="modal-content">
+            <div class="modal-header bg-gradient-golden text-white">
+                <div>
+                    <h5 class="modal-title mb-0" id="modalCierreCajaLabel">
+                        <i class="bx bx-lock-alt"></i>
+                        Cierre de Caja
+                    </h5>
+                    <small class="fw-bold">Control de pendientes y rendicion final</small>
+                </div>
+            </div>
+
+            <div class="modal-body p-4">
+                <div class="row g-3 mb-3">
+                    <div class="col-md-3">
+                        <label class="form-label">Usuario</label>
+                        <input type="text" class="form-control" value="@ViewBag.Usuario" readonly />
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Caja</label>
+                        <input type="text" class="form-control" value="@ViewBag.CajaNombre" readonly />
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Proceso</label>
+                        <input type="text" class="form-control" value="@ViewBag.Proceso" readonly />
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Cierre</label>
+                        <input type="text" class="form-control" value="@ViewBag.Cierre" readonly />
+                    </div>
+                </div>
+
+                <div class="alert alert-info border-golden mb-3" id="panelCierreEstado" role="alert">
+                    <i class="bx bx-loader-alt bx-spin me-1"></i>
+                    Verificando cobranzas diferidas pendientes...
+                </div>
+
+                <div class="card card-golden shadow-sm d-none" id="panelCierrePendientes">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h6 class="mb-0 fw-bold">
+                            <i class="bx bx-error-circle"></i>
+                            Pendientes que bloquean el cierre
+                        </h6>
+                        <span class="badge bg-danger" id="lblCierrePendientesCount">0</span>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive rendicion-tabla">
+                            <table class="table table-golden table-hover mb-0" id="tblCierrePendientes">
+                                <thead class="table-golden-header">
+                                    <tr>
+                                        <th>Tipo</th>
+                                        <th>Comprobante</th>
+                                        <th>Cliente</th>
+                                        <th>Documento</th>
+                                        <th>Fecha</th>
+                                        <th class="text-end">Importe</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tbodyCierrePendientes"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="card-footer bg-golden-light border-top border-golden">
+                        <strong>No se puede cerrar el PV hasta resolver estos pendientes.</strong>
+                    </div>
+                </div>
+
+                <div class="d-none" id="panelCierreRendicion">
+                    <div class="row g-4">
+                        <div class="col-lg-5">
+                            <div class="card card-golden shadow-sm h-100">
+                                <div class="card-header d-flex justify-content-between align-items-center">
+                                    <h6 class="mb-0 fw-bold">
+                                        <i class="bx bx-list-ul"></i>
+                                        Instrumentos
+                                    </h6>
+                                    <span class="badge bg-success" id="lblCierreInstrumentosCount">0</span>
+                                </div>
+                                <div class="card-body p-0">
+                                    <div class="table-responsive rendicion-tabla">
+                                        <table class="table table-golden table-hover mb-0" id="tbCierreInstrumentos">
+                                            <thead class="table-golden-header">
+                                                <tr>
+                                                    <th>ID</th>
+                                                    <th>Instrumento</th>
+                                                    <th class="text-end">Monto</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="tbodyCierreInstrumentos">
+                                                <tr>
+                                                    <td colspan="3" class="text-center text-muted py-4">
+                                                        <i class="bx bx-loader-alt bx-spin"></i>
+                                                        Cargando instrumentos...
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                                <div class="card-footer bg-golden-light border-top border-golden">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="fw-bold text-golden-dark fs-5">TOTAL FINAL</span>
+                                        <span class="form-control form-control-lg text-end fw-bold text-success rendicion-total-display" id="lblCierreTotal">$ 0.00</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-7">
+                            <div class="card card-golden shadow-sm h-100">
+                                <div class="card-header d-flex justify-content-between align-items-center">
+                                    <h6 class="mb-0 fw-bold">
+                                        <i class="bx bx-calculator"></i>
+                                        Nominaciones
+                                    </h6>
+                                    <span class="text-golden-dark fw-bold" id="lblCierreInstrumentoSeleccionado">Seleccione un instrumento</span>
+                                </div>
+                                <div class="card-body p-0">
+                                    <div class="table-responsive rendicion-tabla">
+                                        <table class="table table-golden table-hover mb-0" id="tbCierreNominaciones">
+                                            <thead class="table-golden-header">
+                                                <tr>
+                                                    <th class="text-end">Nominacion</th>
+                                                    <th class="text-end">Cantidad</th>
+                                                    <th class="text-end">Importe</th>
+                                                    <th class="text-center">Accion</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="tbodyCierreNominaciones">
+                                                <tr>
+                                                    <td colspan="4" class="text-center text-muted py-4">
+                                                        <i class="bx bx-info-circle"></i>
+                                                        Seleccione un instrumento para cargar nominaciones
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer bg-light">
+                <div class="d-flex justify-content-between align-items-center w-100">
+                    <button type="button" class="btn btn-danger btn-lg" id="btnCierreCancelar">
+                        <i class="bx bx-x-circle"></i>
+                        CANCELAR
+                    </button>
+                    <div class="d-flex gap-2">
+                        <button type="button" class="btn btn-success btn-lg px-5" id="btnCierreConfirmar" disabled>
+                            <i class="bx bx-check-circle"></i>
+                            CERRAR PV
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade modal-golden" id="modalCierreCantidad" tabindex="-1" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-gradient-golden text-white">
+                <h5 class="modal-title mb-0">
+                    <i class="bx bx-edit"></i>
+                    Editar cantidad
+                </h5>
+                <span id="cierreCantidadTecladoAncla" data-teclado-ancla class="d-inline-block"></span>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="txtCierreNomIndex" />
+                <div class="mb-3">
+                    <label class="form-label">Nominacion</label>
+                    <input type="text" class="form-control text-end fw-bold" id="txtCierreNomValor" readonly />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Cantidad</label>
+                    <input type="text"
+                           class="form-control input-integer jsteclado jsinteger text-end fw-bold"
+                           id="txtCierreCantidad"
+                           inputmode="numeric"
+                           autocomplete="off" />
+                </div>
+                <div class="alert alert-warning border-golden py-2 d-none" id="cierreCantidadMensaje"></div>
+            </div>
+            <div class="modal-footer bg-light">
+                <button type="button" class="btn btn-secondary" id="btnCierreCantidadCancelar">
+                    <i class="bx bx-arrow-back"></i>
+                    VOLVER
+                </button>
+                <button type="button" class="btn btn-warning text-dark" id="btnCierreCantidadBorrar">
+                    <i class="bx bx-trash"></i>
+                    BORRAR
+                </button>
+                <button type="button" class="btn btn-success" id="btnCierreCantidadAceptar">
+                    <i class="bx bx-check"></i>
+                    ACEPTAR
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        var cierreVerificarPendientesUrl = '@Url.Action("VerificarPendientes", "CierreCaja", new { area = "Facturacion" })';
+        var cierreCargarInstrumentosUrl = '@Url.Action("CargarRendiciones", "CierreCaja", new { area = "Facturacion" })';
+        var cierreCargarNominacionesUrl = '@Url.Action("CargarNominaciones", "CierreCaja", new { area = "Facturacion" })';
+        var cierreConfirmarUrl = '@Url.Action("Confirmar", "CierreCaja", new { area = "Facturacion" })';
+        var cierreMenuCajaUrl = '@Url.Action("Index", "Home", new { area = "" })';
+        var cierreLogoutUrl = '@Url.Action("Logout", "Token", new { area = "Seguridad" })';
+    </script>
+    <script src="~/js/app/cierreCaja.js" asp-append-version="true"></script>
+}
+
+

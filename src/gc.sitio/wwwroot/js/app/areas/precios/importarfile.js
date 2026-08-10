@@ -19,6 +19,8 @@ const IMPORTAR_URLS = {
     diagnosticarCeldas: '/Productos/Importar/DiagnosticarCeldasCombinadas'
 };
 
+let importacionEnCurso = false;
+
 $(function () {
     // Configurar URLs si están definidas
     if (typeof procesarExcelUrl !== 'undefined') {
@@ -335,16 +337,11 @@ function handleFileSelection(file, uploadId) {
 
 // Validar archivo
 function validateFile(file) {
-    const allowedTypes = [
-        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', // .xlsx
-        'application/vnd.ms-excel', // .xls
-        'text/csv' // .csv (opcional)
-    ];
-
     const maxSize = 10 * 1024 * 1024; // 10MB
+    const extension = file.name.split('.').pop().toLowerCase();
 
-    if (!allowedTypes.includes(file.type)) {
-        showUploadError('Tipo de archivo no permitido. Solo se aceptan archivos Excel (.xlsx, .xls).');
+    if (extension !== 'xlsx') {
+        showUploadError('Tipo de archivo no permitido. Solo se aceptan archivos Excel en formato .xlsx.');
         return false;
     }
 
@@ -472,53 +469,34 @@ function mostrarAnalisisColumnas(analisis) {
     const htmlAnalisis = `
         <div class="row mt-3">
             <div class="col-12">
-                <!-- Información general del archivo -->
-                <div class="alert alert-info border-0 shadow-sm">
-                    <div class="d-flex align-items-center mb-2">
-                        <i class="bx bx-file-blank bx-lg text-info me-3"></i>
-                        <div>
-                            <h5 class="alert-heading mb-1">Análisis de Estructura con Mapeo Automático</h5>
-                            <p class="mb-0">
-                                <strong>${analisis.nombreArchivo}</strong> - Hoja: <em>${analisis.nombreHoja}</em>
-                            </p>
-                        </div>
-                    </div>
-                    <div class="row text-center">
-                        <div class="col-md-3">
-                            <div class="border-end">
-                                <h4 class="text-info mb-0">${analisis.totalFilas.toLocaleString()}</h4>
-                                <small class="text-muted">Filas Totales</small>
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="border-end">
-                                <h4 class="text-info mb-0">${analisis.totalColumnas}</h4>
-                                <small class="text-muted">Columnas</small>
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="border-end">
-                                <h4 class="text-info mb-0">${(analisis.totalFilas - 1).toLocaleString()}</h4>
-                                <small class="text-muted">Registros de Datos</small>
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <h4 class="text-success mb-0">${contarColumnasMapepadas(analisis.columnas)}</h4>
-                            <small class="text-muted">Auto-mapeadas</small>
-                        </div>
+                <!-- Resumen compacto del archivo -->
+                <div class="alert alert-info border-0 shadow-sm py-2 px-3 mb-2">
+                    <div class="d-flex flex-wrap align-items-center gap-3 small">
+                        <span><i class="bx bx-spreadsheet me-1"></i>Hoja: <strong>${analisis.nombreHoja}</strong></span>
+                        <span>Filas: <strong>${analisis.totalFilas.toLocaleString()}</strong></span>
+                        <span>Columnas: <strong>${analisis.totalColumnas}</strong></span>
+                        <span>Mapeadas: <strong id="resumenMapeadas">${contarColumnasMapepadas(analisis.columnas)}</strong></span>
                     </div>
                 </div>
 
                 <!-- Tabla de análisis de columnas -->
                 <div class="card shadow-sm">
-                    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <div class="card-header bg-primary text-white d-flex flex-wrap justify-content-between align-items-center gap-2 py-2">
                         <h6 class="mb-0">
                             <i class="bx bx-table me-2"></i>
-                            Estructura de Columnas Detectadas y Mapeo
+                            Columnas detectadas y mapeo
                         </h6>
-                        <button type="button" class="btn btn-sm btn-outline-light" onclick="autoMapearTodas()">
-                            <i class="bx bx-magic-wand me-1"></i>Re-mapear Todo
-                        </button>
+                        <div class="d-flex flex-wrap gap-2">
+                            <button type="button" id="btnRemapearTodo" class="btn btn-sm btn-outline-light" onclick="autoMapearTodas()">
+                                <i class="bx bx-magic-wand me-1"></i>Remapear
+                            </button>
+                            <button type="button" id="btnValidarMapeo" class="btn btn-sm btn-warning" onclick="validarMapeo()">
+                                <i class="bx bx-check-shield me-1"></i>Validar
+                            </button>
+                            <button type="button" id="btnCargarArchivoMapeo" class="btn btn-sm btn-success" onclick="cargarEIniciarImportacion()">
+                                <i class="bx bx-check-double me-1"></i>Cargar archivo
+                            </button>
+                        </div>
                     </div>
                     <div class="card-body p-0">
                         <div class="table-responsive text-nowrap table-wrapper-500">
@@ -590,27 +568,8 @@ function mostrarAnalisisColumnas(analisis) {
                     </div>
                 </div>
 
-                <!-- Botones de acción -->
-                <div class="d-flex justify-content-between align-items-center mt-4">
-                    <div class="d-flex align-items-center gap-3">
-                        <button type="button" class="btn btn-outline-secondary" onclick="cancelarAnalisis()">
-                            <i class="bx bx-x me-1"></i>Cancelar
-                        </button>
-                        <div class="text-muted small">
-                            <i class="bx bx-info-circle me-1"></i>
-                            <span id="contadorMapeados">${contarColumnasMapepadas(analisis.columnas)}</span> 
-                            de ${analisis.columnas.length} columnas mapeadas
-                        </div>
-                    </div>
-                    
-                    <div class="d-flex gap-2">
-                        <button type="button" class="btn btn-outline-warning" onclick="validarMapeo()">
-                            <i class="bx bx-check-shield me-1"></i>Validar Mapeo
-                        </button>
-                        <button type="button" class="btn btn-success" onclick="cargarEIniciarImportacion()">
-                            <i class="bx bx-check-double me-1"></i> Cargar archivo
-                        </button>
-                    </div>
+                <div class="d-flex justify-content-end mt-2 text-muted small">
+                    <span id="contadorMapeados">${contarColumnasMapepadas(analisis.columnas)}</span>&nbsp;de&nbsp;${analisis.columnas.length}&nbsp;columnas mapeadas
                 </div>
             </div>
         </div>
@@ -620,7 +579,38 @@ function mostrarAnalisisColumnas(analisis) {
     window.analisisActual = analisis;
     // ✅ CREAR: Backup del estado inicial para comparación posterior
     window.analisisInicial = JSON.parse(JSON.stringify(analisis.columnas));
+    $('#btnCancelarImportacion').prop('disabled', false).fadeIn(200);
+    validarMapeo(false);
     console.log('✅ Análisis inicial guardado para comparación:', window.analisisInicial.length, 'columnas');
+}
+
+function cancelarAnalisisImportacion() {
+    if (importacionEnCurso) {
+        return;
+    }
+
+    window.analisisActual = null;
+    window.analisisInicial = null;
+    window.ultimaRespuestaImportacion = null;
+
+    $('#mainContent').stop(true, true).slideUp(200, function () {
+        $(this).empty().show();
+    });
+    $('#importResults').stop(true, true).hide();
+    $('#importProgress').css('width', '0%').text('0%');
+    $('#btnCancelarImportacion').hide();
+
+    $('[id^="uploadContainer"]').each(function () {
+        const uploadId = this.id.replace('uploadContainer', '');
+        removeFile(uploadId);
+    });
+
+    $('#uploadArea').stop(true, true).slideDown(200);
+    $('#btnToggleText').text('Ocultar Importar Archivo');
+    $('#btnToggleUpload i').removeClass('bx-upload').addClass('bx-chevron-up');
+    if (typeof uploadAreaVisible !== 'undefined') {
+        uploadAreaVisible = true;
+    }
 }
 
 // ✅ MANTENER: Funciones de soporte para mapeo (ACTIVAS)
@@ -652,11 +642,13 @@ function actualizarMapeo(columnaIndice, nuevoCampo) {
 
         // Buscar descripción del campo
         const campoInfo = window.analisisActual.camposDisponibles.find(c =>
-            (c.dato || c.Dato) === nuevoCampo);
-        columna.descripcionMapeado = campoInfo ? (campoInfo.campo || campoInfo.Campo) : '';
+            (c.campo || c.Campo) === nuevoCampo);
+        columna.descripcionMapeado = campoInfo ? (campoInfo.dato || campoInfo.Dato) : '';
 
         // Actualizar contador
-        $('#contadorMapeados').text(contarColumnasMapepadas(window.analisisActual.columnas));
+        const cantidadMapeadas = contarColumnasMapepadas(window.analisisActual.columnas);
+        $('#contadorMapeados, #resumenMapeadas').text(cantidadMapeadas);
+        validarMapeo(false);
 
         console.log(`✅ Mapeo actualizado: Columna ${columna.letra} → ${nuevoCampo}`, {
             anterior: campoAnterior || '(sin mapear)',
@@ -677,31 +669,72 @@ function autoMapearTodas() {
         true, ["Continuar", "Cancelar"], "info!", null);
 }
 
-function validarMapeo() {
-    if (!window.analisisActual) return;
-
-    const columnasMapeadas = window.analisisActual.columnas.filter(col => col.campoMapeado);
-    const columnasRequeridas = ['p_ean', 'p_plista'];
-
-    let mensajeValidacion = `<div class="mb-3">
-        <strong>Resumen del Mapeo:</strong><br>
-        • ${columnasMapeadas.length} de ${window.analisisActual.columnas.length} columnas mapeadas<br>
-        • Campos detectados: ${columnasMapeadas.map(c => c.descripcionMapeado).join(', ')}
-    </div>`;
-
-    const faltantes = columnasRequeridas.filter(req =>
-        !columnasMapeadas.some(col => col.campoMapeado.includes(req))
-    );
-
-    if (faltantes.length > 0) {
-        mensajeValidacion += `<div class="alert alert-warning">
-            <strong>Advertencia:</strong> Faltan campos importantes: ${faltantes.join(', ')}
-        </div>`;
+function obtenerResultadoValidacionMapeo() {
+    const resultado = { valido: false, errores: [], advertencias: [], columnasMapeadas: [] };
+    if (!window.analisisActual?.columnas) {
+        resultado.errores.push('No hay un archivo analizado.');
+        return resultado;
     }
 
-    AbrirMensaje("Validación de Mapeo", mensajeValidacion,
-        () => $("#msjModal").modal("hide"), false, ["Aceptar"],
-        faltantes.length > 0 ? "warn!" : "success!", null);
+    resultado.columnasMapeadas = window.analisisActual.columnas.filter(col => col.campoMapeado);
+    if (resultado.columnasMapeadas.length === 0) {
+        resultado.errores.push('No hay columnas mapeadas.');
+        return resultado;
+    }
+
+    const identificadores = ['p_id', 'p_id_prov', 'p_ean', 'p_ean_otro', 'p_dun', 'p_codigo'];
+    const campos = resultado.columnasMapeadas.map(col => col.campoMapeado);
+
+    if (!campos.some(campo => identificadores.includes(campo))) {
+        resultado.errores.push('Debe mapear al menos un identificador de producto (código, código de proveedor, EAN o DUN).');
+    }
+    if (!campos.includes('p_plista')) {
+        resultado.errores.push('Debe mapear el campo obligatorio Precio de Lista (p_plista).');
+    }
+
+    const duplicados = [...new Set(campos.filter((campo, indice) => campos.indexOf(campo) !== indice))];
+    if (duplicados.length > 0) {
+        resultado.errores.push(`Hay campos de destino duplicados: ${duplicados.join(', ')}.`);
+    }
+
+    const noMapeadas = window.analisisActual.columnas.filter(col => !col.campoMapeado);
+    if (noMapeadas.length > 0) {
+        resultado.advertencias.push(`${noMapeadas.length} columna(s) del archivo quedarán sin utilizar.`);
+    }
+
+    resultado.valido = resultado.errores.length === 0;
+    return resultado;
+}
+
+function validarMapeo(mostrarMensaje = true) {
+    const resultado = obtenerResultadoValidacionMapeo();
+
+    if (mostrarMensaje) {
+        const campos = resultado.columnasMapeadas
+            .map(c => c.descripcionMapeado || c.campoMapeado)
+            .join(', ');
+        let mensaje = `<div class="mb-2"><strong>${resultado.columnasMapeadas.length}</strong> de <strong>${window.analisisActual?.columnas?.length || 0}</strong> columnas mapeadas.</div>`;
+
+        if (campos) {
+            mensaje += `<div class="small text-muted mb-2">Campos: ${campos}</div>`;
+        }
+        if (resultado.errores.length > 0) {
+            mensaje += `<div class="alert alert-danger py-2 mb-2"><strong>No se puede importar:</strong><ul class="mb-0">${resultado.errores.map(e => `<li>${e}</li>`).join('')}</ul></div>`;
+        }
+        if (resultado.advertencias.length > 0) {
+            mensaje += `<div class="alert alert-warning py-2 mb-0"><ul class="mb-0">${resultado.advertencias.map(a => `<li>${a}</li>`).join('')}</ul></div>`;
+        }
+        if (resultado.valido && resultado.advertencias.length === 0) {
+            mensaje += '<div class="alert alert-success py-2 mb-0">El mapeo es válido. Puede continuar con la importación.</div>';
+        }
+
+        AbrirMensaje('Validación de Mapeo', mensaje,
+            () => $('#msjModal').modal('hide'), false, ['Aceptar'],
+            resultado.valido ? 'succ!' : 'warn!', null);
+    }
+
+    $('#btnCargarArchivoMapeo').prop('disabled', !resultado.valido || importacionEnCurso);
+    return resultado.valido;
 }
 
 // ✅ MANTENER: Funciones auxiliares para presentación (ACTIVAS)
@@ -737,19 +770,14 @@ function truncateText(text, maxLength) {
 }
 
 // ✅ MANTENER: Funciones de acción (ACTIVAS)
-function cancelarAnalisis() {
-    $('#mainContent').slideUp(400, function () {
-        $(this).html('');
-    });
-    // Limpiar referencia global
-    window.analisisActual = null;
-
-    window.location.href = homeCPUrl;
-}
-
 function cargarEIniciarImportacion() {
     if (!archivoSeleccionado) {
         showUploadError('No hay archivo seleccionado para importar');
+        return;
+    }
+
+    if (!validarMapeo(false)) {
+        validarMapeo(true);
         return;
     }
 
@@ -758,30 +786,59 @@ function cargarEIniciarImportacion() {
         function (respuesta) {
             $("#msjModal").modal("hide");
             if (respuesta === "SI") {
-                ejecutarImportacionReal();
+                mostrarOpcionesImportacion();
             }
         },
         true, ["Continuar", "Cancelar"], "info!", null);
 }
 
-// ✅ SIMPLIFICAR: Función de importación sin validaciones innecesarias
-function ejecutarImportacionReal() {
+function mostrarOpcionesImportacion() {
+    const $modal = $('#modalModoImportacion');
+    if ($modal.length === 0) {
+        showUploadError('No se pudo abrir la selección del modo de importación.');
+        return;
+    }
+
+    $('#btnImportarGuardarFormato').off('click').one('click', function () {
+        $modal.modal('hide');
+        ejecutarImportacionReal(true);
+    });
+    $('#btnImportarSinGuardar').off('click').one('click', function () {
+        $modal.modal('hide');
+        ejecutarImportacionReal(false);
+    });
+    $modal.modal('show');
+}
+
+function establecerEstadoImportacion(enCurso, mensaje) {
+    importacionEnCurso = enCurso;
+    $('#btnCargarArchivoMapeo, #btnProcesarArchivo, #btnRemapearTodo, #btnValidarMapeo, #btnCancelarImportacion')
+        .prop('disabled', enCurso);
+
+    if (enCurso) {
+        $('#importResults').stop(true, true).slideDown(150);
+        $('#importProgress').css('width', '35%').text(mensaje || 'Procesando importación...');
+    }
+}
+
+function ejecutarImportacionReal(guardarFormato) {
     if (!archivoSeleccionado) {
         showUploadError('No hay archivo seleccionado para procesar');
         return;
     }
 
-    $('#importResults').slideDown(300);
-    $('#importProgress').css('width', '0%').text('Iniciando importación...');
+    if (!validarMapeo(false) || importacionEnCurso) {
+        validarMapeo(true);
+        return;
+    }
+
+    establecerEstadoImportacion(true, guardarFormato ? 'Guardando formato y procesando...' : 'Procesando sin guardar formato...');
 
     const formData = new FormData();
     formData.append('archivo', archivoSeleccionado);
     formData.append('proveedorId', consCta);
+    formData.append('hayDiferencia', guardarFormato);
 
-    // ✅ PASO 1: Comparar mapeos para determinar si hay diferencias
-    let hayDiferencia = compararMapeos();
-
-    // ✅ PASO 2: Enviar mapeo de columnas del usuario solo si hay diferencias
     if (window.analisisActual && window.analisisActual.columnas) {
         const mapeoColumnas = {};
         const columnasMapeadas = window.analisisActual.columnas.filter(col => col.campoMapeado);
@@ -792,43 +849,10 @@ function ejecutarImportacionReal() {
 
         if (Object.keys(mapeoColumnas).length > 0) {
             formData.append('mapeoColumnas', JSON.stringify(mapeoColumnas));
-            console.log(`✅ Enviando mapeo de columnas (diferencias: ${hayDiferencia}):`, mapeoColumnas);
+            console.log(`✅ Enviando mapeo de columnas (guardar formato: ${guardarFormato}):`, mapeoColumnas);
         }
     }
-    if (hayDiferencia === true) {
-        //debo consultar si el usuario quiere conservar la modificacion del perfil de mapeo
-        AbrirMensaje("¡¡ATENCIÓN!!",
-            "Se ha modificado el mapeo original."+
-            "<br/>¿Quiere resguardarlo para próximas importaciones? Hacer \"click\" en \"Resguardar\"." + 
-            "<br/>¿Desea conservar el mapeo que se encuentra resguardado, para proximas importaciones? Hacer \"click\" en \"No Resg.\"." +
-            "<br/>O simplemente cancelar la operación.",
-            function (respuesta) {
-                $("#msjModal").modal("hide");
-                if (respuesta === "SI2") {
-                    //si bien hubieron cambios en el mapeo, el usuario prefiere no modificar el perfil de mapeo.
-                    hayDiferencia = false;
-                }
-                if (respuesta === "SI" || respuesta === "SI2") {
-                    // ✅ PASO 3: Enviar bandera de diferencias
-                    formData.append('hayDiferencia', hayDiferencia);
-
-                    // ✅ LOGGING: Para debugging
-                    console.log(`🔍 Estado de comparación de mapeos:`, {
-                        hayDiferencia: hayDiferencia,
-                        columnasActuales: window.analisisActual?.columnas?.length || 0,
-                        columnasIniciales: window.analisisInicial?.length || 0
-                    });
-
-                    invocarProcesarExcel(formData);
-                }
-            },
-            true, ["Resguardar","No Resguardar", "Cancelar"], "warn!", null);
-
-    }
-    else {
-        formData.append('hayDiferencia', false);
-        invocarProcesarExcel(formData);
-    }
+    invocarProcesarExcel(formData);
 }
 
 function invocarProcesarExcel(formData) {
@@ -843,29 +867,29 @@ function invocarProcesarExcel(formData) {
             $('#importProgress').css('width', '100%').text('Importación completada');
             window.ultimaRespuestaImportacion = response;
 
-            console.log('✅ Respuesta recibida:', {
-                error: response.error,
-                tieneVista: !!response.vistaResultados,
-                diferenciaEnviada: formData.hayDiferencia
-            });
+            $('#importResults').slideUp(150);
 
-            setTimeout(() => {
-                $('#importResults').slideUp(300);
-
-                if (response.error) {
-                    AbrirMensaje("ERROR", `Error: ${response.mensaje}`,
-                        () => $("#msjModal").modal("hide"), false, ["Aceptar"], "error!", null);
-                } else {
-                    mostrarResultadosImportacion(response);
-                }
-            }, 1000);
+            if (response.error) {
+                const detalle = Array.isArray(response.errores) && response.errores.length > 0
+                    ? `<ul class="mb-0">${response.errores.map(e => `<li>${e}</li>`).join('')}</ul>`
+                    : '';
+                AbrirMensaje("ERROR", `${response.mensaje || 'No se pudo completar la importación.'}${detalle}`,
+                    () => $("#msjModal").modal("hide"), false, ["Aceptar"], "error!", null);
+            } else {
+                mostrarResultadosImportacion(response);
+            }
         },
         error: function (xhr, status, error) {
             $('#importResults').slideUp(300);
             console.error('❌ Error:', error);
 
-            AbrirMensaje("ERROR", "Error de comunicación con el servidor.",
+            const mensaje = xhr.responseJSON?.mensaje || 'Error de comunicación con el servidor.';
+            AbrirMensaje("ERROR", mensaje,
                 () => $("#msjModal").modal("hide"), false, ["Aceptar"], "error!", null);
+        },
+        complete: function () {
+            establecerEstadoImportacion(false);
+            validarMapeo(false);
         }
     });
 }
@@ -1298,9 +1322,6 @@ function generarBotonesAccion() {
         <div class="d-flex justify-content-between align-items-center mb-3">
             <h6 class="mb-0"><i class="bx bx-list-ul me-2"></i>Resultados Detallados de la Importación</h6>
             <div class="d-flex gap-2">
-                 <button type="button" class="btn btn-outline-danger btn-sm" onclick="cancelarAnalisis()">
-                    <i class="bx bx-x me-1"></i>Cancelar
-                </button>
                 <button type="button" class="btn btn-outline-secondary btn-sm" onclick="location.reload()">
                     <i class="bx bx-refresh me-1"></i>Nueva Importación
                 </button>
@@ -1330,6 +1351,7 @@ function generarContenedorResultados(vistaResultados) {
 
 // ✅ SIMPLIFICAR: Función de mostrar contenido sin formateo innecesario
 function mostrarContenidoFinal(html) {
+    $('#btnCancelarImportacion').hide();
     $('#mainContent').html(html);
 
     // ✅ SCROLL: Hacia los resultados

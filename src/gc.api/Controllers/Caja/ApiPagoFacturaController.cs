@@ -115,12 +115,26 @@ namespace gc.api.Controllers.Caja
         {
             if (req == null)
             {
-                return BadRequest("El parámetro req es requerido.");
+                return BadRequest("El parametro req es requerido.");
             }
+
+            _logger.LogInformation(
+                "ObtenerFacturasPendientes request. Proceso={Proceso}; Cierre={Cierre}; Cuenta={Cuenta}; TipoDocumento={TipoDocumento}; Documento={Documento}; TipoCarga={TipoCarga}",
+                req.caja_nro_proceso,
+                req.caja_nro_cierre,
+                req.cta_id,
+                req.tdo_codigo,
+                req.cta_documento,
+                req.tipo_carga);
+
             var res = _apiPagoFactServicio.ObtenerFacturasPendientes(req);
+
+            _logger.LogInformation(
+                "ObtenerFacturasPendientes response. Registros={Registros}",
+                res?.Count ?? 0);
+
             return Ok(new ApiResponse<List<FactPendienteResponseDto>>(res));
         }
-
         [HttpGet]
         [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<List<CtaCteResponseDto>>))]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
@@ -136,3 +150,4 @@ namespace gc.api.Controllers.Caja
         }
     }
 }
+

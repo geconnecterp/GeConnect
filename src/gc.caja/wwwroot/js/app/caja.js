@@ -328,7 +328,7 @@ $(function () {
 
                     setTimeout(() => {
                         AbrirMensaje(
-                            "AtenciÃ³n",
+                            "Atención",
                             response.mensaje,
                             function () {
                                 $("#msjModal").modal("hide");
@@ -571,9 +571,9 @@ $(function () {
 
         switch (nivelAccesoMenu) {
             case 'solo-cierre':
-                // Solo habilitar botÃ³n de cierre
-                $botones.not('[data-action="cierre"]').prop('disabled', true).addClass('disabled-menu-item');
-                console.log("ðŸ”’ MenÃº configurado: Solo CIERRE activo");
+                // Habilitar cierre y cobranza diferida para resolver pendientes antes de cerrar el PV.
+                $botones.not('[data-action="cierre"], [data-action="cobranza-diferida"]').prop('disabled', true).addClass('disabled-menu-item');
+                console.log("Menu configurado: CIERRE y COBRANZA DIFERIDA activos");
                 break;
 
             case 'parcial':
@@ -686,7 +686,7 @@ $(function () {
 
     function mostrarErrorCritico(mensaje) {
         AbrirMensaje(
-            "ATENCIÃ“N",
+            "ATENCIÓN",
             mensaje,
             function () {
                 $("#msjModal").modal("hide");
@@ -716,7 +716,7 @@ $(function () {
 
     function mostrarAdvertenciaYSalir(mensaje) {
         AbrirMensaje(
-            "ATENCIÃ“N",
+            "ATENCIÓN",
             mensaje,
             function () {
                 $("#msjModal").modal("hide");
@@ -1367,7 +1367,79 @@ $(function () {
     }
     function abrirModuloDistribucionFacturacion() { console.log('ðŸ“Š DistribuciÃ³n FacturaciÃ³n...'); }
     function abrirModuloDistribucionCobranza() { console.log('ðŸ“ˆ DistribuciÃ³n Cobranza...'); }
-    function abrirModuloCambioValores() { console.log('ðŸ”„ Cambio de Valores...'); }
+    function abrirModuloCambioValores() {
+        console.log('Iniciando validacion para Cambios e Ingresos de Valores...');
+
+        if (
+            typeof cambioValoresValidarUrl === 'undefined' ||
+            !cambioValoresValidarUrl ||
+            typeof cambioValoresInicializaUrl === 'undefined' ||
+            !cambioValoresInicializaUrl
+        ) {
+            AbrirMensaje(
+                'Error de configuracion',
+                'No se pudo preparar el modulo de Cambios e Ingresos de Valores.',
+                function () { $('#msjModal').modal('hide'); },
+                false,
+                ['Aceptar'],
+                'error!',
+                null
+            );
+            return;
+        }
+
+        mostrarLoader(
+            "Validando datos de caja...<br>" +
+            "<small class='text-muted'>Preparando modulo de Cambios e Ingresos de Valores</small>"
+        );
+
+        $.ajax({
+            url: cambioValoresValidarUrl,
+            type: 'POST',
+            dataType: 'json',
+            timeout: 10000,
+            success: function (response) {
+                ocultarLoader();
+
+                if (!response || response.success !== true) {
+                    AbrirMensaje(
+                        'Error de validacion',
+                        response?.message || 'No fue posible validar los datos de caja para iniciar cambios e ingresos de valores.',
+                        function () { $('#msjModal').modal('hide'); },
+                        false,
+                        ['Aceptar'],
+                        'error!',
+                        null
+                    );
+                    return;
+                }
+
+                const menuModal = getModalMenu();
+                if (menuModal) {
+                    menuModal.hide();
+                }
+
+                mostrarLoader(
+                    "Abriendo modulo de Cambios e Ingresos de Valores...<br>" +
+                    "<small class='text-muted'>Por favor, espere...</small>"
+                );
+
+                setTimeout(function () {
+                    window.location.href = cambioValoresInicializaUrl;
+                }, 800);
+            },
+            error: function (xhr, status) {
+                ocultarLoader();
+                let mensaje = 'Error al validar los datos de caja para Cambios e Ingresos de Valores.';
+                if (status === 'timeout') {
+                    mensaje = 'La validacion tardo demasiado tiempo. Intente nuevamente.';
+                } else if (xhr?.responseJSON?.message) {
+                    mensaje = xhr.responseJSON.message;
+                }
+                AbrirMensaje('Error', mensaje, function () { $('#msjModal').modal('hide'); }, false, ['Aceptar'], 'error!', null);
+            }
+        });
+    }
     function abrirModuloRendiciones() {
         console.log('Iniciando validacion para Rendiciones Parciales de Caja...');
 
@@ -1464,28 +1536,99 @@ $(function () {
     }
 
     function abrirModuloCierre() {
-        console.log('ðŸ”’ Iniciando proceso de cierre de caja...');
+        console.log('Iniciando validacion para Cierre de Caja...');
 
-        AbrirMensaje(
-            "CONFIRMAR CIERRE DE CAJA",
-            "Â¿EstÃ¡ seguro de que desea cerrar la caja?<br><br>" +
-            "<strong class='text-danger'>âš ï¸ Esta acciÃ³n finalizarÃ¡ su sesiÃ³n y cerrarÃ¡ la caja.</strong>",
-            function (confirmado) {
-                $("#msjModal").modal("hide");
+        if (
+            typeof cierreCajaValidarUrl === 'undefined' ||
+            !cierreCajaValidarUrl ||
+            typeof cierreCajaInicializaUrl === 'undefined' ||
+            !cierreCajaInicializaUrl
+        ) {
+            AbrirMensaje(
+                'Error de configuracion',
+                'No se pudo preparar el modulo de Cierre de Caja.',
+                function () {
+                    $('#msjModal').modal('hide');
+                },
+                false,
+                ['Aceptar'],
+                'error!',
+                null
+            );
 
-                if (confirmado === "SI") {
-                    setTimeout(() => {
-                        procesarCierreCaja();
-                    }, 300);
-                }
-            },
-            true,
-            ["SÃ­, Cerrar Caja", "Cancelar"],
-            "warn!",
-            null
+            return;
+        }
+
+        mostrarLoader(
+            "Validando datos de caja...<br>" +
+            "<small class='text-muted'>Preparando modulo de Cierre de Caja</small>"
         );
-    }
 
+        $.ajax({
+            url: cierreCajaValidarUrl,
+            type: 'POST',
+            dataType: 'json',
+            timeout: 10000,
+            success: function (response) {
+                ocultarLoader();
+
+                if (!response || response.success !== true) {
+                    AbrirMensaje(
+                        'Error de validacion',
+                        response?.message ||
+                        'No fue posible validar los datos de caja para iniciar el cierre.',
+                        function () {
+                            $('#msjModal').modal('hide');
+                        },
+                        false,
+                        ['Aceptar'],
+                        'error!',
+                        null
+                    );
+
+                    return;
+                }
+
+                const menuModal = getModalMenu();
+
+                if (menuModal) {
+                    menuModal.hide();
+                }
+
+                mostrarLoader(
+                    "Abriendo modulo de Cierre de Caja...<br>" +
+                    "<small class='text-muted'>Por favor, espere...</small>"
+                );
+
+                setTimeout(function () {
+                    window.location.href = cierreCajaInicializaUrl;
+                }, 800);
+            },
+            error: function (xhr, status) {
+                ocultarLoader();
+
+                let mensaje = 'Error al validar los datos de caja para Cierre de Caja.';
+
+                if (status === 'timeout') {
+                    mensaje = 'La validacion tardo demasiado tiempo. Intente nuevamente.';
+                } else if (xhr?.responseJSON?.message) {
+                    mensaje = xhr.responseJSON.message;
+                }
+
+                AbrirMensaje(
+                    'Error',
+                    mensaje,
+                    function () {
+                        $('#msjModal').modal('hide');
+                    },
+                    false,
+                    ['Aceptar'],
+                    'error!',
+                    null
+                );
+            }
+        });
+    }
     function abrirModuloAdministrador() { console.log('ðŸ›¡ï¸ Administrador...'); }
     function abrirModuloReportesZ() { console.log('ðŸ“Š Reportes Z...'); }
 
@@ -1719,6 +1862,3 @@ function actualizarFooterMenu(datos) {
     $("#lblFechaHora").text(datos.caja.caja.caja_apertura || '---');
     
 }
-
-
-

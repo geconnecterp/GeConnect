@@ -67,6 +67,11 @@ namespace gc.api.Controllers.Importacion
         public IActionResult CargarImportacionPrecioPerfil(AbmPlusGenDto req)
         {
             RespuestaDto respPerfil = new();
+            var perfilSolicitado = !string.IsNullOrWhiteSpace(req?.Json2);
+            var perfilGuardado = false;
+            var mensajePerfil = perfilSolicitado
+                ? "No se pudo guardar el formato de importación."
+                : "La importación se procesó sin modificar el formato guardado.";
 
             if (req == null || 
                 string.IsNullOrEmpty(req.Objeto) || 
@@ -77,19 +82,34 @@ namespace gc.api.Controllers.Importacion
                 return BadRequest("Los datos del perfil de precios son inválidos.");
             }
 
-            //pongo el try catch para que si falla la carga del perfil, igual intente cargar los precios
-            try
+            // Si falla el perfil, la carga de precios debe continuar y devolver una
+            // advertencia específica al sitio.
+            if (perfilSolicitado)
             {
-                respPerfil = _importarServicio.CargaPerfilCuenta(ctaId: req.Objeto, usu: req.Usuario, adm: req.Administracion, json: req.Json2);
-                _logger.LogInformation("Carga del perfil de precios realizada correctamente para el proveedor {CtaId}", req.Objeto);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Problemas para la carga del perfil");
-                
+                try
+                {
+                    respPerfil = _importarServicio.CargaPerfilCuenta(ctaId: req.Objeto, usu: req.Usuario, adm: req.Administracion, json: req.Json2);
+                    perfilGuardado = respPerfil.resultado == 0;
+                    mensajePerfil = perfilGuardado
+                        ? "El formato de importación se guardó correctamente."
+                        : respPerfil.resultado_msj;
+                    _logger.LogInformation("Resultado de carga del perfil para {CtaId}: {Resultado}", req.Objeto, respPerfil.resultado);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Problemas para la carga del perfil");
+                    mensajePerfil = "La importación continuó, pero no se pudo guardar el formato.";
+                }
             }
 
             List<RespuestaCPDto> resultado = _importarServicio.CargarImportacionPrecioPerfil(req);
+
+            foreach (var registro in resultado)
+            {
+                registro.perfil_solicitado = perfilSolicitado;
+                registro.perfil_guardado = perfilGuardado;
+                registro.perfil_msj = mensajePerfil;
+            }
 
             
             return Ok(new ApiResponse<List<RespuestaCPDto>>(resultado));

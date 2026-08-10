@@ -113,11 +113,19 @@ namespace gc.api.core.Servicios.LineaCaja
                 new SqlParameter("@cta_documento", req.cta_documento),
                 new SqlParameter("@tipo_carga", req.tipo_carga)
             };
+
+            _logger.Log(
+                TraceEventType.Information,
+                $"{MethodBase.GetCurrentMethod().Name} - ejecutando {sp}. Proceso={req.caja_nro_proceso}; Cierre={req.caja_nro_cierre}; Cuenta={req.cta_id}; TipoCarga={req.tipo_carga}");
+
             var res = _repository.EjecutarLstSpExt<FactPendienteResponseDto>(sp, ps);
+
+            _logger.Log(
+                TraceEventType.Information,
+                $"{MethodBase.GetCurrentMethod().Name} - response registros:{res?.Count ?? 0}");
+
             return res;
         }
-
-
         public List<CtaCteResponseDto> ObtenerCtaCte(string cta_id,string adm_id)
         {
             _logger.Log(TraceEventType.Information, $"{MethodBase.GetCurrentMethod().Name} - request: cta_id:{cta_id}, adm_id:{adm_id}");
@@ -134,3 +142,4 @@ namespace gc.api.core.Servicios.LineaCaja
 
     }
 }
+

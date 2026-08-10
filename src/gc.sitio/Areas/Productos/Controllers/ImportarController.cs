@@ -68,7 +68,7 @@ namespace gc.sitio.Areas.Productos.Controllers
             _perfilProv = new ProveedorPerfilDto { detalles = [] };
         }
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
             try
             {
@@ -76,7 +76,7 @@ namespace gc.sitio.Areas.Productos.Controllers
                 if (!VerificarAutenticacion(out IActionResult redirectResult))
                     return redirectResult;
                 AnalisisFile = new();
-                CargarDatosIniciales();
+                await CargarDatosIniciales();
                 string titulo = "Productos - IMPORTACIÓN de Precios";
                 ViewData["Titulo"] = titulo;
             }
@@ -123,24 +123,40 @@ namespace gc.sitio.Areas.Productos.Controllers
                     });
                 }
 
+                if (archivo.Length > 10 * 1024 * 1024)
+                {
+                    return Json(new { error = true, mensaje = "El archivo supera el tamaño máximo permitido de 10 MB." });
+                }
+
                 // Validar extensión
                 var extension = Path.GetExtension(archivo.FileName).ToLower();
-                if (extension != ".xlsx" && extension != ".xls")
+                if (extension != ".xlsx")
                 {
                     return Json(new
                     {
                         error = true,
-                        mensaje = "Solo se permiten archivos Excel (.xlsx, .xls)"
+                        mensaje = "Solo se permiten archivos Excel en formato .xlsx"
                     });
                 }
 
                 var analisis = await AnalizarEstructuraExcel(archivo);
 
-                // ✅ NUEVO: Incluir campos disponibles para mapeo
-                analisis.CamposDisponibles = DatosParaImportacion;
+                // Cada análisis trabaja con una copia limpia de los campos disponibles.
+                analisis.CamposDisponibles = DatosParaImportacion
+                    .Select(c => new PrecioFileDatos
+                    {
+                        Campo = c.Campo,
+                        Dato = c.Dato,
+                        Tipo = c.Tipo,
+                        HasChecked = false
+                    })
+                    .ToList();
 
-                // ✅ NUEVO: Aplicar mapeo automático inteligente
+                // El perfil persistido tiene prioridad. El mapeo automático completa
+                // solamente las columnas que el perfil no pudo resolver.
+                AplicarPerfilGuardado(analisis);
                 AplicarMapeoAutomaticoInteligente(analisis);
+                ResolverConflictosMapeo(analisis);
 
                 //RESGUARDAMOS EL ANALISIS
                 AnalisisFile = analisis;
@@ -183,6 +199,21 @@ namespace gc.sitio.Areas.Productos.Controllers
                     return Json(new { error = true, mensaje = "ID de proveedor requerido" });
                 }
 
+                if (archivo.Length > 10 * 1024 * 1024)
+                {
+                    return Json(new { error = true, mensaje = "El archivo supera el tamaño máximo permitido de 10 MB." });
+                }
+
+                if (!proveedorId.Equals(ProveedorSeleccionado.Cta_Id, StringComparison.OrdinalIgnoreCase))
+                {
+                    return Json(new { error = true, mensaje = "El proveedor de la importación no coincide con el proveedor seleccionado." });
+                }
+
+                if (!Path.GetExtension(archivo.FileName).Equals(".xlsx", StringComparison.OrdinalIgnoreCase))
+                {
+                    return Json(new { error = true, mensaje = "Solo se permiten archivos Excel en formato .xlsx" });
+                }
+
                 _logger?.LogInformation($"Procesando Excel: {archivo.FileName} para proveedor: {proveedorId}");
 
                 #region Este codigo se quita ya que ya se analizo la estructura y se realizo el Mapeo Automático inteligente previamente.
@@ -197,12 +228,24 @@ namespace gc.sitio.Areas.Productos.Controllers
                 //AplicarMapeoAutomaticoInteligente(analisis);
 
                 #endregion
-                if (!string.IsNullOrEmpty(mapeoColumnas) && hayDiferencia)
+                if (!string.IsNullOrEmpty(mapeoColumnas))
                 {
                     AplicarMapeoManual(analisis, mapeoColumnas);
-                    //resguardamos el mapeo inteligente y manual
-                    AnalisisFile = analisis;
                 }
+
+                var erroresMapeo = ValidarMapeoParaImportacion(analisis);
+                if (erroresMapeo.Count > 0)
+                {
+                    return Json(new
+                    {
+                        error = true,
+                        mensaje = "No se puede importar hasta corregir el mapeo.",
+                        errores = erroresMapeo
+                    });
+                }
+
+                // Resguardar siempre el mapeo validado que efectivamente se procesará.
+                AnalisisFile = analisis;
 
                 // ✅ 3. Procesar datos del Excel
                 var datosImportacion = await ProcesarDatosDelExcel(archivo, analisis, proveedorId);
@@ -234,12 +277,15 @@ namespace gc.sitio.Areas.Productos.Controllers
                         datos = new
                         {
                             registrosProcesados = resultado.ListaEntidad.Count,
-                            registrosConError = resultado.ListaEntidad.Count(r => r.registro_estado != 0),
-                            registrosExitosos = resultado.ListaEntidad.Count(r => r.registro_estado == 0),
+                            registrosConError = resultado.ListaEntidad.Count(r => r.registro_estado == -1),
+                            registrosExitosos = resultado.ListaEntidad.Count(r => r.registro_estado != -1),
                             archivo = archivo.FileName,
                             proveedor = proveedorId,
                             fechaProceso = datosImportacion.FechaProceso.ToString("yyyy-MM-dd HH:mm:ss"),
-                            mensajeProc = first.resultado_msj
+                            mensajeProc = first.resultado_msj,
+                            perfilSolicitado = first.perfil_solicitado,
+                            perfilGuardado = first.perfil_guardado,
+                            mensajePerfil = first.perfil_msj
                         },
                         vistaResultados = vistaResultado
                     });
@@ -455,7 +501,10 @@ namespace gc.sitio.Areas.Productos.Controllers
                     ArchivoOriginal = datosOriginales.NombreArchivo,
                     FechaProceso = datosOriginales.FechaProceso,
                     ProveedorId = datosOriginales.ProveedorId,
-                    FirstReg = resultados.First()
+                    FirstReg = resultados.First(),
+                    PerfilSolicitado = resultados.First().perfil_solicitado,
+                    PerfilGuardado = resultados.First().perfil_guardado,
+                    MensajePerfil = resultados.First().perfil_msj
                 };
 
                 // ✅ USAR: Método corregido
@@ -568,6 +617,48 @@ namespace gc.sitio.Areas.Productos.Controllers
             }
         }
 
+        private List<string> ValidarMapeoParaImportacion(AnalisisExcelDto analisis)
+        {
+            var errores = new List<string>();
+            var columnasMapeadas = analisis.Columnas
+                .Where(c => !string.IsNullOrWhiteSpace(c.CampoMapeado))
+                .ToList();
+
+            if (columnasMapeadas.Count == 0)
+            {
+                errores.Add("No hay columnas mapeadas.");
+                return errores;
+            }
+
+            var duplicados = columnasMapeadas
+                .GroupBy(c => c.CampoMapeado, StringComparer.OrdinalIgnoreCase)
+                .Where(g => g.Count() > 1)
+                .Select(g => g.Key)
+                .ToList();
+
+            if (duplicados.Count > 0)
+            {
+                errores.Add($"Hay campos de destino duplicados: {string.Join(", ", duplicados)}.");
+            }
+
+            var identificadores = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+            {
+                "p_id", "p_id_prov", "p_ean", "p_ean_otro", "p_dun", "p_codigo"
+            };
+
+            if (!columnasMapeadas.Any(c => identificadores.Contains(c.CampoMapeado)))
+            {
+                errores.Add("Debe mapear al menos un identificador de producto (código, código de proveedor, EAN o DUN).");
+            }
+
+            if (!columnasMapeadas.Any(c => c.CampoMapeado.Equals("p_plista", StringComparison.OrdinalIgnoreCase)))
+            {
+                errores.Add("Debe mapear el campo obligatorio Precio de Lista (p_plista).");
+            }
+
+            return errores;
+        }
+
         // ✅ NUEVO: Procesar datos reales del Excel
         // ✅ ACTUALIZAR: Procesar datos del Excel con campo BD
         private async Task<DatosImportacionDto?> ProcesarDatosDelExcel(IFormFile archivo, AnalisisExcelDto analisis, string proveedorId)
@@ -614,6 +705,7 @@ namespace gc.sitio.Areas.Productos.Controllers
                 // ✅ Procesar cada fila de datos (saltar fila de encabezados)
                 int filaInicioDatos = datosImportacion.FilaEncabezados + 1;
                 int filasProceadas = 0;
+                int filasIgnoradas = 0;
 
                 for (int fila = filaInicioDatos; fila <= analisis.TotalFilas; fila++)
                 {
@@ -647,15 +739,32 @@ namespace gc.sitio.Areas.Productos.Controllers
                         }
                     }
 
-                    // ✅ Solo agregar filas que tengan al menos un dato útil
+                    // Solo se envían filas de producto completas. Esto evita interpretar
+                    // títulos, notas al pie o vigencias como códigos de producto.
                     if (filaConDatos)
                     {
-                        datosImportacion.Filas.Add(filaDatos);
-                        filasProceadas++;
+                        var tieneIdentificador = filaDatos.Valores.Any(valor =>
+                            EsCampoIdentificador(valor.Key) &&
+                            valor.Value != null &&
+                            !string.IsNullOrWhiteSpace(valor.Value.ToString()));
+                        var tienePrecioLista = filaDatos.Valores.TryGetValue("p_plista", out var precioLista) &&
+                                               precioLista != null &&
+                                               !string.IsNullOrWhiteSpace(precioLista.ToString());
+
+                        if (tieneIdentificador && tienePrecioLista)
+                        {
+                            datosImportacion.Filas.Add(filaDatos);
+                            filasProceadas++;
+                        }
+                        else
+                        {
+                            filasIgnoradas++;
+                            _logger?.LogDebug($"Fila {fila} ignorada: no contiene identificador y precio de lista válidos.");
+                        }
                     }
                 }
 
-                _logger?.LogInformation($"Procesadas {filasProceadas} filas de datos con {datosImportacion.MapeoColumnas.Count} columnas mapeadas");
+                _logger?.LogInformation($"Procesadas {filasProceadas} filas de datos; {filasIgnoradas} filas ignoradas con {datosImportacion.MapeoColumnas.Count} columnas mapeadas");
 
                 return datosImportacion;
             }
@@ -682,11 +791,30 @@ namespace gc.sitio.Areas.Productos.Controllers
 
             return tipoDato switch
             {
-                "Número" => double.TryParse(valorTexto, NumberStyles.Any, CultureInfo.InvariantCulture, out var numero) ? numero : null,
+                "Número" => TryConvertirNumeroExcel(valorCelda, valorTexto, out var numero) ? numero : null,
                 "Fecha" => DateTime.TryParse(valorTexto, out var fecha) ? fecha : null,
                 "Texto" => valorTexto,
                 _ => valorTexto
             };
+        }
+
+        private static bool TryConvertirNumeroExcel(object valorCelda, string valorTexto, out double numero)
+        {
+            switch (valorCelda)
+            {
+                case byte or sbyte or short or ushort or int or uint or long or ulong or float or double or decimal:
+                    numero = Convert.ToDouble(valorCelda, CultureInfo.InvariantCulture);
+                    return true;
+            }
+
+            var tieneComa = valorTexto.Contains(',');
+            var tienePunto = valorTexto.Contains('.');
+            var comaEsDecimal = tieneComa && (!tienePunto || valorTexto.LastIndexOf(',') > valorTexto.LastIndexOf('.'));
+            var culturaPrimaria = comaEsDecimal ? CultureInfo.CurrentCulture : CultureInfo.InvariantCulture;
+            var culturaAlternativa = comaEsDecimal ? CultureInfo.InvariantCulture : CultureInfo.CurrentCulture;
+
+            return double.TryParse(valorTexto, NumberStyles.Any, culturaPrimaria, out numero) ||
+                   double.TryParse(valorTexto, NumberStyles.Any, culturaAlternativa, out numero);
         }
 
         // ✅ NUEVO: Identificar campos que deben mantenerse como string
@@ -763,13 +891,14 @@ namespace gc.sitio.Areas.Productos.Controllers
                 var worksheet = package.Workbook.Worksheets[0];
 
                 var celdasCombinadas = ObtenerInformacionCeldasCombinadas(worksheet);
+                var dimensionEfectiva = worksheet.DimensionByValue ?? worksheet.Dimension;
 
                 var diagnostico = new
                 {
                     nombreArchivo = archivo.FileName,
                     nombreHoja = worksheet.Name,
-                    totalFilas = worksheet.Dimension?.End.Row ?? 0,
-                    totalColumnas = worksheet.Dimension?.End.Column ?? 0,
+                    totalFilas = dimensionEfectiva?.End.Row ?? 0,
+                    totalColumnas = dimensionEfectiva?.End.Column ?? 0,
                     cantidadCeldasCombinadas = celdasCombinadas.Count,
                     celdasCombinadas = celdasCombinadas.Select(cc => new
                     {
@@ -989,6 +1118,44 @@ namespace gc.sitio.Areas.Productos.Controllers
         //}
 
         // ✅ SIMPLIFICAR: Mapeo automático optimizado
+        private void AplicarPerfilGuardado(AnalisisExcelDto analisis)
+        {
+            var perfil = PerfilProveedorGuardado;
+            if (perfil.Count == 0 || analisis.Columnas.Count == 0)
+            {
+                return;
+            }
+
+            var camposDisponibles = analisis.CamposDisponibles
+                .Where(c => !string.IsNullOrWhiteSpace(c.Campo))
+                .GroupBy(c => c.Campo, StringComparer.OrdinalIgnoreCase)
+                .ToDictionary(g => g.Key, g => g.First(), StringComparer.OrdinalIgnoreCase);
+            var camposAsignados = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+            foreach (var columna in analisis.Columnas)
+            {
+                var encabezadoNormalizado = LimpiarTexto(columna.Encabezado);
+                var mapeo = perfil.FirstOrDefault(p =>
+                    p.indice_columna == columna.Indice &&
+                    LimpiarTexto(p.encabezado_original).Equals(encabezadoNormalizado, StringComparison.OrdinalIgnoreCase));
+
+                mapeo ??= perfil.FirstOrDefault(p =>
+                    LimpiarTexto(p.encabezado_original).Equals(encabezadoNormalizado, StringComparison.OrdinalIgnoreCase));
+
+                if (mapeo == null || string.IsNullOrWhiteSpace(mapeo.campo_bd) ||
+                    !camposDisponibles.TryGetValue(mapeo.campo_bd, out var campo) ||
+                    !camposAsignados.Add(mapeo.campo_bd))
+                {
+                    continue;
+                }
+
+                columna.CampoMapeado = campo.Campo;
+                columna.DescripcionMapeado = campo.Dato;
+                columna.ConfianzaMapeo = 100;
+                columna.MapeadoAutomatico = false;
+            }
+        }
+
         private void AplicarMapeoAutomaticoInteligente(AnalisisExcelDto analisis)
         {
             _logger?.LogInformation($"Iniciando mapeo automático: {analisis.Columnas?.Count} columnas");
@@ -996,36 +1163,42 @@ namespace gc.sitio.Areas.Productos.Controllers
             if (analisis.Columnas == null || !analisis.Columnas.Any())
                 return;
 
-            //hay que verificar que Analisis tiene ya los mejores mapeos obtenidos de la base de datos.
-            var analisisDb = AnalisisFile;
-            if (analisisDb.Columnas.Count != 0)
-            {
-                foreach (var col in analisisDb.Columnas)
-                {
-                    //resguardamos los datos previamente generados
-                    col.EjemplosValores = analisis.Columnas[col.Indice - 1].EjemplosValores;
-                    analisis.Columnas[col.Indice - 1] = col;
-                }
-                analisis.ColumnasInit = analisis.Columnas;
-                return;
-            }
+            var camposAsignados = new HashSet<string>(
+                analisis.Columnas
+                    .Where(c => !string.IsNullOrWhiteSpace(c.CampoMapeado))
+                    .Select(c => c.CampoMapeado),
+                StringComparer.OrdinalIgnoreCase);
 
-            foreach (var columna in analisis.Columnas)
+            foreach (var columna in analisis.Columnas.Where(c => string.IsNullOrWhiteSpace(c.CampoMapeado)))
             {
-                var mapeoEncontrado = BuscarMejorMapeo(columna, analisis.CamposDisponibles, debug: true);
+                var disponibles = analisis.CamposDisponibles
+                    .Where(c => !camposAsignados.Contains(c.Campo))
+                    .ToList();
+                var mapeoEncontrado = BuscarMejorMapeo(columna, disponibles, debug: true);
                 //marco a la caolumna con el campo de la base de datos posible
                 if (mapeoEncontrado != null)
                 {
                     columna.CampoMapeado = mapeoEncontrado.Campo;
                     columna.DescripcionMapeado = mapeoEncontrado.Dato;
                     columna.MapeadoAutomatico = true;
+                    camposAsignados.Add(mapeoEncontrado.Campo);
 
                     _logger?.LogInformation($"✅ Mapeado: '{columna.Encabezado}' → '{mapeoEncontrado.Campo}' ({columna.ConfianzaMapeo}%)");
                 }
             }
-            //lo que se quiere hacer en el diagnostico es ver si el campo esta repetido. Pero eso ya lo verifico y chequeo en el campo para tal fin HasChecked 
-            //DiagnosticarMapeos(analisis);
-            //ResolverConflictosMapeo(analisis);
+            analisis.ColumnasInit = analisis.Columnas
+                .Select(c => new ColumnaExcelDto
+                {
+                    Indice = c.Indice,
+                    Letra = c.Letra,
+                    Encabezado = c.Encabezado,
+                    TipoDetectado = c.TipoDetectado,
+                    CampoMapeado = c.CampoMapeado,
+                    DescripcionMapeado = c.DescripcionMapeado,
+                    ConfianzaMapeo = c.ConfianzaMapeo,
+                    MapeadoAutomatico = c.MapeadoAutomatico
+                })
+                .ToList();
         }
 
         // ✅ MEJORAR: Función de cálculo de confianza con similitud aproximada
@@ -1286,7 +1459,7 @@ namespace gc.sitio.Areas.Productos.Controllers
             //                        .Where(x => !x.HasChecked)
             //                        .ToDictionary(c => c.Campo, c => c.Dato, StringComparer.OrdinalIgnoreCase);
 
-            foreach (var campo in camposDisponibles.Where(x => !x.HasChecked))
+            foreach (var campo in camposDisponibles)
             {
                 var confianza = CalcularConfianza(encabezadoLimpio, campo, columna.TipoDetectado, debug);
 
@@ -1295,7 +1468,6 @@ namespace gc.sitio.Areas.Productos.Controllers
                     mayorConfianza = confianza;
                     mejorMapeo = campo;
                     columna.ConfianzaMapeo = confianza;
-                    campo.HasChecked = true;
                     //si la confianza es del 90% o más existe alta probabilidad de exito
                     if (mayorConfianza >= 90)
                     {
@@ -1347,13 +1519,14 @@ namespace gc.sitio.Areas.Productos.Controllers
 
             using var package = new ExcelPackage(stream);
             var worksheet = package.Workbook.Worksheets[0];
+            var dimensionEfectiva = worksheet.DimensionByValue ?? worksheet.Dimension;
 
             analisis = new AnalisisExcelDto
             {
                 NombreArchivo = archivo.FileName,
                 NombreHoja = worksheet.Name,
-                TotalFilas = worksheet.Dimension?.End.Row ?? 0,
-                TotalColumnas = worksheet.Dimension?.End.Column ?? 0,
+                TotalFilas = dimensionEfectiva?.End.Row ?? 0,
+                TotalColumnas = dimensionEfectiva?.End.Column ?? 0,
                 Columnas = new List<ColumnaExcelDto>()
             };
 
@@ -1488,8 +1661,9 @@ namespace gc.sitio.Areas.Productos.Controllers
         private int DetectarFilaEncabezadosConCombinadas(ExcelWorksheet ws, List<CeldaCombinada> celdasCombinadas,
             int maxFilasExploracion = 10, int minFilasDatos = 2)
         {
-            int totalFilas = ws.Dimension?.End.Row ?? 0;
-            int totalCols = ws.Dimension?.End.Column ?? 0;
+            var dimensionEfectiva = ws.DimensionByValue ?? ws.Dimension;
+            int totalFilas = dimensionEfectiva?.End.Row ?? 0;
+            int totalCols = dimensionEfectiva?.End.Column ?? 0;
             if (totalFilas == 0 || totalCols == 0) return 1;
 
             int maxRow = Math.Min(maxFilasExploracion, totalFilas);
@@ -1626,7 +1800,8 @@ namespace gc.sitio.Areas.Productos.Controllers
             Func<ExcelRangeBase, bool> esVacia, Func<ExcelRangeBase, bool> esNumero,
             Func<ExcelRangeBase, bool> pareceFecha, Func<ExcelRangeBase, bool> esTexto)
         {
-            if (fila >= ws.Dimension?.End.Row) return 0;
+            var totalFilas = (ws.DimensionByValue ?? ws.Dimension)?.End.Row ?? 0;
+            if (fila >= totalFilas) return 0;
 
             int diferencias = 0, considerados = 0;
             int filaSiguiente = fila + 1;
@@ -1659,8 +1834,9 @@ namespace gc.sitio.Areas.Productos.Controllers
         private bool HayContinuidadDatos(ExcelWorksheet ws, int filaEncabezado, int minFilas,
             Func<ExcelRangeBase, bool> esVacia, double minDensidad = 0.3)
         {
-            int totalCols = ws.Dimension?.End.Column ?? 0;
-            int totalFilas = ws.Dimension?.End.Row ?? 0;
+            var dimensionEfectiva = ws.DimensionByValue ?? ws.Dimension;
+            int totalCols = dimensionEfectiva?.End.Column ?? 0;
+            int totalFilas = dimensionEfectiva?.End.Row ?? 0;
             int encontrados = 0;
 
             for (int r = filaEncabezado + 1; r <= totalFilas && encontrados < minFilas; r++)
@@ -1695,7 +1871,7 @@ namespace gc.sitio.Areas.Productos.Controllers
                 ["Vacío"] = 0
             };
 
-            int totalRows = ws.Dimension?.End.Row ?? 0;
+            int totalRows = (ws.DimensionByValue ?? ws.Dimension)?.End.Row ?? 0;
             if (totalRows == 0) return "Desconocido";
 
             int endRow = Math.Min(totalRows, filaInicio + sampleRows - 1);
@@ -1751,13 +1927,15 @@ namespace gc.sitio.Areas.Productos.Controllers
             var indicadoresIdentificador = new[]
             {
         "ean", "gtin", "upc", "barcode", "codigo barras", "cod barras",
-        "codigo", "código", "id", "identificador", "dun", "isbn"
+        "codigo", "código", "identificador", "dun", "isbn"
     };
 
             var encabezadoLimpio = LimpiarTexto(encabezado);
+            var palabras = encabezadoLimpio.Split(' ', StringSplitOptions.RemoveEmptyEntries);
 
-            return indicadoresIdentificador.Any(indicador =>
-                encabezadoLimpio.Contains(indicador, StringComparison.OrdinalIgnoreCase));
+            return palabras.Contains("id", StringComparer.OrdinalIgnoreCase) ||
+                   indicadoresIdentificador.Any(indicador =>
+                       encabezadoLimpio.Contains(indicador, StringComparison.OrdinalIgnoreCase));
         }
 
         // ✅ NUEVO: Verificar longitudes típicas de EAN
@@ -1786,7 +1964,8 @@ namespace gc.sitio.Areas.Productos.Controllers
             var ejemplos = new List<string>();
             int encontrados = 0;
 
-            for (int fila = filaDatosInicio; fila <= worksheet.Dimension?.End.Row && encontrados < cantidad; fila++)
+            var totalFilas = (worksheet.DimensionByValue ?? worksheet.Dimension)?.End.Row ?? 0;
+            for (int fila = filaDatosInicio; fila <= totalFilas && encontrados < cantidad; fila++)
             {
                 var valor = worksheet.Cells[fila, columna].Value?.ToString()?.Trim();
                 if (!string.IsNullOrEmpty(valor))
@@ -1811,17 +1990,19 @@ namespace gc.sitio.Areas.Productos.Controllers
             return columnName;
         }
 
-        private void CargarDatosIniciales()
+        private async Task CargarDatosIniciales()
         {
             if (DatosParaImportacion.Count == 0)
             {
-                ObtenerDatosParaImportacion(_impServicio).GetAwaiter();
+                await ObtenerDatosParaImportacion(_impServicio);
             }
 
-            if (AnalisisFile == null || AnalisisFile.Columnas.Count == 0)
+            if (DatosParaImportacion.Count == 0)
             {
-                ObtenerPerfilDeProveedor(_impServicio, ProveedorSeleccionado.Cta_Id);
+                throw new NegocioException("No se pudieron obtener los campos disponibles para la importación.");
             }
+
+            await ObtenerPerfilDeProveedor(_impServicio, ProveedorSeleccionado.Cta_Id);
 
         }
     }

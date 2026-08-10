@@ -77,6 +77,39 @@
                 <!-- Espacio liberado cuando se oculta el upload -->
             </div>
         </div>
+        <div class="card-footer bg-transparent py-2 d-flex justify-content-between align-items-center">
+            <a href="@Url.Action("Index", "CargaPrecios", new { area = "Productos" })"
+               class="btn btn-outline-secondary btn-sm">
+                <i class="bx bx-arrow-back me-1"></i>Volver
+            </a>
+            <button type="button" id="btnCancelarImportacion"
+                    class="btn btn-danger btn-sm" style="display: none;"
+                    onclick="cancelarAnalisisImportacion()">
+                <i class="bx bx-x me-1"></i>Cancelar
+            </button>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modalModoImportacion" tabindex="-1"
+     data-bs-keyboard="false" data-bs-backdrop="static" aria-labelledby="modalModoImportacionTitulo" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalModoImportacionTitulo">Elegir modo de importación</h5>
+            </div>
+            <div class="modal-body">
+                <p class="mb-0">El mapeo es válido. Indique si desea conservar este formato para próximas importaciones del proveedor.</p>
+            </div>
+            <div class="modal-footer justify-content-center">
+                <button type="button" class="btn btn-primary btn-sm" id="btnImportarGuardarFormato">
+                    <i class="bx bx-save me-1"></i>Importar y guardar formato
+                </button>
+                <button type="button" class="btn btn-outline-primary btn-sm" id="btnImportarSinGuardar">
+                    <i class="bx bx-import me-1"></i>Importar sin guardar formato
+                </button>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -195,5 +228,5 @@
         
     </script>
     <script src="~/js/app/busquedas.js"></script>
-    <script src="~/js/app/areas/precios/importarfile.js"></script>
+    <script src="~/js/app/areas/precios/importarfile.js?v=20260810.1"></script>
 }

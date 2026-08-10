@@ -9,6 +9,7 @@ namespace gc.api.core.Contratos.Servicios.LineaCaja
         RespuestaDto ValidaIntegridadUsuarioCaja(CajaReqDto req);
         RespuestaDto AperturaCaja(CajaReqDto reqDto);
         RespuestaDto CierreCaja(CajaReqDto reqDto);
+        RespuestaDto CierreCajaConRendicion(CierreCajaRequestDto reqDto);
         List<CuentaBusquedaResultadoDto> BusquedaClientes(string busqueda, string adm_id, string usu_id, string app);
         CuentaDatosResultadoDto BusquedaDatosCliente(string origen, string valor, string adm_id, string usu_id);
         RespuestaDto ConfirmaConsumidorFinal(ClienteRequestDto req);
@@ -21,3 +22,4 @@ namespace gc.api.core.Contratos.Servicios.LineaCaja
         RespuestaDto CargaStkDeFactura(CargaStkDto req);
     }
 }
+

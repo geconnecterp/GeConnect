@@ -1,4 +1,4 @@
-﻿using IronBarCode;
+using QRCoder;
 
 namespace gc.infraestructura.Helpers
 {
@@ -6,8 +6,10 @@ namespace gc.infraestructura.Helpers
     {
         public static byte[] GenerarPng(string contenido)
         {
-            var qr = QRCodeWriter.CreateQrCode(contenido, 300);
-            return qr.ToPngBinaryData();
+            using var generator = new QRCodeGenerator();
+            using var data = generator.CreateQrCode(contenido, QRCodeGenerator.ECCLevel.Q);
+            using var qr = new PngByteQRCode(data);
+            return qr.GetGraphic(20);
         }
     }
 }

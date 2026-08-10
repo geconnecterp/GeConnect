@@ -1,4 +1,4 @@
-﻿using gc.infraestructura.Dtos.Cajas;
+using gc.infraestructura.Dtos.Cajas;
 using gc.infraestructura.Dtos.Cajas.Response;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Helpers;
@@ -414,10 +414,11 @@ namespace gc.api.core.Servicios.Reportes
             {
                 logger?.LogError(
                     ex,
-                    "FacturaBase QR ARCA no se pudo renderizar. tco_id={TcoId}; cm_compte={CmCompte}; cm_repetido={CmRepetido}",
+                    "FacturaBase QR ARCA no se pudo renderizar. tco_id={TcoId}; cm_compte={CmCompte}; cm_repetido={CmRepetido}; url_length={UrlLength}",
                     encabezado.tco_id,
                     encabezado.cm_compte,
-                    encabezado.cm_repetido);
+                    encabezado.cm_repetido,
+                    url.Length);
                 return null;
             }
         }

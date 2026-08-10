@@ -11,6 +11,7 @@ namespace gc.caja.core.Servicios.Contratos.Cajas
         Task<RespuestaGenerica<RespuestaDto>> ValidarIntegridadUsuarioCaja(CajaReqDto req, string token);
         Task<RespuestaGenerica<RespuestaDto>> AperturaCaja(CajaReqDto req, string token);
         Task<RespuestaGenerica<RespuestaDto>> CierreCaja(CajaReqDto req, string token);
+        Task<RespuestaGenerica<RespuestaDto>> CierreCajaConRendicion(CierreCajaRequestDto req, string token);
         Task<RespuestaGenerica<CuentaBusquedaResultadoDto>> BusquedaClientes(string busqueda, string adm_id, string usu_id, string app, string token);
         Task<RespuestaGenerica<CuentaDatosResultadoDto>> BusquedaDatosCliente(string origen, string valor, string adm_id, string usu_id, string token);
         Task<RespuestaGenerica<RespuestaDto>> ConfirmaConsumidorFinal(ClienteRequestDto req, string token);
@@ -22,3 +23,4 @@ namespace gc.caja.core.Servicios.Contratos.Cajas
         Task<RespuestaGenerica<RespuestaDto>> CargaStkDeFactura(CargaStkDto req, string token);
     }
 }
+
