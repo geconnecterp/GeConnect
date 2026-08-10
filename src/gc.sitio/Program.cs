@@ -26,6 +26,7 @@ CultureInfo.DefaultThreadCurrentUICulture = cultureInfo;
 // Obtener PathBase desde configuración
 var appSettings = builder.Configuration.GetSection("AppSettings").Get<AppSettings>();
 var pathBase = appSettings?.PathBase ?? string.Empty;
+var sessionDurationMinutes = builder.Configuration.GetValue<int?>("SessionSettings:DurationMinutes") ?? 240;
 
 builder.Services.Configure<CookieAuthenticationOptions>(opt =>
 {
@@ -44,6 +45,8 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
      opt.LoginPath = new PathString($"{pathBase}/seguridad/token/login");
      opt.LogoutPath = new PathString($"{pathBase}/seguridad/token/logout");
      opt.AccessDeniedPath = new PathString($"{pathBase}/seguridad/token/login");  //aca debere generar la ruta para indicar el acceso denegado y volver al login    
+     opt.ExpireTimeSpan = TimeSpan.FromMinutes(sessionDurationMinutes);
+     opt.SlidingExpiration = true;
  });
 
 
@@ -75,7 +78,7 @@ builder.Services.AddHsts(opt =>
 builder.Services.AddSession(opt =>
 {
     opt.Cookie.Name = ".gcsite.session";
-    opt.IdleTimeout = TimeSpan.FromMinutes(60);
+    opt.IdleTimeout = TimeSpan.FromMinutes(sessionDurationMinutes);
     opt.Cookie.HttpOnly = true;
     opt.Cookie.IsEssential = true;
 });
