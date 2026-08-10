@@ -8,6 +8,31 @@
 @section styles {
     <link rel="stylesheet" href="~/css/simplePagination.css" />
     <link rel="stylesheet" href="~/lib/jstree/themes/default/style.min.css" />
+    <style>
+        #divDetalle .etiqueta-grid-card {
+            width: 100%;
+            max-width: 1100px;
+        }
+
+        #tbGridEtiquetaDetalle {
+            table-layout: fixed;
+        }
+
+        #tbGridEtiquetaDetalle td {
+            vertical-align: middle;
+        }
+
+        #tbGridEtiquetaDetalle .etiqueta-descripcion {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        #tbGridEtiquetaDetalle .btn-eliminar-etiqueta {
+            padding: .15rem .35rem;
+            line-height: 1;
+        }
+    </style>
 }
 
 <partial name="_botonera" model="filtro" />
@@ -27,7 +52,7 @@
         let pags = 0;
         let pagina = 1;
         let search = "";
-        var autoComRel01Url = "@Url.Action("BuscarProvs", "cargaprecios", new { area = "productos" })";/**/
+        var autoComRel01Url = "@Url.Action("BuscarProveedores", "etiqueta", new { area = "productos" })";/**/
         var autoComRel02Url = "@Url.Action("BuscarRubros", "cargaprecios", new { area = "productos" })";/**/
         var autoComRel03Url =  "@Url.Action("BuscarFamiliaDesdeProveedorSeleccionado", "cargaprecios", new { area = "productos" })";/**/
         var buscarFamiliaUrl = "@Url.Action("BuscarFamiliaDesdeProveedorSeleccionado", "cargaprecios", new { area = "productos" })";/**/
@@ -36,8 +61,8 @@
 
         let obtenerDetalleEtiquetasUrl = "@Url.Action("obtenerDetalleEtiquetas", "etiqueta", new { area = "productos" })";/**/
         let confirmarImpresionEtiquetaUrl = "@Url.Action("confirmarImpresionEtiqueta", "etiqueta", new { area = "productos" })";/**/
+        let reiniciarEstadoEtiquetaUrl = "@Url.Action("reiniciarEstado", "etiqueta", new { area = "productos" })";/**/
 
-        let buscarMetadataURL = '@Url.Action("ObtenerDatosPaginacion", "Presupuesto", new { area = "Productos" })';
         let homeEtiqueta = '@Url.Action("index", "etiqueta", new { area = "Productos" })';
 
         //para imprimir 
@@ -62,5 +87,5 @@
     <script src="~/js/app/areas/docmngr/docmanager.js"></script>
 
     <script src="~/js/app/busquedasV02.js"></script>
-    <script src="~/js/app/areas/precios/etiqueta.js"></script>
+    <script src="~/js/app/areas/precios/etiqueta.js" asp-append-version="true"></script>
 }

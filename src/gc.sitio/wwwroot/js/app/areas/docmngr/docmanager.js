@@ -1423,13 +1423,17 @@ function imprimirArchivoSeleccionado() {
                             }, false, ["Aceptar"], "error!", null);
                         } else {
                             var archivoBase64 = obj.base64;
+                            var reporteAbierto = false;
                             if (!archivoBase64.includes("|")) {
                                 var blob = b64toBlob(archivoBase64, 'application/pdf');
                                 var url = URL.createObjectURL(blob);
                                 var printWindow = window.open(url);
-                                printWindow.onload = function () {
-                                    printWindow.print();
-                                };
+                                if (printWindow) {
+                                    reporteAbierto = true;
+                                    printWindow.onload = function () {
+                                        printWindow.print();
+                                    };
+                                }
                             }
                             else {
                                 var arrArchivoBase64 = archivoBase64.split("|");
@@ -1438,11 +1442,22 @@ function imprimirArchivoSeleccionado() {
                                         var blob = b64toBlob(elemento, 'application/pdf');
                                         var url = URL.createObjectURL(blob);
                                         var printWindow = window.open(url);
-                                        printWindow.onload = function () {
-                                            printWindow.print();
-                                        };
+                                        if (printWindow) {
+                                            reporteAbierto = true;
+                                            printWindow.onload = function () {
+                                                printWindow.print();
+                                            };
+                                        }
                                     }
                                 });
+                            }
+
+                            // Notificación pasiva para los módulos que necesitan
+                            // confirmar el impacto únicamente cuando el PDF se abrió.
+                            if (reporteAbierto) {
+                                $(document).trigger("gestorDocumental:reporteAbierto");
+                            } else {
+                                $(document).trigger("gestorDocumental:reporteBloqueado");
                             }
                         }
                     });
