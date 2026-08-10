@@ -1,6 +1,11 @@
 ﻿@model ChequeModificadoModel
 @{
 }
+<style>
+	.fixed-lbl{
+		width: 100px;
+	}
+</style>
 <div class="modal-header">
 	<h5 class="modal-title" id="modalCenterTitle">Registro de Modificación</h5>
 	<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -10,17 +15,17 @@
 		<div class="col-md-12">
 			<div class="input-group input-group-sm">
 				<div class="input-group input-group-sm mt-2">
-					<span class="input-group-text">Modificado por: </span>
+					<span class="input-group-text fixed-lbl">Modificado por: </span>
 					<input type="text" asp-for="ModificadoPor" class="form-control activable inputEditable" readonly />
 				</div>
 				<div class="input-group input-group-sm mt-2">
-					<span class="input-group-text">N° Cheque: </span>
+					<span class="input-group-text fixed-lbl">N° Cheque: </span>
 					<input type="text" asp-for="NroCheque" class="form-control activable inputEditable" readonly />
 					<span class="input-group-text">Fecha: </span>
 					<input type="date" asp-for="Fecha" class="form-control activable inputEditable" readonly />
 				</div>
 				<div class="input-group input-group-sm mt-2">
-					<span class="input-group-text">A Nombre de: </span>
+					<span class="input-group-text fixed-lbl">A Nombre de: </span>
 					<input type="text" asp-for="ANombreDe" class="form-control activable inputEditable" readonly />
 				</div>
 			</div>

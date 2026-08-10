@@ -306,7 +306,7 @@
             <div class="col-7 text-end fw-bold text-golden">
                 Totales:
             </div>
-            <div class="col-5 text-start fw-bold text-golden" id="tdTotalImporte">
+            <div class="col-5 text-start fw-bold text-golden" id="tdTotalImporte" style="padding-left: 65px;">
                 @Model.GrillaChequesDetalle.ListaDatos?.Sum(c => c.che_importe).ToString("N2")
             </div>
         </div>

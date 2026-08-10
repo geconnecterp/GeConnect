@@ -1,7 +1,8 @@
 ﻿@model DepositoDeChequesModel
+@using gc.infraestructura.Helpers
 @using static gc.infraestructura.Helpers.GridHelper
 @{
-	Layout = "~/views/shared/_Layout.cshtml";
+    Layout = "~/views/shared/_Layout.cshtml";
 
 	var list = Model.ListaIntervalo;
 	var alt = true;
@@ -116,6 +117,15 @@
 	#tbListaDestino tr {
 		height: 1.6rem !important; /* ajustá según lo que quieras */
 	}
+
+	.col-valor {
+		white-space: nowrap !important;
+		overflow: hidden !important;
+		text-overflow: ellipsis !important;
+		max-width: 100%;
+		cursor: default;
+	}
+
 </style>
 @Html.Hidden("parametro_valores_origen", Model.parametro_valores_origen)
 @Html.Hidden("parametro_valores_destino", Model.parametro_valores_destino)
@@ -133,23 +143,56 @@
 				</button>
 			</div>
 		</div>
-		<div class="row">
-			<div class="col-md-8">
+		<div class="row mb-2">
+
+			<!-- Columna alineada con ORIGEN -->
+			<div class="col-6 d-flex align-items-center">
 				<div class="input-group input-group-sm">
+
 					<span class="input-group-text">Concepto: </span>
 					<input type="text" asp-for="concepto" class="form-control inputEditable" />
+
 					<span class="input-group-text">Acreditación: </span>
-					@Html.TextBoxFor(m => m.acreditacion, "{0:yyyy-MM-dd}", new { type = "date", @class = "form-control activable inputEditable", @onchange = "onChangeAcreditacion(this);", @id = "fechaAcreditacion", style = "width: 110px;max-width: 110px;" })
-					@Html.DropDownList("id", list, "Seleccionar...", new { @id = "listaIntervalo", @class = "form-control", style = "width: 75px;max-width: 75px;" })
-					<button id="btnAbmAceptar" class="btn btn-success btn-sm me-1" type="button" title="Aceptar" style="margin-left: 10px;z-index:1;">
-						<i class="bx bx-badge-check"></i>Confirmar
-					</button>
-					<button id="btnAbmCancelar" class="btn btn-danger btn-sm me-1" type="button" title="Cancelar" style="z-index:1;">
-						<i class="bx bx-x-circle"></i>Cancelar
-					</button>
+					@Html.TextBoxFor(m => m.acreditacion, "{0:yyyy-MM-dd}",
+						new
+						{
+							type = "date",
+							@class = "form-control activable inputEditable",
+							@onchange = "onChangeAcreditacion(this);",
+							@id = "fechaAcreditacion",
+							style = "width:110px; max-width:110px;"
+						})
+
+					@Html.DropDownList("id", list, "Seleccionar...",
+						new
+						{
+							@id = "listaIntervalo",
+							@class = "form-control",
+							style = "width:75px; max-width:75px;"
+						})
+
 				</div>
 			</div>
+
+			<!-- Columna alineada con DESTINO -->
+			<div class="col-6 d-flex justify-content-end align-items-center">
+
+				<button id="btnAbmAceptar"
+						class="btn btn-success btn-sm me-2 btn-compact-fixed"
+						type="button" title="Aceptar">
+					<i class="bx bx-badge-check"></i> Confirmar
+				</button>
+
+				<button id="btnAbmCancelar"
+						class="btn btn-danger btn-sm btn-compact-fixed"
+						type="button" title="Cancelar">
+					<i class="bx bx-x-circle"></i> Cancelar
+				</button>
+
+			</div>
+
 		</div>
+
 		<div class="row">
 			<div class="col-6">
 				<fieldset>
@@ -160,7 +203,7 @@
 								<i class="bx bx-plus bx-xs"></i>
 							</button>
 						</div>
-						<div class="col-11" id="divOrigen" style="height: 450px;">
+						<div class="col-11" id="divOrigen" style="height: 550px;">
 							<div class="table-responsive table-wrapper-440-full" id="containerOrigen">
 								<table class="table table-sm table-golden" id="tbListaOrigen">
 									<thead>
@@ -182,8 +225,8 @@
 												if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
 												<tr class="@clase" onclick="selectReg(this, 'tbListaValores_Paso2')" ondblclick="selectRegDblGrillaValores(this);">
 													<td class="@Model.GrillaOrigen.ObtenerClase(item.ctaf_denominacion) cell-fit-content">@Model.GrillaOrigen.FormatearDato(item.ctaf_denominacion, FormatDato.Ninguno)</td>
-													<td class="@Model.GrillaOrigen.ObtenerClase(item.concepto_valor) cell-fit-content">@Model.GrillaOrigen.FormatearDato(item.concepto_valor, FormatDato.Monto)</td>
-													<td class="@Model.GrillaOrigen.ObtenerClase(item.op_importe) cell-fit-content">@Model.GrillaOrigen.FormatearDato(item.op_importe, FormatDato.Monto)</td>
+													<td class="col-valor @Model.GrillaOrigen.ObtenerClase(item.concepto_valor) cell-fit-content" title="@item.concepto_valor">@Model.GrillaOrigen.FormatearDato(item.concepto_valor, FormatDato.Monto)</td>
+													<td class="@Model.GrillaOrigen.ObtenerClase(item.op_importe) cell-fit-content">@GridHelper.FormatearDato(item.op_importe, FormatDato.Monto, true)</td>
 													<td style="display:none;">@item.orden</td>
 													<td style="display:none;">@item.fc_dia_movi</td>
 													<td style="display:none;">@item.fc_compte</td>
@@ -216,7 +259,7 @@
 								<i class="bx bx-plus bx-xs"></i>
 							</button>
 						</div>
-						<div class="col-11" id="divDestino" style="height: 450px;">
+						<div class="col-11" id="divDestino" style="height: 550px;">
 							<div class="table-responsive table-wrapper-440-full" id="containerDestino">
 								<table class="table table-sm table-golden" id="tbListaDestino">
 									<thead>
@@ -238,8 +281,8 @@
 												if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
 												<tr class="@clase" onclick="selectReg(this, 'tbListaValores_Paso2')" ondblclick="selectRegDblGrillaValores(this);">
 													<td class="@Model.GrillaDestino.ObtenerClase(item.ctaf_denominacion) cell-fit-content">@Model.GrillaDestino.FormatearDato(item.ctaf_denominacion, FormatDato.Ninguno)</td>
-													<td class="@Model.GrillaDestino.ObtenerClase(item.concepto_valor) cell-fit-content">@Model.GrillaDestino.FormatearDato(item.concepto_valor, FormatDato.Monto)</td>
-													<td class="@Model.GrillaDestino.ObtenerClase(item.op_importe) cell-fit-content">@Model.GrillaDestino.FormatearDato(item.op_importe, FormatDato.Monto)</td>
+													<td class="col-valor @Model.GrillaDestino.ObtenerClase(item.concepto_valor) cell-fit-content" title="@item.concepto_valor">@Model.GrillaDestino.FormatearDato(item.concepto_valor, FormatDato.Monto)</td>
+													<td class="@Model.GrillaDestino.ObtenerClase(item.op_importe) cell-fit-content">@GridHelper.FormatearDato(item.op_importe, FormatDato.Monto, true)</td>
 													<td style="display:none;">@item.orden</td>
 													<td style="display:none;">@item.fc_dia_movi</td>
 													<td style="display:none;">@item.fc_compte</td>

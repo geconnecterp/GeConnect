@@ -2,6 +2,13 @@
 @{
 	var list = Model.ListaCuentasBancarias;
 }
+<style>
+	.hidden {
+		display: none !important;
+	}
+
+</style>
+
 <div class="card card-golden" style="padding-left: 0px;padding-right: 0px;">
 	<div class="card-header mb-2">
 		<h5 class="mb-0" id="tituloLegend">Filtros </h5>
@@ -14,7 +21,7 @@
 						<div class="input-group input-group-sm">
 							<div class="form-check form-check-inline form-switch mb-2">
 								<input class="form-check-input" type="checkbox" name="EstadoActivo" id="chkDesdeHasta" />
-								<label class="form-check-label" for="chkDesdeHasta" id="lbChkDesdeHasta">Fechas</label>
+								<label class="form-check-label" for="chkDesdeHasta" id="lbChkDesdeHasta"></label>
 							</div>
 						</div>
 						<div class=" col-sm-6">
@@ -37,13 +44,13 @@
 							<div class="input-group input-group-sm">
 								<div class="form-check form-check-inline form-switch mb-2">
 									<input class="form-check-input" type="checkbox" name="EstadoActivo" id="chkCuentaBanco" />
-									<label class="form-check-label" for="chkCuentaBanco" id="lbCuentaBanco">Cuenta de Banco</label>
+									<label class="form-check-label" for="chkCuentaBanco" id="lbCuentaBanco"></label>
 								</div>
 							</div>
 						</div>
 					</div>
 					<div class="row">
-						<div class="col-12">
+						<div class="col-6">
 							<div class="input-group input-group-sm">
 								@Html.DropDownListFor(m => m.ctaSelected, list, "Seleccionar...", new { @id = "ListaCuentaBancaria", @class = "form-control activable" })
 							</div>

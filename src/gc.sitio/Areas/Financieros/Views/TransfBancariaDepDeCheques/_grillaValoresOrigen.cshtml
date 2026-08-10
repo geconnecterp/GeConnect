@@ -1,9 +1,19 @@
 ﻿@model ValoresModel
+@using gc.infraestructura.Helpers
 @using static gc.infraestructura.Helpers.GridHelper
 @{
-	var alt = true;
+    var alt = true;
 	string clase = string.Empty;
 }
+<style>
+	.col-valor {
+		white-space: nowrap !important;
+		overflow: hidden !important;
+		text-overflow: ellipsis !important;
+		max-width: 100%;
+		cursor: default;
+	}
+</style>
 @Html.Hidden("YaExiste", Model.YaExiste)
 @Html.Hidden("MensajeExiste", Model.MensajeExiste)
 <div class="table-responsive table-wrapper-440-full" id="containerOrigen">
@@ -27,8 +37,8 @@
 					if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
 					<tr class="@clase" onclick="selectReg(this, 'tbListaOrigen')" ondblclick="selectRegDblGrillaValores(this, 'tbListaOrigen');">
 						<td class="@Model.Grilla.ObtenerClase(item.ctaf_denominacion) cell-fit-content">@Model.Grilla.FormatearDato(item.ctaf_denominacion, FormatDato.Ninguno)</td>
-						<td class="@Model.Grilla.ObtenerClase(item.concepto_valor) cell-fit-content">@Model.Grilla.FormatearDato(item.concepto_valor, FormatDato.Monto)</td>
-						<td class="@Model.Grilla.ObtenerClase(item.op_importe) cell-fit-content">@Model.Grilla.FormatearDato(item.op_importe, FormatDato.Monto)</td>
+						<td class="col-valor @Model.Grilla.ObtenerClase(item.concepto_valor) cell-fit-content" title="@item.concepto_valor">@Model.Grilla.FormatearDato(item.concepto_valor, FormatDato.Monto)</td>
+						<td class="@Model.Grilla.ObtenerClase(item.op_importe) cell-fit-content">@GridHelper.FormatearDato(item.op_importe, FormatDato.Monto, true)</td>
 						<td style="display:none;">@item.orden</td>
 						<td style="display:none;">@item.fc_dia_movi</td>
 						<td style="display:none;">@item.fc_compte</td>

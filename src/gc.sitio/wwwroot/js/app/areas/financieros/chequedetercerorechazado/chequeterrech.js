@@ -8,6 +8,17 @@
 });
 
 function btnAceptarValidar() {
+	// 🔥 VALIDACIÓN NUEVA: La tabla debe tener al menos un registro
+	var cantRegistros = $("#tbListaChequesDepositados tbody tr").length
+	if (cantRegistros === 0) {
+		AbrirMensaje("ATENCIÓN", "No existen registros para confirmar.", function () {
+			$("#msjModal").modal("hide");
+			return true;
+		}, false, ["Aceptar"], "error!", null);
+
+		return; // 🔥 Detiene la ejecución
+	}
+
 	if (conciliado == "True" || rechazado == "True") {
 		AbrirMensaje("ATENCIÓN", "El valor seleccionado no puede ser rechazado.", function () {
 			$("#msjModal").modal("hide");
@@ -98,7 +109,7 @@ function InicializarDatosEnSesion() {
 function btnCancelValidar() {
 	var data = {};
 	PostGenHtml(data, volverPasoUnoUrl, function (obj) {
-		$("#divPrincipal").removeClass("col-8").addClass("col-4").html(obj);
+		$("#divPrincipal").html(obj);
 		InicializarCampos();
 		$(document).on("click", "#btnCancel", btnCancelValidar);
 	});
@@ -117,8 +128,8 @@ function btnBuscarValidar() {
 		return false;
 	}
 	else {
-		var fechaDesde = $("#fechaDesde").val();
-		var fechaHasta = $("#fechaHasta").val();
+		var fechaDesde = $("#FechaDesde").val();
+		var fechaHasta = $("#FechaHasta").val();
 		if (fechaDesde == "" || fechaHasta == "") {
 			AbrirMensaje("ATENCIÓN", "Debe ingresar ambas fechas.", function () {
 				$("#msjModal").modal("hide");
@@ -140,16 +151,18 @@ function btnBuscarValidar() {
 				}, false, ["Aceptar"], "error!", null);
 			}
 			else {
+				AbrirWaiting("Buscando Cheques...");
 				var data = { ctaf_id: CuentaBancariaSelected, fechaDesde, fechaHasta };
 				PostGenHtml(data, buscarChequesDepositadosUrl, function (obj) {
-					$("#divUno").removeClass("col-4").addClass("col-2");
-					$("#divDos").removeClass("col-4").addClass("col-2");
+					// $("#divUno").removeClass("col-4").addClass("col-2");
+					// $("#divDos").removeClass("col-4").addClass("col-2");
 					$("#divPrincipal").html(obj);
-					$("#divPrincipal").removeClass("col-4").addClass("col-8");
+					// $("#divPrincipal").removeClass("col-4").addClass("col-8");
 					// Centrar el div
-					$("#divPrincipal").parent().addClass("d-flex justify-content-center");
+					// $("#divPrincipal").parent().addClass("d-flex justify-content-center");
 					EstablecerValoresLimites();
 					$(document).on("click", "#btnCancel", btnCancelValidar);
+					CerrarWaiting();
 				});
 			}
 		}
@@ -169,10 +182,37 @@ function EstablecerValoresLimites() {
 }
 
 function InicializarCampos() {
-	var now = moment().format('yyyy-MM-DD');
-	$("#fechaHasta").val(now);
-	var now2 = moment().subtract(7, 'days');
-	$("#fechaDesde").val(now2.format('yyyy-MM-DD'));
+	// var now = moment().format('yyyy-MM-DD');
+	// $("#fechaHasta").val(now);
+	// var now2 = moment().subtract(7, 'days');
+	$("#chkCuentaBanco").prop('checked', true);
+	$("#chkCuentaBanco").trigger("change");
+	$("#chkDesdeHasta").prop('checked', true);
+	$("#chkDesdeHasta").trigger("change");
+	$("#FechaDesde").prop("disabled", false);
+	$("#FechaHasta").prop("disabled", false);
+	$("#chkCuentaBanco").prop("disabled", true);
+	$("#chkDesdeHasta").prop("disabled", true);
+	$("#chkDesdeHasta").on("click", function () {
+		if ($("#chkDesdeHasta").is(":checked")) {
+			$("#FechaDesde").prop("disabled", false);
+			$("#FechaHasta").prop("disabled", false);
+			
+		}
+		else {
+			$("#FechaDesde").prop("disabled", true);
+			$("#FechaHasta").prop("disabled", true);
+		}
+	});
+	$("#chkCuentaBanco").on("click", function () {
+		if ($("#chkCuentaBanco").is(":checked")) {
+			$("#ListaCuentaBancaria").prop("disabled", false);
+
+		}
+		else {
+			$("#ListaCuentaBancaria").prop("disabled", true);
+		}
+	});
 }
 
 function onChangeFechaRechazado(x) {
@@ -188,8 +228,8 @@ function onChangeFechaHasta(x) {
 }
 
 function ValidarFechasEnIndex() {
-	var fechaDesde = $("#fechaDesde").val();
-	var fechaHasta = $("#fechaHasta").val();
+	var fechaDesde = $("#FechaDesde").val();
+	var fechaHasta = $("#FechaHasta").val();
 	if (fechaDesde == "" || fechaHasta == "") {
 		AbrirMensaje("ATENCIÓN", "Debe ingresar ambas fechas.", function () {
 			$("#msjModal").modal("hide");

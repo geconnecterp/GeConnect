@@ -9,6 +9,20 @@
 		position: sticky;
 		top: 0px;
 	}
+
+	.modal-body {
+		display: flex;
+		flex-direction: column;
+		height: 385px; /* ya lo tenés */
+		max-height: 385px;
+		overflow: hidden;
+	}
+
+	#divSeccionEditable {
+		flex: 1; /* ocupa todo el espacio disponible */
+		/*overflow-y: auto;  scroll interno si hace falta */
+		margin-top: 5px !important; /* elimina huecos grandes */
+	}
 </style>
 <div class="modal fade modal-golden" id="seleccionDeValoresModal" style="display: block;height: 530px;padding-left: 0px;" tabindex="-1" aria-labelledby="seleccionDeValoresModalLabel" aria-hidden="true" data-bs-backdrop="static">
 	<div class="modal-dialog modal-lg" style="height: 500px;max-height: 500px;">
@@ -17,7 +31,8 @@
 				<h5 class="modal-title" id="seleccionDeValoresModalLabel">Selección de Valores</h5>
 				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 			</div>
-			<div class="modal-body" style="padding-right: 5px;padding-top: 5px;padding-left: 5px;padding-bottom: 5px;height: 385px;max-height:385px;">
+			@* <div class="modal-body" style="padding-right: 5px;padding-top: 5px;padding-left: 5px;padding-bottom: 5px;height: 385px;max-height:385px;"> *@
+			<div class="modal-body" >
 				<div class="row" style="max-height: 125px;height: 125px;">
 					<div class="col-4" style="padding-right: 0px;">
 						<div class="col-11 table-responsive table-wrapper-200-full" id="containerTipoCuentaFin" style="padding-right: 0px;">

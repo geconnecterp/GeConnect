@@ -2136,7 +2136,7 @@ namespace gc.infraestructura.Helpers
 
 			// FILA 2
 			tablaDatos.AddCell(CeldaSinBorde("Concepto:", fuenteEtiqueta, Element.ALIGN_RIGHT));
-			tablaDatos.AddCell(CeldaSinBorde(fTra.tra_concepto, fuenteValor, Element.ALIGN_LEFT));
+			tablaDatos.AddCell(CeldaSinBorde(fTra.tra_concepto.ToUpper(), fuenteValor, Element.ALIGN_LEFT));
 			tablaDatos.AddCell(CeldaSinBorde(string.Empty, fuenteEtiqueta, Element.ALIGN_RIGHT));
 			tablaDatos.AddCell(CeldaSinBorde(string.Empty, fuenteValor, Element.ALIGN_LEFT));
 
@@ -2196,8 +2196,7 @@ namespace gc.infraestructura.Helpers
 				Border = Rectangle.NO_BORDER,
 				HorizontalAlignment = Element.ALIGN_RIGHT,
 				VerticalAlignment = Element.ALIGN_MIDDLE,
-				PaddingTop = 0f,
-				BackgroundColor = BaseColor.LightGray
+				PaddingTop = 0f
 			};
 			tablaTotal.AddCell(celdaTotal);
 			pdf.Add(tablaTotal);
@@ -2241,8 +2240,7 @@ namespace gc.infraestructura.Helpers
 				Border = Rectangle.NO_BORDER,
 				HorizontalAlignment = Element.ALIGN_RIGHT,
 				VerticalAlignment = Element.ALIGN_MIDDLE,
-				PaddingTop = 0f,
-				BackgroundColor = BaseColor.LightGray
+				PaddingTop = 0f
 			};
 			tablaTotal.AddCell(celdaTotal);
 			pdf.Add(tablaTotal);
@@ -2288,8 +2286,7 @@ namespace gc.infraestructura.Helpers
 				Border = Rectangle.NO_BORDER,
 				HorizontalAlignment = Element.ALIGN_RIGHT,
 				VerticalAlignment = Element.ALIGN_MIDDLE,
-				PaddingTop = 0f,
-				BackgroundColor = BaseColor.LightGray
+				PaddingTop = 0f
 			};
 			tablaTotal.AddCell(celdaTotal);
 			pdf.Add(tablaTotal);

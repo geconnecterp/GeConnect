@@ -71,7 +71,8 @@ namespace gc.sitio.Areas.Financieros.Controllers
 				var listaCuentasBancos = _financieroServicio.GetFinancieroDesdeTipoParaSeleccionDeValores(tipoCTAF, AdministracionId, TokenCookie);
 				ListaCuentaBancos = listaCuentasBancos;
 				model.ListaCuentasBancarias = ComboCuentaBancos(ListaCuentaBancos);
-
+				model.FechaDesde = DateTime.Now.AddDays(-7);
+				model.FechaHasta = DateTime.Now;
 				return View(model);
 			}
 			catch (Exception ex)
@@ -128,7 +129,8 @@ namespace gc.sitio.Areas.Financieros.Controllers
 				var listaCuentasBancos = _financieroServicio.GetFinancieroDesdeTipoParaSeleccionDeValores(tipoCTAF, AdministracionId, TokenCookie);
 				ListaCuentaBancos = listaCuentasBancos;
 				model.ListaCuentasBancarias = ComboCuentaBancos(ListaCuentaBancos);
-
+				model.FechaDesde = DateTime.Now.AddDays(-7);
+				model.FechaHasta = DateTime.Now;
 				return PartialView("_pasoUno", model);
 			}
 			catch (Exception ex)

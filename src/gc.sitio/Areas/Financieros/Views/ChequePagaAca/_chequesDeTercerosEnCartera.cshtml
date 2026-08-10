@@ -1,7 +1,8 @@
 ﻿@model CargarChequesDeTercerosEnCarteraModel
+@using gc.infraestructura.Helpers
 @using static gc.infraestructura.Helpers.GridHelper
 @{
-	var col1 = Model.titulo_col_1;
+    var col1 = Model.titulo_col_1;
 	var col2 = Model.titulo_col_2;
 	var col3 = Model.titulo_col_3;
 	var alt = true;
@@ -11,7 +12,8 @@
 	/* El contenedor debe ser el scroll real y generar contexto */
 	#containerChequesDeTercerosEnCartera {
 		position: relative;
-		height: 560px;
+		height: 730px;
+		max-height: 730px !important;
 		max-height: 560px;
 		overflow-y: auto; /* vertical */
 		overflow-x: auto; /* horizontal si hace falta */
@@ -65,17 +67,21 @@
 		height: 1.6rem !important; /* ajustá según lo que quieras */
 	}
 
+	.fixed-datetime{
+		width: 120px;
+		max-width: 120px;
+	}
 </style>
 @Html.Hidden("MostrarFecha", Model.mostrar_fecha)
-<fieldset style="height: 620px;">
+<fieldset style="height: 800px;">
 	<legend></legend>
 	<div class="row">
 		<div class="col-4">
 			@if (Model.mostrar_fecha)
 			{
 				<div class="input-group input-group-sm">
-					<span class="input-group-text">Fecha Valor: </span>
-					@Html.TextBoxFor(m => m.fecha_valor, "{0:yyyy-MM-dd}", new { type = "date", @class = "form-control activable inputEditable", @onchange = "onChangeFechaValor(this);", @id = "fechaValor" })
+					<span class="input-group-text">Nueva Fecha Valor: </span>
+					@Html.TextBoxFor(m => m.fecha_valor, "{0:yyyy-MM-dd}", new { type = "date", @class = "form-control activable inputEditable fixed-datetime", @onchange = "onChangeFechaValor(this);", @id = "fechaValor" })
 				</div>
 			}
 		</div>
@@ -93,12 +99,12 @@
 		<table class="table table-bordered table-hover table-golden" id="tbListaChequesDeTercerosEnCartera">
 			<thead>
 				<tr class="header">
-					<th style="width:15%;">Fecha Valor</th>
-					<th style="width:15%;">Fecha Carga</th>
-					<th style="width:40%;">@col1</th>
-					<th style="width:10%;">@col2</th>
-					<th style="width:10%;">@col3</th>
-					<th style="width:10%;">Importe</th>
+					<th style="width:10%;">Fecha Valor</th>
+					<th style="width:10%;">Fecha Carga</th>
+					<th style="width:50%;">@col1</th>
+					<th style="width:8%;">@col2</th>
+					<th style="width:8%;">@col3</th>
+					<th style="width:15%;">Importe</th>
 					<th style="width:0%; display:none;">dia_movi</th>
 					<th style="width:0%; display:none;">fc_compte</th>
 					<th style="width:0%; display:none;">fc_item</th>
@@ -110,13 +116,13 @@
 					@foreach (var item in Model.GrillaChequesEnCartera.ListaDatos)
 					{
 						if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
-						<tr class="@clase" onclick="selectReg(this, 'tbListaChequesDeTercerosEnCartera')" title="@item.concepto_valor">
-							<td class="align-center cell-fit-content">@Model.GrillaChequesEnCartera.FormatearDato(item.fc_fecha_valor, FormatDato.Fecha)</td>
-							<td class="align-center cell-fit-content">@Model.GrillaChequesEnCartera.FormatearDato(item.fc_fecha, FormatDato.Fecha)</td>
-							<td class="@Model.GrillaChequesEnCartera.ObtenerClase(item.fc_dato1_valor) cell-fit-content">@Model.GrillaChequesEnCartera.FormatearDato(item.fc_dato1_valor, FormatDato.Ninguno)</td>
-							<td class="align-center cell-fit-content">@Model.GrillaChequesEnCartera.FormatearDato(item.fc_dato2_valor, FormatDato.Monto)</td>
-							<td class="align-center cell-fit-content">@Model.GrillaChequesEnCartera.FormatearDato(item.fc_dato3_valor, FormatDato.Monto)</td>
-							<td class="@Model.GrillaChequesEnCartera.ObtenerClase(item.fc_importe) cell-fit-content">@Model.GrillaChequesEnCartera.FormatearDato(item.fc_importe, FormatDato.Monto)</td>
+						<tr class="@clase" onclick="selectReg(this, 'tbListaChequesDeTercerosEnCartera')" >
+							<td class="align-center cell-fit-content" title="@item.concepto_valor">@Model.GrillaChequesEnCartera.FormatearDato(item.fc_fecha_valor, FormatDato.Fecha)</td>
+							<td class="align-center cell-fit-content" title="@item.concepto_valor">@Model.GrillaChequesEnCartera.FormatearDato(item.fc_fecha, FormatDato.Fecha)</td>
+							<td class="@Model.GrillaChequesEnCartera.ObtenerClase(item.fc_dato1_valor) cell-fit-content" title="@item.concepto_valor">@Model.GrillaChequesEnCartera.FormatearDato(item.fc_dato1_valor, FormatDato.Ninguno)</td>
+							<td class="align-center cell-fit-content" title="@item.concepto_valor">@Model.GrillaChequesEnCartera.FormatearDato(item.fc_dato2_valor, FormatDato.Monto)</td>
+							<td class="align-center cell-fit-content" title="@item.concepto_valor">@Model.GrillaChequesEnCartera.FormatearDato(item.fc_dato3_valor, FormatDato.Monto)</td>
+							<td class="@Model.GrillaChequesEnCartera.ObtenerClase(item.fc_importe) cell-fit-content" title="@item.concepto_valor">@GridHelper.FormatearDato(item.fc_importe, FormatDato.Monto, true)</td>
 							<td style="display:none;">@item.dia_movi</td>
 							<td style="display:none;">@item.fc_compte</td>
 							<td style="display:none;">@item.fc_item</td>

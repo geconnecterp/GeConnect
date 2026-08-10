@@ -27,6 +27,15 @@ $(function () {
 	$(document).on("keyup", "#ANombreDe", ControlaKeyUpANombreDe);
 	$(document).on("keyup", "#ImporteS", ControlaKeyUpImporte);
 	//
+
+	document.addEventListener("DOMContentLoaded", function () {
+		document.querySelectorAll("tr.tooltip-native").forEach(el => {
+			const instance = bootstrap.Tooltip.getInstance(el);
+			if (instance) {
+				instance.dispose();   // elimina el tooltip Bootstrap
+			}
+		});
+	});
 });
 
 function ControlaFocusOutNroTransferencia() {
@@ -405,6 +414,13 @@ function seleccionarFinanciero(x) {
 			AgregarHandlerAHeaderEnGrillaValoresEnCartera();
 			$("#btnAceptarAgregarValor").prop("disabled", false);
 			$("#contenedorChkValoresVencidos").show();
+
+			setTimeout(() => {
+				document.querySelectorAll("tr.tooltip-native *").forEach(el => {
+					const instance = bootstrap.Tooltip.getInstance(el);
+					if (instance) instance.dispose();
+				});
+			}, 1000);
 		});
 	}
 	else {

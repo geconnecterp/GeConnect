@@ -1,7 +1,8 @@
 ﻿@model DetalleMovFinanModel
+@using gc.infraestructura.Helpers
 @using static gc.infraestructura.Helpers.GridHelper
 @{
-	string clase = string.Empty;
+    string clase = string.Empty;
 	var alt = true;
 }
 @Html.Hidden("MostrarSeccionGrillaOrigen", Model.MostrarSeccionGrillaOrigen)
@@ -16,10 +17,10 @@
 					<table class="table table-sm mb-0 table-hover table-wrapper-fixed-head table-golden" id="tbGridOrigen">
 						<thead>
 							<tr class="header">
-								<th style="width:10%;" class="col-header-small align-center tiny-row">Código</th>
-								<th style="width:35%;" class="col-header-small align-center tiny-row">Denominación</th>
-								<th style="width:35%;" class="col-header-small align-center tiny-row">Concepto</th>
-								<th style="width:20%;" class="col-header-small align-center tiny-row">Monto</th>
+								<th style="width:10%;" class="col-header-small align-center">Código</th>
+								<th style="width:35%;" class="col-header-small align-center">Denominación</th>
+								<th style="width:35%;" class="col-header-small align-center">Concepto</th>
+								<th style="width:20%;" class="col-header-small align-center">Monto</th>
 							</tr>
 						</thead>
 						<tbody>
@@ -32,7 +33,7 @@
 										<td class="@Model.GrillaOrigen.ObtenerClase(item.ctaf_id) align-center cell-fit-content">@Model.GrillaOrigen.FormatearDato(item.ctaf_id, FormatDato.Ninguno)</td>
 										<td class="@Model.GrillaOrigen.ObtenerClase(item.ctaf_denominacion) align-left cell-fit-content">@Model.GrillaOrigen.FormatearDato(item.ctaf_denominacion, FormatDato.Ninguno)</td>
 										<td class="@Model.GrillaOrigen.ObtenerClase(item.concepto) align-left cell-fit-content">@Model.GrillaOrigen.FormatearDato(item.concepto, FormatDato.Ninguno)</td>
-										<td class="@Model.GrillaOrigen.ObtenerClase(item.fc_importe) align-center cell-fit-content">@Model.GrillaOrigen.FormatearDato(item.fc_importe, FormatDato.Monto)</td>
+										<td class="@Model.GrillaOrigen.ObtenerClase(item.fc_importe) align-right cell-fit-content">@GridHelper.FormatearDato(item.fc_importe, FormatDato.Monto, true)</td>
 									</tr>
 								}
 							}
@@ -58,10 +59,10 @@
 					<table class="table table-sm mb-0 table-hover table-wrapper-fixed-head table-golden" id="tbGridDestino">
 						<thead>
 							<tr class="header">
-								<th style="width:10%;" class="col-header-small align-center tiny-row">Código</th>
-								<th style="width:35%;" class="col-header-small align-center tiny-row">Denominación</th>
-								<th style="width:35%;" class="col-header-small align-center tiny-row">Concepto</th>
-								<th style="width:20%;" class="col-header-small align-center tiny-row">Monto</th>
+								<th style="width:10%;" class="col-header-small align-center">Código</th>
+								<th style="width:35%;" class="col-header-small align-center">Denominación</th>
+								<th style="width:35%;" class="col-header-small align-center">Concepto</th>
+								<th style="width:20%;" class="col-header-small align-center">Monto</th>
 							</tr>
 						</thead>
 						<tbody>
@@ -74,7 +75,7 @@
 										<td class="@Model.GrillaDestino.ObtenerClase(item.ctaf_id) align-center cell-fit-content">@Model.GrillaDestino.FormatearDato(item.ctaf_id, FormatDato.Ninguno)</td>
 										<td class="@Model.GrillaDestino.ObtenerClase(item.ctaf_denominacion) align-left cell-fit-content">@Model.GrillaDestino.FormatearDato(item.ctaf_denominacion, FormatDato.Ninguno)</td>
 										<td class="@Model.GrillaDestino.ObtenerClase(item.concepto) align-left cell-fit-content">@Model.GrillaDestino.FormatearDato(item.concepto, FormatDato.Ninguno)</td>
-										<td class="@Model.GrillaDestino.ObtenerClase(item.fc_importe) align-center cell-fit-content">@Model.GrillaDestino.FormatearDato(item.fc_importe, FormatDato.Monto)</td>
+										<td class="@Model.GrillaDestino.ObtenerClase(item.fc_importe) align-right cell-fit-content">@GridHelper.FormatearDato(item.fc_importe, FormatDato.Monto, true)</td>
 									</tr>
 								}
 							}
@@ -100,12 +101,12 @@
 					<table class="table table-sm mb-0 table-hover table-wrapper-fixed-head table-golden" id="tbGridCtag">
 						<thead>
 							<tr class="header">
-								<th style="width:10%;" class="col-header-small align-center tiny-row">Código</th>
-								<th style="width:35%;" class="col-header-small align-center tiny-row">Denominación</th>
-								<th style="width:35%;" class="col-header-small align-center tiny-row">Tipo Comprobante</th>
-								<th style="width:35%;" class="col-header-small align-center tiny-row">Comprobante</th>
-								<th style="width:35%;" class="col-header-small align-center tiny-row">Número</th>
-								<th style="width:20%;" class="col-header-small align-center tiny-row">Importe</th>
+								<th style="width:10%;" class="col-header-small align-center">Código</th>
+								<th style="width:35%;" class="col-header-small align-center">Denominación</th>
+								<th style="width:35%;" class="col-header-small align-center">Tipo Comprobante</th>
+								<th style="width:35%;" class="col-header-small align-center">Comprobante</th>
+								<th style="width:35%;" class="col-header-small align-center">Número</th>
+								<th style="width:20%;" class="col-header-small align-center">Importe</th>
 							</tr>
 						</thead>
 						<tbody>
@@ -120,7 +121,7 @@
 										<td class="@Model.GrillaCtag.ObtenerClase(item.tco_id) align-left cell-fit-content">@Model.GrillaCtag.FormatearDato(item.tco_id, FormatDato.Ninguno)</td>
 										<td class="@Model.GrillaCtag.ObtenerClase(item.tco_desc) align-center cell-fit-content">@Model.GrillaCtag.FormatearDato(item.tco_desc, FormatDato.Ninguno)</td>
 										<td class="@Model.GrillaCtag.ObtenerClase(item.cm_compte) align-center cell-fit-content">@Model.GrillaCtag.FormatearDato(item.cm_compte, FormatDato.Ninguno)</td>
-										<td class="@Model.GrillaCtag.ObtenerClase(item.cm_importe) align-center cell-fit-content">@Model.GrillaCtag.FormatearDato(item.cm_importe, FormatDato.Monto)</td>
+										<td class="@Model.GrillaCtag.ObtenerClase(item.cm_importe) align-right cell-fit-content">@GridHelper.FormatearDato(item.cm_importe, FormatDato.Monto, true)</td>
 									</tr>
 								}
 							}
