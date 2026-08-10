@@ -547,7 +547,7 @@ function EstableceValoresDeFechas(fecha) {
 function validarFechas() {
 	const $desde = $("#FechaDesde");
 	const $hasta = $("#FechaHasta");
-
+	console.log("Validando fechas: ", $desde, $hasta);
 	const desde = $desde.val();
 	const hasta = $hasta.val();
 
@@ -591,7 +591,7 @@ function eliminarItem(ctaf_id, extr_id, orden) {
 					else {
 						setTimeout(() => {
 							$('#modalAgregarItemExtracto').modal('hide');
-							obtenerListaExtractoBancario();
+							obtenerListaExtractoBancario(true, orden);
 						}, 200);
 					}
 				});
@@ -775,94 +775,201 @@ function abrirModalAgregarItemExtracto() {
 	});
 }
 
-function confirmarAgregarExtracto() {
-	var abm = $("#abm").val();
-	if (abm == "A") {
-		var fecha = $("#Fecha").val();
-		var fecha_movi = $("#Fecha_Movi").val();
-		var insertar = $("#chkInsertar")[0].checked;
-		var movimiento = $("#listaMovimientos").val();
-		var movimiento_desc = $("#listaMovimientos option:selected").text();
-		var comprobante = $("#Comprobante").val();
-		var debe = $("#Debe").inputmask('unmaskedvalue');
-		var haber = $("#Haber").inputmask('unmaskedvalue');
-		var orden = $("#orden").val();
-		//Actualizar lista en backend
-		var data = {
-			ctaf_id: ctafIdSelected,
-			ext_fecha: fecha,
-			ext_fecha_movi: fecha_movi,
-			extr_id: movimiento,
-			extr_desc: movimiento_desc,
-			ext_concepto: comprobante,
-			ext_debe: debe,
-			ext_haber: haber,
-			abm: "A",
-			insertar,
-			orden
-		};
-		AbrirWaiting();
-		PostGen(data, agregarItemExtractoUrl, function (obj) {
-			CerrarWaiting();
-			if (obj.error === true) {
-				CerrarWaiting();
-				AbrirMensaje("ATENCIÓN", obj.msg, function () {
-					$("#msjModal").modal("hide");
-					return true;
-				}, false, ["Aceptar"], "error!", null);
-			}
-			else {
-				setTimeout(() => {
-					$('#modalAgregarItemExtracto').modal('hide');
-					obtenerListaExtractoBancario();
-				}, 200);
-			}
-		});
+function validarExtracto() {
+
+	// === Captura de elementos ===
+	const fechaMov = document.querySelector("input[name='Fecha_Movi']");
+	const fechaExt = document.querySelector("input[name='Fecha']");
+	const listaMov = document.getElementById("listaMovimientos");
+	const comprobante = document.querySelector("input[name='Comprobante']");
+	const debe = document.querySelector("input[name='Debe']");
+	const haber = document.querySelector("input[name='Haber']");
+
+	// === Normalización numérica ===
+	const valDebe = parseFloat(debe.value.replace(",", ".")) || 0;
+	const valHaber = parseFloat(haber.value.replace(",", ".")) || 0;
+
+	// === Validación de fechas ===
+	if (!fechaMov.value || isNaN(new Date(fechaMov.value))) {
+		AbrirMensaje("ATENCIÓN", "Debe ingresar una fecha válida en Fecha Mov.", function () {
+			$("#msjModal").modal("hide");
+			return true;
+		}, false, ["Aceptar"], "error!", null);
+		return false;
 	}
-	else if (abm == "M") {
-		var orden = $("#orden").val();
-		var movimiento = $("#listaMovimientos").val();
-		var movimiento_desc = $("#listaMovimientos option:selected").text();
-		var comprobante = $("#Comprobante").val();
-		var debe = $("#Debe").inputmask('unmaskedvalue');
-		var haber = $("#Haber").inputmask('unmaskedvalue');
-		
-		var data = {
-			orden,
-			extr_id: movimiento,
-			extr_desc: movimiento_desc,
-			ext_concepto: comprobante,
-			ext_debe: debe,
-			ext_haber: haber,
-			abm: "M"
-		};
-		AbrirWaiting();
-		PostGen(data, modificarItemExtractoUrl, function (obj) {
-			CerrarWaiting();
-			if (obj.error === true) {
-				CerrarWaiting();
-				AbrirMensaje("ATENCIÓN", obj.msg, function () {
-					$("#msjModal").modal("hide");
-					return true;
-				}, false, ["Aceptar"], "error!", null);
-			}
-			else {
-				setTimeout(() => {
-					$('#modalAgregarItemExtracto').modal('hide');
-					obtenerListaExtractoBancario();
-				}, 200);
-			}
-		});
+
+	if (!fechaExt.value || isNaN(new Date(fechaExt.value))) {
+		AbrirMensaje("ATENCIÓN", "Debe ingresar una fecha válida en Fecha Ext.", function () {
+			$("#msjModal").modal("hide");
+			return true;
+		}, false, ["Aceptar"], "error!", null);
+		return false;
 	}
+
+	// === Validación de movimiento seleccionado ===
+	if (!listaMov.value || listaMov.value === "" || listaMov.value === "Seleccionar...") {
+		AbrirMensaje("ATENCIÓN", "Debe seleccionar un tipo de movimiento.", function () {
+			$("#msjModal").modal("hide");
+			return true;
+		}, false, ["Aceptar"], "error!", null);
+		return false;
+	}
+
+	// === Validación de comprobante ===
+	if (!comprobante.value.trim()) {
+		AbrirMensaje("ATENCIÓN", "Debe ingresar un número de comprobante.", function () {
+			$("#msjModal").modal("hide");
+			return true;
+		}, false, ["Aceptar"], "error!", null);
+		return false;
+	}
+
+	// === Validación Debe / Haber ===
+	const tieneDebe = valDebe > 0;
+	const tieneHaber = valHaber > 0;
+
+	if (tieneDebe && tieneHaber) {
+		AbrirMensaje("ATENCIÓN", "Debe ingresar solo Debe o solo Haber, no ambos.", function () {
+			$("#msjModal").modal("hide");
+			return true;
+		}, false, ["Aceptar"], "error!", null);
+		return false;
+	}
+
+	if (!tieneDebe && !tieneHaber) {
+		AbrirMensaje("ATENCIÓN", "Debe ingresar un valor en Debe o en Haber.", function () {
+			$("#msjModal").modal("hide");
+			return true;
+		}, false, ["Aceptar"], "error!", null);
+		return false;
+	}
+
+	return true;
 }
 
-function obtenerListaExtractoBancario() {
+function seleccionarRegistroRecienAgregado(insertar, ordenSeleccionado) {
+
+	const filas = document.querySelectorAll("#tbListaCrudExtracto tbody tr");
+	if (filas.length === 0) return;
+
+	let filaObjetivo = null;
+
+	if (insertar === true) {
+		// Caso 2: Insertó en una posición específica
+		filaObjetivo = document.querySelector(`#tbListaCrudExtracto tbody tr[data-orden='${ordenSeleccionado}']`);
+	} else {
+		// Caso 1: Insertó al final
+		filaObjetivo = filas[filas.length - 1];
+	}
+
+	if (!filaObjetivo) return;
+
+	// Marca visualmente la fila
+	filaObjetivo.classList.add("selected-row");
+
+	// Ejecuta tu lógica de selección
+	selectItemExtracto(filaObjetivo);
+
+	// Scroll suave para hacerla visible
+	filaObjetivo.scrollIntoView({
+		behavior: "smooth",
+		block: "center"
+	});
+}
+
+
+function confirmarAgregarExtracto() {
+	if (validarExtracto()) {
+		var abm = $("#abm").val();
+		if (abm == "A") {
+			var fecha = $("#Fecha").val();
+			var fecha_movi = $("#Fecha_Movi").val();
+			var insertar = $("#chkInsertar")[0].checked;
+			var movimiento = $("#listaMovimientos").val();
+			var movimiento_desc = $("#listaMovimientos option:selected").text();
+			var comprobante = $("#Comprobante").val();
+			var debe = $("#Debe").inputmask('unmaskedvalue');
+			var haber = $("#Haber").inputmask('unmaskedvalue');
+			var orden = $("#orden").val();
+			//Actualizar lista en backend
+			var data = {
+				ctaf_id: ctafIdSelected,
+				ext_fecha: fecha,
+				ext_fecha_movi: fecha_movi,
+				extr_id: movimiento,
+				extr_desc: movimiento_desc,
+				ext_concepto: comprobante,
+				ext_debe: debe,
+				ext_haber: haber,
+				abm: "A",
+				insertar,
+				orden
+			};
+			AbrirWaiting();
+			PostGen(data, agregarItemExtractoUrl, function (obj) {
+				CerrarWaiting();
+				if (obj.error === true) {
+					CerrarWaiting();
+					AbrirMensaje("ATENCIÓN", obj.msg, function () {
+						$("#msjModal").modal("hide");
+						return true;
+					}, false, ["Aceptar"], "error!", null);
+				}
+				else {
+					setTimeout(() => {
+						$('#modalAgregarItemExtracto').modal('hide');
+						obtenerListaExtractoBancario(insertar, orden);
+					}, 200);
+				}
+			});
+		}
+		else if (abm == "M") {
+			var orden = $("#orden").val();
+			var movimiento = $("#listaMovimientos").val();
+			var movimiento_desc = $("#listaMovimientos option:selected").text();
+			var comprobante = $("#Comprobante").val();
+			var debe = $("#Debe").inputmask('unmaskedvalue');
+			var haber = $("#Haber").inputmask('unmaskedvalue');
+
+			var data = {
+				orden,
+				extr_id: movimiento,
+				extr_desc: movimiento_desc,
+				ext_concepto: comprobante,
+				ext_debe: debe,
+				ext_haber: haber,
+				abm: "M"
+			};
+			AbrirWaiting();
+			PostGen(data, modificarItemExtractoUrl, function (obj) {
+				CerrarWaiting();
+				if (obj.error === true) {
+					CerrarWaiting();
+					AbrirMensaje("ATENCIÓN", obj.msg, function () {
+						$("#msjModal").modal("hide");
+						return true;
+					}, false, ["Aceptar"], "error!", null);
+				}
+				else {
+					setTimeout(() => {
+						$('#modalAgregarItemExtracto').modal('hide');
+						obtenerListaExtractoBancario(false, orden);
+					}, 200);
+				}
+			});
+		}
+	}
+	
+}
+
+function obtenerListaExtractoBancario(insertar, orden) {
 	AbrirWaiting();
 	var data = {};
 	PostGenHtml(data, obtenerListaExtractoBancarioUrl, function (obj) {
 		$("#divGridCrudExtracto").html(obj);
 		$("#btnModificarItem").prop("disabled", true);
-		itemSeleccionadoOrden = 0;
+		itemSeleccionadoOrden = orden;
+		seleccionarRegistroRecienAgregado(insertar, orden);
 		CerrarWaiting();
 		return true
 	});

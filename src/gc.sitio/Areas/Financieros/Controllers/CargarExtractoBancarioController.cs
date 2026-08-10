@@ -484,7 +484,7 @@ namespace gc.sitio.Areas.Financieros.Controllers
 					usu_id_concilia = x.usu_id_concilia,
 					ext_fecha_ori = x.ext_fecha_ori
 				});
-				var jsonExtractoEliminado = ListaCrudExtractoBancarioEliminados.Select((x, index) => new JsonExtractoEliminadoModel
+				var jsonExtractoEliminado = ListaCrudExtractoBancarioEliminados.OrderBy(x=>x.ext_fecha).Select((x, index) => new JsonExtractoEliminadoModel
 				{
 					ctaf_id = x.ctaf_id,
 					ext_fecha = x.ext_fecha,
@@ -892,6 +892,7 @@ namespace gc.sitio.Areas.Financieros.Controllers
 		public void InsertarYReordenar(List<CrudExtractoBancarioDto> lista, CrudExtractoBancarioDto nuevoItem, int posicion)
 		{
 			// Validar límites
+			posicion--; //0 index
 			if (posicion < 0) posicion = 0;
 			if (posicion > lista.Count) posicion = lista.Count;
 

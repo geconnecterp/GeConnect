@@ -1,255 +1,279 @@
-﻿@using static gc.infraestructura.Helpers.GridHelper
+﻿@using gc.infraestructura.Helpers
+@using static gc.infraestructura.Helpers.GridHelper
 @model CargarDatosExtractoYSistemaModel
 @{
-	var alt = true;
-	string clase = string.Empty;
+    var alt = true;
+    string clase = string.Empty;
 }
 <style>
-	.check-column {
-		text-align: center;
-		vertical-align: middle;
-	}
+    .check-column {
+        text-align: center;
+        vertical-align: middle;
+    }
 
-	.btn-icon-compact {
-		padding: 0.15rem 0.3rem;
-		font-size: 0.7rem;
-		line-height: 1;
-	}
+    #tbGrillaSistema td .btn-icon-compact {
+        height: 16px !important;
+        width: 20px !important;
+        line-height: 16px !important;
+        padding: 0 !important;
+        margin: 0 auto !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
 
-		.btn-icon-compact i {
-			font-size: 0.9rem;
-		}
+        #tbGrillaSistema td .btn-icon-compact i {
+            font-size: 0.70rem !important;
+            line-height: 1 !important;
+            padding: 0 !important;
+            margin: 0 !important;
+        }
 
-	.btn.invisible {
-		visibility: hidden;
-		pointer-events: none;
-	}
+    .btn.invisible {
+        visibility: hidden;
+        pointer-events: none;
+    }
 
-	#tbGrillaSistema th {
-		padding: 0.4rem 0.5rem;
-		font-size: 0.8rem;
-	}
+    #tbGrillaSistema th {
+        padding: 0.4rem 0.5rem;
+        font-size: 0.8rem;
+    }
 
-	#tbGrillaSistema td {
-		padding: 0.2rem 0.3rem;
-		font-size: 0.75rem;
-		line-height: 1.1;
-		vertical-align: middle;
-	}
+    #tbGrillaSistema td {
+        padding-top: 0.325rem !important;
+        padding-bottom: 0.325rem !important;
+        padding-left: 0.3rem !important;
+        padding-right: 0.3rem !important;
+        line-height: 1 !important;
+    }
 
-	.check-sele-container {
-		display: flex;
-		justify-content: center;
-		align-items: center;
-		height: 100%;
-	}
+    .check-sele-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100%;
+    }
 
-	#tbGrillaSistema td:empty {
-		min-height: 32px; /* ajustable según tu diseño */
-	}
+    #tbGrillaSistema td:empty {
+        min-height: 32px; /* ajustable según tu diseño */
+    }
 
-	.td-placeholder::before {
-		content: "•";
-		visibility: hidden;
-		display: inline-block;
-	}
+    .td-placeholder::before {
+        content: "•";
+        visibility: hidden;
+        display: inline-block;
+    }
 
-	#tbGrillaSistema thead th {
-		position: sticky;
-		top: 0;
-		background-color: #d4af37; /* o el color de fondo que uses */
-		z-index: 1;
-	}
+    #tbGrillaSistema thead th {
+        position: sticky;
+        top: 0;
+        background-color: #d4af37; /* o el color de fondo que uses */
+        z-index: 1;
+    }
 
-	.col-conci {
-		width: 40px; /* ajustable según el tamaño del botón */
-		text-align: center;
-		vertical-align: middle;
-		white-space: nowrap;
-	}
+    .col-conci {
+        width: 40px; /* ajustable según el tamaño del botón */
+        text-align: center;
+        vertical-align: middle;
+        white-space: nowrap;
+    }
 
-	.col-a-conc {
-		width: 40px; /* igual que col-conci, ajustable si el botón cambia */
-		text-align: center;
-		vertical-align: middle;
-		white-space: nowrap;
-	}
+    .col-a-conc {
+        width: 40px; /* igual que col-conci, ajustable si el botón cambia */
+        text-align: center;
+        vertical-align: middle;
+        white-space: nowrap;
+    }
 </style>
-<div class="table-responsive table-wrapper-500-full-width" id="containerGrillaSistema">
-	<table class="table table-bordered table-hover table-golden" id="tbGrillaSistema">
-		<thead>
-			<tr class="header">
-				<th scope="col" class="check-column">
-					SEL
-					<div class="check-sele-container">
-						<input class="form-check-input" type="checkbox" id="checkAllItemSistema" title="Seleccionar todos">
-					</div>
-				</th>
-				<th class="col-conci" scope="col">Conci.</th>
-				<th class="text-center" scope="col">Fecha</th>
-				<th class="text-center" scope="col">Concepto</th>
-				<th class="text-center" scope="col">Importe</th>
-				<th class="col-a-conc" scope="col">A Conc.</th>
-			</tr>
-		</thead>
-		<tbody>
-			@if (Model != null && Model.GrillaSistema != null && Model.GrillaSistema.ListaDatos != null && Model.GrillaSistema.ListaDatos.Count > 0)
-			{
-				@foreach (var item in Model.GrillaSistema.ListaDatos)
-				{
-					if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
-					<tr class="@clase" data-orden="@item.orden" data-ctaf-id="@item.ctaf_id" data-dia-movi="@item.dia_movi" data-cf-compte="@item.cf_compte" data-cf-item="@item.cf_item" onclick="selectGrillaSistema(this);">
-						@if (item.puedo_seleccionar)
-						{
-							<td class="check-column">
-								<div class="check-sele-container">
-									<input type="checkbox" class="form-check-input check-sistema" data-orden="@item.orden" data-ctaf-id="@item.ctaf_id" data-dia-movi="@item.dia_movi" data-cf-compte="@item.cf_compte" data-cf-item="@item.cf_item">
-								</div>
-							</td>
-						}
-						else
-						{
-							<td class="text-center align-middle">
-								<button type="button" class="btn btn-icon-compact invisible" tabindex="-1">
-									<i class="bx bx-dots-horizontal-rounded"></i>
-								</button>
-							</td>
-						}
-						@if (item.bool_conciliado)
-						{
-							<td class="col-conci">
-								<button type="button" class="btn btn-warning btn-icon-compact" title="Registro Conciliado" onclick="verDetalleConciliado('@item.conciliado_nro')">
-									<i class="bx bx-search"></i>
-								</button>
-							</td>
-						}
-						else
-						{
-							<td class="col-conci">
-								<button type="button" class="btn btn-icon-compact invisible" tabindex="-1">
-									<i class="bx bx-dots-horizontal-rounded"></i>
-								</button>
-							</td>
-						}
-						<td class="@Model.GrillaSistema.ObtenerClase(item.cf_fecha_concilia)">@Model.GrillaSistema.FormatearDato(item.cf_fecha_concilia, FormatDato.Fecha)</td>
-						<td class="@Model.GrillaSistema.ObtenerClase(item.concepto)">@Model.GrillaSistema.FormatearDato(item.concepto, FormatDato.Ninguno)</td>
-						<td class="@Model.GrillaSistema.ObtenerClase(item.importe)">@Model.GrillaSistema.FormatearDato(item.importe, FormatDato.Monto)</td>
-						@if (item.bool_a_conciliar)
-						{
-							<td class="col-a-conc">
-								<button type="button" class="btn btn-success btn-icon-compact" title="Registro A Conciliar" onclick="VerDetalleAConciliar('@item.ctaf_id')">
-									<i class="bx bx-search"></i>
-								</button>
-							</td>
-						}
-						else
-						{
-							<td class="col-a-conc">
-								<button type="button" class="btn btn-icon-compact invisible" tabindex="-1">
-									<i class="bx bx-dots-horizontal-rounded"></i>
-								</button>
-							</td>
-						}
-					</tr>
-				}
-			}
-		</tbody>
-	</table>
+<div class="grid-golden">
+    <div class="grid-golden-header">
+        <div class="row align-items-md-center">
+            <div class="col-md-10 col-sm-6 d-flex align-items-center">
+                <h5 class="mb-0 flex-grow-1">
+                    <i class="bx bx-package me-2"></i>
+                    <strong>Sistema</strong>
+                </h5>
+            </div>
+        </div>
+    </div>
+    <div class="grid-golden-body">
+        <div class="table-responsive table-wrapper-500-full-width" id="containerGrillaSistema">
+            <table class="table table-bordered table-hover table-golden" id="tbGrillaSistema">
+                <thead>
+                    <tr class="header">
+                        <th class="check-column" style="width:5%;">
+                            SEL
+                            <div class="check-sele-container">
+                                <input class="form-check-input" type="checkbox" id="checkAllItemSistema" title="Seleccionar todos">
+                            </div>
+                        </th>
+                        <th class="col-conci">Conci.</th>
+                        <th class="text-center" style="width:5%;">Fecha</th>
+                        <th class="text-center" style="width:50%;">Concepto</th>
+                        <th class="text-center">Importe</th>
+                        <th class="col-a-conc">A Conc.</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model != null && Model.GrillaSistema != null && Model.GrillaSistema.ListaDatos != null && Model.GrillaSistema.ListaDatos.Count > 0)
+                    {
+                        @foreach (var item in Model.GrillaSistema.ListaDatos)
+                        {
+                            if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+                            <tr class="@clase" data-orden="@item.orden" data-ctaf-id="@item.ctaf_id" data-dia-movi="@item.dia_movi" data-cf-compte="@item.cf_compte" data-cf-item="@item.cf_item" onclick="selectGrillaSistema(this);">
+                                @if (item.puedo_seleccionar)
+                                {
+                                    <td class="check-column">
+                                        <div class="check-sele-container">
+                                            <input type="checkbox" class="form-check-input check-sistema" data-orden="@item.orden" data-ctaf-id="@item.ctaf_id" data-dia-movi="@item.dia_movi" data-cf-compte="@item.cf_compte" data-cf-item="@item.cf_item">
+                                        </div>
+                                    </td>
+                                }
+                                else
+                                {
+                                    <td class="text-center align-middle">
+                                        <button type="button" class="btn btn-icon-compact invisible" tabindex="-1">
+                                            <i class="bx bx-dots-horizontal-rounded"></i>
+                                        </button>
+                                    </td>
+                                }
+                                @if (item.bool_conciliado)
+                                {
+                                    <td class="col-conci">
+                                        <button type="button" class="btn btn-warning btn-icon-compact" title="Registro Conciliado" onclick="verDetalleConciliado('@item.conciliado_nro')">
+                                            <i class="bx bx-search"></i>
+                                        </button>
+                                    </td>
+                                }
+                                else
+                                {
+                                    <td class="col-conci">
+                                        <button type="button" class="btn btn-icon-compact invisible" tabindex="-1">
+                                            <i class="bx bx-dots-horizontal-rounded"></i>
+                                        </button>
+                                    </td>
+                                }
+                                <td class="@Model.GrillaSistema.ObtenerClase(item.cf_fecha_concilia)">@Model.GrillaSistema.FormatearDato(item.cf_fecha_concilia, FormatDato.Fecha)</td>
+                                <td class="@Model.GrillaSistema.ObtenerClase(item.concepto)">@Model.GrillaSistema.FormatearDato(item.concepto, FormatDato.Ninguno)</td>
+                                <td class="@Model.GrillaSistema.ObtenerClase(item.importe)">@GridHelper.FormatearDato(item.importe, FormatDato.Monto, true)</td>
+                                @if (item.bool_a_conciliar)
+                                {
+                                    <td class="col-a-conc">
+                                        <button type="button" class="btn btn-success btn-icon-compact" title="Registro A Conciliar" onclick="VerDetalleAConciliar('@item.ctaf_id')">
+                                            <i class="bx bx-search"></i>
+                                        </button>
+                                    </td>
+                                }
+                                else
+                                {
+                                    <td class="col-a-conc">
+                                        <button type="button" class="btn btn-icon-compact invisible" tabindex="-1">
+                                            <i class="bx bx-dots-horizontal-rounded"></i>
+                                        </button>
+                                    </td>
+                                }
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
 </div>
 <script>
-	$(function() {
-			// Funcionalidad para checkbox de seleccionar todos
-			$("#checkAllItemSistema").on("change", function() {
-				const isChecked = $(this).prop("checked");
-				$(".check-sistema").prop("checked", isChecked);
+    $(function () {
+        // Funcionalidad para checkbox de seleccionar todos
+        $("#checkAllItemSistema").on("change", function () {
+            const isChecked = $(this).prop("checked");
+            $(".check-sistema").prop("checked", isChecked);
 
-				// Aplicar la clase 'selected' a las filas
-				$("#tbGrillaSistema tbody tr:not(.table-secondary)").each(function() {
-					$(this).toggleClass("selected", isChecked);
-				});
-				actualizarTotalSistema(); // ← nuevo
-			});
+            // Aplicar la clase 'selected' a las filas
+            $("#tbGrillaSistema tbody tr:not(.table-secondary)").each(function () {
+                $(this).toggleClass("selected", isChecked);
+            });
+            actualizarTotalSistema(); // ← nuevo
+        });
 
-			// Evento para checkboxes individuales sin usar 'event' global
-			$(document).on("change", ".check-sistema", function(e) {
-				// Evitar propagación del evento
-				e.stopPropagation();
+        // Evento para checkboxes individuales sin usar 'event' global
+        $(document).on("change", ".check-sistema", function (e) {
+            // Evitar propagación del evento
+            e.stopPropagation();
 
-				const $checkbox = $(this);
-				const isChecked = $checkbox.prop("checked");
-				const $row = $checkbox.closest("tr");
+            const $checkbox = $(this);
+            const isChecked = $checkbox.prop("checked");
+            const $row = $checkbox.closest("tr");
 
-				// Marcar/desmarcar la fila
-				$row.toggleClass("selected", isChecked);
+            // Marcar/desmarcar la fila
+            $row.toggleClass("selected", isChecked);
 
-				// Si se desmarca uno, desmarcar el "seleccionar todos"
-				if (!isChecked) {
-					$("#checkAllItemSistema").prop("checked", false);
-				} else {
-					// Verificar si todos están marcados para actualizar el checkbox principal
-					const totalCheckboxes = $(".check-sistema").length;
-					const totalChecked = $(".check-sistema:checked").length;
-					$("#checkAllItemSistema").prop("checked", totalCheckboxes === totalChecked);
-				}
-				actualizarTotalSistema(); // ← nuevo
-			});
+            // Si se desmarca uno, desmarcar el "seleccionar todos"
+            if (!isChecked) {
+                $("#checkAllItemSistema").prop("checked", false);
+            } else {
+                // Verificar si todos están marcados para actualizar el checkbox principal
+                const totalCheckboxes = $(".check-sistema").length;
+                const totalChecked = $(".check-sistema:checked").length;
+                $("#checkAllItemSistema").prop("checked", totalCheckboxes === totalChecked);
+            }
+            actualizarTotalSistema(); // ← nuevo
+        });
 
-			// Función de ayuda para obtener los IDs de productos seleccionados
-			window.obtenerItemSistemaSeleccionados = function() {
-				const itemMarcados = [];
-				$(".check-sistema:checked").each(function () {
-					const orden = $(this).data("orden");
-					if (orden) {
-						if (typeof orden === "number") {
-							itemMarcados.push(`${orden}`);
-						}
-					}
-				});
-				return itemMarcados;
-			};
+        // Función de ayuda para obtener los IDs de productos seleccionados
+        window.obtenerItemSistemaSeleccionados = function () {
+            const itemMarcados = [];
+            $(".check-sistema:checked").each(function () {
+                const orden = $(this).data("orden");
+                if (orden) {
+                    if (typeof orden === "number") {
+                        itemMarcados.push(`${orden}`);
+                    }
+                }
+            });
+            return itemMarcados;
+        };
 
-			function actualizarTotalSistema() {
-				const totalSistema = $(".check-sistema:checked").toArray().reduce((acc, checkbox) => {
-					const $row = $(checkbox).closest("tr");
-					const importeTexto = $row.find("td").eq(4).text().trim(); // Columna de importe
-					const importe = parseFloat(importeTexto.replace(/,/g, '')) || 0;
-					return acc + importe;
-				}, 0);
+        function actualizarTotalSistema() {
+            const totalSistema = $(".check-sistema:checked").toArray().reduce((acc, checkbox) => {
+                const $row = $(checkbox).closest("tr");
+                const importeTexto = $row.find("td").eq(4).text().trim(); // Columna de importe
+                const importe = parseFloat(importeTexto.replace(/,/g, '')) || 0;
+                return acc + importe;
+            }, 0);
 
-				const totalExtracto  = $(".check-extracto:checked").toArray().reduce((acc, checkbox) => {
-					const $row = $(checkbox).closest("tr");
-					const importeTexto = $row.find("td").eq(4).text().trim(); // Columna de importe
-					const importe = parseFloat(importeTexto.replace(/,/g, '')) || 0;
-					return acc + importe;
-				}, 0);
+            const totalExtracto = $(".check-extracto:checked").toArray().reduce((acc, checkbox) => {
+                const $row = $(checkbox).closest("tr");
+                const importeTexto = $row.find("td").eq(4).text().trim(); // Columna de importe
+                const importe = parseFloat(importeTexto.replace(/,/g, '')) || 0;
+                return acc + importe;
+            }, 0);
 
-				//const totalExtracto = actualizarTotalExtracto(); // ← llama a la otra función
+            //const totalExtracto = actualizarTotalExtracto(); // ← llama a la otra función
 
-				const diferencia = totalExtracto - totalSistema;
+            const diferencia = totalExtracto - totalSistema;
 
-				// Formatear el total con separador de miles y punto decimal
-				$("#Sistema").val(totalSistema.toLocaleString('en-US', {
-					minimumFractionDigits: 2,
-					maximumFractionDigits: 2
-				}));
+            // Formatear el total con separador de miles y punto decimal
+            $("#Sistema").val(totalSistema.toLocaleString('en-US', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            }));
 
-				$("#Diferencia").val(diferencia.toLocaleString('en-US', {
-					minimumFractionDigits: 2,
-					maximumFractionDigits: 2
-				}));
+            $("#Diferencia").val(diferencia.toLocaleString('en-US', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            }));
 
-			}
+        }
 
-			function marcarSeleccionadosSistema(lista) {
-				$(".check-sistema").each(function () {
-					const orden = $(this).data("orden");
+        function marcarSeleccionadosSistema(lista) {
+            $(".check-sistema").each(function () {
+                const orden = $(this).data("orden");
 
-					const clave = `${orden}`;
-					if (lista.includes(clave)) {
-						$(this).prop("checked", true);
-						$(this).closest("tr").addClass("selected");
-					}
-				});
-			}
-		});
+                const clave = `${orden}`;
+                if (lista.includes(clave)) {
+                    $(this).prop("checked", true);
+                    $(this).closest("tr").addClass("selected");
+                }
+            });
+        }
+    });
 </script>

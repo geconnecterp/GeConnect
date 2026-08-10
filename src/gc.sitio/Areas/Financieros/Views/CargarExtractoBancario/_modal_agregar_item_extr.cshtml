@@ -4,12 +4,16 @@
 }
 <style>
 	.label-block-120 {
-		width: 100px; /* Ajustá según tu estética */
+		width: 100px; 
 		display: flex;
 		align-items: center;
-		justify-content: flex-end; /* Texto alineado a la derecha */
-		white-space: nowrap; /* Evita saltos de línea */
+		justify-content: flex-end; 
+		white-space: nowrap; 
 		font-weight: 500;
+	}
+	.comprobante-compact{
+		width: 170px !important;
+		max-width: 170px !important;
 	}
 </style>
 @Html.Hidden("orden", Model.orden)
@@ -73,7 +77,7 @@
 				</div>
 				<div class="input-group input-group-sm mt-2">
 					<span class="input-group-text label-block-120">Comprobante: </span>
-					<input type="text" asp-for="Comprobante" class="form-control activable inputEditable" maxlength="20" />
+					<input type="text" asp-for="Comprobante" class="form-control activable inputEditable comprobante-compact" maxlength="20" />
 				</div>
 				<div class="row col-12">
 					<div class="col-6" style="padding-left: 0px;">

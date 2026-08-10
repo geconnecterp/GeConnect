@@ -1,4 +1,5 @@
-﻿@using static gc.infraestructura.Helpers.GridHelper
+﻿@using gc.infraestructura.Helpers
+@using static gc.infraestructura.Helpers.GridHelper
 @model ModalRegistrosConciliadosModel
 @{
 	var alt = true;
@@ -27,10 +28,11 @@
 	}
 
 	#tbGrillaExtractoRegConci td {
-		padding: 0.2rem 0.3rem;
-		font-size: 0.75rem;
-		line-height: 1.1;
-		vertical-align: middle;
+		padding-top: 0.325rem !important;
+		padding-bottom: 0.325rem !important;
+		padding-left: 0.3rem !important;
+		padding-right: 0.3rem !important;
+		line-height: 1 !important;
 	}
 
 	#tbGrillaSistemaRegConci th {
@@ -39,18 +41,19 @@
 	}
 
 	#tbGrillaSistemaRegConci td {
-		padding: 0.2rem 0.3rem;
-		font-size: 0.75rem;
-		line-height: 1.1;
-		vertical-align: middle;
+		padding-top: 0.325rem !important;
+		padding-bottom: 0.325rem !important;
+		padding-left: 0.3rem !important;
+		padding-right: 0.3rem !important;
+		line-height: 1 !important;
 	}
 
 	#tbGrillaExtractoRegConci td:empty {
-		min-height: 32px; /* ajustable según tu diseño */
+		min-height: 32px; 
 	}
 
 	#tbGrillaSistemaRegConci td:empty {
-		min-height: 32px; /* ajustable según tu diseño */
+		min-height: 32px;
 	}
 
 	.td-placeholder::before {
@@ -62,17 +65,30 @@
 	#tbGrillaExtractoRegConci thead th {
 		position: sticky;
 		top: 0;
-		background-color: #d4af37; /* o el color de fondo que uses */
+		background-color: #d4af37;
 		z-index: 2;
 	}
 
 	#tbGrillaSistemaRegConci thead th {
 		position: sticky;
 		top: 0;
-		background-color: #d4af37; /* o el color de fondo que uses */
+		background-color: #d4af37; 
 		z-index: 2;
 	}
 
+	/* Evitar salto de línea + mostrar ellipsis */
+	.col-concepto {
+		white-space: nowrap !important;
+		overflow: hidden !important;
+		text-overflow: ellipsis !important;
+		max-width: 100%; /* respeta el ancho de la columna */
+		cursor: default;
+	}
+
+		/* Tooltip Bootstrap */
+		.col-concepto[data-bs-toggle="tooltip"] {
+			cursor: pointer;
+		}
 </style>
 @Html.Hidden("ConciliadoNro", Model.ConciliadoNro)
 <div class="modal-header">
@@ -86,9 +102,9 @@
 				<table class="table table-bordered table-hover table-golden" id="tbGrillaExtractoRegConci">
 					<thead>
 						<tr class="header">
-							<th class="text-center" scope="col">Fecha</th>
-							<th class="text-center" scope="col">Concepto</th>
-							<th class="text-center" scope="col">Importe</th>
+							<th class="text-center" style="width:5%;">Fecha</th>
+							<th class="text-center" style="width:70%;">Concepto</th>
+							<th class="text-center">Importe</th>
 						</tr>
 					</thead>
 					<tbody>
@@ -98,9 +114,14 @@
 							{
 								if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
 								<tr class="@clase" data-ctaf-id="@item.ctaf_id" data-extr-id="@item.extr_id" data-ext-fecha="@item.ext_fecha" onclick="selectGrillaExtractoModalRegConci(this);">
-									<td class="@Model.GrillaExtracto.ObtenerClase(item.ext_fecha)">@Model.GrillaExtracto.FormatearDato(item.ext_fecha, FormatDato.Fecha)</td>
-									<td class="@Model.GrillaExtracto.ObtenerClase(item.concepto)">@Model.GrillaExtracto.FormatearDato(item.concepto, FormatDato.Ninguno)</td>
-									<td class="@Model.GrillaExtracto.ObtenerClase(item.importe)">@Model.GrillaExtracto.FormatearDato(item.importe, FormatDato.Monto)</td>
+									<td class="@Model.GrillaExtracto.ObtenerClase(item.ext_fecha)"
+										data-bs-toggle="tooltip"
+										data-bs-placement="top"
+										title="@Model.GrillaExtracto.FormatearDato(item.concepto, FormatDato.Ninguno)">
+										@Model.GrillaExtracto.FormatearDato(item.ext_fecha, FormatDato.Fecha)
+									</td>
+									<td class="col-concepto @Model.GrillaExtracto.ObtenerClase(item.concepto)">@Model.GrillaExtracto.FormatearDato(item.concepto, FormatDato.Ninguno)</td>
+									<td class="@Model.GrillaExtracto.ObtenerClase(item.importe)">@GridHelper.FormatearDato(item.importe, FormatDato.Monto, true)</td>
 								</tr>
 							}
 						}
@@ -113,9 +134,9 @@
 				<table class="table table-bordered table-hover table-golden" id="tbGrillaSistemaRegConci">
 					<thead>
 						<tr class="header">
-							<th class="text-center" scope="col">Fecha</th>
-							<th class="text-center" scope="col">Concepto</th>
-							<th class="text-center" scope="col">Importe</th>
+							<th class="text-center" style="width:5%;">Fecha</th>
+							<th class="text-center" style="width:70%;">Concepto</th>
+							<th class="text-center">Importe</th>
 						</tr>
 					</thead>
 					<tbody>
@@ -126,8 +147,13 @@
 								if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
 								<tr class="@clase" data-ctaf-id="@item.ctaf_id" data-dia-movi="@item.dia_movi" data-cf-compte="@item.cf_compte" data-cf-item="@item.cf_item" onclick="selectGrillaSistema(this);">
 									<td class="@Model.GrillaSistema.ObtenerClase(item.cf_fecha_concilia)">@Model.GrillaSistema.FormatearDato(item.cf_fecha_concilia, FormatDato.Fecha)</td>
-									<td class="@Model.GrillaSistema.ObtenerClase(item.concepto)">@Model.GrillaSistema.FormatearDato(item.concepto, FormatDato.Ninguno)</td>
-									<td class="@Model.GrillaSistema.ObtenerClase(item.importe)">@Model.GrillaSistema.FormatearDato(item.importe, FormatDato.Monto)</td>
+									<td class="col-concepto @Model.GrillaSistema.ObtenerClase(item.concepto)"
+										data-bs-toggle="tooltip"
+										data-bs-placement="top"
+										title="@Model.GrillaSistema.FormatearDato(item.concepto, FormatDato.Ninguno)">
+										@Model.GrillaSistema.FormatearDato(item.concepto, FormatDato.Ninguno)
+									</td>
+									<td class="@Model.GrillaSistema.ObtenerClase(item.importe)">@GridHelper.FormatearDato(item.importe, FormatDato.Monto, true)</td>
 								</tr>
 							}
 						}
@@ -139,17 +165,11 @@
 </div>
 <div class="modal-footer">
 	<div class="input-group input-group-sm">
-		<button type="button" class="btn btn-success btn-sm ms-1" id="btnDesconciliar">
+		<button type="button" class="btn btn-success btn-sm ms-1" id="btnDesconciliar" style="width:120px;">
 			<i class="bx bx-unlink"></i> Des Conciliar
 		</button>
-		<button type="button" class="btn btn-outline-secondary btn-sm ms-1" id="btnSalir" data-bs-dismiss="modal">
+		<button type="button" class="btn btn-outline-secondary btn-sm ms-1" id="btnSalir" style="width:120px;" data-bs-dismiss="modal">
 			<i class="bx bx-log-out-circle"></i> Salir
 		</button>
 	</div>
 </div>
-@* <div class="row align-items-center mb-2">
-	<div class="col-12 d-flex justify-content-start">
-		
-	</div>
-</div>
- *@

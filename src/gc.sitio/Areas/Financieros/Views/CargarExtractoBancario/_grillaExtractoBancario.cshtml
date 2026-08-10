@@ -6,49 +6,22 @@
     string clase = string.Empty;
 }
 <style>
-    /* Asegurar que los botones no inflen la fila */
-    #tbListaCrudExtracto td .btn-icon-compact {
-        height: 16px !important;
-        width: 20px !important;
-        line-height: 16px !important;
-        padding: 0 !important;
-        margin: 0 auto !important;
-        display: flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-    }
-
-        /* Ícono aún más compacto */
-        #tbListaCrudExtracto td .btn-icon-compact i {
-            font-size: 0.70rem !important;
-            line-height: 1 !important;
-            padding: 0 !important;
-            margin: 0 !important;
-        }
-
-    #tbListaCrudExtracto td,
-    #tbListaCrudExtracto th {
-        padding-top: 0.10rem !important;
-        padding-bottom: 0.10rem !important;
-        font-size: 0.70rem !important;
-        line-height: 1 !important;
-    }
 </style>
 <div class="table-responsive table-wrapper-500-full-width" id="containerCrudExtracto">
     <table class="table table-bordered table-hover table-golden" id="tbListaCrudExtracto">
         <thead>
             <tr class="header">
-                <th class="text-center" scope="col">Fecha Mov.</th>
-                <th class="text-center" scope="col">Fecha</th>
-                <th class="text-center" scope="col">Código Mov.</th>
-                <th class="text-center" scope="col">Origen Mov.</th>
-                <th class="text-center" scope="col">N° Comprobante</th>
-                <th class="text-center" scope="col">Debe</th>
-                <th class="text-center" scope="col">Haber</th>
-                <th class="text-center" scope="col">Saldo</th>
-                <th class="text-center" scope="col">Conciliado</th>
-                <th class="text-center" scope="col">Ctrl. Cierre</th>
-                <th style="width:5%;"></th>
+                <th class="text-center" style="width:6%;">Fecha Mov.</th>
+                <th class="text-center" style="width:6%;">Fecha</th>
+                <th class="text-center" style="width:6%;">Código Mov.</th>
+                <th class="text-center" style="width:20%;">Origen Mov.</th>
+                <th class="text-center" style="width:15%;">N° Comprobante</th>
+                <th class="text-center" style="width:10%;">Debe</th>
+                <th class="text-center" style="width:10%;">Haber</th>
+                <th class="text-center" style="width:10%;">Saldo</th>
+                <th class="text-center" style="width:5%;">Conc.</th>
+                <th class="text-center" style="width:5%;">Ctrl. Cierre</th>
+                <th style="width:3%;"></th>
             </tr>
         </thead>
         <tbody>

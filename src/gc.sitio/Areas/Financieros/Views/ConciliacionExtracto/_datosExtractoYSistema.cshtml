@@ -26,12 +26,51 @@
 		color: #ffffff !important;
 		font-weight: bold;
 	}
+
+	.btn-compact {
+		padding: 2px 8px !important;
+		font-size: 0.75rem !important;
+		display: flex;
+		align-items: center;
+		gap: 3px;
+	}
+	.btn-compact-fixed {
+		width: 110px !important; 
+		justify-content: center; 
+	}
 </style>
 <div class="row align-items-center mb-2">
-	<div class="col-12 d-flex justify-content-start">
-		<h5 class="col-6 fw-bold text-golden mb-0">
+	<div class="col-6 d-flex align-items-center">
+		<h5 class="fw-bold text-golden mb-0">
 			<i class="bx bx-spreadsheet me-1"></i> @Model.CuentaBanco
 		</h5>
+	</div>
+	<div class="col-6 d-flex justify-content-end">
+		<div class="d-flex gap-2">
+			<button id="btnUnir" class="btn btn-success btn-sm btn-compact btn-compact-fixed" type="button">
+				<i class="bx bx-link"></i> Unir
+			</button>
+			<button id="btnConfirmar" class="btn btn-success btn-sm btn-compact btn-compact-fixed" type="button">
+				<i class="bx bx-badge-check"></i> Confirmar
+			</button>
+			<button id="btnCancelar" class="btn btn-danger btn-sm btn-compact btn-compact-fixed" type="button">
+				<i class="bx bx-x-circle"></i> Cancelar
+			</button>
+		</div>
+	</div>
+
+</div>
+<div class="row">
+	<div id="divGrillaExtracto" class="col-md-6" style="padding-right: 5px;">
+		<partial name="_grillaExtracto" model="Model" />
+	</div>
+	<div id="divGrillaSistema" class="col-md-6" style="padding-left: 5px;">
+		<partial name="_grillaSistema" model="Model" />
+	</div>
+</div>
+<div class="row mt-2">
+	<div class="col-md-6"></div> <!-- espacio vacío para alinear -->
+	<div class="col-md-6">
 		<div class="input-group input-group-sm">
 			<span class="input-group-text">Extracto: </span>
 			<input type="text" asp-for="Extracto" class="form-control activable text-end input-rojo-suave" readonly />
@@ -39,26 +78,6 @@
 			<input type="text" asp-for="Sistema" class="form-control activable text-end input-azul-suave" readonly />
 			<span class="input-group-text">Diferencia: </span>
 			<input type="text" asp-for="Diferencia" class="form-control activable text-end input-verde-suave" readonly />
-			<button type="button" class="btn btn-success btn-sm ms-1" id="btnUnir">
-				<i class="bx bx-link"></i> Unir
-			</button>
 		</div>
 	</div>
-</div>
-<div class="row">
-	<div id="divGrillaExtracto" class="col-md-5" style="padding-right: 5px;">
-		<partial name="_grillaExtracto" model="Model" />
-	</div>
-	<div id="divGrillaSistema" class="col-md-5" style="padding-left: 5px;">
-		<partial name="_grillaSistema" model="Model" />
-	</div>
-	<div class="col-md-2 d-flex flex-column align-items-end">
-		<button id="btnConfirmar" class="btn btn-success btn-sm mt-1 w-75" type="button" title="Confirmar">
-			<i class="bx bx-badge-check"></i> Confirmar
-		</button>
-		<button id="btnCancelar" class="btn btn-danger btn-sm mt-2 w-75" type="button" title="Cancelar">
-			<i class="bx bx-x-circle"></i> Cancelar
-		</button>
-	</div>
-
 </div>

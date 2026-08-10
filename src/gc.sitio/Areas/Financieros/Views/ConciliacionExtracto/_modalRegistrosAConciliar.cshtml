@@ -1,4 +1,5 @@
-﻿@using static gc.infraestructura.Helpers.GridHelper
+﻿@using gc.infraestructura.Helpers
+@using static gc.infraestructura.Helpers.GridHelper
 @model ModalRegistrosConciliadosModel
 @{
 	var alt = true;
@@ -27,10 +28,11 @@
 	}
 
 	#tbGrillaExtractoRegConci td {
-		padding: 0.2rem 0.3rem;
-		font-size: 0.75rem;
-		line-height: 1.1;
-		vertical-align: middle;
+		padding-top: 0.325rem !important;
+		padding-bottom: 0.325rem !important;
+		padding-left: 0.3rem !important;
+		padding-right: 0.3rem !important;
+		line-height: 1 !important;
 	}
 
 	#tbGrillaSistemaRegConci th {
@@ -39,10 +41,11 @@
 	}
 
 	#tbGrillaSistemaRegConci td {
-		padding: 0.2rem 0.3rem;
-		font-size: 0.75rem;
-		line-height: 1.1;
-		vertical-align: middle;
+		padding-top: 0.325rem !important;
+		padding-bottom: 0.325rem !important;
+		padding-left: 0.3rem !important;
+		padding-right: 0.3rem !important;
+		line-height: 1 !important;
 	}
 
 	#tbGrillaExtractoRegConci td:empty {
@@ -85,9 +88,9 @@
 				<table class="table table-bordered table-hover table-golden" id="tbGrillaExtractoRegConci">
 					<thead>
 						<tr class="header">
-							<th class="text-center" scope="col">Fecha</th>
-							<th class="text-center" scope="col">Concepto</th>
-							<th class="text-center" scope="col">Importe</th>
+							<th class="text-center" style="width:5%;">Fecha</th>
+							<th class="text-center" style="width:70%;">Concepto</th>
+							<th class="text-center">Importe</th>
 						</tr>
 					</thead>
 					<tbody>
@@ -99,7 +102,7 @@
 								<tr class="@clase" data-ctaf-id="@item.ctaf_id" data-extr-id="@item.extr_id" data-ext-fecha="@item.ext_fecha" onclick="selectGrillaExtractoModalRegConci(this);">
 									<td class="@Model.GrillaExtracto.ObtenerClase(item.ext_fecha)">@Model.GrillaExtracto.FormatearDato(item.ext_fecha, FormatDato.Fecha)</td>
 									<td class="@Model.GrillaExtracto.ObtenerClase(item.concepto)">@Model.GrillaExtracto.FormatearDato(item.concepto, FormatDato.Ninguno)</td>
-									<td class="@Model.GrillaExtracto.ObtenerClase(item.importe)">@Model.GrillaExtracto.FormatearDato(item.importe, FormatDato.Monto)</td>
+									<td class="@Model.GrillaExtracto.ObtenerClase(item.importe)">@GridHelper.FormatearDato(item.importe, FormatDato.Monto, true)</td>
 								</tr>
 							}
 						}
@@ -112,9 +115,9 @@
 				<table class="table table-bordered table-hover table-golden" id="tbGrillaSistemaRegConci">
 					<thead>
 						<tr class="header">
-							<th class="text-center" scope="col">Fecha</th>
-							<th class="text-center" scope="col">Concepto</th>
-							<th class="text-center" scope="col">Importe</th>
+							<th class="text-center" style="width:5%;">Fecha</th>
+							<th class="text-center" style="width:70%;">Concepto</th>
+							<th class="text-center">Importe</th>
 						</tr>
 					</thead>
 					<tbody>
@@ -126,7 +129,7 @@
 								<tr class="@clase" data-ctaf-id="@item.ctaf_id" data-dia-movi="@item.dia_movi" data-cf-compte="@item.cf_compte" data-cf-item="@item.cf_item" onclick="selectGrillaSistema(this);">
 									<td class="@Model.GrillaSistema.ObtenerClase(item.cf_fecha_concilia)">@Model.GrillaSistema.FormatearDato(item.cf_fecha_concilia, FormatDato.Fecha)</td>
 									<td class="@Model.GrillaSistema.ObtenerClase(item.concepto)">@Model.GrillaSistema.FormatearDato(item.concepto, FormatDato.Ninguno)</td>
-									<td class="@Model.GrillaSistema.ObtenerClase(item.importe)">@Model.GrillaSistema.FormatearDato(item.importe, FormatDato.Monto)</td>
+									<td class="@Model.GrillaSistema.ObtenerClase(item.importe)">@GridHelper.FormatearDato(item.importe, FormatDato.Monto, true)</td>
 								</tr>
 							}
 						}
@@ -138,10 +141,10 @@
 </div>
 <div class="modal-footer">
 	<div class="input-group input-group-sm">
-		<button type="button" class="btn btn-success btn-sm ms-1" id="btnDesunir">
+		<button type="button" class="btn btn-success btn-sm ms-1" id="btnDesunir" style="width:100px;">
 			<i class="bx bx-unlink"></i> Des Unir
 		</button>
-		<button type="button" class="btn btn-outline-secondary btn-sm ms-1" id="btnSalir" data-bs-dismiss="modal">
+		<button type="button" class="btn btn-outline-secondary btn-sm ms-1" id="btnSalir" data-bs-dismiss="modal" style="width:100px;">
 			<i class="bx bx-log-out-circle"></i> Salir
 		</button>
 	</div>

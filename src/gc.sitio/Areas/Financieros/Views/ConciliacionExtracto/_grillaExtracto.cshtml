@@ -1,4 +1,5 @@
-﻿@using static gc.infraestructura.Helpers.GridHelper
+﻿@using gc.infraestructura.Helpers
+@using static gc.infraestructura.Helpers.GridHelper
 @model CargarDatosExtractoYSistemaModel
 @{
 	var alt = true;
@@ -10,14 +11,22 @@
 		vertical-align: middle;
 	}
 
-	.btn-icon-compact {
-		padding: 0.15rem 0.3rem;
-		font-size: 0.7rem;
-		line-height: 1;
+	#tbGrillaExtracto td .btn-icon-compact {
+		height: 16px !important;
+		width: 20px !important;
+		line-height: 16px !important;
+		padding: 0 !important;
+		margin: 0 auto !important;
+		display: flex !important;
+		align-items: center !important;
+		justify-content: center !important;
 	}
 
-		.btn-icon-compact i {
-			font-size: 0.9rem;
+		#tbGrillaExtracto td .btn-icon-compact i {
+			font-size: 0.70rem !important;
+			line-height: 1 !important;
+			padding: 0 !important;
+			margin: 0 !important;
 		}
 
 	.btn.invisible {
@@ -31,10 +40,11 @@
 	}
 
 	#tbGrillaExtracto td {
-		padding: 0.2rem 0.3rem;
-		font-size: 0.75rem;
-		line-height: 1.1;
-		vertical-align: middle;
+		padding-top: 0.325rem !important;
+		padding-bottom: 0.325rem !important;
+		padding-left: 0.3rem !important;
+		padding-right: 0.3rem !important;
+		line-height: 1 !important;
 	}
 
 	.check-sele-container {
@@ -76,87 +86,102 @@
 	}
 
 </style>
-<div class="table-responsive table-wrapper-500-full-width" id="containerGrillaExtracto">
-	<table class="table table-bordered table-hover table-golden" id="tbGrillaExtracto">
-		<thead>
-			<tr class="header">
-				<th scope="col" class="check-column">
-					SEL
-					<div class="check-sele-container">
-						<input class="form-check-input" type="checkbox" id="checkAllItemExtracto" title="Seleccionar todos">
-					</div>
-				</th>
-				<th class="col-conci" scope="col">Conci.</th>
-				<th class="text-center" scope="col">Fecha</th>
-				<th class="text-center" scope="col">Concepto</th>
-				<th class="text-center" scope="col">Importe</th>
-				<th class="col-a-conc" scope="col">A Conc.</th>
-			</tr>
-		</thead>
-		<tbody>
-			@if (Model != null && Model.GrillaExtracto != null && Model.GrillaExtracto.ListaDatos != null && Model.GrillaExtracto.ListaDatos.Count > 0)
-			{
-				@foreach (var item in Model.GrillaExtracto.ListaDatos)
-				{
-					if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
-					<tr class="@clase" data-orden="@item.orden" data-ctaf-id="@item.ctaf_id" data-extr-id="@item.extr_id" data-ext-fecha="@item.ext_fecha" onclick="selectGrillaExtracto(this);">
-						@if (item.puedo_seleccionar)
-						{
-							<td class="check-column">
-								<div class="check-sele-container">
-									<input type="checkbox" class="form-check-input check-extracto" data-orden="@item.orden" data-ctaf-id="@item.ctaf_id" data-extr-id="@item.extr_id" data-ext-fecha="@item.ext_fecha">
-								</div>
-							</td>
-						}
-						else
-						{
-							<td class="text-center align-middle">
-								<button type="button" class="btn btn-icon-compact invisible" tabindex="-1">
-									<i class="bx bx-dots-horizontal-rounded"></i>
-								</button>
-							</td>
-						}
-						@if (item.bool_conciliado)
-						{
-							<td class="col-conci">
-								<button type="button" class="btn btn-warning btn-icon-compact" title="Registro Conciliado" onclick="verDetalleConciliado('@item.conciliado_nro')">
-									<i class="bx bx-search"></i>
-								</button>
-							</td>
-						}
-						else
-						{
-							<td class="col-conci">
-								<button type="button" class="btn btn-icon-compact invisible" tabindex="-1">
-									<i class="bx bx-dots-horizontal-rounded"></i>
-								</button>
-							</td>
-						}
-						<td class="@Model.GrillaExtracto.ObtenerClase(item.ext_fecha)">@Model.GrillaExtracto.FormatearDato(item.ext_fecha, FormatDato.Fecha)</td>
-						<td class="@Model.GrillaExtracto.ObtenerClase(item.concepto)">@Model.GrillaExtracto.FormatearDato(item.concepto, FormatDato.Ninguno)</td>
-						<td class="@Model.GrillaExtracto.ObtenerClase(item.importe)">@Model.GrillaExtracto.FormatearDato(item.importe, FormatDato.Monto)</td>
-						@if (item.bool_a_conciliar)
-						{
-							<td class="col-a-conc">
-								<button type="button" class="btn btn-success btn-icon-compact" title="Registro A Conciliar" onclick="VerDetalleAConciliar('@item.ctaf_id')">
-									<i class="bx bx-search"></i>
-								</button>
-							</td>
-						}
-						else
-						{
-							<td class="col-a-conc">
-								<button type="button" class="btn btn-icon-compact invisible" tabindex="-1">
-									<i class="bx bx-dots-horizontal-rounded"></i>
-								</button>
-							</td>
-						}
+<div class="grid-golden">
+	<div class="grid-golden-header">
+		<div class="row align-items-md-center">
+			<div class="col-md-10 col-sm-6 d-flex align-items-center">
+				<h5 class="mb-0 flex-grow-1">
+					<i class="bx bx-package me-2"></i>
+					<strong>Extracto</strong>
+				</h5>
+			</div>
+		</div>
+	</div>
+	<div class="grid-golden-body">
+		<div class="table-responsive table-wrapper-500-full-width" id="containerGrillaExtracto">
+			<table class="table table-bordered table-hover table-golden" id="tbGrillaExtracto">
+				<thead>
+					<tr class="header">
+						<th class="check-column" style="width:5%;">
+							SEL
+							<div class="check-sele-container">
+								<input class="form-check-input" type="checkbox" id="checkAllItemExtracto" title="Seleccionar todos">
+							</div>
+						</th>
+						<th class="col-conci">Conci.</th>
+						<th class="text-center" style="width:5%;">Fecha</th>
+						<th class="text-center" style="width:50%;">Concepto</th>
+						<th class="text-center">Importe</th>
+						<th class="col-a-conc">A Conc.</th>
 					</tr>
-				}
-			}
-		</tbody>
-	</table>
+				</thead>
+				<tbody>
+					@if (Model != null && Model.GrillaExtracto != null && Model.GrillaExtracto.ListaDatos != null && Model.GrillaExtracto.ListaDatos.Count > 0)
+					{
+						@foreach (var item in Model.GrillaExtracto.ListaDatos)
+						{
+							if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+							<tr class="@clase" data-orden="@item.orden" data-ctaf-id="@item.ctaf_id" data-extr-id="@item.extr_id" data-ext-fecha="@item.ext_fecha" onclick="selectGrillaExtracto(this);">
+								@if (item.puedo_seleccionar)
+								{
+									<td class="check-column">
+										<div class="check-sele-container">
+											<input type="checkbox" class="form-check-input check-extracto" data-orden="@item.orden" data-ctaf-id="@item.ctaf_id" data-extr-id="@item.extr_id" data-ext-fecha="@item.ext_fecha">
+										</div>
+									</td>
+								}
+								else
+								{
+									<td class="text-center align-middle">
+										<button type="button" class="btn btn-icon-compact invisible" tabindex="-1">
+											<i class="bx bx-dots-horizontal-rounded"></i>
+										</button>
+									</td>
+								}
+								@if (item.bool_conciliado)
+								{
+									<td class="col-conci">
+										<button type="button" class="btn btn-warning btn-icon-compact" title="Registro Conciliado" onclick="verDetalleConciliado('@item.conciliado_nro')">
+											<i class="bx bx-search"></i>
+										</button>
+									</td>
+								}
+								else
+								{
+									<td class="col-conci">
+										<button type="button" class="btn btn-icon-compact invisible" tabindex="-1">
+											<i class="bx bx-dots-horizontal-rounded"></i>
+										</button>
+									</td>
+								}
+								<td class="@Model.GrillaExtracto.ObtenerClase(item.ext_fecha)">@Model.GrillaExtracto.FormatearDato(item.ext_fecha, FormatDato.Fecha)</td>
+								<td class="@Model.GrillaExtracto.ObtenerClase(item.concepto)">@Model.GrillaExtracto.FormatearDato(item.concepto, FormatDato.Ninguno)</td>
+								<td class="@Model.GrillaExtracto.ObtenerClase(item.importe)">@GridHelper.FormatearDato(item.importe, FormatDato.Monto, true)</td>
+								@if (item.bool_a_conciliar)
+								{
+									<td class="col-a-conc">
+										<button type="button" class="btn btn-success btn-icon-compact" title="Registro A Conciliar" onclick="VerDetalleAConciliar('@item.ctaf_id')">
+											<i class="bx bx-search"></i>
+										</button>
+									</td>
+								}
+								else
+								{
+									<td class="col-a-conc">
+										<button type="button" class="btn btn-icon-compact invisible" tabindex="-1">
+											<i class="bx bx-dots-horizontal-rounded"></i>
+										</button>
+									</td>
+								}
+							</tr>
+						}
+					}
+				</tbody>
+			</table>
+		</div>
+	</div>
 </div>
+
 <script>
 	$(function() {
 			// Funcionalidad para checkbox de seleccionar todos
