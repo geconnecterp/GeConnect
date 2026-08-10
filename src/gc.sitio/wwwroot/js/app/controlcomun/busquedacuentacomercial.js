@@ -405,6 +405,7 @@ function RegresarASelAuto() {
 }
 
 function GuardarDetalleDeProductos(guardado) {
+	AbrirWaiting("Registrando Autorización...");
 	var ulCantidad = $("#txtCantidadUL").val();
 	var fechaTurno = $("#dtpFechaTurno").val();
 	var depoId = $("#listaDeposito").val();
@@ -413,6 +414,7 @@ function GuardarDetalleDeProductos(guardado) {
 	var generar = true;
 	datos = { guardado, generar, ponerEnCurso, ulCantidad, fechaTurno, depoId, nota };
 	PostGen(datos, GuardarDetalleDeComprobanteRPUrl, function (o) {
+		CerrarWaiting();
 		if (o.error === true) {
 			AbrirMensaje("Atención", o.msg, function () {
 				$("#msjModal").modal("hide");
