@@ -45,7 +45,7 @@
                                 <td class="@Model.ObtenerClase(item.p_desc) text-left td-compact">
                                     @Model.FormatearDato(item.p_desc, FormatDato.Ninguno)
                                 </td>
-                                <td class="@Model.ObtenerClase('c') text-left td-compact">
+                                <td class="@Model.ObtenerClase(item.p_id_prov) text-left td-compact">
                                     @Model.FormatearDato(item.p_id_prov, FormatDato.Ninguno)
                                 </td>
                                 <td class="@Model.ObtenerClase(item.p_id_barrado) text-left td-compact">
@@ -108,7 +108,7 @@
             <div class="d-flex justify-content-between align-items-center mt-2 px-2">
                 <div class="text-muted small">
                     <i class="bx bx-calculator me-1"></i>
-                    Total: @Model.CantidadReg productos
+                    Total: @(Model.MetadataGeneral?.TotalCount ?? Model.ListaDatos?.Count ?? 0) productos
                 </div>
                 <div class="text-muted small">
                     <div id="divPaginacion"></div>
