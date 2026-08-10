@@ -9,8 +9,6 @@ using gc.infraestructura.Dtos.Productos.Etiqueta;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
 using System.Data;
-using System.Runtime.Intrinsics.Arm;
-using X.PagedList;
 
 namespace gc.api.core.Servicios.Ofertas
 {
@@ -94,22 +92,26 @@ namespace gc.api.core.Servicios.Ofertas
 
         public List<IEDetalleDto> ObtenerDetalleEtiquetas(QueryFilters filters)
         {
-
             var sp = ConstantesGC.StoredProcedures.SP_IE_LISTA;
-
             List<SqlParameter> ps = [];
 
-            if (filters.FechaD.HasValue && filters.FechaD.Value != DateTime.MinValue &&
-                filters.FechaH.HasValue && filters.FechaH.Value != DateTime.MinValue)
+            var filtraModificados = filters.FechaD.HasValue && filters.FechaD.Value != DateTime.MinValue &&
+                                    filters.FechaH.HasValue && filters.FechaH.Value != DateTime.MinValue;
+
+            if (filtraModificados && filters.FechaD!.Value.Date > filters.FechaH!.Value.Date)
             {
-                ps.Add(new SqlParameter("@mod", true));
-                ps.Add(new SqlParameter("@mod_d", filters.FechaD));
-                ps.Add(new SqlParameter("@mod_h", filters.FechaD));
+                throw new ArgumentException("La fecha desde no puede ser posterior a la fecha hasta.");
             }
-            else
+
+            ps.Add(new SqlParameter("@mod", filtraModificados));
+            ps.Add(new SqlParameter("@mod_d", SqlDbType.Date)
             {
-                ps.Add(new SqlParameter("@mod", false));
-            }
+                Value = filtraModificados ? filters.FechaD!.Value.Date : DBNull.Value
+            });
+            ps.Add(new SqlParameter("@mod_h", SqlDbType.Date)
+            {
+                Value = filtraModificados ? filters.FechaH!.Value.Date : DBNull.Value
+            });
             ps.Add(new SqlParameter("@sin_imprimir", filters.Opt1));
             ps.Add(new SqlParameter("@oferta", filters.Opt2));
 
@@ -135,34 +137,37 @@ namespace gc.api.core.Servicios.Ofertas
             else
             {
                 ps.Add(new SqlParameter("@prov", false));
+                ps.Add(new SqlParameter("@prov_list", string.Empty));
             }
 
-            if (filters.Rel02 != null && filters.Rel02.Count > 0)
+            // Rel03 representa Familias en el filtro compartido.
+            if (filters.Rel03 != null && filters.Rel03.Count > 0)
             {
-                var pgs = string.Join(",", filters.Rel02);
+                var pgs = string.Join(",", filters.Rel03.Select(x => x.Id));
                 ps.Add(new SqlParameter("@pg", true));
                 ps.Add(new SqlParameter("@pg_list", pgs));
             }
             else
             {
                 ps.Add(new SqlParameter("@pg", false));
+                ps.Add(new SqlParameter("@pg_list", string.Empty));
             }
 
-            if (filters.Rel03 != null && filters.Rel03.Count > 0)
+            // Rel02 representa Rubros en el filtro compartido.
+            if (filters.Rel02 != null && filters.Rel02.Count > 0)
             {
-                var rubs = string.Join(",", filters.Rel03.Select(x => x.Id));
+                var rubs = string.Join(",", filters.Rel02);
                 ps.Add(new SqlParameter("@rub", true));
                 ps.Add(new SqlParameter("@rub_list", rubs));
             }
             else
             {
                 ps.Add(new SqlParameter("@rub", false));
+                ps.Add(new SqlParameter("@rub_list", string.Empty));
             }
 
             ps.Add(new SqlParameter("@adm_id", filters.Adm_id));
             ps.Add(new SqlParameter("@usu_id", filters.Usu_id));
-
-
             var datos = _repository.EjecutarLstSpExt<IEDetalleDto>(sp, ps, true);
             return datos;
         }

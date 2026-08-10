@@ -215,7 +215,7 @@ namespace gc.api.Controllers.Security
                 new Claim(ClaimTypes.Email,usuario.Usu_email??"sin@mail.com"),
                 new Claim("AdmId", $"{adm.Adm_id}#{adm.Adm_nombre}"),
                 new Claim("lp_id", $"{adm.lp_id}"),
-                new Claim("expires",DateTime.Now.AddHours(1).Ticks.ToString()),
+                new Claim("expires", DateTime.Now.AddMinutes(_options.Value.TiempoDuracionToken).Ticks.ToString()),
                 new Claim("user",usuario.Usu_id),
                 new Claim("perfiles",jsonp)
 

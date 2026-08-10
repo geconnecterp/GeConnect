@@ -791,7 +791,10 @@
                     {
                         <div class="col-md-6 col-sm-6" id="divLs02">
                             <div class="input-group input-group-sm">
-                                <span class="input-group-text" id="lbNombreRel03">Familia</span>
+                                <span class="input-group-text"
+                                      id="@(Model.Modelo.Equals(ModeloFilter.ETIQUETA) ? "lbNombreRel02" : "lbNombreRel03")">
+                                    @(Model.Modelo.Equals(ModeloFilter.ETIQUETA) ? "Rubro" : "Familia")
+                                </span>
                                 @Html.DropDownList("Rel02", null, "Seleccionar...", new { @class = "form-control", @disabled = "disabled" })
                                 @Html.Hidden("Rel02Item")
                             </div>

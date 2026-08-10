@@ -1,39 +1,26 @@
 ﻿let _etiquetaLoading = false;
 
+let _impresionPendiente = null;
+let _reporteSolicitado = false;
+let _reporteGenerado = false;
+let _cierreGestorCancelado = false;
+let _cierreGestorPorReporte = false;
+
 $(function () {
     InicializaPantallaEtiqueta();
     InicializaEnventosEtiqueta();
 });
 
 function cancelarEtiqueta() {
-    $("#btnAbmCancelar").hide();
+    $("#btnAbmCancelar, #btnImprimir").prop("disabled", true);
+    AbrirWaiting("Reiniciando impresión de etiquetas...");
 
-    $("#chkTipoEtiq").prop("checked", false);
-    $("#chkSinImprimir").prop("checked", false);
-    $("#chkOferta").prop("checked", false);
-    
-    if ($("#chkCargaPrevia").is(":checked")) {
-        $("#chkCargaPrevia").trigger("click");       
-    }
-    if ($("#chkDesdeHasta").is(":checked")) {
-        $("#chkDesdeHasta").trigger("click");
-    }
-    
-    if ($("#chkRel011").is(":checked")) {
-        $("#chkRel011").trigger("click");
-    }
-    if ($("#chkRel03").is(":not(:disabled)")) {
-        if ($("#chkRel03").is(":checked")) {
-            $("#chkRel03").trigger("click");
-        }
-        $("#chkRel03").prop("checked", false);
-    }
-    if ($("#chkRel02").is(":checked")) {
-        $("#chkRel02").trigger("click");
-    }
-
-    $("#divDetalle").collapse("hide");
-    $("#divFiltro").collapse("show");
+    $.ajax({
+        url: reiniciarEstadoEtiquetaUrl,
+        type: "POST"
+    }).always(function () {
+        window.location.href = homeEtiqueta;
+    });
 }
 
 function InicializaPantallaEtiqueta() {
@@ -72,7 +59,7 @@ function InicializaEnventosEtiqueta() {
     });
 
     $("#btnCancel").on("click", function () {
-        window.location.href = homeEtiqueta;
+        cancelarEtiqueta();
     });
 
     $("#chkCargaPrevia").on("change", function () {
@@ -83,6 +70,13 @@ function InicializaEnventosEtiqueta() {
     $("#chkDesdeHasta").on("change", function () {
         const isChecked = $(this).is(":checked");
         $("#Date1, #Date2").prop("disabled", !isChecked);
+
+        if (isChecked) {
+            const hoy = obtenerFechaActualInput();
+            $("#Date1, #Date2").val(hoy);
+        } else {
+            $("#Date1, #Date2").val("");
+        }
     });
 
     $("#chkRel011").on("change", function () {
@@ -95,10 +89,9 @@ function InicializaEnventosEtiqueta() {
             $("#Rel011").prop("disabled", true).val("");
             $("#Rel011List").prop("disabled", true).empty();
             $("#Rel011Item").val("");
+            limpiarFiltroFamilias();
         }
     });
-
-    $("#Rel011").on("click", function () { $(this).val(""); });
 
     $("#Rel011List").off("dblclick.removeOption").on("dblclick.removeOption", "option", function (e) {
         e.stopPropagation();
@@ -107,10 +100,10 @@ function InicializaEnventosEtiqueta() {
         if ($.fn.selectpicker && $list.hasClass("selectpicker")) {
             $list.selectpicker("refresh");
         }
+        $list.trigger("change");
     });
 
-    $(document).on("keydown.autocomplete", "input#Rel011", function () {
-        $(this).autocomplete({
+    $("#Rel011").autocomplete({
             source: function (request, response) {
                 $.ajax({
                     url: autoComRel01Url,
@@ -152,7 +145,6 @@ function InicializaEnventosEtiqueta() {
             focus: function () {
                 return false;
             }
-        });
     });
 
     $(document).on("change", "select#Rel011List", function () {
@@ -204,11 +196,59 @@ function InicializaEnventosEtiqueta() {
         $lista.trigger("change");
     });
 
+    $(document).off("change.addRel02Item").on("change.addRel02Item", "select#Rel02", function () {
+        const $origen = $(this);
+        const $destino = $("#Rel02List");
+        const $seleccionadas = $origen.find("option:selected");
+        if ($seleccionadas.length === 0) return;
+
+        let huboCambios = false;
+        $seleccionadas.each(function () {
+            const val = this.value;
+            const txt = this.text;
+            if (!val) return;
+
+            const existe = $destino.find("option[value='" + $.escapeSelector(val) + "']").length > 0;
+            if (!existe) {
+                $destino.append($("<option></option>").val(val).text(txt));
+                huboCambios = true;
+            }
+        });
+
+        if (huboCambios) {
+            $destino.trigger("change");
+        }
+
+        $origen.val("");
+        if ($.fn.selectpicker && $origen.hasClass("selectpicker")) {
+            $origen.selectpicker("refresh");
+        }
+    });
+
+    $("#Rel02List").off("dblclick.removeRel02Option").on("dblclick.removeRel02Option", "option", function (e) {
+        e.stopPropagation();
+        const $lista = $(this).parent();
+        $(this).remove();
+
+        if ($.fn.selectpicker && $lista.hasClass("selectpicker")) {
+            $lista.selectpicker("refresh");
+        }
+        $lista.trigger("change");
+    });
+
     // ✅ NUEVO: Configurar eventos de búsqueda avanzada
     configurarEventosBusquedaAvanzadaEtiquetas();
     
     configurarEventosEliminacionEtiqueta();
     configurarEventosSeleccionMultiple();
+}
+
+function obtenerFechaActualInput() {
+    const hoy = new Date();
+    const anio = hoy.getFullYear();
+    const mes = String(hoy.getMonth() + 1).padStart(2, "0");
+    const dia = String(hoy.getDate()).padStart(2, "0");
+    return `${anio}-${mes}-${dia}`;
 }
 
 // ============================================================================
@@ -379,7 +419,7 @@ function crearFilaEtiqueta(producto, esAlternado) {
     
     return `
         <tr class="${claseAlt}" data-p-id="${pId}">
-            <td class="text-center">
+            <td class="text-center td-compact">
                 <div class="form-check d-flex justify-content-center mb-0">
                     <input class="form-check-input chk-etiqueta-item" 
                            type="checkbox" 
@@ -388,12 +428,12 @@ function crearFilaEtiqueta(producto, esAlternado) {
                            id="chk_${pId}">
                 </div>
             </td>
-            <td class="text-center">${pId}</td>
-            <td>${pDesc}</td>
-            <td class="text-center ${estadoClase}">
+            <td class="text-center td-compact">${pId}</td>
+            <td class="td-compact etiqueta-descripcion" title="${pDesc}">${pDesc}</td>
+            <td class="text-center td-compact ${estadoClase}">
                 <i class="${estadoIcono} me-1"></i>${estadoTexto}
             </td>
-            <td class="text-center">
+            <td class="text-center td-compact">
                 <button type="button"
                         class="btn btn-sm btn-outline-danger btn-eliminar-etiqueta"
                         data-p-id="${pId}"
@@ -468,9 +508,16 @@ function imprimirEtiquetas() {
     const productos = JSON.stringify(productosSeleccionados);
     const info = {
         json_p: productos,
-        etiqueta: indexImp,
+        etiqueta: Number(tipoEt),
         adm_id: adm_id,
         usu_id: usuarioAuth
+    };
+
+    _impresionPendiente = {
+        tipo: tipoEt,
+        reporte: indexImp,
+        json: productos,
+        cantidad: productosSeleccionados.length
     };
 
     cargarReporteEnArre(45, {}, "");
@@ -482,11 +529,11 @@ function imprimirEtiquetas() {
     invocacionGestorDoc(data);
 
     setTimeout(() => {
-        configurarEventoCierreModal();
+        configurarEventoCierreModal(tipoEt);
     }, 300);
 }
 
-function configurarEventoCierreModal() {
+function configurarEventoCierreModal(tipoEt) {
     const $modal = $('#docmgrmodal');
     
     if ($modal.length === 0) {
@@ -496,32 +543,92 @@ function configurarEventoCierreModal() {
 
     $modal.off('hidden.bs.modal.confirmarImpresion');
     $modal.off('hide.bs.modal.confirmarImpresion');
+    _reporteSolicitado = false;
+    _reporteGenerado = false;
+    _cierreGestorCancelado = false;
+    _cierreGestorPorReporte = false;
+
+    $(document)
+        .off('click.etiquetaReporte', '#btnArchImprimir')
+        .on('click.etiquetaReporte', '#btnArchImprimir', function () {
+            const seleccionados = $('#archivosDispuestos').jstree('get_selected', true)
+                .filter(node => node.parent !== "#" && node.parent !== null);
+            _reporteSolicitado = seleccionados.length > 0;
+        })
+        .off('click.etiquetaCancelarGestor', '#btnCancelarGD, #docmgrmodal .modal-header [data-bs-dismiss="modal"]')
+        .on('click.etiquetaCancelarGestor', '#btnCancelarGD, #docmgrmodal .modal-header [data-bs-dismiss="modal"]', function () {
+            _cierreGestorCancelado = true;
+            _reporteSolicitado = false;
+            _reporteGenerado = false;
+            _impresionPendiente = null;
+        })
+        .off('gestorDocumental:reporteAbierto.etiquetaReporte')
+        .on('gestorDocumental:reporteAbierto.etiquetaReporte', function () {
+            if (_cierreGestorCancelado || !_reporteSolicitado || !_impresionPendiente) {
+                return;
+            }
+
+            _reporteGenerado = true;
+            _cierreGestorPorReporte = true;
+            $modal.modal('hide');
+        })
+        .off('gestorDocumental:reporteBloqueado.etiquetaReporte')
+        .on('gestorDocumental:reporteBloqueado.etiquetaReporte', function () {
+            if (!_reporteSolicitado || !_impresionPendiente) {
+                return;
+            }
+
+            _reporteSolicitado = false;
+            mostrarNotificacion(
+                "El navegador bloqueó la apertura del reporte. Habilite las ventanas emergentes e intente nuevamente.",
+                "warning"
+            );
+        });
 
     $modal.on('hidden.bs.modal.confirmarImpresion', function () {
-        console.log("✅ Modal cerrado - Mostrando confirmación de impresión");
-        
         $modal.off('hidden.bs.modal.confirmarImpresion');
-        
+        $(document)
+            .off('click.etiquetaReporte', '#btnArchImprimir')
+            .off('click.etiquetaCancelarGestor', '#btnCancelarGD, #docmgrmodal .modal-header [data-bs-dismiss="modal"]')
+            .off('gestorDocumental:reporteAbierto.etiquetaReporte')
+            .off('gestorDocumental:reporteBloqueado.etiquetaReporte');
+
+        const reporteGenerado = _reporteGenerado &&
+            _cierreGestorPorReporte &&
+            !_cierreGestorCancelado;
+
+        _reporteSolicitado = false;
+        _reporteGenerado = false;
+        _cierreGestorPorReporte = false;
+
+        if (!reporteGenerado) {
+            _impresionPendiente = null;
+            return;
+        }
+
         setTimeout(() => {
+            if (tipoEt === "0") {
+                mostrarNotificacion("El reporte se generó correctamente", "success");
+                setTimeout(cancelarEtiqueta, 700);
+                return;
+            }
+
             mostrarConfirmacionDeImpresion();
         }, 200);
     });
-
-    console.log("✅ Evento de cierre configurado correctamente");
 }
 
 function mostrarConfirmacionDeImpresion() {
     AbrirMensaje(
         "Confirmación",
-        "¿Se imprimió correctamente el/las etiquetas?",
+        "¿Se generó correctamente el reporte?",
         function (resp) {
             if (resp === 'SI' || resp === 'Sí') {
-                console.log("✔ Usuario confirmó impresión exitosa");
                 ConfirmarImpresionOK();
             } else {
-                console.log("✖ Usuario reportó problema en impresión");
+                _impresionPendiente = null;
                 mostrarNotificacion(
-                    "Por favor, verifique la impresora e intente nuevamente", 
+                    "La impresión no fue confirmada. Puede revisar el reporte e intentarlo nuevamente.",
                     "warning"
                 );
             }
@@ -534,13 +641,13 @@ function mostrarConfirmacionDeImpresion() {
 }
 
 function ConfirmarImpresionOK() {
-    const tipoEt = $("#TipoEtiqueta").val();
-    const indexImp = determinarIndiceImpresion(tipoEt);
-
-    const productosSeleccionados = arrRepoParams[indexImp - 1].parametros.json_p;
+    if (!_impresionPendiente?.json) {
+        mostrarNotificacion("No se encontró una impresión pendiente para confirmar", "error");
+        return;
+    }
    
     const request = {
-        json: productosSeleccionados,
+        json: _impresionPendiente.json,
         adm: "",
         usu: ""        
     };
@@ -558,7 +665,7 @@ function ConfirmarImpresionOK() {
 
             if (response && response.ok) {
                 const mensaje = response.mensaje || 
-                    `Impresión de ${productosSeleccionados.length} etiqueta(s) confirmada correctamente`;
+                    `Impresión de ${_impresionPendiente.cantidad} etiqueta(s) confirmada correctamente`;
                 
                 mostrarNotificacion(mensaje, "success");
 
@@ -593,11 +700,6 @@ function ConfirmarImpresionOK() {
 
 function buscarEtiquetas(btn) {
     if (_etiquetaLoading) return;
-    _etiquetaLoading = true;
-
-    const $btn = $(btn);
-    const originalHtml = $btn.html();
-    setBtnLoading($btn, true);
 
     const tipoVal = $("#chkTipoEtiq").is(":checked") ? $("#TipoEtiqueta").val() : "";
     const sinImp = $("#chkSinImprimir").is(":checked");
@@ -615,6 +717,21 @@ function buscarEtiquetas(btn) {
     if ($("#chkDesdeHasta").is(":checked")) {
         fecD = $("#Date1").val();
         fecH = $("#Date2").val();
+
+        if (!fecD || !fecH) {
+            mostrarNotificacion("Debe indicar las fechas desde y hasta", "warning");
+            return;
+        }
+
+        if (fecD > fecH) {
+            mostrarNotificacion("La fecha desde no puede ser posterior a la fecha hasta", "warning");
+            return;
+        }
+    }
+
+    if (cargaPrevBit && !cargaPrevVal) {
+        mostrarNotificacion("Debe seleccionar una carga previa", "warning");
+        return;
     }
 
     const proveedores = extraerValoresDeSelect("#Rel011List", "#Rel011Item", "#chkRel011");
@@ -643,6 +760,11 @@ function buscarEtiquetas(btn) {
         Adm_id: null,
         Usu_id: null
     };
+
+    _etiquetaLoading = true;
+    const $btn = $(btn);
+    const originalHtml = $btn.html();
+    setBtnLoading($btn, true);
    
     $.ajax({
         url: obtenerDetalleEtiquetasUrl,
@@ -655,7 +777,8 @@ function buscarEtiquetas(btn) {
             $("#divFiltro").collapse("hide");
 
             $("#btnAbmCancelar").show();
-            $("#btnImprimir").prop("disabled", false).show();
+            const hayEtiquetas = $(".chk-etiqueta-item").length > 0;
+            $("#btnImprimir").prop("disabled", !hayEtiquetas).show();
             $("#btnAgregarEIProducto").prop("disabled", false);
 
             configurarEventosEliminacionEtiqueta();
@@ -664,9 +787,11 @@ function buscarEtiquetas(btn) {
         },
         error: function (xhr, status, error) {
             console.error("Error al obtener detalle de etiquetas:", error);
+            const detalle = xhr.responseJSON?.mensaje ||
+                "No se pudo obtener la información de etiquetas. Revise los filtros e intente nuevamente.";
             const mensajeError = '<div class="alert alert-danger py-2 mb-0">' +
                 '<i class="bx bx-error-circle me-1"></i>' +
-                'No se pudo obtener la información de etiquetas. Intente nuevamente.' +
+                escaparHTML(detalle) +
                 '</div>';
             $("#divDetalle").html(mensajeError).collapse("show");
         },
@@ -681,8 +806,6 @@ function buscarEtiquetas(btn) {
 function configurarEventosSeleccionMultiple() {
     $(document).off("change.seleccionarTodas", "#chkSeleccionarTodas");
     $(document).off("change.itemSeleccionado", ".chk-etiqueta-item");
-    $(document).off("click.eliminarSeleccionadas", "#btnEliminarSeleccionadas");
-    $(document).off("click.limpiarSeleccion", "#btnLimpiarSeleccion");
     
     $(document).on("change.seleccionarTodas", "#chkSeleccionarTodas", function () {
         const isChecked = $(this).is(":checked");
@@ -693,14 +816,6 @@ function configurarEventosSeleccionMultiple() {
     $(document).on("change.itemSeleccionado", ".chk-etiqueta-item", function () {
         actualizarCheckboxPrincipal();
         actualizarEstadoSeleccion();
-    });
-    
-    $(document).on("click.eliminarSeleccionadas", "#btnEliminarSeleccionadas", function () {
-        eliminarEtiquetasSeleccionadas();
-    });
-    
-    $(document).on("click.limpiarSeleccion", "#btnLimpiarSeleccion", function () {
-        limpiarSeleccionEtiquetas();
     });
 }
 
@@ -726,21 +841,13 @@ function actualizarCheckboxPrincipal() {
 function actualizarEstadoSeleccion() {
     const $seleccionadas = $(".chk-etiqueta-item:checked");
     const cantidad = $seleccionadas.length;
-    
-    // Actualizar contador en botón
-    $("#cantidadSeleccionadas").text(cantidad);
-    
-    // Mostrar/ocultar botones de acciones múltiples
+
     if (cantidad > 0) {
-        $("#divAccionesMultiples").fadeIn(200);
-        
-        // Actualizar texto informativo
         const textoSeleccion = cantidad === 1 
             ? "1 etiqueta seleccionada" 
             : `${cantidad} etiquetas seleccionadas`;
         $("#txtSeleccionadas").text(textoSeleccion);
     } else {
-        $("#divAccionesMultiples").fadeOut(200);
         $("#txtSeleccionadas").text("Ninguna seleccionada");
     }
 }
@@ -941,7 +1048,6 @@ function verificarEtiquetasVacias() {
             </tr>`;
         
         $tbody.html(mensajeVacio);
-        $("#divAccionesMultiples").hide();
         $("#txtSeleccionadas").text("Ninguna seleccionada");
     }
 }
@@ -965,36 +1071,33 @@ function mostrarNotificacion(mensaje, tipo = "info") {
     }
 }
 
-function verificarYDesactivarControles(mostrarLog = true) {
-    if ($("#Rel011List").find("option").length > 0) {
-        if (mostrarLog) {
-            console.log("Se encontraron opciones en Rel011List, verificando controles...");
-        }
+function limpiarFiltroFamilias() {
+    $("#chkRel03").prop("checked", false).prop("disabled", true);
+    $("#Rel03").prop("disabled", true).empty()
+        .append("<option value=''>Seleccionar...</option>");
+    $("#Rel03List").prop("disabled", true).empty();
+}
 
-        const opciones = $("#Rel011List option");
-        const cantidad = opciones.length;
-        
-        if (cantidad === 1) {
-            AbrirWaiting("Buscando familias de productos...");
-            
-            const primerValor = opciones.first().val();
-            $("#Rel011List").val([primerValor]);
-            
-            const proveedorId = $("#Rel011Item").val() || primerValor;
-            cargarFliaDelProveedor(proveedorId);
-            $("#chkRel03").prop("disabled", false);
+function verificarYDesactivarControles() {
+    const opciones = $("#Rel011List option");
+    const cantidad = opciones.length;
 
-            if (mostrarLog) {
-                console.log("Controles actualizados correctamente");
-            }
-            CerrarWaiting();
-        } else {
-            $("#chkRel03").prop("disabled", true);
-            $("#Rel03, #Rel03List").prop("disabled", true).empty();
+    limpiarFiltroFamilias();
+
+    if (cantidad !== 1) {
+        if (cantidad === 0) {
+            $("#Rel011Item").val("");
         }
-    } else if (mostrarLog && $("#Rel011").val()) {
-        console.log("No hay opciones en Rel011List todavía, pero hay texto en Rel011");
+        return;
     }
+
+    const proveedorId = opciones.first().val();
+    $("#Rel011List").val([proveedorId]);
+    $("#Rel011Item").val(proveedorId);
+    $("#chkRel03").prop("disabled", false);
+
+    AbrirWaiting("Buscando familias de productos...");
+    cargarFliaDelProveedor(proveedorId);
 }
 
 function cargarFliaDelProveedor(proveedorId) {
@@ -1032,7 +1135,9 @@ function cargarFliaDelProveedor(proveedorId) {
             }
         },
         function (error) {
+            CerrarWaiting();
             console.error("Error al cargar las familias del proveedor:", error);
+            mostrarNotificacion("No se pudieron obtener las familias del proveedor", "error");
         }
     );
 }

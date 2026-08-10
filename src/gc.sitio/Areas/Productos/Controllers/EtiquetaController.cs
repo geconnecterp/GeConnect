@@ -48,11 +48,13 @@ namespace gc.sitio.Areas.Productos.Controllers
 
         public IActionResult Index()
         {
-            string msg = "Error de negocios al cargar la vista de PRESUPUESTOS";
+            string msg = "Error de negocios al cargar la vista de ETIQUETAS";
             try
             {
                 if (!VerificarAutenticacion(out IActionResult redirectResult))
                     return redirectResult;
+
+                LimpiarEstadoEtiqueta();
 
                 string titulo = "Impresión de Etiquetas";
                 ViewData["Titulo"] = titulo;
@@ -91,8 +93,24 @@ namespace gc.sitio.Areas.Productos.Controllers
         {
             try
             {
+                if (!VerificarAutenticacion(out IActionResult redirectResult))
+                    return redirectResult;
+
                 if (filters is null)
-                    return BadRequest("Parámetros inválidos.");
+                    return BadRequest(new { ok = false, mensaje = "Los parámetros de búsqueda son obligatorios." });
+
+                var tieneFechaDesde = filters.FechaD.HasValue && filters.FechaD.Value != DateTime.MinValue;
+                var tieneFechaHasta = filters.FechaH.HasValue && filters.FechaH.Value != DateTime.MinValue;
+
+                if (tieneFechaDesde != tieneFechaHasta)
+                {
+                    return BadRequest(new { ok = false, mensaje = "Debe indicar las fechas desde y hasta." });
+                }
+
+                if (tieneFechaDesde && filters.FechaD!.Value.Date > filters.FechaH!.Value.Date)
+                {
+                    return BadRequest(new { ok = false, mensaje = "La fecha desde no puede ser posterior a la fecha hasta." });
+                }
 
                 filters.Adm_id = AdministracionId;
                 filters.Usu_id = UserName;
@@ -113,11 +131,56 @@ namespace gc.sitio.Areas.Productos.Controllers
 
                 return PartialView("_EtiquetaDetalle", grid);
             }
+            catch (NegocioException ex)
+            {
+                _logger?.LogError(ex, "Error de negocio al obtener detalle de etiquetas.");
+                return BadRequest(new
+                {
+                    ok = false,
+                    mensaje = string.IsNullOrWhiteSpace(ex.Message)
+                        ? "No se pudo obtener el detalle de etiquetas."
+                        : ex.Message
+                });
+            }
             catch (Exception ex)
             {
                 _logger?.LogError(ex, "Error al obtener detalle de etiquetas.");
-                return PartialView("_EtiquetaDetalle", GenerarGrillaSmart(new List<IEDetalleDto>(), nameof(IEDetalleDto.p_desc)));
+                return StatusCode(StatusCodes.Status500InternalServerError,
+                    new { ok = false, mensaje = "No se pudo obtener el detalle de etiquetas. Revise los filtros e intente nuevamente." });
             }
+        }
+
+        [HttpPost]
+        public JsonResult BuscarProveedores(string prefix)
+        {
+            var texto = prefix?.Trim() ?? string.Empty;
+            if (texto.Length < 3)
+            {
+                return Json(Array.Empty<ComboGenDto>());
+            }
+
+            var proveedores = ProveedoresLista
+                .Where(x => !string.IsNullOrWhiteSpace(x.Cta_Lista) &&
+                            x.Cta_Lista.Contains(texto, StringComparison.OrdinalIgnoreCase))
+                .Take(20)
+                .Select(x => new ComboGenDto
+                {
+                    Id = x.Cta_Id,
+                    Descripcion = x.Cta_Lista
+                })
+                .ToList();
+
+            return Json(proveedores);
+        }
+
+        [HttpPost]
+        public IActionResult ReiniciarEstado()
+        {
+            if (!VerificarAutenticacion(out IActionResult redirectResult))
+                return redirectResult;
+
+            LimpiarEstadoEtiqueta();
+            return Ok(new { ok = true });
         }
 
         private void InicializaVista(bool actualizar = false)
@@ -176,6 +239,9 @@ namespace gc.sitio.Areas.Productos.Controllers
         {
             try
             {
+                if (!VerificarAutenticacion(out IActionResult redirectResult))
+                    return redirectResult;
+
                 if (request is null)
                 {
                     return BadRequest(new { ok = false, mensaje = "Los parámetros son obligatorios." });
@@ -196,6 +262,8 @@ namespace gc.sitio.Areas.Productos.Controllers
                     });
                 }
 
+                LimpiarEstadoEtiqueta();
+
                 return Ok(new { 
                     ok = true, 
                     mensaje = "Impresión confirmada correctamente.",
@@ -213,6 +281,13 @@ namespace gc.sitio.Areas.Productos.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, 
                     new { ok = false, mensaje = "Ocurrió un error al procesar la solicitud." });
             }
+        }
+
+        private void LimpiarEstadoEtiqueta()
+        {
+            HttpContext.Session.Remove("CargasPrevias");
+            HttpContext.Session.Remove("DocumentManager");
+            HttpContext.Session.Remove("ArchivosCargadosModulo");
         }
     }
 }
