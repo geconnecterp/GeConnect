@@ -79,7 +79,13 @@
 <!--VALORES ORIGINALES-->
 <div class="card">
     <div class="card-header">
-        <h6 class="mb-0">VALORES ORIGINALES</h6>
+        <div class="d-flex justify-content-between align-items-center">
+            <h6 class="mb-0">VALORES ORIGINALES</h6>
+            <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="collapse"
+                    data-bs-target="#formacionVigente" aria-expanded="false" aria-controls="formacionVigente">
+                <i class="bx bx-info-circle me-1"></i>Formación vigente
+            </button>
+        </div>
     </div>
     <div class="card-body">
         <div class="row align-items-center">
@@ -128,6 +134,46 @@
                     </div>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <div class="collapse" id="formacionVigente">
+        <div class="card-body border-top pt-2">
+            <div class="campos-grupo formacion-vigente-campos">
+                <div class="campo-edicion">
+                    <label class="campo-etiqueta">Costo</label>
+                    <input type="text" class="form-control form-control-sm campo-valor campo-valor-lg input-PCostoValor" disabled>
+                </div>
+                <div class="campo-edicion">
+                    <label class="campo-etiqueta">Margen</label>
+                    <input type="text" class="form-control form-control-sm campo-valor input-MargenValor" disabled>
+                </div>
+                <div class="campo-edicion">
+                    <label class="campo-etiqueta">P.Neto</label>
+                    <input type="text" class="form-control form-control-sm campo-valor campo-valor-lg input-PNetoValor" disabled>
+                </div>
+                <div class="campo-edicion">
+                    <label class="campo-etiqueta">P.Venta</label>
+                    <input type="text" class="form-control form-control-sm campo-valor campo-valor-lg input-PVentaValor" disabled>
+                </div>
+                <div class="campo-edicion">
+                    <label class="campo-etiqueta">IVA</label>
+                    <input type="text" class="form-control form-control-sm campo-valor input-IvaValor" disabled>
+                </div>
+                <div class="campo-edicion">
+                    <label class="campo-etiqueta">II</label>
+                    <input type="text" class="form-control form-control-sm campo-valor input-InternosValor" disabled>
+                </div>
+                <div class="campo-edicion campo-edicion-texto">
+                    <label class="campo-etiqueta">Actualización</label>
+                    <input type="text" class="form-control form-control-sm input-FechaActuValor" disabled>
+                </div>
+                <div class="campo-edicion campo-edicion-texto">
+                    <label class="campo-etiqueta">Usuario</label>
+                    <input type="text" class="form-control form-control-sm input-UsuarioActuValor" disabled>
+                </div>
+            </div>
+            <small class="text-muted">Los valores vigentes de cada lista vinculada se muestran al posicionarse sobre Margen o PVta en la grilla de listas.</small>
         </div>
     </div>
 </div>
