@@ -35,6 +35,7 @@ namespace gc.sitio.Areas.Productos.Controllers
         [HttpGet]
         public IActionResult Index()
         {
+            ReiniciarEstadoActualizacionPrecios();
             ViewData["Titulo"] = "Actualizar Precios de Proveedores";
             return View();
         }
@@ -47,8 +48,8 @@ namespace gc.sitio.Areas.Productos.Controllers
         {
             try
             {
-                if (!VerificarAutenticacion(out IActionResult redirectResult))
-                    return redirectResult;
+                if (!VerificarAutenticacion(out _))
+                    return Unauthorized();
 
                 var respuesta = await _importarServicio.ObtenerProveedoresConProductosParaActualizar(TokenCookie);
 
@@ -62,8 +63,9 @@ namespace gc.sitio.Areas.Productos.Controllers
                 //    return PartialView("_gridMensaje", CrearRespuestaWarning("No se encontraron proveedores con productos para actualizar"));
                 //}
 
-                ProvedoresParaActualizar = respuesta.ListaEntidad;
-                var grid = GenerarGridProveedores(respuesta.ListaEntidad);
+                var proveedores = respuesta.ListaEntidad ?? [];
+                ProvedoresParaActualizar = proveedores;
+                var grid = GenerarGridProveedores(proveedores);
 
                 return PartialView("_gridActuProveedor", grid);
             }
@@ -88,6 +90,9 @@ namespace gc.sitio.Areas.Productos.Controllers
             GridCoreSmart<ProductoDetalleDto> grillaDatos;
             try
             {
+                if (!VerificarAutenticacion(out _))
+                    return Unauthorized();
+
                 if (string.IsNullOrWhiteSpace(ctaId))
                 {
                     return PartialView("_gridMensaje", CrearRespuestaError("ID de proveedor requerido"));
@@ -111,10 +116,11 @@ namespace gc.sitio.Areas.Productos.Controllers
                     return PartialView("_gridMensaje", CrearRespuestaError("No se encontraron productos para este proveedor"));
                 }
 
-                //no deberia estar nunca la metadata en null.. si eso pasa podria haber una perdida de sesion o algun mal funcionamiento logico.
+                MetadataActualizacionPrecios = respuesta.Meta;
                 grillaDatos = GenerarGrillaSmart(respuesta.ListaEntidad, "p_desc",
                     _configuracion.NroRegistrosPagina, pag,
-                    MetadataGeneral.TotalCount, MetadataGeneral.TotalPages, "desc");
+                    respuesta.Meta.TotalCount, respuesta.Meta.TotalPages, "desc");
+                grillaDatos.MetadataGeneral = respuesta.Meta;
 
                 //var grid = GenerarGridProductos(respuesta.ListaEntidad,MetadataGeneral);
                 return PartialView("_gridActuProducto", grillaDatos);
@@ -127,7 +133,7 @@ namespace gc.sitio.Areas.Productos.Controllers
         }
 
         [HttpPost]
-        public async Task<JsonResult> ConfirmarProveedores(string[] ctasId)
+        public async Task<JsonResult> ConfirmarProveedores(string[]? ctasId)
         {
             try
             {
@@ -137,17 +143,48 @@ namespace gc.sitio.Areas.Productos.Controllers
                     return Json(new { error = false, warn = true, auth = true, msg = "Su sesión se ha terminado. Debe volver a autenticarse." });
                 }
 
-                if (ctasId.Length == 0)
+                var cuentasSeleccionadas = (ctasId ?? [])
+                    .Where(ctaId => !string.IsNullOrWhiteSpace(ctaId))
+                    .Select(ctaId => ctaId.Trim())
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .ToList();
+
+                if (cuentasSeleccionadas.Count == 0)
                 {
                     throw new NegocioException("Para confirmar es necesario especificar al menos una cuenta de proveedor.");
                 }
 
-                var proveedores = ProvedoresParaActualizar.Where(p => ctasId.Contains(p.cta_id)).ToList();
+                // Se valida nuevamente contra el origen para no usar una lista residual de la sesión.
+                var respuestaProveedores = await _importarServicio.ObtenerProveedoresConProductosParaActualizar(TokenCookie);
+                if (!respuestaProveedores.Ok)
+                {
+                    throw new NegocioException(respuestaProveedores.Mensaje ?? "No fue posible validar los proveedores seleccionados.");
+                }
 
-                //prod.P_Obs = prod.P_Obs.ToUpper();
+                var proveedoresDisponibles = respuestaProveedores.ListaEntidad ?? [];
+                var proveedores = proveedoresDisponibles
+                    .Where(proveedor => cuentasSeleccionadas.Contains(
+                        proveedor.cta_id.Trim(), StringComparer.OrdinalIgnoreCase))
+                    .Select(proveedor => new ActualizaProveedorDto
+                    {
+                        cta_id = proveedor.cta_id.Trim(),
+                        cta_denominacion = proveedor.cta_denominacion
+                    })
+                    .ToList();
+
+                if (proveedores.Count != cuentasSeleccionadas.Count)
+                {
+                    throw new NegocioException("Uno o más proveedores seleccionados ya no tienen precios pendientes. Actualice la grilla e intente nuevamente.");
+                }
+
+                var jsonProveedores = JsonConvert.SerializeObject(proveedores);
+                _logger?.LogInformation(
+                    "Confirmando actualización de precios. Proveedores: {Proveedores}. JSON: {Json}",
+                    string.Join(", ", cuentasSeleccionadas), jsonProveedores);
+
                 AbmGenDto abm = new AbmGenDto()
                 {
-                    Json = JsonConvert.SerializeObject(proveedores),
+                    Json = jsonProveedores,
                     Objeto = "Cuentas",
                     Administracion = AdministracionId,
                     Usuario = UserName,
@@ -155,17 +192,18 @@ namespace gc.sitio.Areas.Productos.Controllers
                 };
 
                 var res = await _importarServicio.ConfirmarActualizacionPrecioProductosDeProveedor(abm, TokenCookie);
-                if (res.Ok)
+                if (res.Ok && res.Entidad != null)
                 {
                     if (res.Entidad.resultado == 0)
                     {
-                        string msg;
-
-                        msg = $"EL PROCESAMIENTO de 9 SE REALIZO SATISFACTORIAMENTE";
-
-                        ProvedoresParaActualizar = [];
-
-                        return Json(new { error = false, warn = false, msg });
+                        ReiniciarEstadoActualizacionPrecios();
+                        return Json(new
+                        {
+                            error = false,
+                            warn = false,
+                            msg = "El procesamiento se realizó satisfactoriamente",
+                            proveedoresProcesados = cuentasSeleccionadas
+                        });
                     }
                     else
                     {
@@ -175,7 +213,13 @@ namespace gc.sitio.Areas.Productos.Controllers
                 }
                 else
                 {
-                    return Json(new { error = false, warn = true, msg = res.Entidad.resultado_msj, focus = res.Entidad.resultado_setfocus });
+                    return Json(new
+                    {
+                        error = false,
+                        warn = true,
+                        msg = res.Entidad?.resultado_msj ?? res.Mensaje ?? "No se pudo completar la actualización.",
+                        focus = res.Entidad?.resultado_setfocus
+                    });
                 }
             }
             catch (NegocioException ex)
@@ -188,8 +232,22 @@ namespace gc.sitio.Areas.Productos.Controllers
             }
             catch (Exception ex)
             {
-                return Json(new { error = true, warn = false, msg = ex.Message });
+                _logger?.LogError(ex, "Error al confirmar la actualización de precios de proveedores");
+                return Json(new { error = true, warn = false, msg = "No se pudo completar la actualización de precios." });
             }
+        }
+
+        [HttpPost]
+        public JsonResult ObtenerDatosPaginacionActualizacion()
+        {
+            return Json(new { error = false, metadata = MetadataActualizacionPrecios });
+        }
+
+        [HttpPost]
+        public JsonResult ReiniciarConsulta()
+        {
+            ReiniciarDetalleActualizacionPrecios();
+            return Json(new { error = false });
         }
 
 

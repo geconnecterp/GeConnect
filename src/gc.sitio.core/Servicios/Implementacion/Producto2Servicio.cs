@@ -1117,8 +1117,36 @@ namespace gc.sitio.core.Servicios.Implementacion
                     apiResponse = JsonConvert.DeserializeObject<ApiResponse<RespuestaDto>>(stringData);
 
                     var resp = apiResponse?.Data;
+                    if (resp == null)
+                    {
+                        return new RespuestaGenerica<RespuestaDto>
+                        {
+                            Ok = false,
+                            EsError = true,
+                            Mensaje = "No se recibió el resultado de la confirmación de precios."
+                        };
+                    }
 
-                    return new RespuestaGenerica<RespuestaDto> { Ok = true, Entidad = resp };
+                    if (resp.resultado == 0)
+                    {
+                        return new RespuestaGenerica<RespuestaDto>
+                        {
+                            Ok = true,
+                            Entidad = resp,
+                            Mensaje = string.IsNullOrWhiteSpace(resp.resultado_msj) ? "OK" : resp.resultado_msj
+                        };
+                    }
+
+                    return new RespuestaGenerica<RespuestaDto>
+                    {
+                        Ok = false,
+                        EsWarn = resp.resultado == 1,
+                        EsError = resp.resultado < 0 || resp.resultado > 1,
+                        Entidad = resp,
+                        Mensaje = string.IsNullOrWhiteSpace(resp.resultado_msj)
+                            ? "GECO no pudo confirmar los precios temporales."
+                            : resp.resultado_msj
+                    };
                 }
                 else
                 {

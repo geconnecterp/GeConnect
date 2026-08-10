@@ -36,8 +36,8 @@
 
     /* Estilo para campos modificados */
     .campo-modificado {
-    background-color: #d4f1f9 !important; /* Celeste pastel claro */
-    border-color: #a8e1f5 !important;
+    background-color: #d1e7dd !important;
+    border-color: #75b798 !important;
     }
 
     /* Indicador visual de cambio */
@@ -49,7 +49,7 @@
     height: 0;
     border-style: solid;
     border-width: 0 8px 8px 0;
-    border-color: transparent #4bacc6 transparent transparent;
+    border-color: transparent #198754 transparent transparent;
     }
 
     /* Contenedor relativo para posicionar el indicador */
@@ -91,10 +91,11 @@
                                 <td class="@Model.ObtenerClase(item.p_margen)">
                                     <div class="input-container">
                                         <input type="text" class="form-control form-control-sm input-tp_margen_lista input-numeric"
-                                        value="@(item.p_margen.ToString("F2"))"
+                                        value="@(item.p_margen.ToString("F1"))"
                                         data-lp-id="@item.lp_id"
                                         data-p-id="@item.p_id"
                                         data-original-value="@item.p_margen"
+                                        title="Margen vigente: @item.p_margen.ToString("F1")"
                                         readonly />
                                         @Html.Hidden("tp_margen", item.tp_margen)
                                         @Html.Hidden("p_pcosto", item.P_Pcosto)
@@ -118,6 +119,7 @@
                                                data-lp-id="@item.lp_id"
                                                data-p-id="@item.p_id"
                                                data-original-value="@item.p_pvta"
+                                               title="Precio de venta vigente: @item.p_pvta.ToString("F2")"
                                                readonly />
                                         @Html.Hidden("tp_iva", item.tp_iva)
                                         @Html.Hidden("tp_in", item.tp_in)
@@ -126,7 +128,10 @@
                                     </div>
                                 </td>
                                 
-                                <td class="@Model.ObtenerClase(item.p_pvta)">@Model.FormatearDato(re, FormatDato.Monto)</td>
+                                <td class="@Model.ObtenerClase(item.p_pvta)"
+                                    style="@(re > 0 && re != 1 ? "color: #198754; font-weight: bold;" : "color: black; font-weight: normal;")">
+                                    @Model.FormatearDato(re, FormatDato.Monto)
+                                </td>
                             </tr>
                         }
                     }

@@ -32,12 +32,10 @@ namespace gc.sitio.core.Servicios.Implementacion.Importacion
         private const string ACTUALIZA_CONFIRMAR = "/confirmar-actualizacion-precio";
 
         //private readonly AppSettings _appSettings;
-        private readonly IHttpContextAccessor _contexto;
         public ImportarServicio(IOptions<AppSettings> options, ILogger<ImportarServicio> logger,
             IHttpContextAccessor contexto) : base(options, logger)
         {
             //_appSettings = options.Value;
-            _contexto = contexto;
         }
 
         #region Métodos de Importación
@@ -274,13 +272,12 @@ namespace gc.sitio.core.Servicios.Implementacion.Importacion
                     }
 
                     var apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<ProductoDetalleDto>>>(stringData);
-                    var valor = JsonConvert.SerializeObject(apiResponse?.Meta);
-                    _contexto.HttpContext?.Session.SetString("MetadataGeneral", valor);
                     return new RespuestaGenerica<ProductoDetalleDto>
                     {
                         Ok = true,
                         ListaEntidad = apiResponse?.Data ?? [],
-                        Mensaje = "Se obtuvieron los productos exitosamente."
+                        Mensaje = "Se obtuvieron los productos exitosamente.",
+                        Meta = apiResponse?.Meta ?? new MetadataGrid()
                     };
                 }
                 else

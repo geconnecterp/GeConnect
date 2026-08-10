@@ -29,8 +29,7 @@
 
                             <tr class="@clase proveedor-row"
                                 data-cta-id="@item.cta_id"
-                                data-denominacion="@item.cta_denominacion"
-                                onclick="selectRowProveedor(this, 'tbGridProveedores')">
+                                data-denominacion="@item.cta_denominacion">
                                 <td class="text-center">
                                     <input type="checkbox"
                                            class="form-check-input proveedor-check"
@@ -135,31 +134,3 @@
         z-index: 10;
     }
 </style>
-
-<script>
-    function selectRowProveedor(row, tableId) {
-        // Remover selección previa
-        const table = document.getElementById(tableId);
-        table.querySelectorAll('tr.selected').forEach(tr => {
-            tr.classList.remove('selected');
-        });
-
-        // Agregar selección a la fila actual
-        row.classList.add('selected');
-
-        // Obtener datos del proveedor
-        const ctaId = row.dataset.ctaId;
-        const denominacion = row.dataset.denominacion;
-
-        if (ctaId) {
-            // Disparar evento personalizado para notificar la selección
-            const evento = new CustomEvent('proveedorSeleccionado', {
-                detail: { ctaId, denominacion }
-            });
-            document.dispatchEvent(evento);
-
-            // Log para debugging
-            console.log('Proveedor seleccionado:', { ctaId, denominacion });
-        }
-    }
-</script>

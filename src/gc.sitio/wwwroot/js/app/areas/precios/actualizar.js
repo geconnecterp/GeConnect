@@ -1,208 +1,508 @@
-﻿let ctaActual = "";
+let ctaActual = "";
+let denominacionActual = "";
+let solicitudProductosActual = null;
+let secuenciaConsultaProductos = 0;
+let actualizacionEnProceso = false;
 
 $(function () {
-    // Inicializar eventos del documento
     initializeDocumentEvents();
+    inicializarEstadoVisual();
 
-    // Cargar proveedores automáticamente después de 500ms
-    setTimeout(function () {
-        cargarProveedores();
-    }, 500);
+    $("#pagEstado")
+        .off("change.actualizarPP")
+        .on("change.actualizarPP", function () {
+            presentaPaginacion($("#divPaginacion"));
+        });
 
-    $("#pagEstado").on("change", function () {
-        var div = $("#divPaginacion");
-        presentaPaginacion(div);
-    });
-
-    //callback para que funcione la paginación
     funcCallBack = cargarProductosProveedor;
-    // Exponer funciones globales (mantener solo las necesarias)
+
     window.ActualizarPP = {
-        obtenerProveedoresSeleccionados: obtenerProveedoresSeleccionados,
-        cargarProductosProveedor: cargarProductosProveedor,
-        recargarProveedores: cargarProveedores // Solo para casos de error/recarga
+        obtenerProveedoresSeleccionados,
+        cargarProductosProveedor,
+        recargarProveedores: cargarProveedores
     };
+
+    cargarProveedores();
 });
 
-/**
- * Inicializa los eventos del documento usando delegación
- */
 function initializeDocumentEvents() {
-    // Event delegation para elementos dinámicos
-    $(document).on('change', '#selectAllProveedores', function () {
-        $('.proveedor-check').prop('checked', $(this).prop('checked'));
-        actualizarContadores();
-    });
+    $(document)
+        .off("change.actualizarPP", "#selectAllProveedores")
+        .on("change.actualizarPP", "#selectAllProveedores", function () {
+            $(".proveedor-check:not(:disabled)").prop("checked", $(this).prop("checked"));
+            actualizarContadores();
+        });
 
-    $(document).on('change', '.proveedor-check', function () {
-        actualizarContadores();
-    });
+    $(document)
+        .off("change.actualizarPP", ".proveedor-check")
+        .on("change.actualizarPP", ".proveedor-check", actualizarContadores);
 
-    $(document).on('click', '.proveedor-row', function (e) {
-        if (e.target.type === 'checkbox') return;
+    $(document)
+        .off("click.actualizarPP", ".proveedor-row")
+        .on("click.actualizarPP", ".proveedor-row", function (e) {
+            if ($(e.target).is("input[type='checkbox']")) return;
 
-        const ctaId = $(this).data('cta-id');
-        if (ctaId) {
+            const ctaId = String($(this).data("cta-id") || "").trim();
+            const denominacion = String($(this).data("denominacion") || "").trim();
+            if (!ctaId) return;
+
+            $("#tbGridProveedores tbody tr").removeClass("selected");
+            $(this).addClass("selected");
+
             ctaActual = ctaId;
+            denominacionActual = denominacion;
             pagina = 1;
-            cargarProductosProveedor(pagina);
-            // Cambiar a la pestaña de productos
-            $('#productos-tab').tab('show');
-        }
-    });
 
-    // Escuchar evento personalizado de selección de proveedor
-    $(document).on('proveedorSeleccionado', function (e) {
-        const { ctaId, denominacion } = e.detail;
-        console.log('Proveedor seleccionado:', denominacion, ctaId);
-    });
+            mostrarProveedorConsultado(ctaActual, denominacionActual);
+            bootstrap.Tab.getOrCreateInstance(document.getElementById("productos-tab")).show();
+            cargarProductosProveedor(pagina);
+        });
 }
 
-/**
- * Carga la vista parcial de proveedores automáticamente
- */
+function inicializarEstadoVisual() {
+    ctaActual = "";
+    denominacionActual = "";
+    actualizacionEnProceso = false;
+    limpiarSeleccionProveedores();
+    limpiarDetalleProductos();
+    ocultarProveedorConsultado();
+    restaurarBotonConfirmar();
+}
+
 async function cargarProveedores() {
-    const $container = $('#proveedoresContainer');
+    const $container = $("#proveedoresContainer");
+    mostrarSpinnerCarga($container, "Cargando proveedores con productos para actualizar...");
 
     try {
-        // Mostrar spinner optimizado
-        mostrarSpinnerCarga($container, 'Cargando proveedores con productos para actualizar...');
-
         const response = await $.ajax({
-            url: '/Productos/ActualizarPP/CargarProveedores',
-            type: 'POST',
-            timeout: 30000, // 30 segundos timeout
-            headers: {
-                'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val() || ''
-            }
+            url: CargarProveedoresUrl,
+            type: "POST",
+            timeout: 30000,
+            headers: obtenerHeadersAntiforgery()
         });
 
         $container.html(response);
-
-        // Inicializar contadores después de cargar
         actualizarContadores();
-
-        console.log('Proveedores cargados exitosamente');
-
+        return true;
     } catch (error) {
-        console.error('Error al cargar proveedores:', error);
-
-        // Determinar tipo de error
-        let errorMessage = 'Error desconocido al cargar proveedores';
-        if (error.status === 0) {
-            errorMessage = 'Error de conexión. Verifique su conexión a internet.';
-        } else if (error.status >= 500) {
-            errorMessage = 'Error del servidor. Intente nuevamente en unos momentos.';
-        } else if (error.status === 404) {
-            errorMessage = 'Recurso no encontrado.';
-        } else if (error.timeout) {
-            errorMessage = 'Tiempo de espera agotado. La operación tardó demasiado.';
+        if (esErrorAutenticacion(error)) {
+            manejarErrorAutenticacion();
+            return false;
         }
 
-        mostrarErrorConRecarga($container, errorMessage);
+        mostrarErrorConRecarga($container, obtenerMensajeErrorConexion(error, "Error al cargar los proveedores."));
+        return false;
     }
 }
 
-/**
- * Carga los productos de un proveedor específico
- * @param {string} ctaId - ID del proveedor
- */
-async function cargarProductosProveedor(pag) {
-    const $container = $('#productosContainer');
+async function cargarProductosProveedor(pag = 1) {
+    if (!ctaActual) {
+        mostrarMensajeSimple("Atención", "Debe seleccionar un proveedor para consultar sus productos.", "warn!");
+        return;
+    }
+
+    cancelarSolicitudProductosPendiente();
+
+    const $container = $("#productosContainer");
+    const secuencia = ++secuenciaConsultaProductos;
+    const cuentaConsultada = ctaActual;
+    mostrarSpinnerCarga($container, `Obteniendo productos de ${denominacionActual || cuentaConsultada}...`);
 
     try {
-        if (typeof ctaActual === "undefined" || ctaActual === "") {
-            AbrirMensaje("Atención!!", "La cuenta no se ha identificado. Intente nuevamente por favor",
-                () => $("#msjModal").modal("hide"), false, ["Aceptar"], "warn!", null);
+        solicitudProductosActual = $.ajax({
+            url: ObtenerProductosProveedorUrl,
+            type: "POST",
+            contentType: "application/x-www-form-urlencoded; charset=UTF-8",
+            data: { ctaId: cuentaConsultada, pag },
+            timeout: 30000,
+            headers: obtenerHeadersAntiforgery()
+        });
 
+        const response = await solicitudProductosActual;
+        if (secuencia !== secuenciaConsultaProductos || cuentaConsultada !== ctaActual) return;
+
+        $container.html(response);
+
+        if ($container.find("#tbGridProductos").length === 0) {
+            limpiarPaginacion();
             return;
         }
 
-
-        mostrarSpinnerCarga($container, 'Obteniendo productos del proveedor...');
-
-        const response = await $.ajax({
-            url: '/Productos/ActualizarPP/ObtenerProductosProveedor',
-            type: 'POST',
-            contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
-            data: { ctaId: ctaActual,pag },
-            timeout: 15000,
-            headers: {
-                'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val() || ''
-            }
+        const metadataResponse = await $.ajax({
+            url: buscarActuProductoMetadataURL,
+            type: "POST",
+            headers: obtenerHeadersAntiforgery()
         });
 
-        // Ahora response es HTML, no JSON
-        $container.html(response);
-        //presentamos la metadata de la paginacion
-        PostGen({}, buscarActuProductoMetadataURL, function (obj) {
-            if (obj.error === true) {
-                AbrirMensaje("ATENCIÓN", obj.msg, function () {
-                    $("#msjModal").modal("hide");
-                    return true;
-                }, false, ["Aceptar"], "error!", null);
-            }
-            else {
-                totalRegs = obj.metadata.totalCount;
-                pags = obj.metadata.totalPages;
-                pagRegs = obj.metadata.pageSize;
-                pagina = pag;
-                $("#pagEstado").val(true).trigger("change");
-            }
+        if (secuencia !== secuenciaConsultaProductos || cuentaConsultada !== ctaActual) return;
 
-        });
+        if (!metadataResponse || metadataResponse.error === true) {
+            mostrarMensajeSimple(
+                "Atención",
+                metadataResponse?.msg || "No se pudo obtener la paginación de los productos.",
+                "error!"
+            );
+            return;
+        }
+
+        const metadata = metadataResponse.metadata || {};
+        totalRegs = metadata.totalCount || 0;
+        pags = metadata.totalPages || 0;
+        pagRegs = metadata.pageSize || 1;
+        pagina = pag;
+        $("#pagEstado").val(true).trigger("change");
     } catch (error) {
-        console.error('Error al cargar productos:', error);
-        mostrarErrorConRecarga($container, 'Error al cargar los productos.', function () {
-            cargarProductosProveedor(ctaId);
-        });
-    }
-}
+        if (error?.statusText === "abort") return;
+        if (esErrorAutenticacion(error)) {
+            manejarErrorAutenticacion();
+            return;
+        }
 
-/**
- * Obtiene los proveedores seleccionados
- * @returns {Array} Array de IDs de proveedores seleccionados
- */
-function obtenerProveedoresSeleccionados() {
-    return $('.proveedor-check:checked').map(function () {
-        return $(this).val();
-    }).get();
-}
-
-/**
- * Función unificada para actualizar todos los contadores
- */
-function actualizarContadores() {
-    const seleccionados = $('.proveedor-check:checked').length;
-    const total = $('.proveedor-check').length;
-
-    // Actualizar contadores en la interfaz
-    $('#selectedCount').text(seleccionados);
-    $('#contadorSeleccionados').text(seleccionados);
-
-    // Actualizar estado del checkbox principal
-    const $selectAll = $('#selectAllProveedores');
-    if ($selectAll.length) {
-        if (seleccionados === 0) {
-            $selectAll.prop('indeterminate', false).prop('checked', false);
-        } else if (seleccionados === total) {
-            $selectAll.prop('indeterminate', false).prop('checked', true);
-        } else {
-            $selectAll.prop('indeterminate', true).prop('checked', false);
+        mostrarErrorConRecarga(
+            $container,
+            obtenerMensajeErrorConexion(error, "Error al cargar los productos."),
+            () => cargarProductosProveedor(pagina)
+        );
+    } finally {
+        if (secuencia === secuenciaConsultaProductos) {
+            solicitudProductosActual = null;
         }
     }
-
-    // Habilitar/deshabilitar botón confirmar
-    $('#btnConfirmarActualizacion').prop('disabled', seleccionados === 0);
 }
 
-// ===== FUNCIONES DE UTILIDAD OPTIMIZADAS =====
+function obtenerProveedoresSeleccionados() {
+    return $(".proveedor-check:checked").map(function () {
+        return String($(this).val() || "").trim();
+    }).get().filter(Boolean);
+}
 
-/**
- * Muestra un spinner de carga optimizado
- * @param {jQuery} $container - Contenedor
- * @param {string} message - Mensaje de carga
- */
+function actualizarContadores() {
+    const seleccionados = $(".proveedor-check:checked").length;
+    const total = $(".proveedor-check").length;
+
+    $("#selectedCount, #contadorSeleccionados").text(seleccionados);
+
+    const $selectAll = $("#selectAllProveedores");
+    if ($selectAll.length) {
+        $selectAll
+            .prop("indeterminate", seleccionados > 0 && seleccionados < total)
+            .prop("checked", total > 0 && seleccionados === total);
+    }
+
+    if (!actualizacionEnProceso) {
+        $("#btnConfirmarActualizacion").prop("disabled", seleccionados === 0);
+    }
+}
+
+function confirmarActualizacion() {
+    const proveedoresSeleccionados = obtenerProveedoresSeleccionados();
+
+    if (proveedoresSeleccionados.length === 0) {
+        mostrarMensajeSimple("Validación", "Debe seleccionar al menos un proveedor para confirmar la actualización.", "warn!");
+        return;
+    }
+
+    prepararEstadoModal();
+    AbrirMensaje(
+        "Confirmar Actualización",
+        `¿Confirma la actualización de <strong>${proveedoresSeleccionados.length}</strong> proveedor${proveedoresSeleccionados.length === 1 ? "" : "es"}?<br>` +
+        '<small class="text-muted">Esta acción aplicará los cambios de precios definitivamente.</small>',
+        function (respuesta) {
+            if (respuesta !== "SI") {
+                $("#msjModal").modal("hide");
+                return;
+            }
+
+            cerrarMensajeYContinuar(() => ejecutarConfirmacionActualizacion(proveedoresSeleccionados));
+        },
+        true,
+        ["Confirmar", "Cancelar"],
+        "warn!",
+        null
+    );
+}
+
+async function ejecutarConfirmacionActualizacion(ctasId) {
+    establecerEstadoProcesando(true);
+
+    try {
+        const response = await $.ajax({
+            url: ConfirmarProveedoresUrl,
+            type: "POST",
+            traditional: true,
+            data: { ctasId },
+            timeout: 60000,
+            headers: obtenerHeadersAntiforgery()
+        });
+
+        await procesarRespuestaConfirmacion(response);
+    } catch (error) {
+        establecerEstadoProcesando(false);
+
+        if (esErrorAutenticacion(error)) {
+            manejarErrorAutenticacion();
+            return;
+        }
+
+        manejarErrorConfirmacion(obtenerMensajeErrorConexion(error, "Error de comunicación con el servidor."));
+    }
+}
+
+async function procesarRespuestaConfirmacion(response) {
+    if (!response || typeof response !== "object") {
+        establecerEstadoProcesando(false);
+        manejarErrorConfirmacion("Respuesta inválida del servidor.");
+        return;
+    }
+
+    if (response.error === true) {
+        establecerEstadoProcesando(false);
+        manejarErrorConfirmacion(response.msg || "No se pudo completar la actualización.");
+        return;
+    }
+
+    if (response.warn === true) {
+        establecerEstadoProcesando(false);
+        if (response.auth === true) {
+            manejarErrorAutenticacion();
+        } else {
+            manejarAdvertenciaConfirmacion(response.msg || "No se pudo completar la actualización.");
+        }
+        return;
+    }
+
+    await manejarExitoConfirmacion(response.msg || "El procesamiento se realizó satisfactoriamente");
+}
+
+async function manejarExitoConfirmacion(mensaje) {
+    await reiniciarInterfazActualizacion({ limpiarSesionDetalle: false, volverAProveedores: true });
+    await cargarProveedores();
+
+    prepararEstadoModal();
+    AbrirMensaje(
+        "Actualización Completada",
+        mensaje,
+        () => $("#msjModal").modal("hide"),
+        false,
+        ["Aceptar"],
+        "succ!",
+        null
+    );
+}
+
+function manejarErrorConfirmacion(mensaje) {
+    restaurarBotonConfirmar();
+    prepararEstadoModal();
+    AbrirMensaje(
+        "Error",
+        mensaje,
+        () => $("#msjModal").modal("hide"),
+        false,
+        ["Aceptar"],
+        "error!",
+        null
+    );
+}
+
+function manejarAdvertenciaConfirmacion(mensaje) {
+    restaurarBotonConfirmar();
+    prepararEstadoModal();
+    AbrirMensaje(
+        "Advertencia",
+        mensaje,
+        () => $("#msjModal").modal("hide"),
+        false,
+        ["Aceptar"],
+        "warn!",
+        null
+    );
+}
+
+function manejarErrorAutenticacion() {
+    establecerEstadoProcesando(false);
+    prepararEstadoModal();
+    AbrirMensaje(
+        "Sesión Expirada",
+        "Su sesión ha terminado. Debe volver a autenticarse.",
+        () => cerrarMensajeYContinuar(() => { window.location.href = home; }),
+        false,
+        ["Aceptar"],
+        "warn!",
+        null
+    );
+}
+
+function cancelarActualizacion() {
+    const hayEstadoParaLimpiar = obtenerProveedoresSeleccionados().length > 0 || !!ctaActual;
+    if (!hayEstadoParaLimpiar) return;
+
+    prepararEstadoModal();
+    AbrirMensaje(
+        "Cancelar Selección",
+        "¿Desea limpiar la selección y volver al estado inicial?",
+        function (respuesta) {
+            if (respuesta !== "SI") {
+                $("#msjModal").modal("hide");
+                return;
+            }
+
+            cerrarMensajeYContinuar(() => {
+                reiniciarInterfazActualizacion({ limpiarSesionDetalle: true, volverAProveedores: true });
+            });
+        },
+        true,
+        ["Continuar", "Cancelar"],
+        "warn!",
+        null
+    );
+}
+
+async function reiniciarInterfazActualizacion({ limpiarSesionDetalle, volverAProveedores }) {
+    cancelarSolicitudProductosPendiente();
+    secuenciaConsultaProductos++;
+
+    ctaActual = "";
+    denominacionActual = "";
+    establecerEstadoProcesando(false);
+    limpiarSeleccionProveedores();
+    limpiarDetalleProductos();
+    ocultarProveedorConsultado();
+
+    if (volverAProveedores) {
+        bootstrap.Tab.getOrCreateInstance(document.getElementById("proveedores-tab")).show();
+    }
+
+    if (limpiarSesionDetalle) {
+        try {
+            await $.ajax({
+                url: reiniciarConsultaActualizacionURL,
+                type: "POST",
+                headers: obtenerHeadersAntiforgery()
+            });
+        } catch (error) {
+            if (esErrorAutenticacion(error)) manejarErrorAutenticacion();
+        }
+    }
+}
+
+function limpiarSeleccionProveedores() {
+    $(".proveedor-check, #selectAllProveedores")
+        .prop("checked", false)
+        .prop("indeterminate", false)
+        .prop("disabled", false);
+    $("#tbGridProveedores tbody tr").removeClass("selected");
+    actualizarContadores();
+}
+
+function limpiarDetalleProductos() {
+    $("#productosContainer").html(`
+        <div class="alert alert-info" role="alert">
+            <i class="fas fa-info-circle me-2"></i>
+            Seleccione un proveedor en la pestaña anterior para ver sus productos.
+        </div>
+    `);
+    limpiarPaginacion();
+}
+
+function limpiarPaginacion() {
+    const $paginacion = $("#divPaginacion");
+    try {
+        if ($paginacion.length && $paginacion.data("pagination")) {
+            $paginacion.pagination("destroy");
+        }
+    } catch (error) {
+        console.debug("No había una paginación activa para destruir.");
+    }
+    $paginacion.empty();
+
+    pagina = 1;
+    totalRegs = 0;
+    pags = 0;
+    pagRegs = 0;
+    $("#pagEstado").val(false);
+}
+
+function mostrarProveedorConsultado(ctaId, denominacion) {
+    consCta = ctaId;
+    consRrss = denominacion;
+    consTipo = "P";
+
+    $("#controlConsultaCambio" + sufijoControlCuentaActualizarPP).val(true);
+    const asignar = window["AsignaDatosCuenta" + sufijoControlCuentaActualizarPP];
+    if (typeof asignar === "function") asignar();
+}
+
+function ocultarProveedorConsultado() {
+    const inicializar = window["inicializaCtrl" + sufijoControlCuentaActualizarPP];
+    if (typeof inicializar === "function") inicializar();
+}
+
+function establecerEstadoProcesando(enProceso) {
+    actualizacionEnProceso = enProceso;
+    $(".proveedor-check, #selectAllProveedores, #btnCancelarActualizacion").prop("disabled", enProceso);
+
+    if (enProceso) {
+        $("#btnConfirmarActualizacion")
+            .prop("disabled", true)
+            .removeClass("btn-outline-success")
+            .addClass("btn-success")
+            .html('<i class="bx bx-loader-alt bx-spin me-2"></i><span>Procesando actualización...</span>');
+    } else {
+        restaurarBotonConfirmar();
+    }
+}
+
+function restaurarBotonConfirmar() {
+    const seleccionados = $(".proveedor-check:checked").length;
+    $("#btnConfirmarActualizacion")
+        .removeClass("btn-outline-success")
+        .addClass("btn-success")
+        .html('<i class="bx bx-check-circle me-2"></i><div class="d-flex flex-column"><span class="fw-bold">CONFIRMAR</span><small class="opacity-75">Aplicar cambios</small></div>')
+        .prop("disabled", actualizacionEnProceso || seleccionados === 0);
+    $("#btnCancelarActualizacion").prop("disabled", actualizacionEnProceso);
+}
+
+function cancelarSolicitudProductosPendiente() {
+    if (solicitudProductosActual && solicitudProductosActual.readyState !== 4) {
+        solicitudProductosActual.abort();
+    }
+    solicitudProductosActual = null;
+}
+
+function cerrarMensajeYContinuar(callback) {
+    const $modal = $("#msjModal");
+
+    if (!$modal.hasClass("show")) {
+        callback();
+        return;
+    }
+
+    $modal
+        .off("hidden.bs.modal.actualizarPP")
+        .one("hidden.bs.modal.actualizarPP", callback)
+        .modal("hide");
+}
+
+function prepararEstadoModal() {
+    const $modal = $("#msjModal");
+    $modal.removeClass("modal-error modal-warning modal-success modal-info modal-danger");
+    $modal.find(".modal-header").removeClass("bg-danger bg-warning bg-success bg-info text-white text-dark");
+    $modal.find(".modal-body").removeClass("text-danger text-warning text-success text-info");
+}
+
+function mostrarMensajeSimple(titulo, mensaje, tipo) {
+    prepararEstadoModal();
+    AbrirMensaje(
+        titulo,
+        mensaje,
+        () => $("#msjModal").modal("hide"),
+        false,
+        ["Aceptar"],
+        tipo,
+        null
+    );
+}
+
 function mostrarSpinnerCarga($container, message) {
     $container.html(`
         <div class="loading-container">
@@ -216,290 +516,37 @@ function mostrarSpinnerCarga($container, message) {
     `);
 }
 
-/**
- * Muestra error con opción de recarga
- * @param {jQuery} $container - Contenedor
- * @param {string} message - Mensaje de error
- * @param {Function} retryFunction - Función de reintento (opcional)
- */
 function mostrarErrorConRecarga($container, message, retryFunction = null) {
-    const retryFunctionName = retryFunction ? 'retryFunction()' : 'ActualizarPP.recargarProveedores()';
+    const retryFunctionName = retryFunction ? "retryFunction()" : "ActualizarPP.recargarProveedores()";
+    if (retryFunction) window.retryFunction = retryFunction;
 
     $container.html(`
         <div class="alert alert-danger" role="alert">
             <div class="d-flex align-items-center">
                 <i class="fas fa-exclamation-triangle me-2"></i>
-                <div class="flex-grow-1">
-                    <strong>Error:</strong> ${message}
-                </div>
+                <div class="flex-grow-1"><strong>Error:</strong> ${message}</div>
                 <button class="btn btn-sm btn-outline-danger" onclick="${retryFunctionName}">
                     <i class="fas fa-redo me-1"></i>Reintentar
                 </button>
             </div>
         </div>
     `);
-
-    // Si se pasa una función de reintento, agregarla al contexto global temporalmente
-    if (retryFunction) {
-        window.retryFunction = retryFunction;
-    }
 }
 
-/**
- * Muestra alerta informativa
- * @param {jQuery} $container - Contenedor  
- * @param {string} message - Mensaje informativo
- */
-function mostrarAlertaInfo($container, message) {
-    $container.html(`
-        <div class="alert alert-info" role="alert">
-            <i class="fas fa-info-circle me-2"></i>
-            ${message}
-        </div>
-    `);
+function obtenerHeadersAntiforgery() {
+    return {
+        RequestVerificationToken: $("input[name='__RequestVerificationToken']").val() || ""
+    };
 }
 
-// Funciones para los botones
-async function confirmarActualizacion() {
-    const proveedoresSeleccionados = ActualizarPP.obtenerProveedoresSeleccionados();
-
-    if (proveedoresSeleccionados.length === 0) {
-        AbrirMensaje("Validación", 'Debe seleccionar al menos un proveedor para confirmar la actualización.',
-            () => $("#msjModal").modal("hide"),
-            false, ["Aceptar"], "warn!", null);
-        return;
-    }
-
-    // Limpiar estado del modal antes de mostrar confirmación
-    limpiarEstadoModal();
-
-    // Confirmar antes de proceder
-    AbrirMensaje("Confirmar Actualización",
-        `¿Confirmar actualización de <strong>${proveedoresSeleccionados.length}</strong> proveedores?<br>
-         <small class="text-muted">Esta acción aplicará los cambios de precios definitivamente.</small>`,
-        async (resp) => {
-            $("#msjModal").modal("hide");
-            if (resp === "SI") {                
-                await ejecutarConfirmacionActualizacion(proveedoresSeleccionados);
-            }
-        },
-        true, ["Confirmar", "Cancelar"], "warn!", null);
+function esErrorAutenticacion(error) {
+    return error?.status === 401 || error?.status === 403;
 }
 
-/**
- * Ejecuta la confirmación de actualización llamando al controller
- * @param {Array} ctasId - Array de IDs de proveedores seleccionados
- */
-async function ejecutarConfirmacionActualizacion(ctasId) {
-    const $btn = $('#btnConfirmarActualizacion');
-
-    try {
-        // Estado de carga
-        $btn.prop('disabled', true)
-            .html('<i class="bx bx-loader-alt bx-spin me-2"></i><span>Procesando actualización...</span>');
-
-        console.log('Confirmando actualización para proveedores:', ctasId);
-
-        const response = await $.ajax({
-            url: ConfirmarProveedoresUrl,
-            type: 'POST',
-            traditional: true, // Para enviar arrays correctamente
-            data: { ctasId: ctasId },
-            timeout: 60000, // 1 minuto para operaciones de actualización
-            headers: {
-                'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val() || ''
-            }
-        });
-
-        console.log('Respuesta del servidor:', response);
-
-        // Procesar respuesta según el patrón del controller optimizado
-        procesarRespuestaConfirmacion(response, $btn, ctasId.length);
-
-    } catch (error) {
-        console.error('Error AJAX en confirmación:', error);
-
-        let errorMessage = 'Error de comunicación con el servidor';
-        if (error.status === 0) {
-            errorMessage = 'Error de conexión. Verifique su conexión a internet.';
-        } else if (error.status >= 500) {
-            errorMessage = 'Error interno del servidor. Intente nuevamente.';
-        } else if (error.status === 404) {
-            errorMessage = 'Servicio de confirmación no encontrado.';
-        } else if (error.timeout) {
-            errorMessage = 'Tiempo de espera agotado. La operación puede haber tardado demasiado.';
-        }
-
-        manejarErrorConfirmacion(errorMessage, $btn);
-    }
-}
-
-/**
- * Procesa la respuesta del servidor según el patrón del controller
- * @param {Object} response - Respuesta del servidor
- * @param {jQuery} $btn - Botón de confirmación
- * @param {number} cantidadProveedores - Cantidad de proveedores procesados
- */
-function procesarRespuestaConfirmacion(response, $btn, cantidadProveedores) {
-    // Validar estructura de respuesta
-    if (!response || typeof response !== 'object') {
-        manejarErrorConfirmacion('Respuesta inválida del servidor', $btn);
-        return;
-    }
-
-    // Verificar errores críticos primero
-    if (response.error === true) {
-        manejarErrorConfirmacion(response.msg || 'Error crítico en el servidor', $btn);
-        return;
-    }
-
-    // Verificar advertencias y autenticación
-    if (response.warn === true) {
-        // Si auth = true, es un problema de autenticación
-        if (response.auth === true) {
-            manejarErrorAutenticacion($btn);
-            return;
-        }
-
-        // Si auth = false o undefined, es una advertencia de negocio
-        manejarAdvertenciaConfirmacion(response.msg || 'Advertencia del sistema', $btn);
-        return;
-    }
-
-    // Si no hay errores ni advertencias, es éxito
-    manejarExitoConfirmacion(response.msg || 'Actualización completada exitosamente', $btn, cantidadProveedores);
-}
-
-/**
- * Maneja errores de confirmación
- */
-function manejarErrorConfirmacion(mensaje, $btn) {
-    // Limpiar estado del modal antes de mostrar error
-    limpiarEstadoModal();
-
-    AbrirMensaje("Error", mensaje,
-        () => $("#msjModal").modal("hide"),
-        false, ["Aceptar"], "error!", null);
-
-    // Restaurar botón
-    restaurarBotonConfirmar($btn);
-}
-
-/**
- * Maneja advertencias de confirmación (no relacionadas con auth)
- */
-function manejarAdvertenciaConfirmacion(mensaje, $btn) {
-    // Limpiar estado del modal antes de mostrar error
-    limpiarEstadoModal();
-
-    AbrirMensaje("Advertencia", mensaje,
-        () => $("#msjModal").modal("hide"),
-        false, ["Aceptar"], "warn!", null);
-
-    // Restaurar botón
-    restaurarBotonConfirmar($btn);
-}
-
-/**
- * Maneja error de autenticación con redirección a home
- */
-function manejarErrorAutenticacion($btn) {
-    // Limpiar estado del modal antes de mostrar error
-    limpiarEstadoModal();
-
-    AbrirMensaje("Sesión Expirada", "Su sesión ha terminado. Debe volver a autenticarse.",
-        () => {
-            $("#msjModal").modal("hide");
-            // Redirigir a home usando variable global
-            window.location.href = home;
-        },
-        false, ["Aceptar"], "warn!", null);
-
-    // Restaurar botón (aunque no se verá por la redirección)
-    restaurarBotonConfirmar($btn);
-}
-
-/**
- * Maneja éxito de confirmación
- */
-function manejarExitoConfirmacion(mensaje, $btn, cantidadProveedores) {
-    // Cambiar estado visual del botón a completado
-    $btn.html('<i class="bx bxs-check-circle text-success me-2"></i><span class="text-success">COMPLETADO</span>')
-        .removeClass('btn-success')
-        .addClass('btn-outline-success')
-        .prop('disabled', true);
-
-    // Limpiar selecciones
-    $('.proveedor-check').prop('checked', false);
-    $('#selectAllProveedores').prop('checked', false);
-    actualizarContadores();
-
-    // Limpiar estado del modal antes de mostrar éxito
-    limpiarEstadoModal();
-
-    // Mostrar mensaje de éxito
-    AbrirMensaje("Actualización Completada",
-        `${mensaje}<br><small class="text-muted">Se procesaron ${cantidadProveedores} proveedores exitosamente.</small>`,
-        () => {
-            $("#msjModal").modal("hide");
-            // Recargar grid para reflejar cambios
-            ActualizarPP.recargarProveedores();
-        },
-        false, ["Aceptar"], "succ!", null);
-
-    console.log('Actualización completada exitosamente');
-}
-
-/**
- * Función utilitaria para restaurar el estado original del botón
- * @param {jQuery} $btn - Botón a restaurar
- */
-function restaurarBotonConfirmar($btn) {
-    $btn.prop('disabled', false)
-        .html('<i class="bx bx-check-circle me-2"></i><div class="d-flex flex-column"><span class="fw-bold">CONFIRMAR</span><small class="opacity-75">Aplicar cambios</small></div>');
-}
-// Función cancelar permanece igual
-function cancelarActualizacion() {
-    // Limpiar estado del modal antes de mostrar cancelación
-    limpiarEstadoModal();
-
-    AbrirMensaje("Cancelar Selección", '¿Cancelar y descartar todos los cambios?',
-        () => {
-            $("#msjModal").modal("hide");
-            // Limpiar selecciones
-            $('.proveedor-check').prop('checked', false);
-            $('#selectAllProveedores').prop('checked', false);
-            actualizarContadores();
-
-            console.log('Actualizaciones canceladas');
-        },
-        false,
-        ["Continuar", "Cancelar"],
-        "warn!",
-        null
-    );
-}
-
-/**
-* Limpia el estado visual del modal antes de mostrar un nuevo mensaje
-*/
-function limpiarEstadoModal() {
-    // Limpiar clases de estado del modal
-    const $modal = $('#msjModal');
-    if ($modal.length) {
-        // Remover clases de estado de Bootstrap
-        $modal.removeClass('modal-error modal-warning modal-success modal-info modal-danger');
-
-        // Limpiar header del modal
-        const $modalHeader = $modal.find('.modal-header');
-        if ($modalHeader.length) {
-            $modalHeader.removeClass('bg-danger bg-warning bg-success bg-info text-white text-dark');
-        }
-
-        // Limpiar contenido del modal
-        const $modalBody = $modal.find('.modal-body');
-        if ($modalBody.length) {
-            $modalBody.removeClass('text-danger text-warning text-success text-info');
-        }
-    }
+function obtenerMensajeErrorConexion(error, mensajePredeterminado) {
+    if (error?.status === 0) return "Error de conexión. Verifique su conexión.";
+    if (error?.status === 404) return "No se encontró el servicio solicitado.";
+    if (error?.status >= 500) return "Error interno del servidor. Intente nuevamente.";
+    if (error?.statusText === "timeout") return "La operación superó el tiempo de espera.";
+    return mensajePredeterminado;
 }

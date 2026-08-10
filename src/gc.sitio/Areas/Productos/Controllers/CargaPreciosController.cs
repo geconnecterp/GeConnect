@@ -370,8 +370,13 @@ namespace gc.sitio.Areas.Productos.Controllers
                     throw new NegocioException("El valor del Producto es incorrecto. Por favor verifique.");
                 }
 
+                if (!TryNormalizarBonificacion(tp_boni, out var bonificacionNormalizada, out var mensajeBonificacion))
+                {
+                    throw new NegocioException(mensajeBonificacion);
+                }
+
                 var costo = HelperContable.CalcularPCosto(tp_plista, tp_dto1, tp_dto2,
-                    tp_dto3, tp_dto4, tp_dto_pa, tp_boni, tp_porc_flete);
+                    tp_dto3, tp_dto4, tp_dto_pa, bonificacionNormalizada, tp_porc_flete);
 
                 return Json(new { error = false, warn = false, costo });
             }
@@ -543,6 +548,11 @@ namespace gc.sitio.Areas.Productos.Controllers
                     throw new NegocioException("No se ha especificado el ID del producto a modificar.");
                 }
 
+                if (!TryNormalizarBonificacion(tp_boni, out var bonificacionNormalizada, out var mensajeBonificacion))
+                {
+                    throw new NegocioException(mensajeBonificacion);
+                }
+
                 // Obtener los productos desde la sesión
                 var productosOriginales = ProductosDetalle;
                 var productosTemporal = ProductosDetalleTEMPORAL;
@@ -557,14 +567,14 @@ namespace gc.sitio.Areas.Productos.Controllers
                 // Verificar si hay cambios en los valores que afectan el precio
                 bool hayCambios =
                     Math.Round(productoOriginal.P_Plista, 3) != Math.Round(tp_plista, 3) ||
-                    Math.Round(productoOriginal.P_Dto1, 1) != Math.Round(tp_dto1, 1) ||
-                    Math.Round(productoOriginal.P_Dto2, 1) != Math.Round(tp_dto2, 1) ||
-                    Math.Round(productoOriginal.P_Dto3, 1) != Math.Round(tp_dto3, 1) ||
-                    Math.Round(productoOriginal.P_Dto4, 1) != Math.Round(tp_dto4, 1) ||
-                    Math.Round(productoOriginal.P_Dto_Pa, 1) != Math.Round(tp_dto_pa, 1) ||
-                    Math.Round(productoOriginal.P_Porc_Flete, 1) != Math.Round(tp_porc_flete, 1) ||
-                    productoOriginal.P_Boni != tp_boni ||
-                    Math.Round(productoOriginal.p_margen, 2) != Math.Round(tp_margen, 2) ||
+                    Math.Round(productoOriginal.P_Dto1, 1, MidpointRounding.AwayFromZero) != Math.Round(tp_dto1, 1, MidpointRounding.AwayFromZero) ||
+                    Math.Round(productoOriginal.P_Dto2, 1, MidpointRounding.AwayFromZero) != Math.Round(tp_dto2, 1, MidpointRounding.AwayFromZero) ||
+                    Math.Round(productoOriginal.P_Dto3, 1, MidpointRounding.AwayFromZero) != Math.Round(tp_dto3, 1, MidpointRounding.AwayFromZero) ||
+                    Math.Round(productoOriginal.P_Dto4, 1, MidpointRounding.AwayFromZero) != Math.Round(tp_dto4, 1, MidpointRounding.AwayFromZero) ||
+                    Math.Round(productoOriginal.P_Dto_Pa, 1, MidpointRounding.AwayFromZero) != Math.Round(tp_dto_pa, 1, MidpointRounding.AwayFromZero) ||
+                    Math.Round(productoOriginal.P_Porc_Flete, 1, MidpointRounding.AwayFromZero) != Math.Round(tp_porc_flete, 1, MidpointRounding.AwayFromZero) ||
+                    NormalizarBonificacionExistente(productoOriginal.P_Boni) != bonificacionNormalizada ||
+                    Math.Round(productoOriginal.p_margen, 1, MidpointRounding.AwayFromZero) != Math.Round(tp_margen, 1, MidpointRounding.AwayFromZero) ||
                     Math.Round(productoOriginal.in_alicuota, 2) != Math.Round(tin_alicuota, 2) ||
                     Math.Round(productoOriginal.p_pvta, 2) != Math.Round(tp_pvta, 2);
 
@@ -604,7 +614,7 @@ namespace gc.sitio.Areas.Productos.Controllers
                 productoModificado.tp_dto4 = tp_dto4;
                 productoModificado.tp_dto_pa = tp_dto_pa;
                 productoModificado.tp_porc_flete = tp_porc_flete;
-                productoModificado.tp_boni = tp_boni;
+                productoModificado.tp_boni = bonificacionNormalizada;
                 productoModificado.tp_pcosto = tp_pcosto;
                 productoModificado.tp_margen = tp_margen;
                 productoModificado.tp_pneto = tp_pneto;
@@ -769,32 +779,38 @@ namespace gc.sitio.Areas.Productos.Controllers
             decimal p_pneto, decimal lp_porc_mg, char iva_situacion, decimal iva_alicuota,
             decimal in_alicuota, decimal tp_iva, decimal tp_in)
         {
-            const decimal TOLERANCIA_2_DECIMALES = 0.01m;
             const decimal TOLERANCIA_3_DECIMALES = 0.001m;
 
             var cambios = new List<string>();
 
             // ✅ OPTIMIZADO: Verificar cada campo con tolerancia apropiada
-            if (Math.Abs(original.tp_margen - tp_margen) > TOLERANCIA_2_DECIMALES)
-                cambios.Add($"Margen: {original.tp_margen} → {tp_margen}");
+            if (Math.Round(original.p_margen, 1, MidpointRounding.AwayFromZero) !=
+                Math.Round(tp_margen, 1, MidpointRounding.AwayFromZero))
+                cambios.Add($"Margen: {original.p_margen} → {tp_margen}");
 
-            if (Math.Abs(original.tp_pvta - tp_pvta) > TOLERANCIA_2_DECIMALES)
-                cambios.Add($"PVenta: {original.tp_pvta} → {tp_pvta}");
+            if (Math.Round(original.p_pvta, 2, MidpointRounding.AwayFromZero) !=
+                Math.Round(tp_pvta, 2, MidpointRounding.AwayFromZero))
+                cambios.Add($"PVenta: {original.p_pvta} → {tp_pvta}");
 
-            if (Math.Abs(original.lp_porc_mg - lp_porc_mg) > TOLERANCIA_2_DECIMALES)
+            if (Math.Round(original.lp_porc_mg, 2, MidpointRounding.AwayFromZero) !=
+                Math.Round(lp_porc_mg, 2, MidpointRounding.AwayFromZero))
                 cambios.Add($"PorcMg: {original.lp_porc_mg} → {lp_porc_mg}");
 
-            if (Math.Abs(original.iva_alicuota - iva_alicuota) > TOLERANCIA_2_DECIMALES)
+            if (Math.Round(original.iva_alicuota, 2, MidpointRounding.AwayFromZero) !=
+                Math.Round(iva_alicuota, 2, MidpointRounding.AwayFromZero))
                 cambios.Add($"IVA: {original.iva_alicuota} → {iva_alicuota}");
 
-            if (Math.Abs(original.in_alicuota - in_alicuota) > TOLERANCIA_2_DECIMALES)
+            if (Math.Round(original.in_alicuota, 2, MidpointRounding.AwayFromZero) !=
+                Math.Round(in_alicuota, 2, MidpointRounding.AwayFromZero))
                 cambios.Add($"ImpInt: {original.in_alicuota} → {in_alicuota}");
 
-            if (Math.Abs(original.tp_iva - tp_iva) > TOLERANCIA_2_DECIMALES)
-                cambios.Add($"TpIVA: {original.tp_iva} → {tp_iva}");
+            if (Math.Round(original.p_iva, 2, MidpointRounding.AwayFromZero) !=
+                Math.Round(tp_iva, 2, MidpointRounding.AwayFromZero))
+                cambios.Add($"TpIVA: {original.p_iva} → {tp_iva}");
 
-            if (Math.Abs(original.tp_in - tp_in) > TOLERANCIA_2_DECIMALES)
-                cambios.Add($"TpIN: {original.tp_in} → {tp_in}");
+            if (Math.Round(original.p_in, 2, MidpointRounding.AwayFromZero) !=
+                Math.Round(tp_in, 2, MidpointRounding.AwayFromZero))
+                cambios.Add($"TpIN: {original.p_in} → {tp_in}");
 
             if (Math.Abs(original.P_Pcosto - p_pcosto) > TOLERANCIA_3_DECIMALES)
                 cambios.Add($"Costo: {original.P_Pcosto} → {p_pcosto}");
@@ -926,6 +942,40 @@ namespace gc.sitio.Areas.Productos.Controllers
             return clonado;
         }
 
+        private static bool TryNormalizarBonificacion(string? valor, out string normalizada, out string mensaje)
+        {
+            normalizada = string.Empty;
+            mensaje = string.Empty;
+
+            var bonificacion = valor?.Trim() ?? string.Empty;
+            if (string.IsNullOrEmpty(bonificacion) || bonificacion == "0")
+            {
+                return true;
+            }
+
+            var partes = bonificacion.Split('/');
+            if (partes.Length != 2 ||
+                !int.TryParse(partes[0], out var numerador) ||
+                !int.TryParse(partes[1], out var denominador) ||
+                numerador <= 0 || numerador > 999 ||
+                denominador <= 0 || denominador > 999 ||
+                denominador <= numerador)
+            {
+                mensaje = "La bonificación debe tener el formato NNN/NNN y el denominador debe ser mayor que el numerador.";
+                return false;
+            }
+
+            normalizada = $"{numerador:000}/{denominador:000}";
+            return true;
+        }
+
+        private static string NormalizarBonificacionExistente(string? valor)
+        {
+            return TryNormalizarBonificacion(valor, out var normalizada, out _)
+                ? normalizada
+                : valor?.Trim() ?? string.Empty;
+        }
+
         [HttpPost]
         public async Task<JsonResult> ConfirmarPreciosTemporales()
         {
@@ -938,16 +988,32 @@ namespace gc.sitio.Areas.Productos.Controllers
                     return Json(new { error = false, warn = true, auth = true, msg = "Su sesión se ha terminado. Debe volver a autenticarse." });
                 }
                  
-                var prod = ProductosDetalleTEMPORAL.FirstOrDefault();
-                if (prod == null) {
+                var productosTemporales = ProductosDetalleTEMPORAL;
+                var listasTemporales = ProductosDetalleListaTEMPORAL;
+                var prod = productosTemporales.FirstOrDefault();
+
+                if (!productosTemporales.Any() && !listasTemporales.Any())
+                {
                     throw new NegocioException("No se han encontrado precios temporales para confirmar. Por favor, verifique si ha resguardado cambios previamente.");
+                }
+
+                var ctaId = ProveedorSeleccionado?.Cta_Id;
+                if (string.IsNullOrWhiteSpace(ctaId))
+                {
+                    ctaId = prod?.cta_id
+                        ?? ProductosDetalle.FirstOrDefault(p => !string.IsNullOrWhiteSpace(p.cta_id))?.cta_id;
+                }
+
+                if (string.IsNullOrWhiteSpace(ctaId))
+                {
+                    throw new NegocioException("No se pudo identificar el proveedor asociado a los precios temporales.");
                 }
 
                 #region Mapeo de los datos del temporales a mandar
                 var confirmar = new List<ProductoCPConfirmar>();
 
                 // ✅ PASO 1: Procesar todos los productos temporales (cambios de producto base)
-                foreach (var productoTemporal in ProductosDetalleTEMPORAL)
+                foreach (var productoTemporal in productosTemporales)
                 {
                     // ✅ PASO 2: Crear el producto confirmado con los datos base (lp_id == "001")
                     var productoConfirmar = new ProductoCPConfirmar
@@ -975,7 +1041,7 @@ namespace gc.sitio.Areas.Productos.Controllers
                     };
 
                     // ✅ PASO 3: Buscar listas temporales relacionadas con este producto
-                    var listasRelacionadas = ProductosDetalleListaTEMPORAL?
+                    var listasRelacionadas = listasTemporales
                         .Where(lista => lista.p_id == productoTemporal.p_id && lista.lp_id != "001")
                         .Select(lista => new TPProducto
                         {
@@ -1009,10 +1075,10 @@ namespace gc.sitio.Areas.Productos.Controllers
                 }
 
                 // ✅ PASO 4: Procesar listas temporales huérfanas (sin producto temporal asociado)
-                var listasHuerfanas = ProductosDetalleListaTEMPORAL?
-                    .Where(lista => lista.lp_id != "001" && !ProductosDetalleTEMPORAL.Any(prod => prod.p_id == lista.p_id))
+                var listasHuerfanas = listasTemporales
+                    .Where(lista => lista.lp_id != "001" && !productosTemporales.Any(prod => prod.p_id == lista.p_id))
                     .GroupBy(lista => lista.p_id)
-                    .ToList() ?? new List<IGrouping<string, ProductoDetalleDto>>();
+                    .ToList();
 
                 foreach (var grupoListasHuerfanas in listasHuerfanas)
                 {
@@ -1091,7 +1157,7 @@ namespace gc.sitio.Areas.Productos.Controllers
                 {
                     Administracion = AdministracionId,
                     Usuario = UserName,
-                    Objeto = prod.cta_id,
+                    Objeto = ctaId,
                     Json = JsonConvert.SerializeObject(confirmar),
                 };
 
@@ -1100,7 +1166,12 @@ namespace gc.sitio.Areas.Productos.Controllers
                 var respuesta = await _productoServicio.ConfirmarPreciosTemporales(request, TokenCookie);
                 if (!respuesta.Ok)
                 {
-                    throw new NegocioException(respuesta.Mensaje??"No se recepción un mensaje de confirmación. Analice si los cambios se aplicarón o verifique logs para determinar el origen del problema, por la falta de respuesta del servicio.");
+                    return Json(new
+                    {
+                        error = respuesta.EsError,
+                        warn = respuesta.EsWarn || !respuesta.EsError,
+                        msg = respuesta.Mensaje ?? "No se recibió una respuesta válida al confirmar los precios temporales."
+                    });
                 }
                 // Limpiar las listas temporales después de la confirmación exitosa
                 ProductosDetalleTEMPORAL = [];

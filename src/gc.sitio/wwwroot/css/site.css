@@ -1829,6 +1829,70 @@ tr[title]:hover {
 }
 /* ============ small devices .end// ============ */
 
+/* Menú principal multinivel en modo compacto */
+@media (max-width: 991.98px) {
+    #navbarSupportedContent.show,
+    #navbarSupportedContent.collapsing {
+        max-height: calc(100vh - 4rem);
+        overflow-x: hidden;
+        overflow-y: auto;
+        overscroll-behavior: contain;
+    }
+
+    #navbarSupportedContent .navbar-nav,
+    #navbarSupportedContent .nav-item,
+    #navbarSupportedContent .dropdown-submenu {
+        width: 100%;
+    }
+
+    #navbarSupportedContent .navbar-nav .dropdown-menu,
+    #navbarSupportedContent .dropdown-submenu > .dropdown-menu {
+        position: static !important;
+        inset: auto !important;
+        transform: none !important;
+        float: none;
+        width: 100%;
+        margin: 0 !important;
+        border: 0;
+        border-left: 2px solid var(--bs-golden-light);
+        border-radius: 0;
+        box-shadow: none !important;
+    }
+
+    #navbarSupportedContent .dropdown-submenu > .dropdown-menu {
+        display: none !important;
+        padding: 0 0 0 0.75rem;
+    }
+
+    #navbarSupportedContent .dropdown-submenu.show > .dropdown-menu,
+    #navbarSupportedContent .dropdown-submenu > .dropdown-menu.show {
+        display: block !important;
+    }
+
+    #navbarSupportedContent .dropdown-menu .dropdown-item {
+        white-space: normal;
+        padding-top: 0.55rem;
+        padding-bottom: 0.55rem;
+    }
+
+    #navbarSupportedContent .dropdown-menu .dropdown-menu .dropdown-item {
+        padding-left: 1.5rem;
+    }
+
+    #navbarSupportedContent .dropdown-menu .dropdown-menu .dropdown-menu .dropdown-item {
+        padding-left: 2.25rem;
+    }
+
+    #navbarSupportedContent .dropdown-submenu > a.dropdown-toggle::after {
+        transform: rotate(0deg);
+        transition: transform 0.2s ease;
+    }
+
+    #navbarSupportedContent .dropdown-submenu.show > a.dropdown-toggle::after {
+        transform: rotate(180deg);
+    }
+}
+
 
 .autocomplete {
     /*the container must be positioned relative:*/

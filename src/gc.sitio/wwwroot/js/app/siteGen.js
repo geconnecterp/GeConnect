@@ -162,25 +162,31 @@ $(function () {
                 e.preventDefault();
                 e.stopPropagation();
 
-                // Toggle el submenú actual
-                var submenu = $(this).next('.dropdown-menu');
-                var parent = $(this).parent();
+                const toggle = $(this);
+                const submenu = toggle.next('.dropdown-menu');
+                const parent = toggle.parent('.dropdown-submenu');
+                const abrir = !parent.hasClass('show');
 
-                if (submenu.is(':visible')) {
-                    submenu.hide();
-                    parent.removeClass('show');
-                } else {
-                    // Oculta otros submenús abiertos al mismo nivel y quita show
-                    var siblings = parent.siblings();
-                    siblings.removeClass('show');
-                    siblings.find('.dropdown-menu').hide();
+                // El estado se controla por clases. :visible no es confiable en
+                // pantallas táctiles porque el hover puede quedar persistente.
+                const siblings = parent.siblings('.dropdown-submenu');
+                siblings.removeClass('show');
+                siblings.find('.dropdown-submenu, .dropdown-menu').removeClass('show');
+                siblings.find('a.dropdown-toggle').attr('aria-expanded', 'false');
 
-                    // Muestra este submenú y añade show
-                    submenu.show();
-                    parent.addClass('show');
-                }
+                parent.toggleClass('show', abrir);
+                submenu.removeAttr('style').toggleClass('show', abrir);
+                toggle.attr('aria-expanded', abrir ? 'true' : 'false');
             }
         }
+    });
+
+    // Cuando se cierra un módulo principal, se limpia el estado de sus niveles
+    // internos para que la próxima apertura comience de forma consistente.
+    $('.navbar .dropdown').on('hidden.bs.dropdown', function () {
+        $(this).find('.dropdown-submenu, .dropdown-menu').removeClass('show');
+        $(this).find('.dropdown-menu').removeAttr('style');
+        $(this).find('a.dropdown-toggle').attr('aria-expanded', 'false');
     });
 
 
