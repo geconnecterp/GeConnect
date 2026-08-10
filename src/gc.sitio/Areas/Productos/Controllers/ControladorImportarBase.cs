@@ -51,51 +51,33 @@ namespace gc.sitio.Areas.Productos.Controllers
             DatosParaImportacion = datos.ListaEntidad ?? [];
         }
 
-        protected void ObtenerPerfilDeProveedor(IImportarServicio _impServicio, string ctaId)
+        protected async Task ObtenerPerfilDeProveedor(IImportarServicio _impServicio, string ctaId)
         {
-            // Cargar datos iniciales para la importación
-            RespuestaGenerica<MapeoColumnaDto> datos = _impServicio.ObtenerPerfilDeProveedor(ctaId, TokenCookie).GetAwaiter().GetResult();
-
-           MappeoPerfil2Analisis(datos);
-            
+            var datos = await _impServicio.ObtenerPerfilDeProveedor(ctaId, TokenCookie);
+            PerfilProveedorGuardado = datos.Ok ? datos.ListaEntidad ?? [] : [];
         }
 
-        private void MappeoPerfil2Analisis(RespuestaGenerica<MapeoColumnaDto> datos)
+        /// <summary>
+        /// Perfil persistido del proveedor. Se conserva separado del análisis físico
+        /// del archivo para poder aplicarlo y compararlo sin sobrescribirlo.
+        /// </summary>
+        public List<MapeoColumnaDto> PerfilProveedorGuardado
         {
-            if (datos == null || !datos.Ok || (datos != null && datos.Ok && datos.ListaEntidad?.Count == 0))
+            get
             {
-                AnalisisFile = new();
-            }
-
-            // ✅ PASO 1: Crear análisis base (sin datos específicos ya que vienen del mapeo guardado)
-            AnalisisExcelDto analisisExcelDto = new AnalisisExcelDto
-            {
-                TotalColumnas = datos.ListaEntidad.Count,
-                TotalColumnasUtiles = datos.ListaEntidad.Count(m => !string.IsNullOrEmpty(m.campo_bd)),
-                CamposDisponibles = DatosParaImportacion // Usar los datos ya cargados
-            };
-
-            // ✅ PASO 2: Convertir mapeos guardados a columnas de análisis
-            analisisExcelDto.Columnas = [];
-            var ctaId = ProveedorSeleccionado.Cta_Id;
-            foreach (var mapeo in datos?.ListaEntidad ?? [])
-            {
-                ColumnaExcelDto columna = new ColumnaExcelDto
+                var json = _context.HttpContext?.Session.GetString("PerfilProveedorGuardado") ?? string.Empty;
+                if (string.IsNullOrWhiteSpace(json))
                 {
-                    Indice = mapeo.indice_columna,
-                    Letra = mapeo.letra_columna,
-                    Encabezado = mapeo.encabezado_original,
-                    TipoDetectado = mapeo.tipo_dato,
-                    CampoMapeado = mapeo.campo_bd,
-                    DescripcionMapeado = mapeo.descripcion_campo,
-                    ConfianzaMapeo = mapeo.confianza_mapeo,
-                    MapeadoAutomatico = mapeo.mapeado_automatico
-                };
+                    return [];
+                }
 
-                analisisExcelDto.Columnas.Add(columna);
+                return JsonConvert.DeserializeObject<List<MapeoColumnaDto>>(json) ?? [];
             }
-
-            AnalisisFile = analisisExcelDto;
+            set
+            {
+                var json = JsonConvert.SerializeObject(value ?? []);
+                _context.HttpContext?.Session.SetString("PerfilProveedorGuardado", json);
+            }
         }
 
         /// <summary>

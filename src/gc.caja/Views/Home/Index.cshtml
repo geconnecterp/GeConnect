@@ -69,6 +69,12 @@
         var anulacionCobranzaInicializaUrl =
             '@Url.Action("Index", "AnulacionCobranza", new { area = "Facturacion" })';
 
+        var cambioValoresValidarUrl =
+            '@Url.Action("ValidacionInicial", "CambioValores", new { area = "Facturacion" })';
+
+        var cambioValoresInicializaUrl =
+            '@Url.Action("Index", "CambioValores", new { area = "Facturacion" })';
+
         // URLs necesarias para el módulo de Cobranza Diferida y el buscador de clientes
         const cobranzaDiferidaInicializaUrl = '@Url.Action("Inicializa", "PDiferido", new { Area = "Facturacion" })';
         const cobranzaDiferidaValidarUrl = '@Url.Action("Validar", "PDiferido", new { Area = "Facturacion" })';

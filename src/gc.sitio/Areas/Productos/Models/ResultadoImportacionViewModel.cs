@@ -12,6 +12,9 @@ namespace gc.sitio.Areas.Productos.Models
         public string ArchivoOriginal { get; set; } = string.Empty;
         public DateTime FechaProceso { get; set; }
         public string ProveedorId { get; set; } = string.Empty;
+        public bool PerfilSolicitado { get; set; }
+        public bool PerfilGuardado { get; set; }
+        public string MensajePerfil { get; set; } = string.Empty;
 
         public decimal PorcentajeExito => TotalRegistros > 0 ?
             Math.Round((decimal)RegistrosExitosos / TotalRegistros * 100, 1) : 0;
@@ -20,7 +23,7 @@ namespace gc.sitio.Areas.Productos.Models
         public bool EsProcesadoCompleto => TotalRegistros > 0 && RegistrosConError == 0;
 
         //public bool PuedeConfirmar => RegistrosConError == 0 && TotalRegistros > 0;
-        public bool PuedeConfirmar => FirstReg.resultado == 0;
+        public bool PuedeConfirmar => TotalRegistros > 0 && RegistrosConError == 0 && FirstReg.resultado == 0;
         public string Mensaje_proc => FirstReg.registro_msj;
     }
 }

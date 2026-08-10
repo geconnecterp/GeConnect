@@ -18,6 +18,13 @@
     </div>
 
     <div class="card-body p-0">
+        @if (Model.PerfilSolicitado)
+        {
+            <div class="alert @(Model.PerfilGuardado ? "alert-success" : "alert-warning") py-2 mx-3 mt-3 mb-2">
+                <i class="bx @(Model.PerfilGuardado ? "bx-check-circle" : "bx-error-circle") me-1"></i>
+                @Model.MensajePerfil
+            </div>
+        }
         <!-- ✅ AGREGAR: Botón confirmar si no hay errores -->
         @if (Model.PuedeConfirmar)
         {
@@ -329,7 +336,8 @@
                 soloPLista: configuracion.soloPrecioLista,
                 nuevo: configuracion.nuevos,
                 datosLogisticos: configuracion.datosLogisticos,
-                inactivos: configuracion.inactivos
+                inactivos: configuracion.inactivos,
+                vaciarTemporal: configuracion.vaciarTemporal
             };
 
             console.log('🚀 Enviando confirmación con configuración:', postData);

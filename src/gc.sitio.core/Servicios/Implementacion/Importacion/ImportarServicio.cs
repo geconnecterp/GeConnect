@@ -77,11 +77,8 @@ namespace gc.sitio.core.Servicios.Implementacion.Importacion
                 }
                 else
                 {
-                    var errorData = await response.Content.ReadAsStringAsync();
-                    _logger.LogWarning($"Error API ({response.StatusCode}): {errorData}");
-
-                    var error = JsonConvert.DeserializeObject<ExceptionValidation>(errorData);
-                    var mensaje = error?.Detail ?? "Error desconocido en la API";
+                    var mensaje = await ReadApiErrorAsync(response);
+                    _logger.LogWarning("Error API ({StatusCode}): {Mensaje}", response.StatusCode, mensaje);
 
                     return new RespuestaGenerica<RespuestaCPDto>
                     {

@@ -37,6 +37,9 @@ namespace gc.infraestructura.Dtos.Gen
 
     public class RespuestaCPDto : RespuestaDto
     {
+        public bool perfil_solicitado { get; set; }
+        public bool perfil_guardado { get; set; }
+        public string perfil_msj { get; set; } = string.Empty;
         public string p_id { get; set; } = string.Empty;
         public string p_id_prov { get; set; } = string.Empty;
         public string p_plista { get; set; } = string.Empty;
