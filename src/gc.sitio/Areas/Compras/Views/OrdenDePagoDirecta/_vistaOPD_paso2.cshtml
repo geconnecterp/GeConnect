@@ -26,6 +26,16 @@
 		text-align: center;
 		font-size: small;
 	}
+
+	.titulo-obligaciones-cancelar {
+		color: #c62828 !important; /* rojo profesional */
+		font-weight: bold;
+	}
+
+	.titulo-creditos-valores {
+		color: #1565c0 !important; /* azul profesional */
+		font-weight: bold;
+	}
 </style>
 @Html.Hidden("Paso")
 <div class="row mt-2">
@@ -47,88 +57,52 @@
 </div>
 <div class="row mt-2">
 	<div class="col-6" style="height: 500px;padding-right: 5px;">
-		<fieldset style="height: 500px;">
-			<legend>Obligaciones</legend>
-			<div class="row" id="divObligaciones" style="height: 220px;">
-				<div class="table-responsive table-wrapper-400" id="containerListaObligaciones_Paso2" style="padding-right: 0px;">
-					<table class="table table-bordered table-hover" id="tbListaObligaciones_Paso2">
-						<thead style="background: darkred;">
-							<tr>
-								<th style="width:25%;" class="col-header-small align-center tiny-row">Comprobante</th>
-								<th style="width:7%;" class="col-header-small align-center tiny-row" title="Vencimiento">Venc.</th>
-								<th style="width:38%;" class="col-header-small align-center tiny-row">Gasto</th>
-								<th style="width:20%;" class="col-header-small align-center tiny-row">Motivo</th>
-								<th style="width:10%;" class="col-header-small align-center tiny-row">Imputado</th>
-								<th style="width:0%;display:none;" class="col-header-small align-center tiny-row">afip_id</th>
-								<th style="width:0%;display:none;" class="col-header-small align-center tiny-row">cm_compte</th>
-								<th style="width:0%;display:none;" class="col-header-small align-center tiny-row">tco_id</th>
-								<th style="width:0%;display:none;" class="col-header-small align-center tiny-row">cm_cuit</th>
-								<th style="width:0%;display:none;" class="col-header-small align-center tiny-row">signo</th>
-							</tr>
-						</thead>
-						<tbody>
-							@if (Model.GrillaObligaciones != null && Model.GrillaObligaciones.ListaDatos != null && Model.GrillaObligaciones.ListaDatos.Count > 0)
-							{
-								@foreach (var item in Model.GrillaObligaciones.ListaDatos)
-								{
-									if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
-									<tr class="@clase" onclick="selectReg(this, 'tbListaObligaciones_Paso1')" ondblclick="selectRegDbl(this, 'tbListaObligaciones_Paso1')">
-										<td class="@Model.GrillaObligaciones.ObtenerClase(item.concepto) cell-fit-content">@Model.GrillaObligaciones.FormatearDato(item.concepto, FormatDato.Ninguno)</td>
-										<td class="@Model.GrillaObligaciones.ObtenerClase(item.fecha_vencimiento) cell-fit-content">@Model.GrillaObligaciones.FormatearDato(item.fecha_vencimiento, FormatDato.Fecha)</td>
-										<td class="@Model.GrillaObligaciones.ObtenerClase(item.gasto) cell-fit-content">@Model.GrillaObligaciones.FormatearDato(item.gasto, FormatDato.Ninguno)</td>
-										<td class="@Model.GrillaObligaciones.ObtenerClase(item.motivo) cell-fit-content">@Model.GrillaObligaciones.FormatearDato(item.motivo, FormatDato.Ninguno)</td>
-										<td class="@Model.GrillaObligaciones.ObtenerClase(item.imputado) text-end cell-fit-content">@GridHelper.FormatearDato((item.imputado * item.signo), FormatDato.Monto, true)</td>
-										<td style="display:none;">@item.afip_id</td>
-										<td style="display:none;">@item.cm_compte</td>
-										<td style="display:none;">@item.tco_id</td>
-										<td style="display:none;">@item.cm_cuit</td>
-										<td style="display:none;">@item.signo</td>
-									</tr>
-								}
-							}
-						</tbody>
-					</table>
+		<div class="grid-golden">
+			<div class="grid-golden-header">
+				<div class="row align-items-md-center">
+					<div class="col-md-10 col-sm-6 d-flex align-items-center">
+						<h5 class="mb-0 flex-grow-1">
+							<i class="bx bx-package me-2"></i>
+							<strong class="titulo-obligaciones-cancelar">Obligaciones a Cancelar</strong>
+						</h5>
+					</div>
 				</div>
 			</div>
-		</fieldset>
-	</div>
-	<div class="col-6" style="height: 500px;padding-left: 5px;">
-		<fieldset style="height: 500px;">
-			<legend>Detalle</legend>
-			<div class="row" >
-				<div class="col-1">
-					<button id="btnAgregarValor" class="btn btn-success btn-sm mt-2 me-1" type="button" title="Agregar">
-						<i class="bx bx-plus bx-xs"></i>
-					</button>
-				</div>
-				<div class="col-11" id="divValores">
-					<div class="col-11 mt-2 table-responsive table-wrapper-200" id="containerValores_Paso2" style="padding-right: 0px;width: 100%;">
-						<table class="table table-bordered table-hover" id="tbListaValores_Paso2">
-							<thead style="background: dodgerblue;">
+			<div class="grid-golden-body">
+				<div class="row" id="divObligaciones" style="height: 220px;">
+					<div class="table-responsive table-wrapper-400" id="containerListaObligaciones_Paso2" style="padding-right: 0px;">
+						<table class="table table-bordered table-hover" id="tbListaObligaciones_Paso2">
+							<thead style="background: darkred;">
 								<tr>
-									<th style="width:35%;" class="col-header-small align-center tiny-row">Cuenta Financiera</th>
-									<th style="width:55%;" class="col-header-small align-center tiny-row">Valor</th>
-									<th style="width:10%;" class="col-header-small align-center tiny-row">Importe</th>
-									<th style="width:0%; display:none;">orden</th>
-									<th style="width:0%; display:none;">dia_movi</th>
-									<th style="width:0%; display:none;">fc_compte</th>
-									<th style="width:0%; display:none;">fc_item</th>
+									<th style="width:25%;" class="col-header-small align-center tiny-row">Comprobante</th>
+									<th style="width:7%;" class="col-header-small align-center tiny-row" title="Vencimiento">Venc.</th>
+									<th style="width:38%;" class="col-header-small align-center tiny-row">Gasto</th>
+									<th style="width:20%;" class="col-header-small align-center tiny-row">Motivo</th>
+									<th style="width:10%;" class="col-header-small align-center tiny-row">Imputado</th>
+									<th style="width:0%;display:none;" class="col-header-small align-center tiny-row">afip_id</th>
+									<th style="width:0%;display:none;" class="col-header-small align-center tiny-row">cm_compte</th>
+									<th style="width:0%;display:none;" class="col-header-small align-center tiny-row">tco_id</th>
+									<th style="width:0%;display:none;" class="col-header-small align-center tiny-row">cm_cuit</th>
+									<th style="width:0%;display:none;" class="col-header-small align-center tiny-row">signo</th>
 								</tr>
 							</thead>
 							<tbody>
-								@if (Model != null && Model.GrillaValores.ListaDatos != null && Model.GrillaValores.ListaDatos.Count > 0)
+								@if (Model.GrillaObligaciones != null && Model.GrillaObligaciones.ListaDatos != null && Model.GrillaObligaciones.ListaDatos.Count > 0)
 								{
-									@foreach (var item in Model.GrillaValores.ListaDatos)
+									@foreach (var item in Model.GrillaObligaciones.ListaDatos)
 									{
 										if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
-										<tr class="@clase" onclick="selectReg(this, 'tbListaValores_Paso2')" ondblclick="selectRegDblGrillaValores(this);">
-											<td class="@Model.GrillaValores.ObtenerClase(item.ctaf_denominacion) cell-fit-content">@Model.GrillaValores.FormatearDato(item.ctaf_denominacion, FormatDato.Ninguno)</td>
-											<td class="@Model.GrillaValores.ObtenerClase(item.concepto_valor) cell-fit-content">@Model.GrillaValores.FormatearDato(item.concepto_valor, FormatDato.Monto)</td>
-											<td class="@Model.GrillaValores.ObtenerClase(item.op_importe) text-end cell-fit-content">@GridHelper.FormatearDato(item.op_importe, FormatDato.Monto, true)</td>
-											<td style="display:none;">@item.orden</td>
-											<td style="display:none;">@item.fc_dia_movi</td>
-											<td style="display:none;">@item.fc_compte</td>
-											<td style="display:none;">@item.fc_item</td>
+										<tr class="@clase" onclick="selectReg(this, 'tbListaObligaciones_Paso1')" ondblclick="selectRegDbl(this, 'tbListaObligaciones_Paso1')">
+											<td class="@Model.GrillaObligaciones.ObtenerClase(item.concepto) cell-fit-content">@Model.GrillaObligaciones.FormatearDato(item.concepto, FormatDato.Ninguno)</td>
+											<td class="@Model.GrillaObligaciones.ObtenerClase(item.fecha_vencimiento) cell-fit-content">@Model.GrillaObligaciones.FormatearDato(item.fecha_vencimiento, FormatDato.Fecha)</td>
+											<td class="@Model.GrillaObligaciones.ObtenerClase(item.gasto) cell-fit-content">@Model.GrillaObligaciones.FormatearDato(item.gasto, FormatDato.Ninguno)</td>
+											<td class="@Model.GrillaObligaciones.ObtenerClase(item.motivo) cell-fit-content">@Model.GrillaObligaciones.FormatearDato(item.motivo, FormatDato.Ninguno)</td>
+											<td class="@Model.GrillaObligaciones.ObtenerClase(item.imputado) text-end cell-fit-content">@GridHelper.FormatearDato((item.imputado * item.signo), FormatDato.Monto, true)</td>
+											<td style="display:none;">@item.afip_id</td>
+											<td style="display:none;">@item.cm_compte</td>
+											<td style="display:none;">@item.tco_id</td>
+											<td style="display:none;">@item.cm_cuit</td>
+											<td style="display:none;">@item.signo</td>
 										</tr>
 									}
 								}
@@ -137,6 +111,64 @@
 					</div>
 				</div>
 			</div>
-		</fieldset>
+		</div>
+	</div>
+	<div class="col-6" style="height: 500px;padding-left: 5px;">
+		<div class="grid-golden">
+			<div class="grid-golden-header">
+				<div class="row align-items-md-center">
+					<div class="col-md-10 col-sm-6 d-flex align-items-center">
+						<h5 class="mb-0 flex-grow-1">
+							<i class="bx bx-package me-2"></i>
+							<strong class="titulo-creditos-valores">Créditos y Valores</strong>
+						</h5>
+					</div>
+				</div>
+			</div>
+			<div class="grid-golden-body">
+				<div class="row">
+					<div class="col-1">
+						<button id="btnAgregarValor" class="btn btn-success btn-sm mt-2 me-1" type="button" title="Agregar">
+							<i class="bx bx-plus bx-xs"></i>
+						</button>
+					</div>
+					<div class="col-11" id="divValores">
+						<div class="col-11 mt-2 table-responsive table-wrapper-200" id="containerValores_Paso2" style="padding-right: 0px;width: 100%;">
+							<table class="table table-bordered table-hover" id="tbListaValores_Paso2">
+								<thead style="background: dodgerblue;">
+									<tr>
+										<th style="width:35%;" class="col-header-small align-center tiny-row">Cuenta Financiera</th>
+										<th style="width:55%;" class="col-header-small align-center tiny-row">Valor</th>
+										<th style="width:10%;" class="col-header-small align-center tiny-row">Importe</th>
+										<th style="width:0%; display:none;">orden</th>
+										<th style="width:0%; display:none;">dia_movi</th>
+										<th style="width:0%; display:none;">fc_compte</th>
+										<th style="width:0%; display:none;">fc_item</th>
+									</tr>
+								</thead>
+								<tbody>
+									@if (Model != null && Model.GrillaValores.ListaDatos != null && Model.GrillaValores.ListaDatos.Count > 0)
+									{
+										@foreach (var item in Model.GrillaValores.ListaDatos)
+										{
+											if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+											<tr class="@clase" onclick="selectReg(this, 'tbListaValores_Paso2')" ondblclick="selectRegDblGrillaValores(this);">
+												<td class="@Model.GrillaValores.ObtenerClase(item.ctaf_denominacion) cell-fit-content">@Model.GrillaValores.FormatearDato(item.ctaf_denominacion, FormatDato.Ninguno)</td>
+												<td class="@Model.GrillaValores.ObtenerClase(item.concepto_valor) cell-fit-content">@Model.GrillaValores.FormatearDato(item.concepto_valor, FormatDato.Monto)</td>
+												<td class="@Model.GrillaValores.ObtenerClase(item.op_importe) text-end cell-fit-content">@GridHelper.FormatearDato(item.op_importe, FormatDato.Monto, true)</td>
+												<td style="display:none;">@item.orden</td>
+												<td style="display:none;">@item.fc_dia_movi</td>
+												<td style="display:none;">@item.fc_compte</td>
+												<td style="display:none;">@item.fc_item</td>
+											</tr>
+										}
+									}
+								</tbody>
+							</table>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
 	</div>
 </div>
