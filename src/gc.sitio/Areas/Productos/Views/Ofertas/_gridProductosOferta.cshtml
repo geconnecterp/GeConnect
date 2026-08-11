@@ -3,6 +3,7 @@
 @{
     var alt = true;
     string clase = string.Empty;
+    var culturaImportes = System.Globalization.CultureInfo.GetCultureInfo("en-US");
 }
 
 <div class="card card-golden">
@@ -34,14 +35,14 @@
                                 <td class="@Model.ObtenerClase(item.p_desc)" title="@item.p_desc">
                                     @Model.FormatearDato(item.p_desc, FormatDato.Ninguno)
                                 </td>
-                                <td class="@Model.ObtenerClase(item.p_pcosto)">
-                                    @Model.FormatearDato(item.p_pcosto, FormatDato.Monto)
+                                <td class="text-end">
+                                    @item.p_pcosto.ToString("N3", culturaImportes)
                                 </td>
-                                <td class="@Model.ObtenerClase(item.p_mayorista)">
-                                    @Model.FormatearDato(item.p_mayorista, FormatDato.Monto)
+                                <td class="text-end">
+                                    @item.p_mayorista.ToString("N2", culturaImportes)
                                 </td>
-                                <td class="@Model.ObtenerClase(item.p_minorista)">
-                                    @Model.FormatearDato(item.p_minorista, FormatDato.Monto)
+                                <td class="text-end">
+                                    @item.p_minorista.ToString("N2", culturaImportes)
                                 </td>                            
                                 <td class="text-center">
                                     <button type="button"
@@ -77,21 +78,19 @@
 
         @if (Model.ListaDatos != null && Model.ListaDatos.Any())
         {
-            <div class="d-flex justify-content-between align-items-center mt-3 px-2">
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mt-2 px-2">
                 <div class="text-muted small">
                     <i class="bx bx-package me-1"></i>
                     Total: @Model.CantidadReg productos en ofertas
                 </div>
-                <div class="text-muted small">
+                <div class="d-flex ofertas-acciones">
                     <button type="button" class="btn btn-primary btn-sm" id="btnGuardarOfertas">
-                        <i class="bx bx-save"></i> Guardar Todas las Ofertas
+                        <i class="bx bx-save"></i> Guardar ofertas
                     </button>
-                </div>
-                <div class="text-muted small">
-                    <button type="button" class="btn btn-danger btn-sm mt-1 me-1"
+                    <button type="button" class="btn btn-danger btn-sm"
                             id="btnCancelaOferta" title="Cancelar oferta">
                         <i class="bx bx-x-circle"></i>
-                        Cancelar Oferta
+                        Cancelar
                     </button>
                 </div>
                

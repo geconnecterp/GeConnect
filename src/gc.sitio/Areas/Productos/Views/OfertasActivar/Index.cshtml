@@ -5,44 +5,123 @@
 
 @section styles {
     <link rel="stylesheet" href="~/lib/jstree/themes/default/style.min.css" />
+    <style>
+        .ofertas-sin-activar-layout > div { min-width: 0; }
+        .ofertas-sin-activar-info { margin-bottom: .5rem; }
+        .ofertas-sin-activar-info .osa-channel-info {
+            border: 1px solid #daa520;
+            border-radius: 6px;
+            overflow: hidden;
+            background: #fffdf5;
+        }
+        .ofertas-sin-activar-info .osa-channel-info-title {
+            padding: .3rem .65rem;
+            background: linear-gradient(135deg, #b8860b 0%, #daa520 100%);
+            color: #fff;
+            font-size: .875rem;
+            font-weight: 600;
+        }
+        .ofertas-sin-activar-info .osa-channel-info-data {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: .4rem 1rem;
+            padding: .35rem .65rem;
+            font-size: .875rem;
+        }
+        .ofertas-sin-activar-info .osa-channel-description {
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .ofertas-sin-activar-module .card-golden { margin-bottom: .5rem; }
+        .ofertas-sin-activar-module .card-golden .card-body { padding: .35rem !important; }
+        .ofertas-sin-activar-module .table-responsive { width: 100%; max-width: 100%; }
+        .ofertas-sin-activar-module .table-golden th {
+            padding: .35rem .45rem !important;
+            font-size: .875rem !important;
+            line-height: 1.2 !important;
+            vertical-align: middle;
+        }
+        .ofertas-sin-activar-module .table-golden td {
+            padding: .28rem .45rem !important;
+            font-size: .875rem !important;
+            line-height: 1.2 !important;
+            vertical-align: middle;
+        }
+        .ofertas-sin-activar-canales #tbGridCanales th:nth-child(3),
+        .ofertas-sin-activar-canales #tbGridCanales td:nth-child(3) { text-align: left !important; }
+        .ofertas-sin-activar-canales #tbGridCanales tr.selected-row {
+            background-color: #ffe29a !important;
+            border-left: 3px solid #b8860b;
+        }
+        .ofertas-sin-activar-productos #tbGridOfertasSinActivar { width: 100%; table-layout: auto; }
+        .ofertas-sin-activar-productos #tbGridOfertasSinActivar th:nth-child(1) { width: 42px; }
+        .ofertas-sin-activar-productos #tbGridOfertasSinActivar th:nth-child(2) { width: 82px; }
+        .ofertas-sin-activar-productos #tbGridOfertasSinActivar th:nth-child(4),
+        .ofertas-sin-activar-productos #tbGridOfertasSinActivar th:nth-child(5),
+        .ofertas-sin-activar-productos #tbGridOfertasSinActivar th:nth-child(6) { width: 105px; }
+        .ofertas-sin-activar-productos #tbGridOfertasSinActivar th:nth-child(7) { width: 205px; }
+        .ofertas-sin-activar-productos #tbGridOfertasSinActivar td:nth-child(3) {
+            min-width: 190px;
+            white-space: normal;
+        }
+        .ofertas-sin-activar-options .filter-golden-header { padding: .4rem .65rem; }
+        .ofertas-sin-activar-options .filter-golden-body {
+            display: grid;
+            gap: .45rem;
+            padding: .55rem;
+        }
+        .ofertas-sin-activar-options .osa-action-button {
+            width: 100%;
+            min-height: 38px;
+            margin: 0 !important;
+            padding: .35rem .5rem;
+            font-size: .875rem;
+            line-height: 1.15;
+            white-space: nowrap;
+        }
+        @@media (max-width: 991.98px) {
+            .ofertas-sin-activar-layout { row-gap: .75rem; }
+            .ofertas-sin-activar-productos #tbGridOfertasSinActivar { min-width: 850px; }
+        }
+    </style>
 }
 
-<div class="grid-golden">
+<div class="grid-golden mt-1 ofertas-sin-activar-module">
     <div class="grid-golden-body">
-        <div class="row align-items-md-start">
-            <div class="col-md-8 col-sm-6">
+        <div id="infoSeleccionContainer" class="ofertas-sin-activar-info"></div>
+        <div class="row g-2 align-items-md-start ofertas-sin-activar-layout">
+            <div class="col-xl-3 col-lg-4 col-12 ofertas-sin-activar-canales">
+                <div id="gridCanales"></div>
+                <div class="filter-golden ofertas-sin-activar-options">
+                    <div class="filter-golden-header"><h5 class="mb-0">Opciones</h5></div>
+                    <div class="filter-golden-body">
+                        <button type="button" class="btn btn-primary osa-action-button" id="btnActivarOfertas" disabled>
+                            <i class="bx bx-check-double"></i> Activar seleccionadas
+                        </button>
+                        <button type="button" class="btn btn-outline-danger osa-action-button" id="btnEliminarSelec" disabled>
+                            <i class="bx bx-trash me-1"></i> Eliminar seleccionadas
+                        </button>
+                        <button type="button" class="btn btn-outline-primary osa-action-button" id="btnActivarVencimiento" disabled>
+                            <i class="bx bx-calendar-alt me-1"></i> Actualizar vencimientos
+                        </button>
+                        <button type="button" class="btn btn-outline-primary osa-action-button" id="btnCargarActivos" disabled>
+                            <i class="bx bxs-cart me-1"></i> Cargar ofertas activas
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary osa-action-button" id="btnImprimir" disabled>
+                            <i class="bx bx-printer me-1"></i> Imprimir
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-9 col-lg-8 col-12 ofertas-sin-activar-productos">
                 <div id="gridOfertaNoActivas">
                     <p class="text-center text-muted py-4">
                         <i class="bx bx-info-circle me-2"></i>
-                        No hay productos seleccionados para ofertas
+                        Seleccione un canal para consultar sus ofertas sin activar
                     </p>
-                </div>
-            </div>
-            <div class="col-md-4 col-sm-6">
-                <div id="gridCanales"></div>
-                <div class="filter-golden">
-                    <div class="filter-golden-header">
-                        <h5 class="mb-0">Opciones</h5>
-                    </div>
-                    <div class="filter-golden-body">
-
-                        <button type="button" class="btn btn-primary w-100 mb-2" id="btnActivarOfertas">
-                            <i class="bx bx-check-double"></i> Activar Ofertas Seleccionadas
-                        </button>
-                        <button type="button" class="btn btn-outline-danger w-100 mb-2" id="btnEliminarSelec">
-                            <i class="bx bx-trash me-1"></i> Eliminar Seleccionados
-                        </button>
-                        <button type="button" class="btn btn-outline-primary w-100 mb-2" id="btnActivarVencimiento">
-                            <i class="bx bx-calendar-alt me-1"></i> Actualizar Vencimientos
-                        </button>
-                        <button type="button" class="btn btn-outline-primary w-100 mb-2" id="btnCargarActivos">
-                            <i class="bx bxs-cart me-1"></i> Cargar Activos
-                        </button>
-                        <button type="button" class="btn btn-outline-secondary w-100 mb-2" id="btnImprimir">
-                            <i class="bx bx-printer me-1"></i> Imprimir
-                        </button>
-                        
-                    </div>
                 </div>
             </div>
         </div>
@@ -70,6 +149,6 @@
     </script>
     <script src="~/lib/jstree/jstree.min.js"></script>
     <script src="~/js/app/areas/docmngr/docmanager.js"></script>
-    <script src="~/js/app/areas/precios/ofertaActivar.js" type="text/javascript"></script>
+    <script src="~/js/app/areas/precios/ofertaActivar.js" asp-append-version="true" type="text/javascript"></script>
 
 }

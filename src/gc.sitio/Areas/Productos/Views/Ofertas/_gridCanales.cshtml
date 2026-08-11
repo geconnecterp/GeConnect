@@ -28,13 +28,13 @@
                         {
                             if (alt) { clase = "table-row-alt"; alt = false; } else { clase = string.Empty; alt = true; }
 
-                            <tr class="@clase canal-seleccionable" style="min-height: 50px; cursor: pointer;"
+                            <tr class="@clase canal-seleccionable" style="cursor: pointer;"
                                 data-adm-id="@item.adm_id"
                                 data-lp-id="@item.lp_id"
                                 data-canal="@item.canal"
                                 data-adm-nombre="@item.adm_nombre" 
                                 data-lp-desc="@item.lp_desc">
-                                <td class="text-center">
+                                <td class="text-start">
                                     <input type="checkbox" class="form-check-input check-canal"
                                            data-adm-id="@item.adm_id"
                                            data-lp-id="@item.lp_id"
@@ -47,8 +47,8 @@
                                 <td class="text-center">
                                     @Model.FormatearDato(item.adm_id, FormatDato.Ninguno)
                                 </td>
-                                <td class="text-center">
-                                    <span class="badge bg-golden-light">@Model.FormatearDato(item.canal, FormatDato.Ninguno)</span>
+                                <td class="text-start">
+                                    @Model.FormatearDato(item.canal, FormatDato.Ninguno)
                                 </td>
                             </tr>
                         }

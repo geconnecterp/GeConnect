@@ -6,6 +6,7 @@
 // Variables de estado para gestión de selección
 var modoSeleccionCanal = "ninguno"; // "individual", "multiple", "ninguno"
 var canalIndividualSeleccionado = null;
+var solicitudOfertasSinActivar = null;
 
 // ✅ Inicialización del módulo (modificada)
 $(function () {
@@ -23,11 +24,6 @@ $(function () {
         cargarReporteEnArre(indexPrint, {}, "Ofertas Sin Activar");
 
 
-        // ✅ NUEVO: Seleccionar canal por defecto después de cargar los canales
-        setTimeout(function() {
-            seleccionarCanalPredeterminado();
-        }, 500); // Pequeño delay para asegurar que los canales estén cargados
-        
     } catch (e) { 
         console.error("Error al cargar canales:", e); 
         // Si falla la carga de canales, cargar las ofertas directamente
@@ -65,9 +61,8 @@ $(function () {
 });
 
 function imprimirOfertasSinActivar() {
-    //lo hacemos directamente aca ya que ahy que imprimir todos los productos
-    //de todas las sucursales de todas las listas de preciso activas.
-    let data = { adm_id:'001' };
+    // El reporte R032 obtiene las ofertas sin activar de todos los canales.
+    let data = {};
     cargarReporteEnArre(indexPrint, data, "Ofertas sin Activar");
 
     data = { modulo: "", parametros: [] }
@@ -88,6 +83,7 @@ function seleccionarCanalPredeterminado() {
         // Deseleccionar todas las filas y seleccionar solo la primera
         $("#tbGridCanales tr").removeClass("selected-row");
         primerCanal.addClass("selected-row");
+        $("#btnCargarActivos, #btnImprimir").prop("disabled", false);
         
         // Recargar ofertas sin activar con estos parámetros
         cargarOfertasSinActivar(admId, lpId, 1);
@@ -95,7 +91,8 @@ function seleccionarCanalPredeterminado() {
         console.log("Canal inicial seleccionado automáticamente:", canal);
     } else {
         console.warn("No se encontraron canales en la grilla, cargando ofertas con valores por defecto");
-        cargarOfertasSinActivar(); // Cargar con valores por defecto
+        $("#btnCargarActivos, #btnImprimir").prop("disabled", true);
+        CerrarWaiting();
     }
 }
 
@@ -105,32 +102,26 @@ function mostrarInformacionCanal(admId, lpId, adminDesc, lpDesc) {
     if (!adminDesc) adminDesc = admId;
     if (!lpDesc) lpDesc = lpId;
     
-    // Crear elemento informativo del canal seleccionado con estilo Golden
+    var admIdSeguro = $("<div>").text(admId).html();
+    var lpIdSeguro = $("<div>").text(lpId).html();
+    var descripcionCanal = $("<div>").text(lpDesc || adminDesc || `${admId} - ${lpId}`).html();
+
     var infoCanal = `
-        <div class="filter-golden mb-1 mt-1" id="infoCanal">
-            <div class="filter-golden-header">
-                <h5><i class="bx bx-broadcast me-2"></i>Canal Seleccionado</h5>
+        <div class="osa-channel-info" id="infoCanal">
+            <div class="osa-channel-info-title">
+                <i class="bx bx-broadcast me-1"></i>Canal seleccionado
             </div>
-            <div class="filter-golden-body py-2">
-                <div class="d-flex align-items-center">
-                    <div class="me-3">
-                        <span class="text-golden-dark">Administración:</span>
-                        <span class="badge bg-golden ms-1">${admId}</span>
-                    </div>
-                    <div class="border-start ps-3">
-                        <span class="text-golden-dark">Lista de Precios:</span>
-                        <span class="badge bg-golden ms-1">${lpId}</span>
-                        <span class="ms-1"><strong>${lpDesc}</strong></span>
-                    </div>
-                </div>
+            <div class="osa-channel-info-data">
+                <span><strong>Administración:</strong> <span class="badge bg-golden">${admIdSeguro}</span></span>
+                <span><strong>Lista de precios:</strong> <span class="badge bg-golden">${lpIdSeguro}</span></span>
+                <strong class="osa-channel-description">${descripcionCanal}</strong>
             </div>
         </div>
     `;
     
     // Verificar si existe el contenedor de información (si no, crearlo)
     if ($("#infoSeleccionContainer").length === 0) {
-        // Insertar un nuevo div antes de la fila principal que contiene los grids
-        $(".grid-golden-body .row").first().before('<div id="infoSeleccionContainer" class="mb-3"></div>');
+        $(".ofertas-sin-activar-layout").before('<div id="infoSeleccionContainer" class="ofertas-sin-activar-info"></div>');
     }
     
     // Actualizar la información del canal
@@ -140,6 +131,10 @@ function mostrarInformacionCanal(admId, lpId, adminDesc, lpDesc) {
 // ✅ MODIFICADA: Función para cargar ofertas sin activar con información de canal
 function cargarOfertasSinActivar(admId = "0000", lpId = "001", pagina = 1) {
     AbrirWaiting("Cargando ofertas sin activar...");
+
+    if (solicitudOfertasSinActivar && solicitudOfertasSinActivar.readyState !== 4) {
+        solicitudOfertasSinActivar.abort();
+    }
 
     // Crear objeto de datos para enviar en el cuerpo de la solicitud
     var datosPost = {
@@ -156,9 +151,8 @@ function cargarOfertasSinActivar(admId = "0000", lpId = "001", pagina = 1) {
     if (canalSeleccionado.length) {
         // Intentar obtener las descripciones desde las celdas de la tabla
         try {
-            // Asumir que la estructura de la tabla tiene las descripciones en celdas específicas
-            adminDesc = canalSeleccionado.find("td:eq(1)").text().trim();
-            lpDesc = canalSeleccionado.find("td:eq(2)").text().trim();
+            adminDesc = canalSeleccionado.data("adm-nombre") || admId;
+            lpDesc = canalSeleccionado.data("canal") || canalSeleccionado.data("lp-desc") || lpId;
         } catch (e) {
             console.warn("No se pudo obtener descripción del canal desde la fila");
         }
@@ -168,7 +162,7 @@ function cargarOfertasSinActivar(admId = "0000", lpId = "001", pagina = 1) {
     mostrarInformacionCanal(admId, lpId, adminDesc, lpDesc);
 
     // Realizar la llamada AJAX usando POST como especifica el controlador
-    $.ajax({
+    solicitudOfertasSinActivar = $.ajax({
         url: presentarOfertasSinActivarUrl,
         type: "POST",
         data: datosPost,
@@ -185,6 +179,8 @@ function cargarOfertasSinActivar(admId = "0000", lpId = "001", pagina = 1) {
             verificarOfertasVencidas();
         },
         error: function(xhr, status, error) {
+            if (status === "abort") return;
+
             CerrarWaiting();
             console.error("Error al cargar ofertas sin activar:", error);
             ControlaMensajeError("Error al cargar ofertas sin activar: " + (error || "Error desconocido"));
@@ -357,20 +353,6 @@ function inicializarShortcutsBasicos() {
 function cargarCanales() {
     AbrirWaiting("Cargando canales...");
 
-    // Añadir estilo para filas seleccionadas si no existe
-    if ($("style#canal-row-style").length === 0) {
-        $("<style>")
-            .attr("id", "canal-row-style")
-            .prop("type", "text/css")
-            .html(`
-                .selected-row {
-                    background-color: #e9f5ff !important;
-                    border-left: 3px solid #0d6efd;
-                }
-            `)
-            .appendTo("head");
-    }
-
     PostGenHtml({}, buscarCanalesUrl, function (obj) {
         CerrarWaiting();
         $("#gridCanales").html(obj);
@@ -380,6 +362,8 @@ function cargarCanales() {
         
         // Configurar eventos de selección
         configurarEventosGridCanales();
+
+        seleccionarCanalPredeterminado();
     }, function (error) {
         CerrarWaiting();
         ControlaMensajeError("Error al cargar canales: " + (error.message || "Error desconocido"));
@@ -418,6 +402,7 @@ function configurarEventosGridCanales() {
         // Deseleccionar todas las filas y seleccionar solo la actual
         $("#tbGridCanales tr").removeClass("selected-row");
         fila.addClass("selected-row");
+        $("#btnCargarActivos, #btnImprimir").prop("disabled", false);
         
         // Recargar ofertas sin activar con estos parámetros
         cargarOfertasSinActivar(admId, lpId, 1);
@@ -624,11 +609,12 @@ function obtenerOfertasSeleccionadas() {
 
 // ✅ OPTIMIZADA: Función para generar mensaje de confirmación con descripción
 function generarMensajeConfirmacionActivacion(ofertasSeleccionadas) {
-    var mensaje = `¿Desea activar ${ofertasSeleccionadas.length} oferta(s) seleccionada(s)?<br><br>`;
+    var cantidadTexto = ofertasSeleccionadas.length === 1 ? "1 oferta seleccionada" : `${ofertasSeleccionadas.length} ofertas seleccionadas`;
+    var mensaje = `¿Desea activar ${cantidadTexto}?<br><br>`;
     
     // Sección de ofertas
     mensaje += '<div class="text-start"><strong>📋 Ofertas Seleccionadas:</strong><br><small>';
-    mensaje += `Total: ${ofertasSeleccionadas.length} oferta(s)`;
+    mensaje += `Total: ${ofertasSeleccionadas.length} ${ofertasSeleccionadas.length === 1 ? "oferta" : "ofertas"}`;
     
     // Mostrar primeras 3 ofertas si hay más de una
     if (ofertasSeleccionadas.length > 1) {
@@ -722,13 +708,12 @@ function procesarActivacionOfertas(ofertasSeleccionadas) {
                 return;
             }
             
-            // Mensaje de éxito y recarga de la grilla
+            cargarOfertasSinActivar(admId, lp_id);
+
             AbrirMensaje(
                 "OPERACIÓN EXITOSA",
-                response.msg || `${ids.length} oferta(s) activada(s) correctamente`,
+                response.msg || (ids.length === 1 ? "Oferta activada correctamente" : `${ids.length} ofertas activadas correctamente`),
                 function() {
-                    // Recargar el grid
-                    cargarOfertasSinActivar(admId, lp_id);
                     $("#msjModal").modal("hide");
                     return true;
                 },
@@ -809,7 +794,7 @@ function activarOfertasVencidas() {
     // Mostrar mensaje de confirmación
     AbrirMensaje(
         "CONFIRMAR ACTUALIZACIÓN DE OFERTAS VENCIDAS",
-        `¿Está seguro que desea actualizar ${ofertasVencidas.length} oferta(s) vencida(s)?<br><br>
+        `¿Está seguro que desea actualizar ${ofertasVencidas.length} ${ofertasVencidas.length === 1 ? "oferta vencida" : "ofertas vencidas"}?<br><br>
          <div class="alert alert-warning">
             Esta acción actualizará las fechas de las ofertas vencidas para que puedan ser activadas.
          </div>`,
@@ -873,13 +858,12 @@ function procesarActualizacionDeOfertasVencidas(admId, lpId) {
                 return;
             }
             
-            // Mensaje de éxito y recarga de la grilla
+            cargarOfertasSinActivar(admId, lpId);
+
             AbrirMensaje(
                 "OPERACIÓN EXITOSA",
                 response.msg || "Ofertas vencidas actualizadas correctamente",
                 function() {
-                    // Recargar el grid con los mismos parámetros
-                    cargarOfertasSinActivar(admId, lpId);
                     $("#msjModal").modal("hide");
                     return true;
                 },
@@ -1005,13 +989,12 @@ function procesarEliminacionOfertas(ids, admId, lpId) {
                 return;
             }
             
-            // Mensaje de éxito y recarga de la grilla
+            cargarOfertasSinActivar(admId, lpId);
+
             AbrirMensaje(
                 "OPERACIÓN EXITOSA",
-                response.msg || `${ids.length} oferta(s) eliminada(s) correctamente`,
+                response.msg || (ids.length === 1 ? "Oferta eliminada correctamente" : `${ids.length} ofertas eliminadas correctamente`),
                 function() {
-                    // Recargar el grid con los mismos parámetros
-                    cargarOfertasSinActivar(admId, lpId);
                     $("#msjModal").modal("hide");
                     return true;
                 },
@@ -1091,11 +1074,8 @@ function configurarEventosGridOfertasSinActivar() {
         var lpId = "001";
         
         if (filaSeleccionada.length) {
-            var boton = filaSeleccionada.find(".btn-seleccionar-canal");
-            if (boton.length) {
-                admId = boton.data("adm-id");
-                lpId = boton.data("lp-id");
-            }
+            admId = filaSeleccionada.data("adm-id") || admId;
+            lpId = filaSeleccionada.data("lp-id") || lpId;
         }
         
         cargarOfertasSinActivar(admId, lpId, pagina);
@@ -1236,13 +1216,12 @@ function procesarCargaActivosASinActivar(admId, lpId) {
                 return;
             }
             
-            // Mensaje de éxito y recarga de la grilla
+            cargarOfertasSinActivar(admId, lpId);
+
             AbrirMensaje(
                 "OPERACIÓN EXITOSA",
                 response.msg || "Ofertas activas cargadas correctamente",
                 function() {
-                    // Recargar el grid con los mismos parámetros
-                    cargarOfertasSinActivar(admId, lpId);
                     $("#msjModal").modal("hide");
                     return true;
                 },
