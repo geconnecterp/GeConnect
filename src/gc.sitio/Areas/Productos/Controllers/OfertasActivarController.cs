@@ -53,6 +53,8 @@ namespace gc.sitio.Areas.Productos.Controllers
                 if (!VerificarAutenticacion(out IActionResult redirectResult))
                     return redirectResult;
 
+                OfertasSinActivar = [];
+
                 string titulo = "Ofertas sin Activar";
                 ViewData["Titulo"] = titulo;
                 #region Gestor Impresion - Inicializacion de variables
@@ -80,7 +82,7 @@ namespace gc.sitio.Areas.Productos.Controllers
             catch (Exception ex)
             {
                 _logger?.LogError(ex, "Error de negocio al cargar la vista de Ofertas sin Activar");
-                TempData["error"] = "Hubo un problema al cargar la vista de Ofertas Activas. Si el problema persiste, contacte al administrador.";
+                TempData["error"] = "Hubo un problema al cargar la vista de Ofertas sin Activar. Si el problema persiste, contacte al administrador.";
                 return View();
             }
         }
@@ -158,6 +160,7 @@ namespace gc.sitio.Areas.Productos.Controllers
                 {
                     throw new NegocioException(respuesta.Mensaje ?? "Error al actualizar las ofertas vencidas sin activar");
                 }
+                OfertasSinActivar = [];
                 return Json(new
                 {
                     error = false,
@@ -199,6 +202,7 @@ namespace gc.sitio.Areas.Productos.Controllers
                 {
                     throw new NegocioException(respuesta.Mensaje ?? "Error al Cargar los Activos a sin activar");
                 }
+                OfertasSinActivar = [];
                 return Json(new
                 {
                     error = false,
@@ -231,13 +235,25 @@ namespace gc.sitio.Areas.Productos.Controllers
                     return Json(new { error = true, msg = "Sesión expirada" });
 
 
-                if (ids == null)
+                if (ids == null || ids.Count == 0)
                 {
                     return Json(new { error = true, msg = "Debe al menos seleccionar una oferta para activar." });
                 }
-                //var productosIds = OfertasSinActivar.Where(x=>ids.Contains(x.p_id)).Select(p => new { p_id = p.p_id }).ToList();
-                var lista = OfertasSinActivar;
-                var ofertas = lista.Where(o => ids.Contains(o.p_id)).Select(p => new { p_id = p.p_id }).ToList();
+
+                var idsSolicitados = ids.Where(id => !string.IsNullOrWhiteSpace(id)).Distinct().ToList();
+                var estadoActual = await _ofertaServicio.ObtenerOfertasSinActivar(admId, lp_id, TokenCookie);
+                if (!estadoActual.Ok || estadoActual.EsError)
+                    return Json(new { error = true, msg = estadoActual.Mensaje ?? "No se pudo validar el estado actual de las ofertas." });
+
+                var lista = estadoActual.ListaEntidad ?? [];
+                var ofertasSeleccionadas = lista
+                    .Where(o => idsSolicitados.Contains(o.p_id) && o.adm_id == admId && o.lp_id == lp_id)
+                    .ToList();
+
+                if (ofertasSeleccionadas.Count != idsSolicitados.Count)
+                    return Json(new { error = true, msg = "La selección ya no coincide con el canal consultado. Actualice la grilla e intente nuevamente." });
+
+                var ofertas = ofertasSeleccionadas.Select(p => new { p_id = p.p_id }).ToList();
 
                 AbmPlusGenDto req = new AbmPlusGenDto
                 {
@@ -251,6 +267,10 @@ namespace gc.sitio.Areas.Productos.Controllers
                 {
                     throw new NegocioException(respuesta.Mensaje ?? "Error al activar la oferta");
                 }
+
+                OfertasSinActivar = lista
+                    .Where(o => !ofertasSeleccionadas.Any(s => s.p_id == o.p_id && s.adm_id == o.adm_id && s.lp_id == o.lp_id))
+                    .ToList();
                 return Json(new
                 {
                     error = false,
@@ -286,13 +306,25 @@ namespace gc.sitio.Areas.Productos.Controllers
                     return Json(new { error = true, msg = "Sesión expirada" });
 
 
-                if (ids == null)
+                if (ids == null || ids.Count == 0)
                 {
                     return Json(new { error = true, msg = "Debe al menos seleccionar una oferta para eliminar." });
                 }
-                //var productosIds = OfertasSinActivar.Where(x=>ids.Contains(x.p_id)).Select(p => new { p_id = p.p_id }).ToList();
-                var lista = OfertasSinActivar;
-                var ofertas = lista.Where(o => ids.Contains(o.p_id)).Select(p => new { p_id = p.p_id }).ToList();
+
+                var idsSolicitados = ids.Where(id => !string.IsNullOrWhiteSpace(id)).Distinct().ToList();
+                var estadoActual = await _ofertaServicio.ObtenerOfertasSinActivar(admId, lp_id, TokenCookie);
+                if (!estadoActual.Ok || estadoActual.EsError)
+                    return Json(new { error = true, msg = estadoActual.Mensaje ?? "No se pudo validar el estado actual de las ofertas." });
+
+                var lista = estadoActual.ListaEntidad ?? [];
+                var ofertasSeleccionadas = lista
+                    .Where(o => idsSolicitados.Contains(o.p_id) && o.adm_id == admId && o.lp_id == lp_id)
+                    .ToList();
+
+                if (ofertasSeleccionadas.Count != idsSolicitados.Count)
+                    return Json(new { error = true, msg = "La selección ya no coincide con el canal consultado. Actualice la grilla e intente nuevamente." });
+
+                var ofertas = ofertasSeleccionadas.Select(p => new { p_id = p.p_id }).ToList();
 
                 AbmPlusGenDto req = new AbmPlusGenDto
                 {
@@ -306,6 +338,10 @@ namespace gc.sitio.Areas.Productos.Controllers
                 {
                     throw new NegocioException(respuesta.Mensaje ?? "Error al Eliminar la(s) oferta(s)");
                 }
+
+                OfertasSinActivar = lista
+                    .Where(o => !ofertasSeleccionadas.Any(s => s.p_id == o.p_id && s.adm_id == o.adm_id && s.lp_id == o.lp_id))
+                    .ToList();
                 return Json(new
                 {
                     error = false,

@@ -103,18 +103,20 @@ namespace gc.sitio.Areas.Productos.Controllers
                 var respuesta = await _ofertaServicio.ConfirmacionAltaOferta(abmRequest, TokenCookie);
 
                 // ✅ PROCESAMIENTO: Respuesta del servicio
-                if (respuesta.Ok && (!respuesta.EsError || !respuesta.EsWarn) )
+                if (respuesta.Ok && !respuesta.EsError && !respuesta.EsWarn)
                 {
                     _logger?.LogInformation("Oferta confirmada exitosamente para {CantidadProductos} productos", totalProductos);
 
+                    var totalOfertas = CalcularTotalOfertas(request);
+
                     // ✅ LIMPIAR: Sesión después del éxito
-                    ProductosSeleccionadosV02.Clear();
+                    ProductosSeleccionadosV02 = [];
 
                     return Json(new
                     {
                         error = false,
                         msg = respuesta.Mensaje ?? "Ofertas guardadas correctamente",
-                        totalOfertas = CalcularTotalOfertas(request),
+                        totalOfertas,
                         totalProductos = totalProductos,
                         totalCanales = totalCanales
                     });
@@ -157,6 +159,11 @@ namespace gc.sitio.Areas.Productos.Controllers
                 if (producto == null || string.IsNullOrWhiteSpace(producto.P_id))
                 {
                     return PartialView("_gridMensaje", CrearRespuestaError("Producto requerido"));
+                }
+
+                if (!string.Equals(producto.P_activo, "S", StringComparison.OrdinalIgnoreCase))
+                {
+                    return PartialView("_gridMensaje", CrearRespuestaError("Solo se pueden agregar productos activos"));
                 }
 
                 // Para operar con la lista de Productos Seleccionados
@@ -202,6 +209,11 @@ namespace gc.sitio.Areas.Productos.Controllers
                     return PartialView("_gridMensaje", CrearRespuestaError("Lista de productos requerida"));
                 }
 
+                if (productos.Any(p => !string.Equals(p.P_activo, "S", StringComparison.OrdinalIgnoreCase)))
+                {
+                    return BadRequest(new { error = true, msg = "Solo se pueden agregar productos activos" });
+                }
+
                 // Para operar con la lista de Productos Seleccionados
                 var lista = ProductosSeleccionadosV02;
 
@@ -242,6 +254,25 @@ namespace gc.sitio.Areas.Productos.Controllers
                 _logger?.LogError(ex, "Error al presentar productos múltiples para oferta");
                 return PartialView("_gridMensaje", CrearRespuestaError("Error al agregar productos a ofertas"));
             }
+        }
+
+        [HttpPost]
+        public IActionResult QuitarProductoOferta(string p_id, int pag = 1)
+        {
+            if (!VerificarAutenticacion(out IActionResult redirectResult))
+                return redirectResult;
+
+            if (string.IsNullOrWhiteSpace(p_id))
+                return PartialView("_gridMensaje", CrearRespuestaError("Producto requerido"));
+
+            var lista = ProductosSeleccionadosV02
+                .Where(p => !string.Equals(p.P_id, p_id, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+
+            ProductosSeleccionadosV02 = lista;
+
+            var grid = GenerarGridProductosOferta(MapearProductosAOfertas(lista), pag);
+            return PartialView("_gridProductosOferta", grid);
         }
 
         /// <summary>
@@ -467,7 +498,7 @@ namespace gc.sitio.Areas.Productos.Controllers
                 return (false, "La fecha de inicio no puede ser anterior a la fecha actual");
 
             // ✅ CORRECCIÓN: Validación de período máximo
-            if (request.FechaHasta > request.FechaDesde.AddDays(30))
+            if (request.FechaHasta.Date > request.FechaDesde.Date.AddDays(29))
                 return (false, "El período de la oferta no puede exceder 30 días");
 
             // ✅ VALIDACIÓN: Canales

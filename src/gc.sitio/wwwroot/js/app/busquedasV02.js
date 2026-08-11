@@ -411,6 +411,16 @@ function selectRegDbl(x) {
     // Seleccionar fila actual
     $(x).addClass("selected-row");
 
+    // Ofertas necesita conservar los precios por lista de la búsqueda avanzada.
+    if (busquedaDestinoTipo === "ofertas" && typeof agregarProductoIndividualAOfertas === "function") {
+        const producto = $(x).find(".check-producto-busqueda").data("producto");
+        if (producto) {
+            $("#busquedaModal").modal("hide");
+            agregarProductoIndividualAOfertas(producto);
+            return;
+        }
+    }
+
     // Obtener ID del producto (primera celda visible después del checkbox)
     const id = x.cells[1].innerText.trim();
 
@@ -642,18 +652,18 @@ function generarGridDesdeProductoListaDto(productos, metadata) {
                 <tbody>${filas}</tbody>
             </table>
         </div>
-        ${generarSeccionMetadataYControles(lista.length, meta)}
+        ${generarSeccionMetadataYControles(productosSeleccionadosBusqueda.length, meta)}
     `;
 }
 
 // MANTENER: Funciones de formateo
 function formatearNumeroConCultura(numero, decimales = 2) {
     if (numero === null || numero === undefined || isNaN(numero)) {
-        return "0" + ",".repeat(decimales > 0 ? 1 : 0) + "0".repeat(decimales);
+        return "0" + ".".repeat(decimales > 0 ? 1 : 0) + "0".repeat(decimales);
     }
     
     const num = parseFloat(numero);
-    return num.toLocaleString('es-AR', {
+    return num.toLocaleString('en-US', {
         minimumFractionDigits: decimales,
         maximumFractionDigits: decimales,
         useGrouping: true
