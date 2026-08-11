@@ -4,10 +4,15 @@
 	var alt = true;
 	string clase = string.Empty;
 }
-
+<style>
+	#tbListaObligaciones_Paso1 thead th {
+		color: #c62828 !important; /* rojo profesional */
+		font-weight: bold;
+	}
+</style>
 <div class="table-responsive table-wrapper-400" id="containerListaObligaciones_Paso1">
-	<table class="table table-bordered table-hover" id="tbListaObligaciones_Paso1">
-		<thead style="background: darkred;">
+	<table class="table table-bordered table-hover table-golden" id="tbListaObligaciones_Paso1">
+		<thead>
 			<tr>
 				<th style="width:25%;" class="col-header-small align-center tiny-row">Comprobante</th>
 				<th style="width:7%;" class="col-header-small align-center tiny-row" title="Vencimiento">Venc.</th>

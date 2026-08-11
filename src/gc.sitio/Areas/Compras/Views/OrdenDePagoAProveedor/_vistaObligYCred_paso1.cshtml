@@ -49,6 +49,16 @@
 		padding-bottom: 2px !important;
 		line-height: 1.6 !important;
 	}
+
+	#tbListaObligacionesParaAgregar thead th {
+		color: #c62828 !important; /* rojo profesional */
+		font-weight: bold;
+	}
+
+	#tbListaCreditosParaAgregar thead th {
+		color: #1565c0 !important; /* azul profesional */
+		font-weight: bold;
+	}
 </style>
 @Html.Hidden("valoresANombreDe", Model.valoresANombreDe)
 <div class="row mt-2">
@@ -87,7 +97,7 @@
 				<div class="row" id="divObligacionesParaAgregar" style="height: 245px;">
 					<div class="table-responsive table-wrapper-200" id="containerListaObligacionesParaAgregar">
 						<table class="table table-bordered table-hover table-golden" id="tbListaObligacionesParaAgregar">
-							<thead style="background: darkred;">
+							<thead>
 								<tr class="header">
 									<th style="width:50%;" class="col-header-small align-center tiny-row">Comprobante</th>
 									<th style="width:10%;" class="col-header-small align-center tiny-row">Cuota</th>
@@ -143,8 +153,8 @@
 			<div class="grid-golden-body">
 				<div class="row" id="divCreditosParaAgregar" style="height: 200px;">
 					<div class="table-responsive table-wrapper-200" id="containerListaCreditosParaAgregar">
-						<table class="table table-bordered table-hover" id="tbListaCreditosParaAgregar">
-							<thead style="background: dodgerblue;">
+						<table class="table table-bordered table-hover table-golden" id="tbListaCreditosParaAgregar">
+							<thead>
 								<tr>
 									<th style="width:50%;" class="col-header-small align-center tiny-row">Comprobante</th>
 									<th style="width:10%;" class="col-header-small align-center tiny-row">Cuota</th>

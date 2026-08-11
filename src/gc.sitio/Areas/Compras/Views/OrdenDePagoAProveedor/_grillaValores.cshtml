@@ -4,6 +4,12 @@
 	var alt = true;
 	string clase = string.Empty;
 }
+<style>
+	#tbListaValores_Paso2 thead th {
+		color: #1565c0 !important; /* azul profesional */
+		font-weight: bold;
+	}
+</style>
 <div class="row" style="padding-right: 0px;">
 	<div class="col-1">
 		<button id="btnAgregarValor" class="btn btn-success btn-sm mt-2 me-1" type="button" title="Agregar">
@@ -11,8 +17,8 @@
 		</button>
 	</div>
 	<div class="col-11 mt-2 table-responsive table-wrapper-200" id="containerValores_Paso2" style="padding-right: 0px;">
-		<table class="table table-bordered table-hover" id="tbListaValores_Paso2">
-			<thead style="background: dodgerblue;">
+		<table class="table table-bordered table-hover table-golden" id="tbListaValores_Paso2">
+			<thead>
 				<tr>
 					<th style="width:35%;" class="col-header-small align-center tiny-row">Cuenta Financiera</th>
 					<th style="width:55%;" class="col-header-small align-center tiny-row">Valor</th>
