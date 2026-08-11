@@ -17,12 +17,12 @@
                 <thead class="sticky-top table-golden-header-compact">
                     <tr class="header">
                         <th class="text-center th-compact">ID</th>
-                        <th class="text-left th-compact">DescripciÛn</th>
+                        <th class="text-left th-compact">Descripci√≥n</th>
                         <th class="text-center th-compact">Costo</th>
                         <th class="text-center th-compact">Cantidad</th>
                         <th class="text-center th-compact">Descuento %</th>
                         @* <th class="text-center th-compact">Estado</th> *@
-                        <th class="text-center th-compact">AcciÛn</th>
+                        <th class="text-center th-compact">Acci√≥n</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -30,20 +30,20 @@
                     {
                         foreach (var item in Model.ListaDatos)
                         {
-                            <tr data-producto-id="@item.p_id" data-combo-id="@item.cmb_id">
+                            <tr data-producto-id="@item.p_id" data-combo-id="@item.cmb_id" data-up-id="@item.up_id">
                                 <td class="text-center">
                                     @item.p_id
                                 </td>
-                                <td>
+                                <td class="promo-descripcion" title="@item.p_desc">
                                     @item.p_desc
                                 </td>
                                 <td class="text-end">
-                                    @item.p_pcosto.ToString("N3")
+                                    @item.p_pcosto.ToString("N3", System.Globalization.CultureInfo.GetCultureInfo("en-US"))
                                 </td>
                                 <td class="text-end">
                                     <div class="input-container">
                                         <input type="text" class="form-control form-control-sm input-cantidad input-numeric"
-                                               value="@(item.cantidad.ToString("N0"))"
+                                               value="@(item.cantidad.ToString("0.##", System.Globalization.CultureInfo.GetCultureInfo("en-US")))"
                                                data-producto-id="@item.p_id"
                                                data-original-value="@item.cantidad"
                                                readonly />
@@ -52,7 +52,7 @@
                                 <td class="text-end">
                                     <div class="input-container">
                                         <input type="text" class="form-control form-control-sm input-descuento input-numeric"
-                                               value="@(item.dto_porc.ToString("N2"))"
+                                               value="@(item.dto_porc.ToString("N5", System.Globalization.CultureInfo.GetCultureInfo("en-US")))"
                                                data-producto-id="@item.p_id"
                                                data-original-value="@item.dto_porc"
                                                readonly />
@@ -63,7 +63,7 @@
                                         @(item.activo == 'A' ? "Activo" : "Pendiente")
                                     </span>
                                 </td> *@
-                                <td class="text-center">
+                                <td class="text-center promo-accion">
                                     <button type="button" class="btn btn-sm btn-outline-danger btn-eliminar-producto" 
                                             title="Eliminar producto" data-producto-id="@item.p_id">
                                         <i class="bx bx-trash"></i>
@@ -87,13 +87,13 @@
 </div>
 
 <script>
-    // InicializaciÛn de campos editables ahora se hace autom·ticamente desde combo.js
-    // Este script solo verifica y asegura que la inicializaciÛn se ejecute
+    // Inicializaci√≥n de campos editables ahora se hace autom√°ticamente desde combo.js
+    // Este script solo verifica y asegura que la inicializaci√≥n se ejecute
     $(function() {
         if (typeof inicializarCamposEditablesProductos === 'function') {
             inicializarCamposEditablesProductos();
         } else {
-            console.error("La funciÛn inicializarCamposEditablesProductos no est· definida");
+            console.error("La funci√≥n inicializarCamposEditablesProductos no est√° definida");
         }
     });
 </script>

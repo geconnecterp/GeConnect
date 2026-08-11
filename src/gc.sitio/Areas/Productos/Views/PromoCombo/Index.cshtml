@@ -7,35 +7,54 @@
 
 @section styles {
     <link rel="stylesheet" href="~/css/simplePagination.css" />
+    <style>
+        #promoComboApp .promo-filtros .input-group-text { min-width: 74px; justify-content: center; }
+        #promoComboApp .promo-filtros .form-select { min-width: 190px; }
+        #promoComboApp .promo-grid-detalle { min-height: 320px; }
+        #promoComboApp .grid-golden-header { min-height: 34px; color: #212529; }
+        #promoComboApp .grid-golden-header h6 { color: #212529; font-weight: 700; }
+        #promoComboApp .table-golden th,
+        #promoComboApp .table-golden td { padding: .3rem .4rem; vertical-align: middle; font-size: .82rem; }
+        #promoComboApp .promo-descripcion { max-width: 260px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        #promoComboApp .promo-accion { width: 54px; }
+        #promoComboApp #divComboDatos .input-group-text { font-weight: 600; }
+        #promoComboApp #cmb_tipo { font-weight: 700; }
+        #promoComboApp #cmb_desde,
+        #promoComboApp #cmb_hasta { min-width: 138px; }
+        #promoComboApp .selectedEdit-row > td { background-color: #f8d7da !important; }
+        @@media (max-width: 991.98px) {
+            #promoComboApp .promo-grid-detalle { min-height: auto; margin-bottom: .75rem; }
+        }
+    </style>
 }
 
-<partial name="_botonera" model="filtro" />
-<div class="collapse" id="divFiltro">
-    <partial name="_filtroBase" model="filtro" />
-    @Html.Hidden("pagEstado", false)
-</div>
-<div class="collapse" id="divDetalle"></div>
-
-<div id="divTools">
-    <div class="row mb-3">
-        <div class="col-12">
-            <partial name="_ComboDatos" />
-        </div>
+<div id="promoComboApp">
+    <partial name="_botonera" model="filtro" />
+    <div class="collapse promo-filtros" id="divFiltro">
+        <partial name="_filtroBase" model="filtro" />
+        @Html.Hidden("pagEstado", false)
     </div>
-    <div class="row mb-3">
-        <div class="col-sm-4" id="divCanales">
-            <!-- Aquí se cargará la vista parcial _gridComboCanales -->
-        </div>
-        <!-- Productos (33%) -->
-        <div class="col-sm-4">
-            <div id="divComboProducto" style="display:none;">
-                <partial name="_gridProductos" model="new GridCoreSmart<ComboProductoDto>()" />
+    <div class="collapse" id="divDetalle"></div>
+
+    <div id="divTools">
+        <div class="row mb-2">
+            <div class="col-12">
+                <partial name="_ComboDatos" />
             </div>
         </div>
-        <!-- Sustitutos (33%) -->
-        <div class="col-sm-4">
-            <div id="divComboSustituto" style="display:none;">
-                <partial name="_gridSustitutos" model="new GridCoreSmart<ComboSustitutoDto>()" />
+        <div class="row g-2 mb-3">
+            <div class="col-12 col-lg-3 promo-grid-detalle" id="divCanales">
+                <!-- Aquí se cargará la vista parcial _gridComboCanales -->
+            </div>
+            <div class="col-12 col-lg-5 promo-grid-detalle" id="colComboProducto">
+                <div id="divComboProducto" style="display:none;">
+                    <partial name="_gridProductos" model="new GridCoreSmart<ComboProductoDto>()" />
+                </div>
+            </div>
+            <div class="col-12 col-lg-4 promo-grid-detalle" id="colComboSustituto">
+                <div id="divComboSustituto" style="display:none;">
+                    <partial name="_gridSustitutos" model="new GridCoreSmart<ComboSustitutoDto>()" />
+                </div>
             </div>
         </div>
     </div>
@@ -59,6 +78,7 @@
         let retornarProductosSustitutosUrl = "@Url.Action("RetornarProductosSustitutos", "promocombo", new { area = "productos" })";
         let confirmacionComboUrl = "@Url.Action("ConfirmacionCombo", "promocombo", new { area = "productos" })";
         let eliminarSustitutoUrl = "@Url.Action("EliminarSustituto", "promocombo", new { area = "productos" })";
+        let limpiarSustitutosTemporalesUrl = "@Url.Action("LimpiarSustitutosTemporales", "promocombo", new { area = "productos" })";
         let obtenerPreajustePromoUrl = "@Url.Action("ObtenerPreajustePromo", "promocombo", new { area = "productos" })";
 
         let homeCombo = "@Url.Action("index", "promocombo", new { area = "productos" })";
@@ -78,5 +98,5 @@
     </script>
     <script src="~/js/plugins/jquery.simplePagination.js"></script>
     <script src="~/js/app/busquedasV02.js" type="text/javascript"></script>
-    <script src="~/js/app/areas/precios/combo.js"></script>
+    <script src="~/js/app/areas/precios/combo.js" asp-append-version="true"></script>
 }

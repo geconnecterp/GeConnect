@@ -56,6 +56,7 @@ namespace gc.sitio.Areas.Productos.Controllers
 
                 // Inicializar lista al ingresar el modulo
                 ProductosSeleccionadosV02 = [];
+                ProductosSustitutos = [];
 
                 #region Gestor Impresion - Inicializacion de variables
 
@@ -106,8 +107,12 @@ namespace gc.sitio.Areas.Productos.Controllers
                     return redirectResult;
                 int cantTotalReg = 0;
 
+                if (string.IsNullOrWhiteSpace(filtros.Estado) || filtros.Estado == "%")
+                {
+                    return PartialView("_gridMensaje", CrearRespuestaWarning("Debe seleccionar un Estado antes de consultar."));
+                }
+
                 filtros.Tipo = string.IsNullOrEmpty(filtros.Tipo) ? "%" : filtros.Tipo;
-                filtros.Estado = string.IsNullOrEmpty(filtros.Estado) ? "%" : filtros.Estado;
                 filtros.Registros = _configuracion.NroRegistrosPagina;
 
                 // Llamar al servicio para buscar combos
@@ -629,15 +634,65 @@ namespace gc.sitio.Areas.Productos.Controllers
                     return Json(new { ok = false, mensaje = "La descripción del combo/promoción es requerida" });
                 }
 
+                if (request.Datos.cmb_desc.Length > 25)
+                {
+                    return Json(new { ok = false, mensaje = "La descripción no puede superar los 25 caracteres" });
+                }
+
+                if (request.Datos.cmb_desde.Date > request.Datos.cmb_hasta.Date)
+                {
+                    return Json(new { ok = false, mensaje = "La fecha Desde no puede ser posterior a la fecha Hasta" });
+                }
+
+                if (!new[] { 'N', 'A', 'H' }.Contains(request.Datos.cmb_estado))
+                {
+                    return Json(new { ok = false, mensaje = "El estado informado no es válido" });
+                }
+
+                if (request.Productos.Any(x => x.cantidad <= 0))
+                {
+                    return Json(new { ok = false, mensaje = "Todas las cantidades deben ser mayores a cero" });
+                }
+
                 // Preparar datos para envío
-                var prods = request.Productos.Select(x => new { x.p_id, x.cantidad, dto = x.dto_porc, x.activo, costo = x.p_pcosto });
+                bool usaImporte = request.Datos.cmb_tipo is 'Q' or 'D';
+                var prods = request.Productos.Select(x => new
+                {
+                    x.p_id,
+                    x.cantidad,
+                    dto = usaImporte ? (x.dto_imp != 0 ? x.dto_imp : x.dto_porc) : x.dto_porc,
+                    x.activo,
+                    costo = x.p_pcosto
+                });
                 var sustitutos = ProductosSustitutos ?? new List<ComboSustitutoDto>();
                 // Crear un HashSet con los IDs de productos para búsquedas más eficientes (O(1))
                 var productosIds = request.Productos.Select(p => p.p_id).ToHashSet();
 
+                var productosPorId = request.Productos
+                    .GroupBy(p => p.p_id)
+                    .ToDictionary(g => g.Key, g => g.First());
+                var sustitutoPropio = sustitutos.FirstOrDefault(s =>
+                    productosIds.Contains(s.p_id) && s.p_id == s.p_id_sustituto);
+                if (sustitutoPropio != null)
+                {
+                    return Json(new { ok = false, mensaje = "Un producto no puede ser sustituto de sí mismo" });
+                }
+
+                var sustitutoConCostoDistinto = sustitutos.FirstOrDefault(s =>
+                    productosPorId.TryGetValue(s.p_id, out var productoPrincipal) &&
+                    Math.Abs(productoPrincipal.p_pcosto - s.p_pcosto) > 0.0005m);
+                if (sustitutoConCostoDistinto != null)
+                {
+                    return Json(new
+                    {
+                        ok = false,
+                        mensaje = $"El sustituto {sustitutoConCostoDistinto.p_id_sustituto} debe tener el mismo costo que el producto principal {sustitutoConCostoDistinto.p_id}"
+                    });
+                }
+
                 // Filtrar sustitutos que solo pertenecen a los productos en la solicitud
                 var sus = sustitutos
-                    .Where(s => productosIds.Contains(s.p_id))
+                    .Where(s => !usaImporte && productosIds.Contains(s.p_id))
                     .Select(x => new { x.p_id, x.p_id_sustituto, x.activo, costo = x.p_pcosto });
                 var canales = request.Canales.Select(x => new { x.adm_id, x.lp_id }).ToList();
                 var req = new AbmPlusGenDto
@@ -658,7 +713,7 @@ namespace gc.sitio.Areas.Productos.Controllers
                 {
                     // Log y limpieza de datos temporales
                     _logger?.LogInformation("Combo/Promoción guardado exitosamente: {ComboDesc}", request.Datos.cmb_desc);
-                    ProductosSustitutos.Clear();
+                    ProductosSustitutos = [];
 
                     // Respuesta de éxito
                     return Json(new
@@ -696,6 +751,13 @@ namespace gc.sitio.Areas.Productos.Controllers
                     msg = "Error interno al procesar la solicitud" 
                 });
             }
+        }
+
+        [HttpPost]
+        public JsonResult LimpiarSustitutosTemporales()
+        {
+            ProductosSustitutos = [];
+            return Json(new { ok = true });
         }
 
         /// <summary>
