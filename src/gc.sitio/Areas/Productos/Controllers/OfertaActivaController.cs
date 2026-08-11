@@ -97,7 +97,7 @@ namespace gc.sitio.Areas.Productos.Controllers
                 RespuestaGenerica<OfertaDto> respuesta = await _ofertaServicio.ObtenerOfertasActivas(admId, lp_id, TokenCookie);
                 if (!respuesta.Ok || respuesta.EsError)
                 {
-                    var msg = respuesta.Mensaje ?? "Error al obtener ofertas sin activar";
+                    var msg = respuesta.Mensaje ?? "Error al obtener ofertas activas";
                     TempData["error"] = msg;
                     throw new NegocioException(msg);
                 }
@@ -130,13 +130,13 @@ namespace gc.sitio.Areas.Productos.Controllers
             }
             catch (NegocioException ex)
             {
-                _logger?.LogError(ex, "Error interno al cargar ofertas sin activar");
+                _logger?.LogError(ex, "Error interno al cargar ofertas activas");
                 return PartialView("_gridMensaje", CrearRespuestaWarning(ex.Message));
             }
             catch (Exception ex)
             {
-                _logger?.LogError(ex, "Error interno al cargar ofertas sin activar");
-                return PartialView("_gridMensaje", CrearRespuestaError("Error interno al cargar ofertas sin activar"));
+                _logger?.LogError(ex, "Error interno al cargar ofertas activas");
+                return PartialView("_gridMensaje", CrearRespuestaError("Error interno al cargar ofertas activas"));
             }
         }
 
@@ -151,13 +151,28 @@ namespace gc.sitio.Areas.Productos.Controllers
                     return Json(new { error = true, msg = "Sesión expirada" });
 
 
-                if (ids == null)
+                if (ids == null || ids.Count == 0)
                 {
-                    return Json(new { error = true, msg = "Debe al menos seleccionar una oferta para eliminar." });
+                    return Json(new { error = true, msg = "Debe seleccionar al menos una oferta para eliminar." });
                 }
-                //var productosIds = OfertasSinActivar.Where(x=>ids.Contains(x.p_id)).Select(p => new { p_id = p.p_id }).ToList();
-                var lista = OfertasActivas;
-                var ofertas = lista.Where(o => ids.Contains(o.p_id)).Select(p => new { p_id = p.p_id }).ToList();
+
+                var idsSolicitados = ids.Where(id => !string.IsNullOrWhiteSpace(id)).Distinct().ToList();
+                if (idsSolicitados.Count == 0)
+                    return Json(new { error = true, msg = "Debe seleccionar al menos una oferta para eliminar." });
+
+                var estadoActual = await _ofertaServicio.ObtenerOfertasActivas(admId, lp_id, TokenCookie);
+                if (!estadoActual.Ok || estadoActual.EsError)
+                    return Json(new { error = true, msg = estadoActual.Mensaje ?? "No se pudo validar el estado actual de las ofertas." });
+
+                var lista = estadoActual.ListaEntidad ?? [];
+                var ofertasSeleccionadas = lista
+                    .Where(o => idsSolicitados.Contains(o.p_id) && o.adm_id == admId && o.lp_id == lp_id)
+                    .ToList();
+
+                if (ofertasSeleccionadas.Count != idsSolicitados.Count)
+                    return Json(new { error = true, msg = "La selección ya no coincide con el canal consultado. Actualice la grilla e intente nuevamente." });
+
+                var ofertas = ofertasSeleccionadas.Select(p => new { p_id = p.p_id }).ToList();
 
                 AbmPlusGenDto req = new AbmPlusGenDto
                 {
@@ -169,15 +184,16 @@ namespace gc.sitio.Areas.Productos.Controllers
                 RespuestaGenerica<RespuestaDto> respuesta = await _ofertaServicio.EliminaOfertasActivas(req, TokenCookie);
                 if (!respuesta.Ok || respuesta.EsError)
                 {
-                    throw new NegocioException(respuesta.Mensaje ?? "Error al Eliminar la(s) oferta(s)");
+                    throw new NegocioException(respuesta.Mensaje ?? "Error al eliminar las ofertas seleccionadas");
                 }
+                OfertasActivas = [];
                 return Json(new
                 {
                     error = false,
                     warn = false,
-                    msg = ids.Count == 1 ?
-                            string.IsNullOrEmpty(respuesta.Mensaje) ? "Oferta Eliminada correctamente." : respuesta.Mensaje :
-                            string.IsNullOrEmpty(respuesta.Mensaje) ? "Ofertas Eliminadas correctamente." : respuesta.Mensaje,
+                    msg = idsSolicitados.Count == 1 ?
+                            string.IsNullOrEmpty(respuesta.Mensaje) ? "Oferta eliminada correctamente." : respuesta.Mensaje :
+                            string.IsNullOrEmpty(respuesta.Mensaje) ? "Ofertas eliminadas correctamente." : respuesta.Mensaje,
                     adm_Id = admId,
                     lp_id
                 });
@@ -186,12 +202,12 @@ namespace gc.sitio.Areas.Productos.Controllers
             catch (NegocioException ex)
             {
                 _logger?.LogError(ex, msg);
-                return Json(new { error = false, warn = true, msg = ex.Message });
+                return Json(new { error = true, warn = false, msg = ex.Message });
             }
             catch (Exception ex)
             {
                 _logger?.LogError(ex, msg);
-                return Json(new { error = false, warn = true, msg });
+                return Json(new { error = true, warn = false, msg });
             }
         }
 
@@ -227,8 +243,11 @@ namespace gc.sitio.Areas.Productos.Controllers
                 // Convertir los strings a tuplas (admId, lpId)
                 var canalesDestino = canalesDestinoStr
                     .Select(canalStr => canalStr.Split('#'))
-                    .Where(partes => partes.Length == 2)
+                    .Where(partes => partes.Length == 2 &&
+                                      !string.IsNullOrWhiteSpace(partes[0]) &&
+                                      !string.IsNullOrWhiteSpace(partes[1]))
                     .Select(partes => new { adm_id= partes[0], lp_id= partes[1]})
+                    .Distinct()
                     .ToList();
                 //var canalesDestino = new List<(string admId, string lpId)>();
                 //foreach (var canalStr in canalesDestinoStr)
@@ -247,14 +266,24 @@ namespace gc.sitio.Areas.Productos.Controllers
                 if (!canalesDestino.Any())
                     return Json(new { error = true, msg = "No se pudo procesar ningún canal destino válido" });
 
-                // Obtener ofertas seleccionadas de la lista en memoria
-                var ofertasSeleccionadas = OfertasActivas
-                    .Where(o => ids.Contains(o.p_id))
+                if (canalesDestino.Any(c => c.adm_id == admIdOrigen && c.lp_id == lpIdOrigen))
+                    return Json(new { error = true, msg = "El canal origen no puede incluirse entre los canales destino" });
+
+                var idsSolicitados = ids.Where(id => !string.IsNullOrWhiteSpace(id)).Distinct().ToList();
+                if (idsSolicitados.Count == 0)
+                    return Json(new { error = true, msg = "Debe seleccionar al menos una oferta para copiar" });
+
+                var estadoActual = await _ofertaServicio.ObtenerOfertasActivas(admIdOrigen, lpIdOrigen, TokenCookie);
+                if (!estadoActual.Ok || estadoActual.EsError)
+                    return Json(new { error = true, msg = estadoActual.Mensaje ?? "No se pudo validar el estado actual de las ofertas." });
+
+                var ofertasSeleccionadas = (estadoActual.ListaEntidad ?? [])
+                    .Where(o => idsSolicitados.Contains(o.p_id) && o.adm_id == admIdOrigen && o.lp_id == lpIdOrigen)
                     .Select(p => new { p_id = p.p_id })
                     .ToList();
 
-                if (!ofertasSeleccionadas.Any())
-                    return Json(new { error = true, msg = "No se encontraron las ofertas seleccionadas" });
+                if (ofertasSeleccionadas.Count != idsSolicitados.Count)
+                    return Json(new { error = true, msg = "La selección ya no coincide con el canal origen. Actualice la grilla e intente nuevamente." });
 
                 // Crear el objeto de petición para el servicio
                 var req = new AbmPlusGenDto
@@ -276,15 +305,15 @@ namespace gc.sitio.Areas.Productos.Controllers
                 // Llamar al servicio para copiar las ofertas
                 var respuesta = await _ofertaServicio.CopiarACanal(req, TokenCookie);
                     
-                if (!respuesta.Ok)
+                if (!respuesta.Ok || respuesta.EsError)
                     return Json(new { 
                         error = true, 
                         msg = respuesta.Mensaje ?? "Error al copiar ofertas a los canales destino"
                     });
                     
                 // Construir mensaje según cantidad de ofertas y canales
-                string mensajeExito = $"{ids.Count} oferta{(ids.Count == 1 ? "" : "s")} " +
-                                      $"copiada{(ids.Count == 1 ? "" : "s")} a " +
+                string mensajeExito = $"{idsSolicitados.Count} oferta{(idsSolicitados.Count == 1 ? "" : "s")} " +
+                                      $"copiada{(idsSolicitados.Count == 1 ? "" : "s")} a " +
                                       $"{canalesDestino.Count} canal{(canalesDestino.Count == 1 ? "" : "es")}";
 
                 if (!string.IsNullOrEmpty(respuesta.Mensaje))
@@ -297,7 +326,7 @@ namespace gc.sitio.Areas.Productos.Controllers
                     msg = mensajeExito,
                     admIdOrigen,
                     lpIdOrigen,
-                    cantidadOfertas = ids.Count,
+                    cantidadOfertas = idsSolicitados.Count,
                     cantidadCanales = canalesDestino.Count
                 });
             }

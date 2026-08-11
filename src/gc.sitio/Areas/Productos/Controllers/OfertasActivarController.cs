@@ -275,9 +275,9 @@ namespace gc.sitio.Areas.Productos.Controllers
                 {
                     error = false,
                     warn = false,
-                    msg = ids.Count == 1 ?
-                            string.IsNullOrEmpty(respuesta.Mensaje) ? "Oferta Activada correctamente." : respuesta.Mensaje :
-                            string.IsNullOrEmpty(respuesta.Mensaje) ? "Ofertas activadas correctamente." : respuesta.Mensaje,
+                    msg = idsSolicitados.Count == 1
+                        ? "La oferta se activó exitosamente."
+                        : $"Las {idsSolicitados.Count} ofertas se activaron exitosamente.",
                     adm_Id = admId,
                     lp_id
                 });

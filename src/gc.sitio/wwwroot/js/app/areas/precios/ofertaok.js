@@ -5,6 +5,7 @@
 var admId = "0000";
 var lpId = "001";
 var canal = "SANTA LUCIA - MAYORISTA";
+var solicitudOfertasActivas = null;
 var OfertaOk = {
     // Estado de la aplicación
     estado: {
@@ -28,8 +29,6 @@ var OfertaOk = {
         // Inicializar eventos básicos
         this.inicializarEventos();
 
-        $(".canal - seleccionable").trigger("click");
-        
         // Cargar canales
         this.cargarCanales();
 
@@ -62,10 +61,6 @@ var OfertaOk = {
             $("<style>")
                 .attr("id", "canal-row-style")
                 .html(`
-                    .selected-row {
-                        background-color: #e9f5ff !important;
-                        border-left: 3px solid #0d6efd;
-                    }
                     .canal-destino-selected {
                         background-color: #d1e7dd !important;
                         border-left: 3px solid #198754;
@@ -83,9 +78,10 @@ var OfertaOk = {
 
     // Ocultar elementos de selección múltiple de canales
     ocultarElementosSeleccionCanales: function () {
-        // Ocultar elementos relacionados con selección múltiple
-        $("#checkAllCanales, .check-canal").parent().css("display", "none");
-        $("#btnLimpiarSeleccion, #canalesSeleccionados, #infoSeleccionCanales").css("display", "none");
+        // La grilla principal usa selección por fila; los checks se reservan para el modal destino.
+        $("#tbGridCanales th:first-child, #tbGridCanales td:first-child").css("display", "none");
+        $("#btnLimpiarSeleccion, #infoSeleccionCanales").css("display", "none");
+        $("#canalesSeleccionados").closest("div").css("display", "none");
     },
 
     // Cachear referencias a elementos DOM frecuentes para mejorar rendimiento
@@ -240,10 +236,7 @@ var OfertaOk = {
                 // Configurar eventos y UI después de cargar canales
                 self.ocultarElementosSeleccionCanales();
 
-                // Seleccionar canal por defecto
-                setTimeout(function () {
-                    self.seleccionarCanalPredeterminado();
-                }, 100);
+                self.seleccionarCanalPredeterminado();
             },
             error: function (xhr, status, error) {
                 CerrarWaiting();
@@ -459,21 +452,21 @@ var OfertaOk = {
     // Seleccionar canal destino en el modal
     seleccionarCanalDestino: function ($fila) {
         // Recopilamos la información del canal
-        admId = $fila.data("adm-id");
-        lpId = $fila.data("lp-id");
-        canal = $fila.data("canal") || "Canal seleccionado";
+        var admIdDestino = $fila.data("adm-id");
+        var lpIdDestino = $fila.data("lp-id");
+        var canalDestino = $fila.data("canal") || "Canal seleccionado";
         var admNombre = $fila.data("adm-nombre");
         var lpDesc = $fila.data("lp-desc");
 
         // Guardar información del canal destino en el estado
         this.estado.canalDestino = {
-            admId: admId,
-            lpId: lpId,
-            descripcion: canal
+            admId: admIdDestino,
+            lpId: lpIdDestino,
+            descripcion: canalDestino
         };
 
         // Mostrar información del canal seleccionado
-        $("#canalDestinoSeleccionado").text(canal);
+        $("#canalDestinoSeleccionado").text(canalDestino);
         $("#destinoSeleccionInfo").removeClass("d-none");
 
         // Habilitar el botón de confirmar
@@ -539,7 +532,7 @@ var OfertaOk = {
         // Mostrar confirmación final
         AbrirMensaje(
             "CONFIRMAR COPIAR A CANALES",
-            `¿Está seguro que desea copiar ${ofertasSeleccionadas.length} oferta(s) seleccionada(s) ${descripcionCanales}?`,
+            `¿Está seguro que desea copiar ${ofertasSeleccionadas.length} ${ofertasSeleccionadas.length === 1 ? "oferta seleccionada" : "ofertas seleccionadas"} ${descripcionCanales}?`,
             function (resp) {
                 if (resp === "SI") {
                     self.procesarCopiasACanales(ids, canalesSeleccionados);
@@ -590,10 +583,15 @@ var OfertaOk = {
                     (response.warn ? "ADVERTENCIA EN LA OPERACIÓN" :
                         "OPERACIÓN EXITOSA");
 
+                if (!response.error && !response.warn) {
+                    $(".check-oferta, #checkAllOfertas").prop("checked", false);
+                    self.actualizarContadorSeleccionadas();
+                }
+
                 // Mostrar mensaje con el resultado
                 AbrirMensaje(
                     titulo,
-                    response.msg || `Proceso de copia finalizado. ${ids.length} oferta(s) procesada(s) para ${totalCanales} canal(es).`,
+                    response.msg || `Proceso de copia finalizado. ${ids.length} ${ids.length === 1 ? "oferta procesada" : "ofertas procesadas"} para ${totalCanales} ${totalCanales === 1 ? "canal" : "canales"}.`,
                     function () {
                         // Recargar el grid con los mismos parámetros del canal origen
                         self.cargarOfertasActivas(self.estado.canalActual.admId, self.estado.canalActual.lpId, 1);
@@ -763,8 +761,17 @@ var OfertaOk = {
     },
 
     imprimirOfertasActivas: function () {
+        var canalSeleccionado = $("#tbGridCanales tbody tr.selected-row");
+        if (!canalSeleccionado.length) {
+            ControlaMensajeInfo("Debe seleccionar un canal para imprimir");
+            return;
+        }
 
-        let data = { adm_id: admId, lp_id:lpId, canal };
+        let data = {
+            adm_id: canalSeleccionado.data("adm-id"),
+            lp_id: canalSeleccionado.data("lp-id"),
+            canal: canalSeleccionado.data("canal")
+        };
         cargarReporteEnArre(indexPrint, data, "Ofertas Activas");
 
         data = { modulo: "", parametros: [] }
@@ -782,17 +789,20 @@ var OfertaOk = {
 
         // Seleccionar solo la fila actual
         fila.addClass("selected-row");
+        this.estado.canalActual = {
+            admId: admId,
+            lpId: lpId,
+            descripcion: canal
+        };
+        $("#btnImprimir").prop("disabled", false);
 
         // Cargar ofertas activas para este canal
         this.cargarOfertasActivas(admId, lpId, 1);
 
         // Mostrar información del canal seleccionado
-        var adminDesc = fila.find("td:eq(1)").text().trim();
-        var lpDesc = fila.find("td:eq(2)").text().trim();
+        var adminDesc = fila.data("adm-nombre") || admId;
+        var lpDesc = fila.data("canal") || fila.data("lp-desc") || lpId;
         this.mostrarInformacionCanal(admId, lpId, adminDesc, lpDesc);
-
-        // Mensaje informativo
-        ControlaMensajeInfo("Mostrando ofertas del canal: " + canal);
     },
 
     // Seleccionar canal predeterminado
@@ -807,6 +817,12 @@ var OfertaOk = {
             // Deseleccionar todas las filas y seleccionar la primera
             $("#tbGridCanales tr").removeClass("selected-row");
             primerCanal.addClass("selected-row");
+            this.estado.canalActual = {
+                admId: admId,
+                lpId: lpId,
+                descripcion: canal
+            };
+            $("#btnImprimir").prop("disabled", false);
 
             // Cargar ofertas activas para el canal predeterminado
             this.cargarOfertasActivas(admId, lpId, 1);
@@ -814,7 +830,8 @@ var OfertaOk = {
             console.log("Canal inicial seleccionado automáticamente:", canal);
         } else {
             console.warn("No se encontraron canales en la grilla");
-            this.cargarOfertasActivas(); // Cargar con valores por defecto
+            $("#btnImprimir").prop("disabled", true);
+            CerrarWaiting();
         }
     },
 
@@ -825,24 +842,19 @@ var OfertaOk = {
         if (!adminDesc) adminDesc = admId;
         if (!lpDesc) lpDesc = lpId;
 
-        // Crear elemento HTML para información del canal
+        var admIdSeguro = $("<div>").text(admId).html();
+        var lpIdSeguro = $("<div>").text(lpId).html();
+        var descripcionCanal = $("<div>").text(lpDesc || adminDesc || `${admId} - ${lpId}`).html();
+
         var infoCanal = `
-            <div class="filter-golden mb-1 mt-1" id="infoCanal">
-                <div class="filter-golden-header">
-                    <h5><i class="bx bx-broadcast me-2"></i>Canal Seleccionado</h5>
+            <div class="oa-channel-info" id="infoCanal">
+                <div class="oa-channel-info-title">
+                    <i class="bx bx-broadcast me-1"></i>Canal seleccionado
                 </div>
-                <div class="filter-golden-body py-2">
-                    <div class="d-flex align-items-center">
-                        <div class="me-3">
-                            <span class="text-golden-dark">Administración:</span>
-                            <span class="badge bg-golden ms-1">${admId}</span>
-                        </div>
-                        <div class="border-start ps-3">
-                            <span class="text-golden-dark">Lista de Precios:</span>
-                            <span class="badge bg-golden ms-1">${lpId}</span>
-                            <span class="ms-1"><strong>${lpDesc}</strong></span>
-                        </div>
-                    </div>
+                <div class="oa-channel-info-data">
+                    <span><strong>Administración:</strong> <span class="badge bg-golden">${admIdSeguro}</span></span>
+                    <span><strong>Lista de precios:</strong> <span class="badge bg-golden">${lpIdSeguro}</span></span>
+                    <strong class="oa-channel-description">${descripcionCanal}</strong>
                 </div>
             </div>
         `;
@@ -876,6 +888,10 @@ var OfertaOk = {
 
         AbrirWaiting("Cargando ofertas activas...");
 
+        if (solicitudOfertasActivas && solicitudOfertasActivas.readyState !== 4) {
+            solicitudOfertasActivas.abort();
+        }
+
         var datosPost = {
             admId: admId,
             lp_id: lpId,
@@ -888,8 +904,8 @@ var OfertaOk = {
 
         if (canalSeleccionado.length > 0) {
             try {
-                adminDesc = canalSeleccionado.find("td:eq(1)").text().trim();
-                lpDesc = canalSeleccionado.find("td:eq(2)").text().trim();
+                adminDesc = canalSeleccionado.data("adm-nombre") || admId;
+                lpDesc = canalSeleccionado.data("canal") || canalSeleccionado.data("lp-desc") || lpId;
             } catch (e) {
                 console.warn("No se pudo obtener descripción del canal");
             }
@@ -899,7 +915,7 @@ var OfertaOk = {
         this.mostrarInformacionCanal(admId, lpId, adminDesc, lpDesc);
 
         // Cargar ofertas activas usando AJAX
-        $.ajax({
+        solicitudOfertasActivas = $.ajax({
             url: presentarOfertasActivasUrl,
             type: "POST",
             data: datosPost,
@@ -913,6 +929,8 @@ var OfertaOk = {
                 self.configurarEventosGrid();
             },
             error: function (xhr, status, error) {
+                if (status === "abort") return;
+
                 CerrarWaiting();
                 console.error("Error al cargar ofertas activas:", error);
 
@@ -990,7 +1008,7 @@ var OfertaOk = {
         // Mostrar confirmación
         AbrirMensaje(
             "CONFIRMAR ELIMINACIÓN",
-            `¿Está seguro que desea eliminar ${ofertasSeleccionadas.length} oferta(s) seleccionada(s)?`,
+            `¿Está seguro que desea eliminar definitivamente ${ofertasSeleccionadas.length} ${ofertasSeleccionadas.length === 1 ? "oferta seleccionada" : "ofertas seleccionadas"}?`,
             function (resp) {
                 if (resp === "SI") {
                     AbrirWaiting("Eliminando ofertas...");
@@ -1039,13 +1057,12 @@ var OfertaOk = {
                                 return;
                             }
 
-                            // Mensaje de éxito y recarga del grid
+                            // Actualizar inmediatamente la grilla y luego informar el resultado.
+                            self.cargarOfertasActivas(admId, lpId, 1);
                             AbrirMensaje(
                                 "OPERACIÓN EXITOSA",
                                 response.msg || "Ofertas eliminadas correctamente",
                                 function () {
-                                    // Recargar el grid con los mismos parámetros
-                                    self.cargarOfertasActivas(admId, lpId, 1);
                                     $("#msjModal").modal("hide");
                                     return true;
                                 },
