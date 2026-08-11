@@ -4,8 +4,9 @@
     var alt = true;
     string clase = string.Empty;
     var fechaHoy = DateTime.Today;
+    var culturaImportes = System.Globalization.CultureInfo.GetCultureInfo("en-US");
 
-    // Funci髇 que retorna el estado de vigencia
+    // Funci贸n que retorna el estado de vigencia
     (string cssClass, string icon, string message) GetVigenciaInfo(DateTime? fechaDesde, DateTime? fechaHasta)
     {
         if (!fechaDesde.HasValue || !fechaHasta.HasValue)
@@ -17,21 +18,21 @@
         if (diasRestantes < 0)
             return ("bg-danger", "bx-time-five", "Oferta vencida");
         
-        // Oferta pr髕ima a vencer
+        // Oferta pr贸xima a vencer
         int diasTotales = (fechaHasta.Value - fechaDesde.Value).Days + 1;
         int diasTranscurridos = Math.Max(0, (fechaHoy - fechaDesde.Value).Days);
         
         if (diasTotales > 0 && diasTranscurridos > diasTotales / 2)
-            return ("bg-warning text-dark", "bx-time-five", $"Quedan {diasRestantes} d韆(s)");
+            return ("bg-warning text-dark", "bx-time-five", $"Quedan {diasRestantes} d铆a(s)");
         
         // Oferta vigente normal
-        return ("bg-success", "bx-calendar-check", $"Quedan {diasRestantes} d韆(s)");
+        return ("bg-success", "bx-calendar-check", $"Quedan {diasRestantes} d铆a(s)");
     }
 }
 
 <div class="card card-golden">
     <div class="card-body p-2">
-        <div class="table-responsive text-nowrap table-wrapper-500">
+        <div class="table-responsive table-wrapper-500-full-width">
             <table class="table table-sm mb-0 table-hover table-golden" id="tbGridOfertasSinActivar">
                 <thead class="sticky-top table-golden-header-compact">
                     <tr class="header">
@@ -40,13 +41,13 @@
                                 <input class="form-check-input" type="checkbox" id="checkAllOfertas">
                             </div>
                         </th>
-                        <th class="text-center th-compact" scope="col">C覦IGO</th>
-                        <th class="text-left th-compact" scope="col">DESCRIPCI覰</th>
-                        <th class="text-right th-compact" scope="col">COSTO</th>
-                        <th class="text-right th-compact" scope="col">P. VENTA</th>
-                        <th class="text-right th-compact" scope="col">OFERTA</th>
+                        <th class="text-center th-compact" scope="col">C脫DIGO</th>
+                        <th class="text-left th-compact" scope="col">DESCRIPCI脫N</th>
+                        <th class="text-end th-compact" scope="col">COSTO</th>
+                        <th class="text-end th-compact" scope="col">P. VENTA</th>
+                        <th class="text-end th-compact" scope="col">OFERTA</th>
                         <th class="text-center th-compact" scope="col">VIGENCIA</th>
-                        @* <th class="text-center" scope="col">ACCI覰</th> *@
+                        @* <th class="text-center" scope="col">ACCI脫N</th> *@
                     </tr>
                 </thead>
                 <tbody>
@@ -76,20 +77,20 @@
                                 <td class="@Model.ObtenerClase(item.p_desc)" title="@item.p_desc">
                                     @Model.FormatearDato(item.p_desc, FormatDato.Ninguno)
                                 </td>
-                                <td class="@Model.ObtenerClase(item.p_pcosto)">
-                                    @Model.FormatearDato(item.p_pcosto, FormatDato.Monto)
+                                <td class="text-end">
+                                    @item.p_pcosto.ToString("N3", culturaImportes)
                                 </td>
-                                <td class="@Model.ObtenerClase(item.p_pvta)">
-                                    @Model.FormatearDato(item.p_pvta, FormatDato.Monto)
+                                <td class="text-end">
+                                    @item.p_pvta.ToString("N2", culturaImportes)
                                 </td>
-                                <td class="@Model.ObtenerClase(item.p_pvta_oferta)">
-                                    @Model.FormatearDato(item.p_pvta_oferta, FormatDato.Monto)
+                                <td class="text-end">
+                                    @item.p_pvta_oferta.ToString("N2", culturaImportes)
                                 </td>
                                 <td class="text-center">
                                     @if (!string.IsNullOrEmpty(vigenciaCss))
                                     {
                                         <span class="badge @vigenciaCss" title="@vigenciaMsg">
-                                            @Model.FormatearDato(item.po_fecha_desde, FormatDato.Fecha) - @Model.FormatearDato(item.po_fecha_hasta, FormatDato.Fecha)
+                                            @item.po_fecha_desde.ToString("dd/MM/yyyy") - @item.po_fecha_hasta.ToString("dd/MM/yyyy")
                                             @* <i class="bx @vigenciaIcon"></i> *@
                                         </span>
                                     }
@@ -114,7 +115,7 @@
                         <tr>
                             <td colspan="8" class="text-center text-muted py-4">
                                 <i class="bx bx-info-circle me-2"></i>
-                                No hay ofertas pendientes de activaci髇
+                                No hay ofertas pendientes de activaci贸n
                             </td>
                         </tr>
                     }
@@ -124,7 +125,7 @@
 
         @if (Model.ListaDatos?.Any() == true)
         {
-            <div class="d-flex justify-content-between align-items-center mt-3 px-2">
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mt-2 px-2">
                 <div class="text-muted small d-flex align-items-center">
                     <i class="bx bx-package me-1"></i>
                     Total: @Model.CantidadReg ofertas sin activar
@@ -137,7 +138,7 @@
                 </div> *@
                @*  <div class="text-muted small">
                     <button type="button" class="btn btn-danger btn-sm mt-1 me-1"
-                            id="btnCancelaActivacion" title="Cancelar activaci髇">
+                            id="btnCancelaActivacion" title="Cancelar activaci贸n">
                         <i class="bx bx-x-circle"></i>
                         Cancelar
                     </button>

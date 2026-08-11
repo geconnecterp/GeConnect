@@ -68,6 +68,8 @@ $(function () {
 function configurarBusquedaAvanzadaOfertas() {
     // Configurar cuando se abre el modal de búsqueda
     $("#busquedaModal").on("show.bs.modal", function () {
+        $("#chkActivos").prop("checked", true).prop("disabled", true);
+        $("#chkDisc, #chkInact").prop("checked", false).prop("disabled", true);
         if (typeof configurarDestinoBusquedaProductos === 'function') {
             configurarDestinoBusquedaProductos(
                 "ofertas",
@@ -111,8 +113,9 @@ function agregarProductosAlGridOfertas(productos) {
             P_id: producto.p_id,
             P_desc: producto.p_desc || '',
             P_pcosto: parseFloat(producto.p_pcosto || 0),
-            P_pvta: parseFloat(producto.p_vta || 0),
-            P_pvta_oferta: parseFloat(producto.p_vta || 0),
+            P_pvta: parseFloat(producto.p_pvta || 0),
+            p_pvta_001: parseFloat(producto.p_pvta_001 || 0),
+            p_pvta_002: parseFloat(producto.p_pvta_002 || 0),
             P_id_barrado: producto.p_id_barrado || '',
             P_id_prov: producto.cta_id || '',
             Pg_id: producto.pg_id || '',
@@ -125,7 +128,7 @@ function agregarProductosAlGridOfertas(productos) {
             url: presentarProductosOfertaMultipleUrl || presentarProductoOfertaUrl,
             type: 'POST',
             contentType: 'application/json',
-            data: JSON.stringify({ productos: productosParaEnvio }),
+            data: JSON.stringify(productosParaEnvio),
             success: function (response) {
                 CerrarWaiting();
                 
@@ -374,11 +377,10 @@ function formatearFecha(fechaString) {
             return fechaString.toString();
         }
 
-        return fecha.toLocaleDateString('es-AR', {
-            day: '2-digit',
-            month: '2-digit',
-            year: 'numeric'
-        });
+        var dia = fecha.getDate().toString().padStart(2, '0');
+        var mes = (fecha.getMonth() + 1).toString().padStart(2, '0');
+        var anio = fecha.getFullYear();
+        return `${dia}/${mes}/${anio}`;
     } catch (error) {
         console.error("Error al formatear fecha:", error);
         return fechaString.toString();
@@ -386,7 +388,7 @@ function formatearFecha(fechaString) {
 }
 
 function formatearPrecioArgentino(precio) {
-    return precio.toLocaleString('es-AR', {
+    return precio.toLocaleString('en-US', {
         style: 'currency',
         currency: 'ARS',
         minimumFractionDigits: 2,
@@ -811,48 +813,17 @@ function verificaEstado(e) {
 }
 
 function presentarProductoEnOferta(producto) {
-    AbrirWaiting("Agregando producto a ofertas...");
-
-    var datos = {
-        P_id: producto.p_id,
-        P_desc: producto.p_desc,
-        P_pcosto: producto.p_pcosto || "0",
-        P_pvta: producto.p_vta || "0",
-        P_pvta_oferta: producto.p_vta_oferta || "0",
-        P_id_barrado: producto.p_id_barrado || "",
-        P_id_prov: producto.p_id_prov || "",
-        Pg_id: producto.pg_id || "",
-        Pg_desc: producto.pg_desc || "",
-        P_activo: producto.p_activo || "N"
-    };
-
-    PostGenHtml(datos, presentarProductoOfertaUrl, function (obj) {
-        CerrarWaiting();
-        $("#gridProductoOferta").html(obj);
-        configurarEventosGridOferta();
-        actualizarListaProductosEnGrid();
-        ControlaMensajeSuccess(`Producto "${producto.p_desc}" agregado a ofertas correctamente`);
-    }, function (error) {
-        CerrarWaiting();
-        ControlaMensajeError("Error al agregar producto a ofertas: " + (error.message || "Error desconocido"));
-    });
+    agregarProductoIndividualAOfertas(producto);
 }
 
-function eliminarProductoDelGrid(row, productDesc) {
-    row.fadeOut(300, function () {
-        $(this).remove();
-
-        if ($("#tbGridProductosOferta tbody tr[data-producto-id]").length === 0) {
-            $("#gridProductoOferta").html(`
-                <div class="text-center text-muted py-4">
-                    <i class="bx bx-info-circle me-2"></i>
-                    No hay productos seleccionados para ofertas
-                </div>
-            `);
-        }
-
+function eliminarProductoDelGrid(productId, productDesc) {
+    PostGenHtml({ p_id: productId }, quitarProductoOfertaUrl, function (html) {
+        $("#gridProductoOferta").html(html);
+        configurarEventosGridOferta();
         actualizarListaProductosEnGrid();
         ControlaMensajeInfo(`Producto "${productDesc}" eliminado de ofertas`);
+    }, function () {
+        ControlaMensajeError(`No se pudo eliminar "${productDesc}" de la oferta`);
     });
 }
 
@@ -867,7 +838,7 @@ function configurarEventosGridOferta() {
             `¿Está seguro de eliminar "${productDesc}" de las ofertas?`,
             function(resp) {
                 if (resp === "SI") {
-                    eliminarProductoDelGrid(row, productDesc);
+                    eliminarProductoDelGrid(productId, productDesc);
                 }
                 $("#msjModal").modal("hide");
                 return true;
@@ -950,7 +921,7 @@ function obtenerInformacionOfertaDefinida() {
             return { valido: false, error: "La fecha de inicio no puede ser anterior a la fecha actual" };
         }
 
-        var fechaMaxima = new Date(fechaDesdeObj.getFullYear(), fechaDesdeObj.getMonth(), fechaDesdeObj.getDate() + 30);
+        var fechaMaxima = new Date(fechaDesdeObj.getFullYear(), fechaDesdeObj.getMonth(), fechaDesdeObj.getDate() + 29);
 
         if (fechaHastaObj > fechaMaxima) {
             return { valido: false, error: "El período de la oferta no puede exceder 30 días" };
@@ -1025,7 +996,7 @@ function generarMensajeConfirmacionOferta(totalProductos, canalesInfo, ofertaInf
     mensaje += `📅 <strong>Período:</strong> ${formatearFecha(ofertaInfo.fechaDesde)} al ${formatearFecha(ofertaInfo.fechaHasta)} <em>(${ofertaInfo.dias} día${ofertaInfo.dias > 1 ? 's' : ''})</em><br>`;
 
     if (ofertaInfo.topeVenta > 0) {
-        mensaje += `📦 <strong>Tope de venta:</strong> ${ofertaInfo.topeVenta.toLocaleString('es-AR')} unidad${ofertaInfo.topeVenta > 1 ? 'es' : ''}<br>`;
+        mensaje += `📦 <strong>Tope de venta:</strong> ${ofertaInfo.topeVenta.toLocaleString('en-US')} unidad${ofertaInfo.topeVenta > 1 ? 'es' : ''}<br>`;
     }
 
     mensaje += `</small></div><br>`;
@@ -1080,14 +1051,14 @@ function generarResumenOperacion(totalProductos, canalesInfo, ofertaInfo) {
     var totalCanales = canalesInfo.modo === "individual" ? 1 : canalesInfo.canales.length;
     var totalOfertas = totalProductos * totalCanales;
 
-    resumen += `🔢 <strong>Total de ofertas a crear:</strong> ${totalOfertas.toLocaleString('es-AR')}<br>`;
+    resumen += `🔢 <strong>Total de ofertas a crear:</strong> ${totalOfertas.toLocaleString('en-US')}<br>`;
     resumen += `   (${totalProductos} producto${totalProductos > 1 ? 's' : ''} × ${totalCanales} canal${totalCanales > 1 ? 'es' : ''})<br>`;
 
     if (ofertaInfo.topeVenta > 0) {
         var ventaMaximaTotal = totalOfertas * ofertaInfo.topeVenta;
         var valorMaximoTotal = ventaMaximaTotal * ofertaInfo.precio;
 
-        resumen += `📈 <strong>Venta máxima total:</strong> ${ventaMaximaTotal.toLocaleString('es-AR')} unidades<br>`;
+        resumen += `📈 <strong>Venta máxima total:</strong> ${ventaMaximaTotal.toLocaleString('en-US')} unidades<br>`;
         resumen += `💵 <strong>Valor máximo total:</strong> $${formatearPrecioArgentino(valorMaximoTotal)}`;
     } else {
         resumen += `♾️ <strong>Sin límite de venta</strong> (tope no definido)`;
@@ -1160,11 +1131,11 @@ function generarMensajeExitoGuardado(totalProductos, canalesInfo, ofertaInfo) {
     mensaje += `💰 <strong>Precio oferta:</strong> $${formatearPrecioArgentino(ofertaInfo.precio)}<br>`;
 
     if (ofertaInfo.topeVenta > 0) {
-        mensaje += `📈 <strong>Tope por oferta:</strong> ${ofertaInfo.topeVenta.toLocaleString('es-AR')} unidad${ofertaInfo.topeVenta > 1 ? 'es' : ''}<br>`;
+        mensaje += `📈 <strong>Tope por oferta:</strong> ${ofertaInfo.topeVenta.toLocaleString('en-US')} unidad${ofertaInfo.topeVenta > 1 ? 'es' : ''}<br>`;
     }
 
     var totalOfertas = totalProductos * totalCanales;
-    mensaje += `🎯 <strong>Total de ofertas creadas:</strong> ${totalOfertas.toLocaleString('es-AR')}`;
+    mensaje += `🎯 <strong>Total de ofertas creadas:</strong> ${totalOfertas.toLocaleString('en-US')}`;
 
     mensaje += `</small></div>`;
 
@@ -1308,7 +1279,7 @@ function configurarEventosGridOferta() {
             `¿Está seguro de eliminar "${productDesc}" de las ofertas?`,
             function(resp) {
                 if (resp === "SI") {
-                    eliminarProductoDelGrid(row, productDesc);
+                    eliminarProductoDelGrid(productId, productDesc);
                 }
                 $("#msjModal").modal("hide");
                 return true;
@@ -1376,8 +1347,8 @@ function agregarProductoIndividualAOfertas(producto) {
             P_id: producto.p_id,
             P_desc: producto.p_desc || '',
             P_pcosto: parseFloat(producto.p_pcosto || 0),
-            P_mayorista: parseFloat(producto.p_pvta_001 || producto.p_mayorista || 0),
-            P_minorista: parseFloat(producto.p_pvta_002 || producto.p_minorista || 0),
+            p_pvta_001: parseFloat(producto.p_pvta_001 || producto.p_mayorista || 0),
+            p_pvta_002: parseFloat(producto.p_pvta_002 || producto.p_minorista || 0),
             P_pvta: parseFloat(producto.p_pvta || 0),
             P_pvta_oferta: parseFloat(producto.p_pvta || 0),
             P_id_barrado: producto.p_id_barrado || '',
@@ -1389,8 +1360,12 @@ function agregarProductoIndividualAOfertas(producto) {
 
         $("#Busqueda").val("");
 
-        // Enviar al servidor (usar endpoint individual)
-        PostGenHtml(productoParaEnvio, presentarProductoOfertaUrl, function (htmlResponse) {
+        $.ajax({
+            url: presentarProductosOfertaMultipleUrl,
+            type: 'POST',
+            contentType: 'application/json; charset=utf-8',
+            data: JSON.stringify([productoParaEnvio]),
+            success: function (htmlResponse) {
             CerrarWaiting();
 
             // Actualizar el grid con el HTML recibido
@@ -1403,10 +1378,12 @@ function agregarProductoIndividualAOfertas(producto) {
             actualizarListaProductosEnGrid();
 
             ControlaMensajeSuccess(`Producto "${producto.p_desc || producto.p_id}" agregado a ofertas correctamente`);
-        }, function (error) {
+            },
+            error: function (xhr, status, error) {
             CerrarWaiting();
             console.error("❌ Error al agregar producto:", error);
-            ControlaMensajeError("Error al agregar producto a ofertas: " + (error.message || "Error desconocido"));
+            ControlaMensajeError("Error al agregar producto a ofertas: " + (xhr.responseJSON?.msg || error || "Error desconocido"));
+            }
         });
 
     } catch (error) {

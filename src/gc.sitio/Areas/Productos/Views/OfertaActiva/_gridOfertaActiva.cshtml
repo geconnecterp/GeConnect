@@ -1,11 +1,13 @@
+@using System.Globalization
 @model GridCoreSmart<OfertaDto>
 
 @{
     var alt = true;
     string clase = string.Empty;
     var fechaHoy = DateTime.Today;
+    var numberCulture = CultureInfo.GetCultureInfo("en-US");
 
-    // Función que retorna el estado de vigencia
+    // FunciÃ³n que retorna el estado de vigencia
     (string cssClass, string icon, string message) GetVigenciaInfo(DateTime? fechaDesde, DateTime? fechaHasta)
     {
         if (!fechaDesde.HasValue || !fechaHasta.HasValue)
@@ -17,53 +19,21 @@
         if (diasRestantes < 0)
             return ("bg-danger", "bx-time-five", "Oferta vencida");
 
-        // Oferta próxima a vencer
+        // Oferta prÃ³xima a vencer
         int diasTotales = (fechaHasta.Value - fechaDesde.Value).Days + 1;
         int diasTranscurridos = Math.Max(0, (fechaHoy - fechaDesde.Value).Days);
 
         if (diasTotales > 0 && diasTranscurridos > diasTotales / 2)
-            return ("bg-warning text-dark", "bx-time-five", $"Quedan {diasRestantes} día(s)");
+            return ("bg-warning text-dark", "bx-time-five", $"Quedan {diasRestantes} dÃ­a(s)");
 
         // Oferta vigente normal
-        return ("bg-success", "bx-calendar-check", $"Quedan {diasRestantes} día(s)");
+        return ("bg-success", "bx-calendar-check", $"Quedan {diasRestantes} dÃ­a(s)");
     }
 }
 <div class="grid-golden h-100">
-    <div class="grid-golden-header">
-        <div class="row align-items-md-center">
-            <div class="col-md-10 col-sm-6 d-flex align-items-center">
-                <h5 class="mb-0 flex-grow-1">
-                    <i class="bx bx-package me-2"></i>
-                    <strong>Filtros</strong>
-                </h5>
-                <i class="bx bx-chevrons-down fs-4 ms-2"
-                   id="toggleFiltros"
-                   data-bs-toggle="collapse"
-                   data-bs-target="#filtrosCollapse"
-                   role="button"
-                   data-bs-placement="top"
-                   title="Haz click acá para conocer los filtros aplicados"
-                   style="
-                    cursor:pointer;
-                    transition: transform .25s ease, color .25s ease;
-                    color:#666;
-                    ">
-                </i>
-            </div>
-
-            <div class="col-md-2 col-sm-6">
-                <div class="d-flex justify-content-sm-end"></div>
-            </div>
-        </div>
-    </div>
-    <div class="collapse" id="filtrosCollapse">
-        <div class="mt-2">
-            <div id="filtrosAplicadosContainer" class="d-flex align-items-center" style="gap:6px;flex-wrap:wrap;"></div>
-        </div>
-    </div>
     <div class="grid-golden-body p-1">
-        <div class="table-responsive text-nowrap table-wrapper-500">
-            <table class="table table-sm mb-0 table-hover table-golden" id="tbGridOfertasSinActivar">
+        <div class="table-responsive text-nowrap table-wrapper-500-full-width">
+            <table class="table table-sm mb-0 table-hover table-golden" id="tbGridOfertasActivas">
                 <thead class="sticky-top table-golden-header-compact">
                     <tr class="header">
                         <th class="text-center" style="width: 40px;">
@@ -71,13 +41,13 @@
                                 <input class="form-check-input" type="checkbox" id="checkAllOfertas">
                             </div>
                         </th>
-                        <th class="text-center th-compact" scope="col">CÓDIGO</th>
-                        <th class="text-left th-compact" scope="col">DESCRIPCIÓN</th>
+                        <th class="text-center th-compact" scope="col">CÃ“DIGO</th>
+                        <th class="text-left th-compact" scope="col">DESCRIPCIÃ“N</th>
                         <th class="text-right th-compact" scope="col">COSTO</th>
                         <th class="text-right th-compact" scope="col">P. VENTA</th>
                         <th class="text-right th-compact" scope="col">OFERTA</th>
                         <th class="text-center th-compact" scope="col">VIGENCIA</th>
-                        @* <th class="text-center" scope="col">ACCIÓN</th> *@
+                        @* <th class="text-center" scope="col">ACCIÃ“N</th> *@
                     </tr>
                 </thead>
                 <tbody>
@@ -101,26 +71,26 @@
                                                data-fecha-hasta="@(item.po_fecha_hasta.ToString("yyyy-MM-dd") ?? "")">
                                     </div>
                                 </td>
-                                <td class="@Model.ObtenerClase(item.p_id)">
+                                <td class="text-center @Model.ObtenerClase(item.p_id)">
                                     @Model.FormatearDato(item.p_id, FormatDato.Ninguno)
                                 </td>
-                                <td class="@Model.ObtenerClase(item.p_desc)" title="@item.p_desc">
+                                <td class="text-start @Model.ObtenerClase(item.p_desc)" title="@item.p_desc">
                                     @Model.FormatearDato(item.p_desc, FormatDato.Ninguno)
                                 </td>
-                                <td class="@Model.ObtenerClase(item.p_pcosto)">
-                                    @Model.FormatearDato(item.p_pcosto, FormatDato.Monto)
+                                <td class="text-end @Model.ObtenerClase(item.p_pcosto)">
+                                    @item.p_pcosto.ToString("N3", numberCulture)
                                 </td>
-                                <td class="@Model.ObtenerClase(item.p_pvta)">
-                                    @Model.FormatearDato(item.p_pvta, FormatDato.Monto)
+                                <td class="text-end @Model.ObtenerClase(item.p_pvta)">
+                                    @item.p_pvta.ToString("N2", numberCulture)
                                 </td>
-                                <td class="@Model.ObtenerClase(item.p_pvta_oferta)">
-                                    @Model.FormatearDato(item.p_pvta_oferta, FormatDato.Monto)
+                                <td class="text-end @Model.ObtenerClase(item.p_pvta_oferta)">
+                                    @item.p_pvta_oferta.ToString("N2", numberCulture)
                                 </td>
                                 <td class="text-center">
                                     @if (!string.IsNullOrEmpty(vigenciaCss))
                                     {
                                         <span class="badge @vigenciaCss" title="@vigenciaMsg">
-                                            @Model.FormatearDato(item.po_fecha_desde, FormatDato.Fecha) - @Model.FormatearDato(item.po_fecha_hasta, FormatDato.Fecha)
+                                            @item.po_fecha_desde.ToString("dd/MM/yyyy") - @item.po_fecha_hasta.ToString("dd/MM/yyyy")
                                             @* <i class="bx @vigenciaIcon"></i> *@
                                         </span>
                                     }
@@ -143,9 +113,9 @@
                     else
                     {
                         <tr>
-                            <td colspan="8" class="text-center text-muted py-4">
+                            <td colspan="7" class="text-center text-muted py-4">
                                 <i class="bx bx-info-circle me-2"></i>
-                                No hay ofertas pendientes de activación
+                                No hay ofertas activas para el canal seleccionado
                             </td>
                         </tr>
                     }
@@ -155,10 +125,10 @@
 
         @if (Model.ListaDatos?.Any() == true)
         {
-            <div class="d-flex justify-content-between align-items-center mt-3 px-2">
+            <div class="d-flex justify-content-between align-items-center mt-2 px-2">
                 <div class="text-muted small d-flex align-items-center">
                     <i class="bx bx-package me-1"></i>
-                    Total: @Model.CantidadReg ofertas sin activar
+                    Total: @Model.CantidadReg ofertas activas
                     <span class="ms-3 badge bg-primary" id="ofertasSeleccionadas">0</span> seleccionadas
                 </div>
                 @*  <div class="text-muted small">
@@ -168,7 +138,7 @@
                 </div> *@
                 @*  <div class="text-muted small">
                     <button type="button" class="btn btn-danger btn-sm mt-1 me-1"
-                            id="btnCancelaActivacion" title="Cancelar activación">
+                            id="btnCancelaActivacion" title="Cancelar activaciÃ³n">
                         <i class="bx bx-x-circle"></i>
                         Cancelar
                     </button>
