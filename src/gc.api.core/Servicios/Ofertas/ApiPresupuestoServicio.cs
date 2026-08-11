@@ -31,6 +31,13 @@ namespace gc.api.core.Servicios.Ofertas
             return detalle;
         }
 
+        public List<PresupuestoProductoDto> ObtenerDetallePresupuestoActualizado(string pre_id)
+        {
+            var sp = Constantes.ConstantesGC.StoredProcedures.SP_PRESUP_P_ACTUALIZADO;
+            var ps = new List<SqlParameter> { new SqlParameter("@pre_id", pre_id) };
+            return _repository.EjecutarLstSpExt<PresupuestoProductoDto>(sp, ps, true);
+        }
+
       
 
         public List<PresupE> ObtenerEstadosPresupuesto()
@@ -74,7 +81,7 @@ namespace gc.api.core.Servicios.Ofertas
                 new SqlParameter("@pre_hasta", pres.pre_vigencia_hasta),
                 new SqlParameter("@pre_adm_id", pres.adm_id),
 
-                new SqlParameter("cta_id", pres.cta_id??""),
+                new SqlParameter("@cta_id", string.IsNullOrWhiteSpace(pres.cta_id) ? DBNull.Value : (object)pres.cta_id),
                 new SqlParameter("@pre_nombre", pres.pre_nombre??""),
                 new SqlParameter("@pre_domicilio", pres.pre_domicilio ?? ""),
 

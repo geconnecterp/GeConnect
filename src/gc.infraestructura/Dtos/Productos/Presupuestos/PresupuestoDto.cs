@@ -23,7 +23,7 @@
         public char pret_id { get; set; }
         public string pret_desc { get; set; } = string.Empty;
 
-        public string cta_id { get; set; } = string.Empty;
+        public string? cta_id { get; set; }
         public string cta_denominacion { get; set; } = string.Empty;
         
 
@@ -41,6 +41,7 @@
     {
         public string p_id { get; set; } = string.Empty;
         public string p_des { get; set; } = string.Empty;
+        public string up_id { get; set; } = string.Empty;
         public short pre_item { get; set; }
         public char iva_situacion { get; set; }
         public decimal iva_alicuota { get; set; }

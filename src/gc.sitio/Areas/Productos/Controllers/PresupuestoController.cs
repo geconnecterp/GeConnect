@@ -109,7 +109,8 @@ namespace gc.sitio.Areas.Productos.Controllers
                 if ((filters.Rel01 == null || !filters.Rel01.Any()) &&
                     (filters.Rel04 == null || !filters.Rel04.Any()) &&
                     (filters.Rel02 == null || !filters.Rel02.Any()) &&
-                    (filters.Rel03 == null || !filters.Rel03.Any()))
+                    (filters.Rel03 == null || !filters.Rel03.Any()) &&
+                    (!filters.FechaD.HasValue || !filters.FechaH.HasValue))
                 {
                     return PartialView("_gridMensaje", CrearRespuestaError("Debe seleccionar algún filtro para buscar los Presupuestos"));
                 }
@@ -302,14 +303,24 @@ namespace gc.sitio.Areas.Productos.Controllers
                 }
 
                 // Validaciones de entrada
-                if (request.Datos == null || (
-                    string.IsNullOrEmpty(request.Datos.adm_id)&&
-                    string.IsNullOrEmpty(request.Datos.pret_id.ToString())&&
-                    request.Datos.pre_vigencia_desde==DateTime.MinValue &&
-                    request.Datos.pre_vigencia_hasta==DateTime.MinValue))
+                if (request.Datos == null || request.Datos.pret_id == default ||
+                    request.Datos.pre_vigencia_desde == DateTime.MinValue ||
+                    request.Datos.pre_vigencia_hasta == DateTime.MinValue ||
+                    request.Datos.pre_vigencia_hasta < request.Datos.pre_vigencia_desde)
                 {
                     return Json(new { ok = false, mensaje = "Los datos del Presupuesto son requeridos" });
                 }
+
+                var cantidadInvalida = request.Productos?.FirstOrDefault(p =>
+                    p.pre_cantidad <= 0 ||
+                    (p.up_id == "07" && p.pre_cantidad != decimal.Truncate(p.pre_cantidad)) ||
+                    (p.up_id != "07" && p.pre_cantidad != decimal.Round(p.pre_cantidad, 3)));
+                if (cantidadInvalida != null)
+                {
+                    var regla = cantidadInvalida.up_id == "07" ? "un numero entero" : "hasta tres decimales";
+                    return Json(new { ok = false, mensaje = $"La cantidad del producto {cantidadInvalida.p_id} debe ser {regla}." });
+                }
+
                 request.Datos.adm_id = AdministracionId;
                 request.Datos.usu_id = UserName;
 
@@ -345,7 +356,10 @@ namespace gc.sitio.Areas.Productos.Controllers
                     {
                         ok = true,
                         error = false,
-                         msg//respuesta.Mensaje ?? "Presupuesto guardada correctamente"
+                        msg,
+                        pre_id = !string.IsNullOrWhiteSpace(respuesta.Entidad?.resultado_id)
+                            ? respuesta.Entidad.resultado_id
+                            : request.Datos.pre_id
                     });
                 }
                 else
@@ -380,22 +394,26 @@ namespace gc.sitio.Areas.Productos.Controllers
                 .OrderBy(c => c.pre_id)
                 .ToList();
 
-            const int registrosPorPagina = 10;
+            var registrosPorPagina = filtro.Registros.GetValueOrDefault(_configuracion.NroRegistrosPagina);
+            var totalRegistros = MetadataGeneral?.TotalCount ?? presup.Count;
+            var totalPaginas = MetadataGeneral?.TotalPages
+                ?? (int)Math.Ceiling((double)totalRegistros / registrosPorPagina);
+            var primerRegistro = presup.Count == 0 ? 0 : ((page - 1) * registrosPorPagina) + 1;
             var pagedList = new StaticPagedList<PresupuestoListDto>(
                 presup,
                 page,
                 registrosPorPagina,
-                presup.Count
+                totalRegistros
             );
 
             var grid = new GridCoreSmart<PresupuestoListDto>
             {
                 ListaDatos = pagedList, //lista de combos
-                CantidadReg = presup.Count, //cantidad actual de registros
-                PrimerRegistro = ((page - 1) * registrosPorPagina) + 1, //especifica cual es le # inicial de registros
-                UltimoRegistro = Math.Min(page * registrosPorPagina, presup.Count), //define cual es el ultimo registro
-                RegistroFinal = presup.Count, //indica cual es el ultimo registro
-                CantidadPaginas = (int)Math.Ceiling((double)presup.Count / registrosPorPagina),//calcula la cantidad de paginas
+                CantidadReg = totalRegistros,
+                PrimerRegistro = primerRegistro,
+                UltimoRegistro = presup.Count == 0 ? 0 : Math.Min(primerRegistro + presup.Count - 1, totalRegistros),
+                RegistroFinal = totalRegistros,
+                CantidadPaginas = totalPaginas,
                 PaginaActual = page,//especifica que pagina es la actual
                 Sort = filtro.Sort ?? "pre_id",
                 SortDir = filtro.SortDir ?? "ASC",
@@ -434,6 +452,7 @@ namespace gc.sitio.Areas.Productos.Controllers
 
         private void InicializaPresupuesto()
         {
+            ProductosActualesPresupuesto = new List<PresupuestoProductoDto>();
             //ADMINISTRACIONES que se cargarán en el filtro solamente las activas.
             ObtenerAdministracionesLista(_admSv, "S");
             ObtenerEstadoPresupuesto(_presuSv);

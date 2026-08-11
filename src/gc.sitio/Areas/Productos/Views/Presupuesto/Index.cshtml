@@ -8,6 +8,27 @@
 @section styles {
     <link rel="stylesheet" href="~/css/simplePagination.css" />
     <link rel="stylesheet" href="~/lib/jstree/themes/default/style.min.css" />
+    <style>
+        /* Botonera operativa uniforme, limitada al módulo Presupuestos. */
+        #btnAbmAceptar,
+        #btnAbmCancelar,
+        #btnImprimir,
+        #btnAbmNuevo,
+        #btnAbmModif,
+        #btnAbmElimi {
+            width: 100px !important;
+            flex: 0 0 100px;
+            height: 31px;
+            min-height: 31px;
+            padding: 0.25rem 0.5rem !important;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.25rem;
+            line-height: 1.5;
+            box-sizing: border-box;
+        }
+    </style>
 }
 
 <partial name="_botonera" model="filtro" />
@@ -79,7 +100,7 @@
     <script src="~/js/plugins/jquery.simplePagination.js"></script>
     <script src="~/js/app/areas/docmngr/docmanager.js"></script>
 
-    <script src="~/js/app/busquedasV02.js"></script>
-    <script src="~/js/app/areas/precios/presup.js"></script>
+    <script src="~/js/app/busquedasV02.js" asp-append-version="true"></script>
+    <script src="~/js/app/areas/precios/presup.js" asp-append-version="true"></script>
 
 }

@@ -39,6 +39,10 @@
                                     @item.pre_descripcion
                                 </td>
                                 <td>
+                                    @if (!string.IsNullOrWhiteSpace(item.cta_id))
+                                    {
+                                        <span>(@item.cta_id) </span>
+                                    }
                                     @item.cta_denominacion
                                 </td>
                                 <td class="text-center">
