@@ -27,6 +27,28 @@
 		text-align: center;
 		font-size: small;
 	}
+
+	.titulo-obligaciones-cancelar {
+		color: #c62828 !important; /* rojo profesional */
+		font-weight: bold;
+	}
+
+	.titulo-creditos-valores {
+		color: #1565c0 !important; /* azul profesional */
+		font-weight: bold;
+	}
+
+	#tbListaObligacionesParaAgregar tbody td {
+		padding-top: 2px !important;
+		padding-bottom: 2px !important;
+		line-height: 1.6 !important;
+	}
+
+	#tbListaCreditosParaAgregar tbody td {
+		padding-top: 2px !important;
+		padding-bottom: 2px !important;
+		line-height: 1.6 !important;
+	}
 </style>
 @Html.Hidden("valoresANombreDe", Model.valoresANombreDe)
 <div class="row mt-2">
@@ -50,105 +72,127 @@
 </div>
 <div class="row mt-2">
 	<div class="col-6" style="height: 600px;">
-		<fieldset>
-			<legend>Obligaciones</legend>
-			<div class="row" id="divObligacionesParaAgregar" style="height: 245px;">
-				<div class="table-responsive table-wrapper-200" id="containerListaObligacionesParaAgregar">
-					<table class="table table-bordered table-hover table-golden" id="tbListaObligacionesParaAgregar">
-						<thead style="background: darkred;">
-							<tr class="header">
-								<th style="width:50%;" class="col-header-small align-center tiny-row">Comprobante</th>
-								<th style="width:10%;" class="col-header-small align-center tiny-row">Cuota</th>
-								<th style="width:10%;" class="col-header-small align-center tiny-row">Vencimiento</th>
-								<th style="width:15%;" class="col-header-small align-center tiny-row">Importe</th>
-								<th style="width:15%;" class="col-header-small align-center tiny-row">Imputado</th>
-								<th style="width:0%;display:none;" class="col-header-small align-center tiny-row">dia_movi</th>
-								<th style="width:0%;display:none;" class="col-header-small align-center tiny-row">cm_compte</th>
-								<th style="width:0%;display:none;" class="col-header-small align-center tiny-row">tco_id</th>
-								<th style="width:0%;display:none;" class="col-header-small align-center tiny-row">cta_id</th>
-							</tr>
-						</thead>
-						<tbody>
-							@if (Model.GrillaObligacionesNuevas != null && Model.GrillaObligacionesNuevas.ListaDatos != null && Model.GrillaObligacionesNuevas.ListaDatos.Count > 0)
-							{
-								@foreach (var item in Model.GrillaObligacionesNuevas.ListaDatos)
-								{
-									if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
-									<tr class="@clase" onclick="selectReg(this, 'tbListaObligacionesParaAgregar')" ondblclick="selectRegDbl(this, 'tbListaObligacionesParaAgregar')">
-										<td class="@Model.GrillaObligacionesNuevas.ObtenerClase(item.concepto) cell-fit-content">@Model.GrillaObligacionesNuevas.FormatearDato(item.concepto, FormatDato.Ninguno)</td>
-										<td class="@Model.GrillaObligacionesNuevas.ObtenerClase(item.cm_compte_cuota) cell-fit-content">@Model.GrillaObligacionesNuevas.FormatearDato(item.cm_compte_cuota, FormatDato.Ninguno)</td>
-										<td class="@Model.GrillaObligacionesNuevas.ObtenerClase(item.cv_fecha_vto) cell-fit-content">@Model.GrillaObligacionesNuevas.FormatearDato(item.cv_fecha_vto, FormatDato.Fecha)</td>
-										<td class="@Model.GrillaObligacionesNuevas.ObtenerClase(item.cv_importe) text-end cell-fit-content">@GridHelper.FormatearDato(item.cv_importe, FormatDato.Monto, true)</td>
-										<td class="@Model.GrillaObligacionesNuevas.ObtenerClase(item.cv_imputado) text-end cell-fit-content">@GridHelper.FormatearDato(item.cv_imputado, FormatDato.Monto, true)</td>
-										<td style="display:none;">@item.dia_movi</td>
-										<td style="display:none;">@item.cm_compte</td>
-										<td style="display:none;">@item.tco_id</td>
-										<td style="display:none;">@item.cta_id</td>
-									</tr>
-								}
-							}
-						</tbody>
-					</table>
+		<div class="grid-golden">
+			<div class="grid-golden-header">
+				<div class="row align-items-md-center">
+					<div class="col-md-10 col-sm-6 d-flex align-items-center">
+						<h5 class="mb-0 flex-grow-1">
+							<i class="bx bx-package me-2"></i>
+							<strong class="titulo-obligaciones-cancelar">Obligaciones a Cancelar</strong>
+						</h5>
+					</div>
 				</div>
 			</div>
-			<div class="row" id="divObligaciones">
+			<div class="grid-golden-body">
+				<div class="row" id="divObligacionesParaAgregar" style="height: 245px;">
+					<div class="table-responsive table-wrapper-200" id="containerListaObligacionesParaAgregar">
+						<table class="table table-bordered table-hover table-golden" id="tbListaObligacionesParaAgregar">
+							<thead style="background: darkred;">
+								<tr class="header">
+									<th style="width:50%;" class="col-header-small align-center tiny-row">Comprobante</th>
+									<th style="width:10%;" class="col-header-small align-center tiny-row">Cuota</th>
+									<th style="width:10%;" class="col-header-small align-center tiny-row">Vencimiento</th>
+									<th style="width:15%;" class="col-header-small align-center tiny-row">Importe</th>
+									<th style="width:15%;" class="col-header-small align-center tiny-row">Imputado</th>
+									<th style="width:0%;display:none;" class="col-header-small align-center tiny-row">dia_movi</th>
+									<th style="width:0%;display:none;" class="col-header-small align-center tiny-row">cm_compte</th>
+									<th style="width:0%;display:none;" class="col-header-small align-center tiny-row">tco_id</th>
+									<th style="width:0%;display:none;" class="col-header-small align-center tiny-row">cta_id</th>
+								</tr>
+							</thead>
+							<tbody>
+								@if (Model.GrillaObligacionesNuevas != null && Model.GrillaObligacionesNuevas.ListaDatos != null && Model.GrillaObligacionesNuevas.ListaDatos.Count > 0)
+								{
+									@foreach (var item in Model.GrillaObligacionesNuevas.ListaDatos)
+									{
+										if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+										<tr class="@clase" onclick="selectReg(this, 'tbListaObligacionesParaAgregar')" ondblclick="selectRegDbl(this, 'tbListaObligacionesParaAgregar')">
+											<td class="@Model.GrillaObligacionesNuevas.ObtenerClase(item.concepto) cell-fit-content">@Model.GrillaObligacionesNuevas.FormatearDato(item.concepto, FormatDato.Ninguno)</td>
+											<td class="@Model.GrillaObligacionesNuevas.ObtenerClase(item.cm_compte_cuota) cell-fit-content">@Model.GrillaObligacionesNuevas.FormatearDato(item.cm_compte_cuota, FormatDato.Ninguno)</td>
+											<td class="@Model.GrillaObligacionesNuevas.ObtenerClase(item.cv_fecha_vto) cell-fit-content">@Model.GrillaObligacionesNuevas.FormatearDato(item.cv_fecha_vto, FormatDato.Fecha)</td>
+											<td class="@Model.GrillaObligacionesNuevas.ObtenerClase(item.cv_importe) text-end cell-fit-content">@GridHelper.FormatearDato(item.cv_importe, FormatDato.Monto, true)</td>
+											<td class="@Model.GrillaObligacionesNuevas.ObtenerClase(item.cv_imputado) text-end cell-fit-content">@GridHelper.FormatearDato(item.cv_imputado, FormatDato.Monto, true)</td>
+											<td style="display:none;">@item.dia_movi</td>
+											<td style="display:none;">@item.cm_compte</td>
+											<td style="display:none;">@item.tco_id</td>
+											<td style="display:none;">@item.cta_id</td>
+										</tr>
+									}
+								}
+							</tbody>
+						</table>
+					</div>
+				</div>
+				<div class="row" id="divObligaciones">
+				</div>
 			</div>
-		</fieldset>
+		</div>
 	</div>
 	<div class="col-6" style="height: 600px;">
-		<fieldset>
-			<legend>Créditos y Valores</legend>
-			<div class="row" id="divCreditosParaAgregar" style="height: 200px;">
-				<div class="table-responsive table-wrapper-200" id="containerListaCreditosParaAgregar">
-					<table class="table table-bordered table-hover" id="tbListaCreditosParaAgregar">
-						<thead style="background: dodgerblue;">
-							<tr>
-								<th style="width:50%;" class="col-header-small align-center tiny-row">Comprobante</th>
-								<th style="width:10%;" class="col-header-small align-center tiny-row">Cuota</th>
-								<th style="width:10%;" class="col-header-small align-center tiny-row">Vencimiento</th>
-								<th style="width:15%;" class="col-header-small align-center tiny-row">Importe</th>
-								<th style="width:15%;" class="col-header-small align-center tiny-row">Imputado</th>
-								<th style="width:0%;display:none;" class="col-header-small align-center tiny-row">dia_movi</th>
-								<th style="width:0%;display:none;" class="col-header-small align-center tiny-row">cm_compte</th>
-								<th style="width:0%;display:none;" class="col-header-small align-center tiny-row">tco_id</th>
-								<th style="width:0%;display:none;" class="col-header-small align-center tiny-row">cta_id</th>
-							</tr>
-						</thead>
-						<tbody>
-							@if (Model.GrillaCreditosNueva != null && Model.GrillaCreditosNueva.ListaDatos != null && Model.GrillaCreditosNueva.ListaDatos.Count > 0)
-							{
-								@foreach (var item in Model.GrillaCreditosNueva.ListaDatos)
+		<div class="grid-golden">
+			<div class="grid-golden-header">
+				<div class="row align-items-md-center">
+					<div class="col-md-10 col-sm-6 d-flex align-items-center">
+						<h5 class="mb-0 flex-grow-1">
+							<i class="bx bx-package me-2"></i>
+							<strong class="titulo-creditos-valores">Créditos y Valores</strong>
+						</h5>
+					</div>
+				</div>
+			</div>
+			<div class="grid-golden-body">
+				<div class="row" id="divCreditosParaAgregar" style="height: 200px;">
+					<div class="table-responsive table-wrapper-200" id="containerListaCreditosParaAgregar">
+						<table class="table table-bordered table-hover" id="tbListaCreditosParaAgregar">
+							<thead style="background: dodgerblue;">
+								<tr>
+									<th style="width:50%;" class="col-header-small align-center tiny-row">Comprobante</th>
+									<th style="width:10%;" class="col-header-small align-center tiny-row">Cuota</th>
+									<th style="width:10%;" class="col-header-small align-center tiny-row">Vencimiento</th>
+									<th style="width:15%;" class="col-header-small align-center tiny-row">Importe</th>
+									<th style="width:15%;" class="col-header-small align-center tiny-row">Imputado</th>
+									<th style="width:0%;display:none;" class="col-header-small align-center tiny-row">dia_movi</th>
+									<th style="width:0%;display:none;" class="col-header-small align-center tiny-row">cm_compte</th>
+									<th style="width:0%;display:none;" class="col-header-small align-center tiny-row">tco_id</th>
+									<th style="width:0%;display:none;" class="col-header-small align-center tiny-row">cta_id</th>
+								</tr>
+							</thead>
+							<tbody>
+								@if (Model.GrillaCreditosNueva != null && Model.GrillaCreditosNueva.ListaDatos != null && Model.GrillaCreditosNueva.ListaDatos.Count > 0)
 								{
-									if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
-									<tr class="@clase" onclick="selectReg(this, 'tbListaCreditosParaAgregar')" ondblclick="selectRegDbl(this, 'tbListaCreditosParaAgregar')">
-										<td class="@Model.GrillaCreditosNueva.ObtenerClase(item.concepto) cell-fit-content">@Model.GrillaCreditosNueva.FormatearDato(item.concepto, FormatDato.Ninguno)</td>
-										<td class="@Model.GrillaCreditosNueva.ObtenerClase(item.cm_compte_cuota) cell-fit-content">@Model.GrillaCreditosNueva.FormatearDato(item.cm_compte_cuota, FormatDato.Ninguno)</td>
-										<td class="@Model.GrillaCreditosNueva.ObtenerClase(item.cv_fecha_vto) cell-fit-content">@Model.GrillaCreditosNueva.FormatearDato(item.cv_fecha_vto, FormatDato.Fecha)</td>
-										<td class="@Model.GrillaCreditosNueva.ObtenerClase(item.cv_importe) text-end cell-fit-content">@GridHelper.FormatearDato(item.cv_importe, FormatDato.Monto, true)</td>
-										<td class="@Model.GrillaCreditosNueva.ObtenerClase(item.cv_imputado) text-end cell-fit-content">@GridHelper.FormatearDato(item.cv_imputado, FormatDato.Monto, true)</td>
-										<td style="display:none;">@item.dia_movi</td>
-										<td style="display:none;">@item.cm_compte</td>
-										<td style="display:none;">@item.tco_id</td>
-										<td style="display:none;">@item.cta_id</td>
-									</tr>
+									@foreach (var item in Model.GrillaCreditosNueva.ListaDatos)
+									{
+										if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+										<tr class="@clase" onclick="selectReg(this, 'tbListaCreditosParaAgregar')" ondblclick="selectRegDbl(this, 'tbListaCreditosParaAgregar')">
+											<td class="@Model.GrillaCreditosNueva.ObtenerClase(item.concepto) cell-fit-content">@Model.GrillaCreditosNueva.FormatearDato(item.concepto, FormatDato.Ninguno)</td>
+											<td class="@Model.GrillaCreditosNueva.ObtenerClase(item.cm_compte_cuota) cell-fit-content">@Model.GrillaCreditosNueva.FormatearDato(item.cm_compte_cuota, FormatDato.Ninguno)</td>
+											<td class="@Model.GrillaCreditosNueva.ObtenerClase(item.cv_fecha_vto) cell-fit-content">@Model.GrillaCreditosNueva.FormatearDato(item.cv_fecha_vto, FormatDato.Fecha)</td>
+											<td class="@Model.GrillaCreditosNueva.ObtenerClase(item.cv_importe) text-end cell-fit-content">@GridHelper.FormatearDato(item.cv_importe, FormatDato.Monto, true)</td>
+											<td class="@Model.GrillaCreditosNueva.ObtenerClase(item.cv_imputado) text-end cell-fit-content">@GridHelper.FormatearDato(item.cv_imputado, FormatDato.Monto, true)</td>
+											<td style="display:none;">@item.dia_movi</td>
+											<td style="display:none;">@item.cm_compte</td>
+											<td style="display:none;">@item.tco_id</td>
+											<td style="display:none;">@item.cta_id</td>
+										</tr>
+									}
 								}
-							}
-						</tbody>
-					</table>
+							</tbody>
+						</table>
+					</div>
+				</div>
+				<div class="row col-md-12 mb-1 mt-2">
+					<div class="input-group input-group-sm">
+						@Html.DropDownListFor(m => m.ctaDir, lstCtaDir, "Seleccionar...", new { @id = "listaCtaDir", @class = "form-control activable", @style = "width: 20%;" })
+						<input type="text" id="txtValorCtaDirSeleccionada" class="form-control activable inputEditable" />
+						<input type="text" id="txtMotivoCtaDirSeleccionada" class="form-control activable inputEditable" style="width: 20%;" />
+						<button id="btnAgregarConceptoCancelatoriobtnAgregarConceptoCancelatorio" class="btn btn-success btn-sm" type="button" title="Agregar concepto cancelatorio">
+							<i class="bx bx-plus-circle"></i>
+						</button>
+					</div>
+				</div>
+				<div class="row" id="divCreditos">
 				</div>
 			</div>
-			<div class="row col-md-12 mb-1 mt-2">
-				<div class="input-group input-group-sm">
-					@Html.DropDownListFor(m => m.ctaDir, lstCtaDir, "Seleccionar...", new { @id = "listaCtaDir", @class = "form-control activable", @style = "width: 20%;" })
-					<input type="text" id="txtValorCtaDirSeleccionada" class="form-control activable inputEditable"/>
-					<input type="text" id="txtMotivoCtaDirSeleccionada" class="form-control activable inputEditable" style="width: 20%;" />
-					<button id="btnAgregarConceptoCancelatoriobtnAgregarConceptoCancelatorio" class="btn btn-success btn-sm" type="button" title="Agregar concepto cancelatorio">
-						<i class="bx bx-plus-circle"></i>
-					</button>
-				</div>
-			</div>
-			<div class="row" id="divCreditos">
-			</div>
-		</fieldset>
+		</div>
 	</div>
 </div>

@@ -9,6 +9,8 @@
 	$(document).on("keyup", "#txtValorCtaDirSeleccionada", ControlaKeyUpValorCtaDirSeleccionada);
 	$(document).on("keyup", "#txtMotivoCtaDirSeleccionada", ControlaKeyUpMotivoCtaDirSeleccionada);
 	$(document).on("change", "#listaCtaDir", ControlaListaCtaDir);
+	$(document).on("click", "#btnCancelar1", btnCancelarValidar);
+	$(document).on("click", "#btnCancelar2", btnCancelarValidar);
 
 	// Botón de imprimir
 	$(document).on("click", ".btnImprimir", function () {
@@ -145,6 +147,22 @@ function ImprimirOPP_Generada(opCompte, ctaId) {
 function ReseteoDeReportes() {
 	console.log("Reseto de reportes");
 	ReporteResetArre();
+}
+
+function btnCancelarValidar() {
+	AbrirMensaje("ATENCIÓN", "¿Confirma la cancelación?", function (e) {
+		$("#msjModal").modal("hide");
+		switch (e) {
+			case "SI": //Confirmar
+				window.location.href = "/Compras/OrdenDePagoAProveedor/Index";
+				break;
+			case "NO":
+				break;
+			default:
+				break;
+		}
+		return true;
+	}, true, ["Aceptar", "Cancelar"], "warn!", null);
 }
 
 function btnConfirmar2Validar() {
