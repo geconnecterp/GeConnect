@@ -517,6 +517,12 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                     item.rp = auto.Rp;
                 }
 
+                _logger.LogInformation(
+                    "Confirmando RPR {Rp}, UL {Ul}. Secuencia de productos: {SecuenciaProductos}",
+                    auto.Rp,
+                    ul,
+                    string.Join(", ", lista.Select(x => $"{x.item}:{x.p_id}")));
+
                 var res = await _productoServicio.RPRRegistrarProductos(lista, AdministracionId, ul,auto.EsModificacion, TokenCookie);
 
                 if (res.Resultado == 0)
