@@ -1,6 +1,6 @@
 ﻿<!DOCTYPE html>
 
-<html lang="en"
+<html lang="es"
       class="light-style layout-wide customizer-hide"
       dir="ltr">
 <head>
@@ -35,6 +35,7 @@
     <!-- Page CSS -->
     <!-- Page -->
     <link rel="stylesheet" href="~/css/pages/page-auth.css" />
+    <link rel="stylesheet" href="~/css/pages/login-geco.css" />
 
     <!-- Helpers -->
     <script src="~/js/helpers.js"></script>
@@ -43,31 +44,33 @@
     <script src="~/js/config.js"></script>
 </head>
 
-<body>
+<body class="geco-login-page">
     <!-- Content -->
     <div class="container-xxl" id="formulario" style="display:none">
-        <div class="authentication-wrapper authentication-basic container-p-y">
-            <div class="authentication-inner">
-                <!-- Register -->
-                <div class="card">
+        <div class="authentication-wrapper authentication-basic container-p-y geco-authentication">
+            <div class="authentication-inner geco-authentication-inner">
+                <main class="card geco-login-card" aria-labelledby="loginTitle">
                     <div class="card-body">
-                        <!-- Logo -->
-                        <div class="app-brand justify-content-center">
-                            <a asp-action="Index" asp-asp-controller="Home" class="app-brand-link gap-2">
-                                <span class="app-brand-text demo text-body fw-bold">GECONet</span>
-                            </a>
+                        <header class="geco-brand" aria-label="GECONet Gestión Comercial">
+                            <span class="geco-brand-mark" aria-hidden="true">G</span>
+                            <span class="geco-brand-copy">
+                                <span class="geco-brand-name">GECONet</span>
+                                <span class="geco-brand-subtitle">Gestión Comercial</span>
+                            </span>
+                        </header>
+
+                        <div class="geco-login-heading">
+                            <h1 id="loginTitle">Acceso al sistema</h1>
+                            <p>Seleccione la administración e ingrese sus credenciales para continuar.</p>
                         </div>
-                        <!-- /Logo -->
-                        <h4 class="mb-2">Bienvenido Geco! 👋</h4>
-                        <p class="mb-4">Por favor, ingrese usuario y contraseña para ingresar.</p>
-                        <h5 class="mb-4 align-content-center">Fecha: @Model.FechaNN</h5>
-                        <form class="mb-3" asp-area="seguridad" asp-action="login" asp-controller="token" method="post">
+
+                        <form id="loginForm" asp-area="seguridad" asp-action="login" asp-controller="token" method="post">
                             @* id="formAuthentication" *@
-                            <div class="mb-3">
+                            <div class="mb-3 geco-form-field">
                                 <label for="Admid" class="form-label">Administración</label>
                                 @Html.DropDownList("Admid", null, "Seleccione...", new { @class = "form-select" })
                             </div>
-                            <div class="mb-3">
+                            <div class="mb-3 geco-form-field">
                                 <label for="UserName" class="form-label">Usuario</label>
                                 <input type="text"
                                        class="form-control"
@@ -76,7 +79,7 @@
                                        placeholder="Ingrese su usuario"
                                        autofocus />
                             </div>
-                            <div class="mb-3 form-password-toggle">
+                            <div class="mb-3 form-password-toggle geco-form-field">
                                 <div class="d-flex justify-content-between">
                                     <label class="form-label" for="Password">Contraseña</label>
                                 </div>
@@ -87,15 +90,26 @@
                                            name="Password"
                                            placeholder="&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;"
                                            aria-describedby="password" />
-                                    <span class="input-group-text cursor-pointer"><i class="bx bx-hide"></i></span>
+                                    <span class="input-group-text cursor-pointer" role="button" tabindex="0" aria-label="Mostrar u ocultar contraseña"><i class="bx bx-hide"></i></span>
                                 </div>
                             </div>
-                            <div class="mb-3">
-                                <button class="btn btn-primary d-grid w-100" type="submit">Ingresar</button>
+                            <div class="geco-login-actions">
+                                <button id="btnLogin" class="btn btn-geco-login d-grid w-100" type="submit">
+                                    <span class="geco-login-button-text">Ingresar</span>
+                                    <span class="geco-login-button-loading d-none" aria-hidden="true">
+                                        <span class="spinner-border spinner-border-sm" role="status"></span>
+                                        Ingresando...
+                                    </span>
+                                </button>
                             </div>
                         </form>
+
+                        <footer class="geco-login-meta">
+                            <i class="bx bx-calendar" aria-hidden="true"></i>
+                            <span>@Model.FechaNN</span>
+                        </footer>
                     </div>
-                </div>
+                </main>
             </div>
         </div>
     </div>
@@ -117,6 +131,18 @@
         var MensajeWarnTempData = '@TempData["warn"]';
         var MensajeSuccessTempData = '@TempData["succ"]';
         var MensajeBlock = "<h3><i class='bx bx-loader-circle bx-spin'></i> Por favor, espere...</h3>";
+
+        document.getElementById('loginForm')?.addEventListener('submit', function () {
+            var button = document.getElementById('btnLogin');
+            if (!button || button.disabled) {
+                return;
+            }
+
+            button.disabled = true;
+            button.setAttribute('aria-busy', 'true');
+            button.querySelector('.geco-login-button-text')?.classList.add('d-none');
+            button.querySelector('.geco-login-button-loading')?.classList.remove('d-none');
+        });
 
     </script>
 </body>

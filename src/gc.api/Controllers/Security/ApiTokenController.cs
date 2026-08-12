@@ -6,6 +6,8 @@ using gc.api.infra.Datos.Contratos.Security;
 using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Dtos.Administracion;
 using gc.infraestructura.Dtos.Users;
+using gc.infraestructura.Dtos.Seguridad;
+using gc.infraestructura.Core.Responses;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
@@ -86,62 +88,40 @@ namespace gc.api.Controllers.Security
             throw new NotImplementedException();
         }
 
-        [HttpPost, Authorize, Route("[action]")]
-        public async Task<IActionResult> CambioClave(CambioClaveDto cambio)
+        [HttpGet("politica-clave"), Authorize]
+        public IActionResult ObtenerPoliticaClave()
         {
-            _logger.LogInformation($"{this.GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
-            if (string.IsNullOrEmpty(cambio.PassAct))
-            {
-                return BadRequest("No se recepcionó la clave.");
-            }
-            if (string.IsNullOrEmpty(cambio.PassNew) || string.IsNullOrEmpty(cambio.PassNewVer))
-            {
-                return BadRequest("No se recepcionó la clave nueva.");
-            }
-            if (string.Compare(cambio.PassNew, cambio.PassNewVer) != 0)
-            {
-                return BadRequest("La clave no pudo ser validada correctamente.");
-            }
+            var politica = _securityServicio.ObtenerPoliticaClave();
+            return Ok(new ApiResponse<PoliticaClaveDto>(politica));
+        }
 
-            ////obtenemos el usuario desde el token
-            //var res = ObtenerTokenDesdeRequestAsync(false);
-            //var validacion = await IsValidUser(new UserLogin { UserName = res.Item2, Password = cambio.PassAct });
-            var validacion = IsValidUser(new UserLogin { UserName = cambio.UserName, Password = cambio.PassAct }, true);
-            if (validacion.Item1)
-            {
-                //    //la clave fue valida.. ahora se modifica la clave.
-                var pass = _passwordService.CalculaClave(new RegistroUserDto { User = cambio.UserName, Password = cambio.PassNew });
-                var usu = validacion.Item2;
-                usu.Usu_password = pass;
-                usu.Usu_email = $"{usu.Usu_id.Trim()}@geco.com.ar";
-                var res = await _securityServicio.RegistrerUser(usu, true);
+        [HttpPost("cambio-clave"), Authorize]
+        public IActionResult CambioClave(CambioClaveRequestDto cambio)
+        {
+            _logger.LogInformation("{Controller} - {Action}", GetType().Name, MethodBase.GetCurrentMethod()?.Name);
 
-                if (res)
-                {
-                    return Ok();
-                }
-                else
-                {
-                    return BadRequest("No se pudo modificar la clave del operador.");
-                }
+            if (cambio == null || string.IsNullOrWhiteSpace(cambio.ClaveActual))
+                return BadRequest("Debe ingresar la contraseña actual.");
+            if (string.IsNullOrWhiteSpace(cambio.ClaveNueva))
+                return BadRequest("Debe ingresar la contraseña nueva.");
+            if (cambio.ClaveActual.Length > 128 || cambio.ClaveNueva.Length > 128)
+                return BadRequest("La contraseña supera la longitud máxima admitida.");
 
-                //    cambio.PassNew = _passwordService.Hash(cambio.PassNew);
-                //    bool resultado = await _empleadoServicio.CambioClave(res.Item1.ToGuid(),cambio);
-                //    if (resultado)
-                //    {
-                //        return Ok(new ApiResponse<bool>(resultado));
-                //    }
-                //    else
-                //    {
-                //        return BadRequest("No se pudo actualizar la clave.");
-                //    }
-            }
-            else
-            {
-                return BadRequest("El usuario o clave o ambos son erroreos.");
-            }
+            var usuId = User.FindFirst("user")?.Value
+                ?? User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrWhiteSpace(usuId))
+                return Unauthorized();
 
-            throw new NotImplementedException();
+            var admClaim = User.FindFirst("AdmId")?.Value;
+            var admId = admClaim?.Split('#', 2)[0];
+            var ip = Request.Headers["X-ClientUsr"].FirstOrDefault()
+                ?? HttpContext.Connection.RemoteIpAddress?.ToString();
+            var operacionId = Guid.NewGuid();
+
+            var resultado = _securityServicio.CambiarClave(
+                usuId, cambio.ClaveActual, cambio.ClaveNueva, admId, ip, operacionId);
+
+            return Ok(new ApiResponse<CambioClaveResultadoDto>(resultado));
         }
 
 
@@ -217,6 +197,7 @@ namespace gc.api.Controllers.Security
                 new Claim("lp_id", $"{adm.lp_id}"),
                 new Claim("expires", DateTime.Now.AddMinutes(_options.Value.TiempoDuracionToken).Ticks.ToString()),
                 new Claim("user",usuario.Usu_id),
+                new Claim("clave_expirada", ClaveExpirada(usuario).ToString().ToLowerInvariant()),
                 new Claim("perfiles",jsonp)
 
                 //new Claim("etiqueta",DateTime.Now.Ticks.ToString())
@@ -243,6 +224,16 @@ namespace gc.api.Controllers.Security
 
 
             return new JwtSecurityTokenHandler().WriteToken(token);
+        }
+
+        private static bool ClaveExpirada(Usuario usuario)
+        {
+            return usuario.Usu_expira == true
+                && usuario.Usu_fecha_expira_inicio.HasValue
+                && usuario.Usu_dias_expiracion.HasValue
+                && usuario.Usu_dias_expiracion.Value > 0
+                && DateTime.Now >= usuario.Usu_fecha_expira_inicio.Value
+                    .AddDays(usuario.Usu_dias_expiracion.Value);
         }
     }
 }

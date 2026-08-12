@@ -1,0 +1,64 @@
+.home-geco-welcome {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: calc(100vh - 190px);
+    overflow: hidden;
+    text-align: center;
+}
+
+.home-geco-branch {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    margin: 0 0 clamp(1rem, 2.5vh, 2rem);
+    color: #6f5a22;
+    line-height: 1.05;
+}
+
+.home-geco-branch span {
+    font-size: clamp(0.75rem, 1.2vw, 1rem);
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+}
+
+.home-geco-branch strong {
+    font-family: "Segoe UI", "Public Sans", sans-serif;
+    font-size: clamp(1.75rem, 5vw, 4.5rem);
+    font-weight: 750;
+    letter-spacing: 0.025em;
+}
+
+.home-geco-welcome h1 {
+    margin: 0;
+    color: var(--bs-golden-primary, #d4af37);
+    font-family: "Arial Black", "Segoe UI Black", "Public Sans", sans-serif;
+    font-size: clamp(4rem, 12vw, 10rem);
+    font-weight: 900;
+    letter-spacing: 0.055em;
+    line-height: 0.9;
+    text-shadow: 0 5px 0 rgba(184, 134, 11, 0.18),
+                 0 16px 35px rgba(139, 115, 85, 0.14);
+}
+
+@media (max-width: 575.98px) {
+    .home-geco-welcome {
+        min-height: calc(100vh - 165px);
+    }
+
+    .home-geco-welcome h1 {
+        font-size: clamp(3.2rem, 17vw, 5.5rem);
+        letter-spacing: 0.025em;
+    }
+
+    .home-geco-branch strong {
+        font-size: clamp(1.5rem, 8vw, 2.5rem);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .home-geco-welcome h1 {
+        text-shadow: 0 4px 0 rgba(184, 134, 11, 0.16);
+    }
+}

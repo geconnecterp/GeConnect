@@ -1,0 +1,251 @@
+:root {
+  --geco-gold: #d4a20b;
+  --geco-gold-dark: #a97900;
+  --geco-ink: #2f3542;
+  --geco-muted: #697386;
+  --geco-border: #dfe3e8;
+  --geco-surface: #ffffff;
+  --geco-background: #f3f1eb;
+}
+
+.geco-login-page {
+  min-height: 100vh;
+  color: var(--geco-ink);
+  background:
+    radial-gradient(circle at 12% 15%, rgba(212, 162, 11, 0.11) 0, rgba(212, 162, 11, 0.11) 110px, transparent 111px),
+    linear-gradient(135deg, #f8f7f3 0%, var(--geco-background) 55%, #ebe8df 100%);
+}
+
+.geco-login-page::before {
+  position: fixed;
+  inset: 0 auto 0 0;
+  width: 6px;
+  content: "";
+  background: linear-gradient(180deg, #edc442 0%, var(--geco-gold-dark) 100%);
+}
+
+.geco-authentication {
+  padding: 1.5rem;
+}
+
+.authentication-wrapper.authentication-basic .geco-authentication-inner {
+  max-width: 440px;
+}
+
+.authentication-wrapper.authentication-basic .geco-authentication-inner::before,
+.authentication-wrapper.authentication-basic .geco-authentication-inner::after {
+  display: none;
+}
+
+.geco-login-card {
+  overflow: hidden;
+  border: 1px solid rgba(47, 53, 66, 0.08);
+  border-top: 5px solid var(--geco-gold);
+  border-radius: 14px;
+  background: var(--geco-surface);
+  box-shadow: 0 20px 55px rgba(47, 53, 66, 0.14);
+}
+
+.geco-login-card .card-body {
+  padding: 2.25rem 2.4rem 1.5rem;
+}
+
+.geco-brand {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-bottom: 2rem;
+}
+
+.geco-brand-mark {
+  position: relative;
+  display: inline-flex;
+  width: 48px;
+  height: 48px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  color: #fff;
+  background: linear-gradient(145deg, #e2b92f 0%, var(--geco-gold-dark) 100%);
+  box-shadow: 0 7px 16px rgba(169, 121, 0, 0.25);
+  font-size: 1.6rem;
+  font-weight: 700;
+  letter-spacing: -0.06em;
+}
+
+.geco-brand-mark::after {
+  position: absolute;
+  right: 6px;
+  bottom: 6px;
+  width: 7px;
+  height: 7px;
+  content: "";
+  border: 2px solid rgba(255, 255, 255, 0.85);
+  border-radius: 50%;
+}
+
+.geco-brand-copy {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.05;
+}
+
+.geco-brand-name {
+  color: var(--geco-ink);
+  font-size: 1.55rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+.geco-brand-subtitle {
+  margin-top: 0.3rem;
+  color: var(--geco-muted);
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.geco-login-heading {
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.geco-login-heading h1 {
+  margin-bottom: 0.45rem;
+  color: var(--geco-ink);
+  font-size: 1.45rem;
+  font-weight: 650;
+}
+
+.geco-login-heading p {
+  max-width: 330px;
+  margin: 0 auto;
+  color: var(--geco-muted);
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+
+.geco-form-field .form-label {
+  margin-bottom: 0.45rem;
+  color: #4b5565;
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.geco-form-field .form-control,
+.geco-form-field .form-select,
+.geco-form-field .input-group-text {
+  min-height: 44px;
+  border-color: var(--geco-border);
+}
+
+.geco-form-field .form-control,
+.geco-form-field .form-select {
+  color: var(--geco-ink);
+  background-color: #fff;
+}
+
+.geco-form-field .form-control:focus,
+.geco-form-field .form-select:focus {
+  border-color: var(--geco-gold);
+  box-shadow: 0 0 0 0.2rem rgba(212, 162, 11, 0.14);
+}
+
+.geco-form-field .input-group:focus-within .input-group-text {
+  border-color: var(--geco-gold);
+}
+
+.geco-login-actions {
+  margin-top: 1.5rem;
+}
+
+.btn-geco-login {
+  min-height: 46px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--geco-gold-dark);
+  border-radius: 8px;
+  color: #fff;
+  background: linear-gradient(180deg, #dcae1d 0%, #bd8700 100%);
+  box-shadow: 0 7px 15px rgba(169, 121, 0, 0.2);
+  font-weight: 600;
+  transition: transform 150ms ease, box-shadow 150ms ease, background 150ms ease;
+}
+
+.btn-geco-login:hover,
+.btn-geco-login:focus {
+  color: #fff;
+  background: linear-gradient(180deg, #c9970b 0%, #a87400 100%);
+  box-shadow: 0 9px 19px rgba(169, 121, 0, 0.28);
+  transform: translateY(-1px);
+}
+
+.btn-geco-login:focus-visible {
+  outline: 3px solid rgba(212, 162, 11, 0.28);
+  outline-offset: 2px;
+}
+
+.btn-geco-login:disabled {
+  border-color: #b89434;
+  color: #fff;
+  background: #b89434;
+  box-shadow: none;
+  opacity: 0.78;
+  transform: none;
+}
+
+.geco-login-button-loading {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55rem;
+}
+
+.geco-login-meta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  margin-top: 1.35rem;
+  padding-top: 1rem;
+  border-top: 1px solid #eceef1;
+  color: #8a929f;
+  font-size: 0.76rem;
+}
+
+.geco-login-meta i {
+  color: var(--geco-gold-dark);
+  font-size: 1rem;
+}
+
+@media (max-width: 575.98px) {
+  .geco-login-page {
+    background: #f5f3ed;
+  }
+
+  .geco-login-page::before {
+    inset: 0 0 auto 0;
+    width: 100%;
+    height: 5px;
+  }
+
+  .geco-authentication {
+    padding: 1rem;
+  }
+
+  .geco-login-card .card-body {
+    padding: 1.8rem 1.35rem 1.25rem;
+  }
+
+  .geco-brand {
+    margin-bottom: 1.5rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .btn-geco-login {
+    transition: none;
+  }
+}

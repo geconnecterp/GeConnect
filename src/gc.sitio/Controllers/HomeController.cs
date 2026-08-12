@@ -26,6 +26,7 @@ namespace gc.sitio.Controllers
             }
             ViewData["Titulo"] = "Bienvenidos al GECONet";
             ViewBag.Administracion = AdministracionId;
+            ViewBag.Sucursal = AdministracionName;
             ViewBag.RepoUrl = _docsManager.ApiReporteUrl;
             return View();
         }

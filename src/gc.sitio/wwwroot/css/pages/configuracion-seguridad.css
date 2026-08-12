@@ -1,0 +1,54 @@
+:root {
+    --config-gold: #d6a20b;
+    --config-gold-dark: #b88700;
+    --config-ink: #35445d;
+    --config-muted: #718096;
+}
+
+.config-page { min-height: calc(100vh - 150px); }
+.config-shell { display: grid; grid-template-columns: 250px minmax(0, 760px); gap: 1.25rem; justify-content: center; align-items: start; }
+.config-nav, .config-card { background: #fff; border: 1px solid #e3e7ee; border-radius: 12px; box-shadow: 0 5px 18px rgba(43, 55, 75, .08); }
+.config-nav { padding: .9rem; }
+.config-nav-title { color: var(--config-ink); font-weight: 700; padding: .35rem .55rem .8rem; }
+.config-nav-item { width: 100%; border: 0; border-radius: 8px; padding: .7rem .75rem; display: flex; align-items: center; gap: .6rem; text-align: left; color: var(--config-ink); background: #f6f7f9; font-weight: 600; }
+.config-nav-item.active { color: #fff; background: linear-gradient(135deg, var(--config-gold), var(--config-gold-dark)); }
+.config-nav-item i { font-size: 1.2rem; }
+.config-nav-note { color: var(--config-muted); font-size: .78rem; line-height: 1.45; margin: 1rem .55rem .25rem; }
+.config-card { overflow: hidden; }
+.config-card-header { display: flex; align-items: center; gap: .9rem; padding: 1.15rem 1.35rem; border-bottom: 3px solid var(--config-gold); background: linear-gradient(90deg, #fffaf0, #fff); }
+.config-icon { width: 46px; height: 46px; border-radius: 50%; display: grid; place-items: center; color: #fff; background: var(--config-gold); font-size: 1.55rem; }
+.config-card-header h1 { color: var(--config-ink); font-size: 1.25rem; margin: 0 0 .15rem; font-weight: 700; }
+.config-card-header p { color: var(--config-muted); margin: 0; font-size: .88rem; }
+#formCambioClave { padding: 1.25rem 1.35rem; }
+.config-form-grid { display: grid; grid-template-columns: minmax(280px, 1fr) minmax(255px, .85fr); gap: 1.5rem; }
+.form-label { color: var(--config-ink); font-weight: 600; font-size: .86rem; }
+.form-text { color: var(--config-muted); font-size: .75rem; }
+.password-field { position: relative; }
+.password-field .form-control { height: 39px; padding-right: 2.65rem; }
+.password-field .form-control:focus { border-color: var(--config-gold); box-shadow: 0 0 0 .2rem rgba(214, 162, 11, .16); }
+.password-toggle { position: absolute; right: 0; top: 0; width: 42px; height: 39px; border: 0; color: #718096; background: transparent; font-size: 1.15rem; }
+.policy-panel { padding: 1rem; border-radius: 9px; border: 1px solid #eadcae; background: #fffaf0; }
+.policy-panel h2 { color: var(--config-ink); font-size: .93rem; margin: 0 0 .8rem; font-weight: 700; }
+.policy-list { list-style: none; margin: 0; padding: 0; }
+.policy-list li { display: flex; align-items: flex-start; gap: .45rem; color: #687386; font-size: .79rem; margin-bottom: .5rem; }
+.policy-list li i { margin-top: .08rem; color: #a8b0bd; }
+.policy-list li.valid { color: #218838; }
+.policy-list li.valid i:before { content: "\ea41"; }
+.policy-expiry { border-top: 1px solid #eadcae; margin-top: .8rem; padding-top: .75rem; color: var(--config-gold-dark); font-size: .8rem; font-weight: 600; }
+.policy-help { color: var(--config-muted); font-size: .72rem; margin: .7rem 0 0; line-height: 1.4; }
+.config-actions { display: flex; justify-content: flex-end; gap: .65rem; border-top: 1px solid #edf0f4; margin-top: 1.2rem; padding-top: 1rem; }
+.config-action-btn { width: 132px; height: 38px; display: inline-flex; align-items: center; justify-content: center; gap: .35rem; font-size: .84rem; }
+.btn-golden { color: #fff; background: var(--config-gold); border-color: var(--config-gold); }
+.btn-golden:hover, .btn-golden:focus { color: #fff; background: var(--config-gold-dark); border-color: var(--config-gold-dark); }
+#coincidenciaClave.match { color: #218838; }
+#coincidenciaClave.no-match { color: #c0392b; }
+
+@media (max-width: 850px) {
+    .config-shell { grid-template-columns: 1fr; }
+    .config-nav-note { display: none; }
+}
+@media (max-width: 620px) {
+    .config-form-grid { grid-template-columns: 1fr; }
+    .config-actions { justify-content: stretch; }
+    .config-action-btn { flex: 1; }
+}

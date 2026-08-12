@@ -1,6 +1,12 @@
 ﻿
+@section styles {
+    <link rel="stylesheet" href="~/css/pages/home-geco.css" asp-append-version="true" />
+}
 
-<div class="text-center">
-    <h1 class="display-4">@ViewBag.Title</h1>
-
+<div class="home-geco-welcome" aria-label="GECONet">
+    <p class="home-geco-branch">
+        <span>Sucursal</span>
+        <strong>@ViewBag.Sucursal</strong>
+    </p>
+    <h1>GECONet</h1>
 </div>

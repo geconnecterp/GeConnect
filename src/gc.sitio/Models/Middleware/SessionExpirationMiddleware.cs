@@ -58,6 +58,26 @@ namespace gc.sitio.Models.Middleware
                 }
             }
 
+            // Una sesión con contraseña vencida sólo puede acceder al cambio de clave o cerrar sesión.
+            bool claveExpirada = string.Equals(
+                context.User.Claims.FirstOrDefault(c => c.Type == "clave_expirada")?.Value,
+                "true", StringComparison.OrdinalIgnoreCase);
+            bool rutaCambioClave = context.Request.Path.StartsWithSegments("/Configuracion", StringComparison.OrdinalIgnoreCase);
+            bool rutaLogout = context.Request.Path.StartsWithSegments("/seguridad/Token/Logout", StringComparison.OrdinalIgnoreCase);
+            if (claveExpirada && !rutaCambioClave && !rutaLogout)
+            {
+                if (isAjaxRequest)
+                {
+                    context.Response.StatusCode = StatusCodes.Status403Forbidden;
+                    context.Response.ContentType = "application/json";
+                    await context.Response.WriteAsync("{\"error\":false,\"warn\":true,\"claveExpirada\":true,\"msg\":\"Su contraseña está vencida. Debe actualizarla para continuar.\"}");
+                    return;
+                }
+
+                context.Response.Redirect($"{context.Request.PathBase}/Configuracion/Configuracion");
+                return;
+            }
+
             // Verificar si el token JWT está vigente
             string etiqueta = context.Session.GetString("Etiqueta") ?? string.Empty;
             if (!string.IsNullOrEmpty(etiqueta))

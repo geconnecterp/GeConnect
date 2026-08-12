@@ -1,6 +1,14 @@
 ﻿<nav class="navbar navbar-expand-lg navbar-light bg-light">
     <div class="container-fluid">
-        <a class="navbar-brand" asp-controller="home" asp-action="index" asp-area="" >  GecoNet</a>        
+        <a class="navbar-brand navbar-home-link"
+           asp-controller="home"
+           asp-action="index"
+           asp-area=""
+           title="Ir al inicio"
+           aria-label="Ir al inicio">
+            <i class="bx bx-home-alt-2" aria-hidden="true"></i>
+            <span>Inicio</span>
+        </a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" 
         aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>

@@ -51,10 +51,14 @@ namespace gc.sitio.Areas.Seguridad.Controllers
         }
 
         [HttpGet]
-        public IActionResult Login()
+        public IActionResult Login(string? cambioClave = null)
         {
             try
             {
+                if (string.Equals(cambioClave, "ok", StringComparison.OrdinalIgnoreCase))
+                {
+                    TempData["succ"] = "La contraseña se modificó correctamente. Ingrese nuevamente.";
+                }
                 ComboAdministracion();
                 var login = new LoginDto { Fecha = DateTime.Now };
                 return View(login);
@@ -137,8 +141,10 @@ namespace gc.sitio.Areas.Seguridad.Controllers
                         var cookieOptions = new CookieOptions
                         {
                             Expires = tokenS.ValidTo,
-                            SameSite = SameSiteMode.Unspecified,
-
+                            Path = "/",
+                            HttpOnly = true,
+                            Secure = Request.IsHttps,
+                            SameSite = SameSiteMode.Lax,
                         };
 
                         var principal = new ClaimsPrincipal(new[] { identity });
@@ -172,6 +178,13 @@ namespace gc.sitio.Areas.Seguridad.Controllers
 
 
                         #endregion
+
+                        var claveExpirada = tokenS.Claims.FirstOrDefault(c => c.Type == "clave_expirada")?.Value;
+                        if (string.Equals(claveExpirada, "true", StringComparison.OrdinalIgnoreCase))
+                        {
+                            TempData["warn"] = "Su contraseña está vencida. Debe actualizarla para continuar.";
+                            return RedirectToAction("Index", "Configuracion", new { area = "Configuracion" });
+                        }
 
                         return RedirectToAction("Index", new RouteValueDictionary(new { area = "", controller = "Home", action = "Index" }));
                     }
@@ -241,7 +254,14 @@ namespace gc.sitio.Areas.Seguridad.Controllers
         [HttpGet]
         public async Task<IActionResult> Logout()
         {
+            var etiqueta = Etiqueta;
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+
+            if (!string.IsNullOrWhiteSpace(etiqueta))
+            {
+                Response.Cookies.Delete(etiqueta, new CookieOptions { Path = "/" });
+            }
+            HttpContext.Session.Clear();
 
             //// Acá debo invocar la api
             //HelperAPI api = new HelperAPI();

@@ -1,0 +1,129 @@
+@model gc.sitio.Models.Configuracion.CambioClaveViewModel
+@{
+    ViewData["Title"] = "Configuración";
+}
+
+@section styles {
+    <link rel="stylesheet" href="~/css/pages/configuracion-seguridad.css" asp-append-version="true" />
+}
+
+<div class="config-page py-3">
+    <div class="config-shell">
+        <aside class="config-nav" aria-label="Opciones de configuración">
+            <div class="config-nav-title">Configuración</div>
+            <button type="button" class="config-nav-item active">
+                <i class="bx bx-lock-alt"></i>
+                <span>Cambiar contraseña</span>
+            </button>
+            <p class="config-nav-note">Este espacio incorporará nuevas opciones de configuración de GECONet.</p>
+        </aside>
+
+        <section class="config-card">
+            <div class="config-card-header">
+                <div class="config-icon"><i class="bx bx-shield-quarter"></i></div>
+                <div>
+                    <h1>Cambiar contraseña</h1>
+                    <p>Actualizá tu contraseña de acceso de forma segura.</p>
+                </div>
+            </div>
+
+            <form id="formCambioClave" method="post" autocomplete="off"
+                  action="@Url.Action("CambiarClave", "Configuracion", new { area = "Configuracion" })"
+                  data-validar-longitud="@Model.Politica.ValidarLongitud.ToString().ToLowerInvariant()"
+                  data-longitud-minima="@Model.Politica.LongitudMinima"
+                  data-longitud-maxima="@Model.Politica.LongitudMaxima"
+                  data-validar-complejidad="@Model.Politica.ValidarComplejidad.ToString().ToLowerInvariant()"
+                  data-mayuscula="@Model.Politica.RequiereMayuscula.ToString().ToLowerInvariant()"
+                  data-minuscula="@Model.Politica.RequiereMinuscula.ToString().ToLowerInvariant()"
+                  data-numero="@Model.Politica.RequiereNumero.ToString().ToLowerInvariant()"
+                  data-simbolo="@Model.Politica.RequiereSimbolo.ToString().ToLowerInvariant()"
+                  data-distinta="@Model.Politica.ImpedirClaveActual.ToString().ToLowerInvariant()">
+                @Html.AntiForgeryToken()
+
+                <div class="config-form-grid">
+                    <div class="config-fields">
+                        <div class="mb-3">
+                            <label for="ClaveActual" class="form-label">Contraseña actual</label>
+                            <div class="password-field">
+                                <input asp-for="ClaveActual" type="password" class="form-control" maxlength="128"
+                                       autocomplete="current-password" aria-describedby="actualHelp" />
+                                <button type="button" class="password-toggle" data-target="ClaveActual" aria-label="Mostrar contraseña">
+                                    <i class="bx bx-show"></i>
+                                </button>
+                            </div>
+                            <small id="actualHelp" class="form-text">Necesaria para confirmar tu identidad.</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="ClaveNueva" class="form-label">Nueva contraseña</label>
+                            <div class="password-field">
+                                <input asp-for="ClaveNueva" type="password" class="form-control"
+                                       maxlength="@Model.Politica.LongitudMaxima" autocomplete="new-password" />
+                                <button type="button" class="password-toggle" data-target="ClaveNueva" aria-label="Mostrar contraseña">
+                                    <i class="bx bx-show"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="mb-2">
+                            <label for="ConfirmacionClave" class="form-label">Confirmar nueva contraseña</label>
+                            <div class="password-field">
+                                <input asp-for="ConfirmacionClave" type="password" class="form-control"
+                                       maxlength="@Model.Politica.LongitudMaxima" autocomplete="new-password" />
+                                <button type="button" class="password-toggle" data-target="ConfirmacionClave" aria-label="Mostrar contraseña">
+                                    <i class="bx bx-show"></i>
+                                </button>
+                            </div>
+                            <small id="coincidenciaClave" class="form-text"></small>
+                        </div>
+                    </div>
+
+                    <div class="policy-panel">
+                        <h2>Requisitos de seguridad</h2>
+                        <ul class="policy-list">
+                            @if (Model.Politica.ValidarLongitud)
+                            {
+                                <li data-rule="length"><i class="bx bx-circle"></i> Entre @Model.Politica.LongitudMinima y @Model.Politica.LongitudMaxima caracteres</li>
+                            }
+                            @if (Model.Politica.ValidarComplejidad && Model.Politica.RequiereMayuscula)
+                            {
+                                <li data-rule="upper"><i class="bx bx-circle"></i> Al menos una letra mayúscula</li>
+                            }
+                            @if (Model.Politica.ValidarComplejidad && Model.Politica.RequiereMinuscula)
+                            {
+                                <li data-rule="lower"><i class="bx bx-circle"></i> Al menos una letra minúscula</li>
+                            }
+                            @if (Model.Politica.ValidarComplejidad && Model.Politica.RequiereNumero)
+                            {
+                                <li data-rule="number"><i class="bx bx-circle"></i> Al menos un número</li>
+                            }
+                            @if (Model.Politica.ValidarComplejidad && Model.Politica.RequiereSimbolo)
+                            {
+                                <li data-rule="symbol"><i class="bx bx-circle"></i> Al menos un símbolo</li>
+                            }
+                            @if (Model.Politica.ImpedirClaveActual)
+                            {
+                                <li data-rule="different"><i class="bx bx-circle"></i> Diferente de la contraseña actual</li>
+                            }
+                        </ul>
+                        <div class="policy-expiry"><i class="bx bx-calendar-check"></i> Vigencia: @Model.Politica.DiasVigencia días</div>
+                        <p class="policy-help">Podés utilizar espacios dentro de la contraseña. Los símbolos son opcionales salvo que esta política indique lo contrario.</p>
+                    </div>
+                </div>
+
+                <div class="config-actions">
+                    <button type="submit" id="btnGuardarClave" class="btn btn-golden config-action-btn">
+                        <i class="bx bx-check-circle"></i><span>Guardar</span>
+                    </button>
+                    <a asp-area="" asp-controller="Home" asp-action="Index" class="btn btn-outline-danger config-action-btn">
+                        <i class="bx bx-x-circle"></i><span>Cancelar</span>
+                    </a>
+                </div>
+            </form>
+        </section>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/app/areas/configuracion/cambio-clave.js" asp-append-version="true"></script>
+}

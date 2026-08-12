@@ -5,6 +5,7 @@ using gc.api.core.Interfaces.Servicios;
 using gc.infraestructura.Core.Exceptions;
 using gc.infraestructura.Core.Helpers;
 using gc.infraestructura.EntidadesComunes.Options;
+using gc.infraestructura.Dtos.Seguridad;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Options;
 
@@ -97,6 +98,45 @@ namespace gc.api.core.Servicios
 
             //return await AddAsync(user);
             return true;
+        }
+
+        public PoliticaClaveDto ObtenerPoliticaClave()
+        {
+            var respuesta = _repository.EjecutarLstSpExt<PoliticaClaveDto>(
+                "SPGECO_SEG_Configuracion_Obtener", [], true);
+
+            if (respuesta == null || respuesta.Count == 0)
+            {
+                throw new NegocioException("No se encontró la configuración de seguridad.");
+            }
+
+            return respuesta[0];
+        }
+
+        public CambioClaveResultadoDto CambiarClave(string usuId, string claveActual, string claveNueva,
+            string? admId, string? ip, Guid operacionId)
+        {
+            var parametros = new List<SqlParameter>
+            {
+                new("@usu_id", usuId),
+                new("@clave_actual", claveActual),
+                new("@clave_nueva", claveNueva),
+                new("@adm_id", (object?)admId ?? DBNull.Value),
+                new("@ip", (object?)ip ?? DBNull.Value),
+                new("@origen", "GC.SITIO"),
+                new("@operacion_id", operacionId)
+            };
+
+            var respuesta = _repository.EjecutarLstSpExt<CambioClaveResultadoDto>(
+                "SPGECO_USU_Clave_Cambiar", parametros, true);
+
+            return respuesta?.FirstOrDefault() ?? new CambioClaveResultadoDto
+            {
+                resultado = -1,
+                resultado_id = "SIN_RESPUESTA",
+                resultado_msj = "No se obtuvo respuesta al intentar modificar la contraseña.",
+                OperacionId = operacionId
+            };
         }
     }
 }

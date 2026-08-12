@@ -7,6 +7,65 @@
     font-size: .875rem !important;
 }
 
+/* Acceso global al inicio en la barra principal */
+.navbar .navbar-home-link {
+    display: inline-flex;
+    min-height: 36px;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.35rem 0.65rem;
+    border-radius: 7px;
+    color: #946c00;
+    font-size: 0.95rem;
+    font-weight: 600;
+    line-height: 1;
+    transition: color 150ms ease, background-color 150ms ease;
+}
+
+.navbar .navbar-home-link:hover,
+.navbar .navbar-home-link:focus {
+    color: #765600;
+    background-color: #f8edbd;
+}
+
+.navbar .navbar-home-link:focus-visible {
+    outline: 2px solid #d4a20b;
+    outline-offset: 2px;
+    box-shadow: none;
+}
+
+.navbar .navbar-home-link .bx {
+    color: #b8860b;
+    font-size: 1.25rem !important;
+}
+
+/* Identificación del usuario dentro del menú de perfil */
+.dropdown-user .user-profile-summary {
+    min-width: 0;
+    max-width: 250px;
+}
+
+.dropdown-user .user-profile-name,
+.dropdown-user .user-profile-branch span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.dropdown-user .user-profile-name {
+    color: #3f4652;
+}
+
+.dropdown-user .user-profile-branch {
+    margin-top: 0.25rem;
+}
+
+.dropdown-user .user-profile-branch .bx {
+    flex: 0 0 auto;
+    color: #b8860b;
+    font-size: 1rem !important;
+}
+
 .bx.bx--lg {
     font-size: 1.6rem !important;
 }
