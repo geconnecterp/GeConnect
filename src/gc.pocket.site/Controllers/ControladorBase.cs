@@ -657,13 +657,55 @@ namespace gc.pocket.site.Controllers
                 {
                     return new();
                 }
-                return JsonConvert.DeserializeObject<List<ProductoGenDto>>(json) ?? [];
+
+                var productos = JsonConvert.DeserializeObject<List<ProductoGenDto>>(json) ?? [];
+                if (NormalizarItems(productos))
+                {
+                    _logger.LogWarning(
+                        "Se corrigió una secuencia inválida de items en ProductoGenRegs. Cantidad de productos: {CantidadProductos}",
+                        productos.Count);
+
+                    _context.HttpContext?.Session.SetString(
+                        "ProductoGenRegs",
+                        JsonConvert.SerializeObject(productos));
+                }
+
+                return productos;
             }
             set
             {
+                NormalizarItems(value);
                 var json = JsonConvert.SerializeObject(value);
                 _context.HttpContext?.Session.SetString("ProductoGenRegs", json);
             }
+        }
+
+        /// <summary>
+        /// Mantiene item como una secuencia posicional continua (1..N).
+        /// ProductoGenRegs es compartida por los módulos Pocket que cargan productos;
+        /// por eso la normalización se realiza al leer y guardar la sesión.
+        /// </summary>
+        private static bool NormalizarItems(List<ProductoGenDto>? productos)
+        {
+            if (productos == null)
+            {
+                return false;
+            }
+
+            var huboCorrecciones = false;
+            for (var indice = 0; indice < productos.Count; indice++)
+            {
+                var itemEsperado = indice + 1;
+                if (productos[indice].item == itemEsperado)
+                {
+                    continue;
+                }
+
+                productos[indice].item = itemEsperado;
+                huboCorrecciones = true;
+            }
+
+            return huboCorrecciones;
         }
 
 

@@ -4,6 +4,7 @@
     var alt = true;
     string clase = string.Empty;
     int cont = 0;
+    var culturaNumero = System.Globalization.CultureInfo.GetCultureInfo("en-US");
     
 }
 
@@ -20,7 +21,7 @@
             <span id="spMargenTotal" class="text-danger">-</span>
         </div>
 
-        <button type="button" class="btn btn-sm btn-outline-primary" id="btnAgregarCProducto" title="Agregar Producto" disabled>
+        <button type="button" class="btn btn-sm btn-golden" id="btnAgregarCProducto" title="Agregar Producto" disabled>
             <i class="bx bx-plus"></i>
         </button>
     </div>
@@ -46,12 +47,13 @@
                         foreach (var item in Model.ListaDatos.OrderBy(x=>x.pre_item).ToList())
                         {
                             cont++;
-                            var pre_item = item.pre_item.Equals("0") ? cont : item.pre_item;
+                            var pre_item = item.pre_item == 0 ? cont : item.pre_item;
                             if (alt) { clase = "alt"; alt = false; } else { clase = ""; alt = true; }
                             var totalCalc = (item.pre_cantidad * item.pre_pvta);
                             <tr class="@clase"
                                 data-pre-item="@cont"
                                 data-p-id="@item.p_id"
+                                data-up-id="@item.up_id"
                                 data-pre-pcosto="@item.pre_pcosto"
                                 data-p-pcosto-actual="@item.p_pcosto_actual"
                                 data-pre-pneto="@item.pre_pneto"
@@ -60,16 +62,16 @@
                                 data-in-alicuota="@item.in_alicuota"
                                 data-lp-prevision-tot="@item.lp_prevision_tot"
                                 data-lp-prevision-pin="@item.lp_prevision_pin">
-                                <td class="text-center">@item.pre_item</td>
+                                <td class="text-center">@pre_item</td>
                                 <td class="text-center">@item.p_id</td>
                                 <td>@item.p_des</td>
-                                <td class="text-end">@item.pre_pcosto</td>
+                                <td class="text-end">@item.pre_pcosto.ToString("N3", System.Globalization.CultureInfo.GetCultureInfo("en-US"))</td>
                                 <td class="text-end">
                                     <div class="input-container">
                                         <input type="text" 
                                                class="form-control form-control-sm input-pre_cantidad input-numeric campo-readonly"
-                                               value="@item.pre_cantidad"
-                                               data-original-value="@item.pre_cantidad"
+                                               value="@item.pre_cantidad.ToString(item.up_id == "07" ? "N0" : "N3", culturaNumero)"
+                                               data-original-value="@item.pre_cantidad.ToString(System.Globalization.CultureInfo.InvariantCulture)"
                                                readonly 
                                                title="Doble click para editar" />
                                     </div>
@@ -96,7 +98,7 @@
                                                title="Doble click para editar" />
                                     </div>
                                 </td>
-                                <td class="text-end td-total">@totalCalc.ToString("N2")</td>
+                                <td class="text-end td-total" data-value="@totalCalc.ToString(System.Globalization.CultureInfo.InvariantCulture)">@totalCalc.ToString("N2", culturaNumero)</td>
                                 <td class="text-center">
                                     <button type="button" 
                                             class="btn btn-sm btn-danger btn-eliminar-producto" 
@@ -123,7 +125,7 @@
                     <tfoot class="table-golden-footer">
                         <tr>
                             <td colspan="7" class="text-end fw-bold">Total General:</td>
-                            <td class="text-end fw-bold">@Model.ListaDatos.Sum(x => (x.pre_cantidad * x.pre_pvta)).ToString("N2")</td>
+                            <td class="text-end fw-bold">@Model.ListaDatos.Sum(x => (x.pre_cantidad * x.pre_pvta)).ToString("N2", culturaNumero)</td>
                             <td></td>
                         </tr>
                     </tfoot>
@@ -135,44 +137,8 @@
 
 <script>
 $(function() {
-    // ✅ APLICAR INPUTMASK a campos numéricos
-    if (typeof Inputmask !== 'undefined') {
-        Inputmask({
-            alias: "numeric",
-            groupSeparator: ",",
-            radixPoint: ".",
-            autoGroup: true,
-            digits: 2,
-            digitsOptional: false,
-            rightAlign: true,
-            allowMinus: false,
-            min: 0
-        }).mask('.input-pre_cantidad');
-        
-        Inputmask({
-            alias: "numeric",
-            groupSeparator: ",",
-            radixPoint: ".",
-            autoGroup: true,
-            digits: 2,
-            digitsOptional: false,
-            rightAlign: true,
-            allowMinus: true,  // ✅ Permitir valores negativos
-            min: -999.99,      // ✅ Establecer un mínimo razonable
-            max: 999.99,       // ✅ Establecer un máximo razonable
-        }).mask('.input-pre_margen');
-
-        Inputmask({
-            alias: "numeric",
-            groupSeparator: ",",
-            radixPoint: ".",
-            autoGroup: true,
-            digits: 3,
-            digitsOptional: false,
-            rightAlign: true,
-            allowMinus: false,
-            min: 0
-        }).mask('.input-pre_pvta');
+    if (typeof aplicarInputMaskPresupuesto === 'function') {
+        aplicarInputMaskPresupuesto();
     }
     
     // ✅ CONTROLAR VISIBILIDAD DE BOTONES DE ELIMINACIÓN

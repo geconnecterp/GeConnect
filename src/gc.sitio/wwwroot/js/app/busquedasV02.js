@@ -802,6 +802,7 @@ function procesarAgregarProductosCustom() {
                     p_id: producto.p_id,
                     p_desc: producto.p_desc,
                     p_pcosto: parseFloat(producto.p_pcosto || 0),
+                    up_id: producto.up_id || producto.Up_id || '',
                     lp_prevision_tot: parseFloat(producto.lp_prevision_tot),
                     lp_prevision_pin: parseFloat(producto.lp_prevision_pin),
                     p_margen: parseFloat(producto.p_margen),

@@ -10,6 +10,7 @@ namespace gc.infraestructura.Dtos.Almacen
         public string P_id_barrado { get; set; } = string.Empty;
         public string P_id_prov { get; set; } = string.Empty;
         public string P_desc { get; set; } = string.Empty;//+
+        public string Up_id { get; set; } = string.Empty;
         public string Rub_id { get; set; } = string.Empty;
         public string Rub_desc { get; set; } = string.Empty;
         [Display(Name = "Rub Lista")]

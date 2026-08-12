@@ -13,10 +13,10 @@
                 <thead class="sticky-top table-golden-header-compact">
                     <tr class="header">
                         <th class="text-center th-compact" scope="col">ID</th>
-                        <th class="text-left th-compact" scope="col">DESCRIPCIÓN</th>
+                        <th class="text-left th-compact" scope="col">DESCRIPCIÃ“N</th>
+                        <th class="text-center th-compact" scope="col">FECHA DE CARGA</th>
                         <th class="text-center th-compact" scope="col">TIPO</th>
                         <th class="text-center th-compact" scope="col">ESTADO</th>
-                        <th class="text-center th-compact" scope="col">DESDE</th>
                         <th class="text-center th-compact" scope="col">HASTA</th>
                     </tr>
                 </thead>
@@ -37,8 +37,11 @@
                                 <td class="@Model.ObtenerClase(item.cmb_id)">
                                     @Model.FormatearDato(item.cmb_id, FormatDato.Ninguno)
                                 </td>
-                                <td class="@Model.ObtenerClase(item.cmb_desc)" title="@item.cmb_desc">
+                                <td class="@Model.ObtenerClase(item.cmb_desc) promo-descripcion" title="@item.cmb_desc">
                                     @Model.FormatearDato(item.cmb_desc, FormatDato.Ninguno)
+                                </td>
+                                <td class="text-center">
+                                    @item.cmb_desde.ToString("dd/MM/yyyy")
                                 </td>
                                 <td class="text-center" data-tipo-id="@item.cmb_tipo">
                                     <span class="badge bg-info">
@@ -51,10 +54,7 @@
                                     </span>
                                 </td>
                                 <td class="text-center">
-                                    @Model.FormatearDato(item.cmb_desde, FormatDato.FechaHora)
-                                </td>
-                                <td class="text-center">
-                                    @Model.FormatearDato(item.cmb_hasta, FormatDato.FechaHora)
+                                    @item.cmb_hasta.ToString("dd/MM/yyyy")
                                 </td>
                             </tr>
                         }

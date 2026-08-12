@@ -14,10 +14,10 @@
                 <thead class="sticky-top table-golden-header-compact">
                     <tr class="header">
                         <th class="text-center th-compact">ID</th>
-                        <th class="text-left th-compact">Descripción</th>
+                        <th class="text-left th-compact">DescripciÃ³n</th>
                         <th class="text-center th-compact">Costo</th>
                         @* <th class="text-center th-compact">Estado</th> *@
-                        <th class="text-center th-compact">Acción</th>
+                        <th class="text-center th-compact">AcciÃ³n</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -29,18 +29,18 @@
                                 <td class="text-center">
                                     @item.p_id_sustituto
                                 </td>
-                                <td>
+                                <td class="promo-descripcion" title="@item.p_desc">
                                     @item.p_desc
                                 </td>
                                 <td class="text-end">
-                                    @item.p_pcosto.ToString("C2")
+                                    @item.p_pcosto.ToString("N3", System.Globalization.CultureInfo.GetCultureInfo("en-US"))
                                 </td>
                                 @* <td class="text-center">
                                     <span class="badge @(item.activo == 'S' ? "bg-success" : "bg-danger")">
                                         @(item.activo == 'S' ? "Activo" : "Inactivo")
                                     </span>
                                 </td> *@
-                                <td class="text-center">
+                                <td class="text-center promo-accion">
                                     <button type="button" class="btn btn-sm btn-outline-danger btn-eliminar-sustituto" 
                                             title="Eliminar sustituto" data-producto-id="@item.p_id_sustituto">
                                         <i class="bx bx-trash"></i>

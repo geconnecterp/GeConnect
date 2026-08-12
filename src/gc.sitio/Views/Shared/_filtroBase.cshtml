@@ -266,56 +266,56 @@
             <div class=" col-sm-6" id="divLstTipoOrdenDePago">
             </div>
         }
-        else if (Model.Modelo.Equals(ModeloFilter.PROMO_COMBO) ||
-        Model.Modelo.Equals(ModeloFilter.OF_REPORTE))
+        else if (Model.Modelo.Equals(ModeloFilter.PROMO_COMBO))
+        {
+            <div class="row g-2 mb-2 align-items-center">
+                <div class="col-lg-5 col-md-6 col-sm-12">
+                    <div class="input-group input-group-sm">
+                        <div class="form-check form-switch d-flex align-items-center me-2 mb-0">
+                            <input class="form-check-input" type="checkbox" id="chkTipo" checked />
+                        </div>
+                        <span class="input-group-text">Tipo</span>
+                        @Html.DropDownListFor(x => x.Tipo, null, "Seleccionar...", new { @class = "form-select" })
+                    </div>
+                </div>
+                <div class="col-lg-5 col-md-6 col-sm-12">
+                    <div class="input-group input-group-sm">
+                        <div class="form-check form-switch d-flex align-items-center me-2 mb-0">
+                            <input class="form-check-input" type="checkbox" id="chkEstado" checked />
+                        </div>
+                        <span class="input-group-text">Estado</span>
+                        @Html.DropDownListFor(x => x.Estado, null, "Seleccionar...", new { @class = "form-select" })
+                    </div>
+                </div>
+            </div>
+        }
+        else if (Model.Modelo.Equals(ModeloFilter.OF_REPORTE))
         {
             <div class="row mb-3">
                 <div class="col-md-6 col-sm-6">
                     <div class="input-group input-group-sm">
                         <div class="form-check form-check-inline form-switch mb-2">
                             <input class="form-check-input" type="checkbox" id="chkTipo" checked />
-                            @* <label class="form-check-label" for="chkTipo" id="lbTipo"></label> *@
                         </div>
-                   
                         <span class="input-group-text">Tipo</span>
                         @Html.DropDownListFor(x => x.Tipo, null, "Seleccionar...", new { @class = "form-control", style = "width:50px;" })
                     </div>
                 </div>
             </div>
-            
-            @if (!Model.Modelo.Equals(ModeloFilter.OF_REPORTE))
-            {
-                <div class="row mb-3">
-                    <div class="col-md-6 col-sm-6 ">
-                        <div class="input-group input-group-sm">
-                            <div class="form-check form-check-inline form-switch mb-2">
-                                <input class="form-check-input" type="checkbox" id="chkEstado" checked />
-                                @* <label class="form-check-label" for="chkTipo" id="lbTipo"></label> *@
-                            </div>
-                        
-                            <span class="input-group-text">Estado</span>
-                            @Html.DropDownListFor(x => x.Estado, null, "Seleccionar...", new { @class = "form-control", style = "width:50px;" })
+            <div class="row mb-3">
+                <div class="col-md-2 col-sm-6 ">
+                    <div class="input-group input-group-sm">
+                        <div class="form-check form-check-inline form-switch mb-2">
+                            <input class="form-check-input" type="radio" name="ofrepo" id="rbOferta" value="1" checked />
+                            <label class="form-check-label" for="rbOferta" id="lbOferta">Oferta</label>
+                        </div>
+                        <div class="form-check form-check-inline form-switch mb-2">
+                            <input class="form-check-input" type="radio" name="ofrepo" id="rbCombo" value="2"/>
+                            <label class="form-check-label" for="rbCombo" id="lbCombo">Combos</label>
                         </div>
                     </div>
                 </div>
-            }
-            else
-            {
-                <div class="row mb-3">
-                    <div class="col-md-2 col-sm-6 ">
-                        <div class="input-group input-group-sm">
-                            <div class="form-check form-check-inline form-switch mb-2">
-                                <input class="form-check-input" type="radio" name="ofrepo" id="rbOferta" value="1" checked />
-                                <label class="form-check-label" for="rbOferta" id="lbOferta">Oferta</label>
-                            </div>
-                            <div class="form-check form-check-inline form-switch mb-2">
-                                <input class="form-check-input" type="radio" name="ofrepo" id="rbCombo" value="2"/>
-                                <label class="form-check-label" for="rbCombo" id="lbCombo">Combos</label>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            }
+            </div>
         }
 
         @*AGREGAR SECCION FECHA*@
@@ -341,7 +341,7 @@
                 </div>
                 @*             </div>
             <div class="row mb-3"> *@
-                <div class="col-md-2 col-sm-6">
+                <div class="@(Model.Modelo.Equals(ModeloFilter.PRESUPUESTO) ? "col-md-4 col-sm-6" : "col-md-2 col-sm-6")">
                     <div class="input-group input-group-sm">
                         <span class="input-group-text" id="lbIdDesde">Desde:</span>
                         <input type="date" class="form-control inputEditable" asp-for="Date1" style="background-color:rgb(251,255,195);font-weight:900;" disabled autofocus />
@@ -349,7 +349,7 @@
                 </div>
                 @if (!Model.Modelo.Equals(ModeloFilter.PROV_SIN_MOD))
                 {
-                    <div class="col-md-2 col-sm-6">
+                    <div class="@(Model.Modelo.Equals(ModeloFilter.PRESUPUESTO) ? "col-md-4 col-sm-6" : "col-md-2 col-sm-6")">
                         <div class="input-group input-group-sm">
                             <span class="input-group-text" id="lbIdHasta">Hasta:</span>
                             <input type="date" class="form-control inputEditable" asp-for="Date2" style="background-color:rgb(251,255,195);font-weight:900;" disabled autofocus />

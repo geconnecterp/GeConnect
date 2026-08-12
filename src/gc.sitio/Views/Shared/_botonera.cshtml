@@ -41,7 +41,7 @@
         Model.Modelo != ModeloFilter.VENTA_SORTEO_CONSULTA)
         {
             <div id="@(Model.Modelo == ModeloFilter.PRODUCTO_CARGA_PRECIO ? "botoneraProcesoCargaPrecios" : null)"
-                 class="@(Model.Modelo == ModeloFilter.ETIQUETA ? "col-md-4 col-sm-12" : "col-md-2 col-sm-6") @(Model.Modelo == ModeloFilter.PRODUCTO_CARGA_PRECIO ? "d-none" : null)">
+                 class="@(Model.Modelo == ModeloFilter.ETIQUETA ? "col-md-4 col-sm-12" : Model.Modelo == ModeloFilter.PRESUPUESTO ? "col-md-3 col-sm-6" : "col-md-2 col-sm-6") @(Model.Modelo == ModeloFilter.PRODUCTO_CARGA_PRECIO ? "d-none" : null)">
                 <div class="d-flex justify-content-sm-center">
                     @if (Model.Modelo == ModeloFilter.ETIQUETA)
                     {
@@ -77,7 +77,7 @@
                 <div class="col-md-2 col-sm-6">
                     <div class="d-flex justify-content-sm-center">
                         <!-- Botón Imprimir -->
-                        <button type="button" class="btn btn-light btn-sm mt-1 me-1" style="width:100px;" id="btnImprimir" title="Imprimir">
+                        <button type="button" class="btn @(Model.Modelo == ModeloFilter.PRESUPUESTO ? "btn-golden" : "btn-light") btn-sm mt-1 me-1" style="width:100px;" id="btnImprimir" title="Imprimir">
                             <i class="bx bx-printer"></i> Imprimir
                         </button>
                         @if (Model.Modelo == ModeloFilter.ASIENTO_TEMPORAL)
@@ -99,7 +99,7 @@
             Model.Modelo != ModeloFilter.D_IMPOSITIVO &&
             Model.Modelo != ModeloFilter.VENTA_SORTEO_CONSULTA)
             {
-                <div class="col-md-4 col-sm-6">
+                <div class="@(Model.Modelo == ModeloFilter.PRESUPUESTO ? "col-md-5 col-sm-6" : "col-md-4 col-sm-6")">
                     <div class="d-flex justify-content-sm-center">
 
                         <button id="btnAbmNuevo" class="btn btn-primary btn-sm mt-1 me-1" style="width:100px;" type="button" title="Alta Asiento" disabled>

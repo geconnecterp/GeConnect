@@ -10,9 +10,9 @@
             <table class="table table-sm table-hover mb-0 table-golden" id="tbGridCanales">
                 <thead class="sticky-top table-golden-header-compact">
                     <tr class="header">
-@*                         <th class="text-left">Administración</th>
+@*                         <th class="text-left">AdministraciÃ³n</th>
                         <th class="text-left">Lista de Precios</th> *@
-                        <th class="text-center th-compact">Canal</th>
+                        <th class="text-start th-compact">Canal</th>
                         <th class="text-center th-compact">Estado</th>
                     </tr>
                 </thead>
@@ -21,7 +21,7 @@
                     {
                         foreach (var item in Model.ListaDatos)
                         {
-                            <tr data-adm-id="@item.adm_id" data-lp-id="@item.lp_id">
+                            <tr data-adm-id="@item.adm_id" data-lp-id="@item.lp_id" data-incluida="@item.incluida">
 @*                                 <td class="text-left">
                                     @item.adm_nombre
                                     <small class="text-muted d-block"></small>
