@@ -336,6 +336,7 @@ function ConfirmarOrdenDeCompra() {
 		$("#msjModal").modal("hide");
 		switch (e) {
 			case "SI": //Confirmar 
+				AbrirWaiting("Confirmando Orden de Compra...");
 				var Oc_Compte = ocIdSelected;
 				var Entrega_Fecha = $("#FechaEntrega").val();
 				var Entrega_Adm = $("#listaSucEntrega").val()
@@ -349,6 +350,7 @@ function ConfirmarOrdenDeCompra() {
 					Oce_Id = 'C';
 				var data = { Oc_Compte, Entrega_Fecha, Entrega_Adm, Pago_Anticipado, Pago_Fecha, Observaciones, Oce_Id };
 				PostGen(data, "/Compras/ordendecompra/ConfirmarOrdenDeCompra", function (obj) {
+					CerrarWaiting();
 					if (obj.error === true) {
 						AbrirMensaje("ATENCIÓN", obj.msg, function () {
 							$("#msjModal").modal("hide");
@@ -606,15 +608,15 @@ function ActualizarProductoEnOc(row, campoActual) {
 						}
 
 						td[16].innerText = formatearValorConFormatoNumerico(obj.data.p_Pcosto.toFixed(3), 3);//PRECIO COSTO -> obj.data.p_Pcosto
-						td[17].innerText = formatearValorConFormatoNumerico(obj.data.p_Pcosto_Total.toFixed(3), 3);//TOTAL COSTO -> obj.data.p_Pcosto_Total
+						td[17].innerText = formatearValorConFormatoNumerico(obj.data.p_Pcosto_Total.toFixed(3), 2);//TOTAL COSTO -> obj.data.p_Pcosto_Total
 						td[18].innerText = obj.data.paletizado;//TOTAL PALLET -> obj.data.paletizado
 
 						//TOTALES
 						$("#Total_Costo").val(formatter.format(obj.data.total_Costo));//TOTAL_COSTO -> obj.data.total_Costo
 					}
 				});
+				recalcularFooterOC();
 			}
-
 		});
 	}
 }
@@ -805,6 +807,7 @@ function actualizarProducto(e) {
 				formatearTotalesEnTabDetalleOC();
 				ActualizarInfoDeProductosEnGrilla();
 				AgregarHanlderColumnaDescripcion();
+				recalcularFooterOC();
 				CerrarWaiting();
 			}
 		});
@@ -825,6 +828,74 @@ function actualizarProducto(e) {
 		console.log("chan!");
 	}
 }
+
+function recalcularFooterOC() {
+
+	let totalPedidoBoni = 0;
+	let totalCosto = 0;
+	let totalPallet = 0;
+
+	$("#tbListaProductoOC tbody tr").each(function () {
+
+		totalPedidoBoni += limpiarNumero($(this).find("td").eq(15).text());
+		totalCosto += limpiarNumero($(this).find("td").eq(17).text());
+		totalPallet += limpiarNumero($(this).find("td").eq(18).text());
+	});
+
+	// Formateadores
+	const fmt2 = (n) => n.toLocaleString("en-US", {
+		minimumFractionDigits: 2,
+		maximumFractionDigits: 2
+	});
+
+	const fmt0 = (n) => n.toLocaleString("en-US", {
+		minimumFractionDigits: 0,
+		maximumFractionDigits: 0
+	});
+
+	// Pedido +Boni → entero
+	$("#tbListaProductoOC tfoot td").eq(1).text(fmt0(Math.round(totalPedidoBoni)));
+
+	// Total Costo → 2 decimales
+	$("#tbListaProductoOC tfoot td").eq(3).text(fmt2(totalCosto));
+
+	// Total Pallet → 2 decimales
+	$("#tbListaProductoOC tfoot td").eq(4).text(fmt2(totalPallet));
+}
+
+
+function limpiarNumero(valor) {
+	if (!valor) return 0;
+
+	valor = valor.trim();
+
+	const tieneComa = valor.indexOf(",") !== -1;
+	const tienePunto = valor.indexOf(".") !== -1;
+
+	// Caso 1: tiene coma y punto → formato "33,976.68"
+	if (tieneComa && tienePunto) {
+		// quitar separador de miles (coma), mantener punto como decimal
+		valor = valor.replace(/,/g, "");
+		// ahora es "33976.68"
+	}
+
+	// Caso 2: solo coma → formato "33,976" o "33976,68"
+	else if (tieneComa && !tienePunto) {
+		// si es algo tipo "33,976" asumimos que coma es decimal
+		// reemplazamos coma por punto
+		valor = valor.replace(/,/g, ".");
+	}
+
+	// Caso 3: solo punto → formato "0.83", "33976.68"
+	// no hacemos nada, ya es decimal estándar
+
+	// eliminar cualquier cosa que no sea dígito, punto o signo
+	valor = valor.replace(/[^\d.-]/g, "");
+
+	const num = parseFloat(valor);
+	return isNaN(num) ? 0 : num;
+}
+
 
 function InicializaPantalla() {
 	var tb = $("#tbListaProducto tbody tr");
@@ -1794,6 +1865,7 @@ function debounce(func, wait) {
 // Aplicar debounce a funciones de cálculo intensivas
 const ActualizarProductoEnOcDebounced = debounce(function (row, campoActual) {
 	ActualizarProductoEnOc(row, campoActual);
+	
 }, 300);
 
 function marcarCampoModificado(input) {

@@ -4,22 +4,26 @@
 	var alt = true;
 	string clase = string.Empty;
 }
-
+<style>
+	.columna-total {
+		font-weight: bold !important;
+	}
+</style>
 <div class="table-responsive table-wrapper-400-full-width" id="containerListaValorizacion">
 	<table class="table table-bordered table-hover table-golden" id="tbListaValorizacion">
 		<thead>
 			<tr class="header">
-				<th style="width:20%;" class="col-header-small align-center tiny-row">Comprobante</th>
-				<th style="width:5%;" class="col-header-small align-center tiny-row">No Gravado</th>
-				<th style="width:5%;" class="col-header-small align-center tiny-row">Exento</th>
-				<th style="width:5%;" class="col-header-small align-center tiny-row">Gravado</th>
-				<th style="width:5%;" class="col-header-small align-center tiny-row">IVA</th>
-				<th style="width:5%;" class="col-header-small align-center tiny-row">II</th>
-				<th style="width:5%;" class="col-header-small align-center tiny-row">Percep.</th>
-				<th style="width:5%;" class="col-header-small align-center tiny-row">Otros NG</th>
-				<th style="width:5%;" class="col-header-small align-center tiny-row">Total</th>
-				<th style="width:0%;display:none;" class="col-header-small align-center tiny-row">resultado</th>
-				<th style="width:0%;display:none;" class="col-header-small align-center tiny-row">resultado_msj</th>
+				<th style="width:20%;" class="align-center">Comprobante</th>
+				<th style="width:5%;" class="align-center">No Gravado</th>
+				<th style="width:5%;" class="align-center">Exento</th>
+				<th style="width:5%;" class="align-center">Gravado</th>
+				<th style="width:5%;" class="align-center">IVA</th>
+				<th style="width:5%;" class="align-center">II</th>
+				<th style="width:5%;" class="align-center">Percep.</th>
+				<th style="width:5%;" class="align-center">Otros NG</th>
+				<th style="width:5%;" class="align-center">Total</th>
+				<th style="width:0%;display:none;" class="align-center">resultado</th>
+				<th style="width:0%;display:none;" class="align-center">resultado_msj</th>
 			</tr>
 		</thead>
 		<tbody>
@@ -31,14 +35,14 @@
 					var nombre = "chk" + item.cm_compte;
 					<tr class="@clase" onclick="selectListaValorizacion(this)">
 						<td class="@Model.ObtenerClase(item.cm_compte_obs)">@Model.FormatearDato(item.cm_compte_obs, FormatDato.Ninguno)</td>
-						<td class="@Model.ObtenerClase(item.cm_no_gravado)">@Model.FormatearDato(item.cm_no_gravado, FormatDato.Monto)</td>
-						<td class="@Model.ObtenerClase(item.cm_exento)">@Model.FormatearDato(item.cm_exento, FormatDato.Monto)</td>
-						<td class="@Model.ObtenerClase(item.cm_gravado)">@Model.FormatearDato(item.cm_gravado, FormatDato.Monto)</td>
-						<td class="@Model.ObtenerClase(item.cm_iva)">@Model.FormatearDato(item.cm_iva, FormatDato.Monto)</td>
-						<td class="@Model.ObtenerClase(item.cm_ii)">@Model.FormatearDato(item.cm_ii, FormatDato.Monto)</td>
-						<td class="@Model.ObtenerClase(item.cm_percepciones)">@Model.FormatearDato(item.cm_percepciones, FormatDato.Monto)</td>
-						<td class="@Model.ObtenerClase(item.cm_otro_ng)">@Model.FormatearDato(item.cm_otro_ng, FormatDato.Monto)</td>
-						<td class="@Model.ObtenerClase(item.cm_total)">@Model.FormatearDato(item.cm_total, FormatDato.Monto)</td>
+						<td class="@Model.ObtenerClase(item.cm_no_gravado)">@GridHelper.FormatearDato(item.cm_no_gravado, FormatDato.Monto, true)</td>
+						<td class="@Model.ObtenerClase(item.cm_exento)">@GridHelper.FormatearDato(item.cm_exento, FormatDato.Monto, true)</td>
+						<td class="@Model.ObtenerClase(item.cm_gravado)">@GridHelper.FormatearDato(item.cm_gravado, FormatDato.Monto, true)</td>
+						<td class="@Model.ObtenerClase(item.cm_iva)">@GridHelper.FormatearDato(item.cm_iva, FormatDato.Monto, true)</td>
+						<td class="@Model.ObtenerClase(item.cm_ii)">@GridHelper.FormatearDato(item.cm_ii, FormatDato.Monto, true)</td>
+						<td class="@Model.ObtenerClase(item.cm_percepciones)">@GridHelper.FormatearDato(item.cm_percepciones, FormatDato.Monto, true)</td>
+						<td class="@Model.ObtenerClase(item.cm_otro_ng)">@GridHelper.FormatearDato(item.cm_otro_ng, FormatDato.Monto, true)</td>
+						<td class="@Model.ObtenerClase(item.cm_total) columna-total">@GridHelper.FormatearDato(item.cm_total, FormatDato.Monto, true)</td>
 						<td style="display:none;">@item.resultado</td>
 						<td style="display:none;">@item.resultado_msj</td>
 					</tr>

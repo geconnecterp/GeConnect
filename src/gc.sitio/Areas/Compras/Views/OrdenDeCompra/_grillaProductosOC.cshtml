@@ -3,6 +3,10 @@
 @{
 	var alt = true;
 	string clase = string.Empty;
+
+	decimal totalPedidoBoni = 0;
+	decimal totalCosto = 0;
+	decimal totalPallet = 0;
 }
 <style>
 
@@ -50,6 +54,17 @@
 	.fila-total td {
 		text-align: right !important;
 	}
+
+	#tbListaProductoOC tfoot {
+		position: sticky;
+		bottom: 0;
+		z-index: 2;
+	}
+
+		#tbListaProductoOC tfoot .total-row {
+			border-top: 2px solid #999;
+			background-color: #e9ecef; /* igual que table-secondary */
+		}
 </style>
 <div class="table-responsive text-nowrap table-wrapper" id="containerListaProductoOC">
 	<table class="table table-sm mb-0 table-hover table-golden" id="tbListaProductoOC">
@@ -207,35 +222,11 @@
 					</tr>
 				}
 
-				decimal totalPedidoBoni = Model.ListaOC.ListaDatos.Sum(x => x.pedido_mas_boni);
-				decimal totalCosto = Model.ListaOC.ListaDatos.Sum(x => x.p_pcosto_total);
-				decimal totalPallet = Model.ListaOC.ListaDatos.Sum(x => x.paletizado);
+				totalPedidoBoni = Model.ListaOC.ListaDatos.Sum(x => x.pedido_mas_boni);
+				totalCosto = Model.ListaOC.ListaDatos.Sum(x => x.p_pcosto_total);
+				totalPallet = Model.ListaOC.ListaDatos.Sum(x => x.paletizado);
 
-				<tr class="table-secondary fw-bold fila-total">
-					<!-- Label Total -->
-					<td colspan="15" class="text-end" style="text-align: right !important;">Total:</td>
-
-					<!-- Pedido +Boni (col 16) -->
-					<td style="text-align:right; font-weight:bold;text-align: right !important;">
-						@GridHelper.FormatearDato(totalPedidoBoni, GridHelper.FormatDato.Monto, false)
-					</td>
-
-					<!-- Precio Costo (col 17, vacío porque no se totaliza) -->
-					<td></td>
-
-					<!-- Total Costo (col 18) -->
-					<td style="text-align:right; font-weight:bold;text-align: right !important;">
-						@GridHelper.FormatearPrecio(totalCosto, TipoPrecio.Venta)
-					</td>
-
-					<!-- Total Pallet (col 19) -->
-					<td style="text-align:right; font-weight:bold;text-align: right !important;">
-						@totalPallet.ToString("0.##")
-					</td>
-
-					<!-- Columna 20 (acciones) -->
-					<td></td>
-				</tr>
+				
 
 			}
 			else
@@ -245,21 +236,35 @@
 				</tr>
 			}
 		</tbody>
+		<tfoot>
+			<tr class="table-secondary fw-bold fila-total">
+				<!-- Label Total -->
+				<td colspan="15" class="text-end" style="text-align: right !important;">Total:</td>
+
+				<!-- Pedido +Boni (col 16) -->
+				<td style="text-align:right; font-weight:bold;text-align: right !important;">
+					@GridHelper.FormatearDato(totalPedidoBoni, GridHelper.FormatDato.Monto, false)
+				</td>
+
+				<!-- Precio Costo (col 17, vacío porque no se totaliza) -->
+				<td></td>
+
+				<!-- Total Costo (col 18) -->
+				<td style="text-align:right; font-weight:bold;text-align: right !important;">
+					@GridHelper.FormatearPrecio(totalCosto, TipoPrecio.Venta)
+				</td>
+
+				<!-- Total Pallet (col 19) -->
+				<td style="text-align:right; font-weight:bold;text-align: right !important;">
+					@totalPallet.ToString("0.##")
+				</td>
+
+				<!-- Columna 20 (acciones) -->
+				<td></td>
+			</tr>
+		</tfoot>
 	</table>
 </div>
-@* <div class="row">
-	<div class="col-7">
-	</div>
-	<div class="col-5" style="padding-right: 65px;padding-left: 120px;">
-		<div class="input-group input-group-sm mt-1">
-			<span class="input-group-text fixed-lbl-for-abm-60">Totales: </span>
-			<input type="text" asp-for="Cant_Items" class="form-control" style="text-align: right;" disabled title="Cantidad de Productos"/>
-			<input type="text" asp-for="Precio_Costo" class="form-control" style="text-align: right;" disabled />
-			<input type="text" asp-for="Total_Costo" class="form-control" style="text-align: right;max-width: 105px;width: 105px;" disabled />
-			<input type="text" asp-for="Total_Pallet" class="form-control" style="text-align: right;width: 70px;max-width: 70px;" disabled title="Total Palletizado" />
-		</div>
-	</div>
-</div> *@
 <div class="row mb-1">
 	<div class="col-4">
 	</div>

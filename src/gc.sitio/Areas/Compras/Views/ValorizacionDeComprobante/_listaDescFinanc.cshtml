@@ -50,9 +50,13 @@
 							<td class="@Model.ObtenerClase(item.dto_sobre_total_bool)"><input type="checkbox" class="chkDtoTot" name=@nombre2 id="@nombre2" disabled /></td>
 						}
 						<td class="@Model.ObtenerClase(item.dtoc_desc)">@Model.FormatearDato(item.dtoc_desc, FormatDato.Ninguno)</td>
-						<td class="@Model.ObtenerClase(item.dto)">@Model.FormatearDato(item.dto, FormatDato.Monto)</td>
-						<td class="@Model.ObtenerClase(item.dto_importe)">@Model.FormatearDato(item.dto_importe, FormatDato.Monto)</td>
-						<td><a class="btn btn-xs btn-outline-dark" data-interaction="@item.item" onclick="quitarDescFinanc(this);"> <i class="bx bxs-trash"></i></a></td> @*20*@
+						<td class="@Model.ObtenerClase(item.dto)">@GridHelper.FormatearDato(item.dto, FormatDato.Monto, true)</td>
+						<td class="@Model.ObtenerClase(item.dto_importe)">@GridHelper.FormatearDato(item.dto_importe, FormatDato.Monto, true)</td>
+						<td style="text-align:center;">
+							<a class="btn btn-xs btn-danger" data-interaction="@item.item" onclick="quitarDescFinanc(this);">
+								<i class="bx bxs-trash"></i>
+							</a>
+						</td> @*20*@
 						<td style="display:none;">@item.cm_compte</td>
 						<td style="display:none;">@item.dia_movi</td>
 						<td style="display:none;">@item.tco_id</td>

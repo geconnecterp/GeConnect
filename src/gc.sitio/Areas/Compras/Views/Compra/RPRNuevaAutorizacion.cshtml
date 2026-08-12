@@ -61,9 +61,9 @@
 							else
 							{
 								<div class="row mb-2">
-									<div class="col-md-12" id="divLs01">
+									<div class="col-md-6" id="divLs01">
 										<div class="input-group  input-group-sm">
-											<span class="input-group-text">Cuenta</span>
+											<span class="input-group-text" style="width:115px;justify-content: flex-end;">Cuenta</span>
 											<input type="text" class="form-control inputEditable" name="Rel01" id="Rel01" />
 											@Html.Hidden("Rel01Item")
 										</div>
@@ -74,30 +74,30 @@
 								</div>
 							}
 							<div class="row mb-2">
-								<div class="col-sm-8">
-									<div class="input-group input-group-sm mb-3">
-										<span class="input-group-text">Nota Autorización:</span>
+								<div class="col-sm-7">
+									<div class="input-group input-group-sm">
+										<span class="input-group-text" style="width:115px;">Nota Autorización:</span>
 										<input type="text" id="txtNota" class="form-control activable inputEditable" asp-for="@Model.Nota" />
 									</div>
 								</div>
-								<div class="col-sm-4">
+								<div class="col-sm-2">
 									<div class="input-group input-group-sm">
-										<span class="input-group-text">Cantidad de UL (pallet):</span>
-										<input type="number" id="txtCantidadUL" class="form-control activable inputEditable" asp-for="@Model.CantidadUL" min="1" max="999" />
+										<span class="input-group-text" title="Cantidad de UL (pallet)">Cantidad:</span>
+										<input type="number" id="txtCantidadUL" class="form-control activable inputEditable" asp-for="@Model.CantidadUL" min="1" max="999" style="text-align: end;" />
+									</div>
+								</div>
+								<div class="col-sm-3">
+									<div class="input-group input-group-sm">
+										<span class="input-group-text">Turno:</span>
+										<input type="date" id="dtpFechaTurno" class="form-control activable inputEditable" />
 									</div>
 								</div>
 							</div>
 							<div class="row mb-2">
 								<div class="col-sm">
 									<div class="input-group input-group-sm">
-										<span class="input-group-text">Depósito:</span>
+										<span class="input-group-text" style="width:115px;justify-content: flex-end;">Depósito:</span>
 										@Html.DropDownList("id", depositos, "Seleccionar...", new { @id = "listaDeposito", @class = "form-control activable inputEditable" })
-									</div>
-								</div>
-								<div class="col-sm">
-									<div class="input-group input-group-sm">
-										<span class="input-group-text">Turno:</span>
-										<input type="date" id="dtpFechaTurno" class="form-control activable inputEditable" />
 									</div>
 								</div>
 								<div class="col-sm d-flex align-items-center">

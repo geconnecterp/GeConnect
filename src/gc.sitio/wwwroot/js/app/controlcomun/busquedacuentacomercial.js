@@ -40,8 +40,8 @@
 	$("#btnAceptarAutoRP").on("click", AceptarAutoRP); //Generar Json de comprobante RPR
 	$("#btnEliminarAutoRP").on("click", EliminarAutoRP); //Eliminar RPR cargado
 
-	//$("#txtNroCompte").mask("0000-00000000", { reverse: true });
-	//$("#txtMonto").mask("000.000.000.000,00", { reverse: true });
+	$("#NroComprobantePtoVta").mask("00000", { reverse: true });
+	$("#NroComprobanteNumero").mask("000000000000000", { reverse: true });
 
 	$("#Cuenta").on("keyup", analizaInputEnCuenta);
 	$("#Cuenta").on("change", analizaChangeEnCuenta);
@@ -252,19 +252,33 @@ function ActualizarLinkBotonVerDetalle() {
 	if (VerDetalleDeCompteDeRPUrl === "") {
 		return false;
 	}
+	let item = obtenerCompteDeRPSeleccionado();
+	if (item) {
+		var tipoCompte = item.tipoId;
+		var nroCompte = item.comprobante.completo;
+		var monto = item.importe;
+		var descTipoCompte = item.tipoDescripcion;
+	}
+	else {
+		var tipoCompte = "";
+		var nroCompte = "";
+		var monto = "";
+		var descTipoCompte = "";
+	}
+
 	var depoSelec = $("#listaDeposito").val();
 	var notaAuto = $("#txtNota").val();
 	var turno = moment($("#dtpFechaTurno").val()).format("X");
 	var ponerEnCurso = $("#chkPonerEnCurso")[0].checked;
 	var ul = $("#txtCantidadUL").val();
 	var rp = $("#Rp").val();
-	var tipoCompte = $("#tco_id").val();
+	//var tipoCompte = $("#tco_id").val();
 	//var nroCompte = $("#txtNroCompte").val(); TODO: Reemplazar por el nuevo componente
-	var nroCompte = $("#NroComprobantePtoVta").val() + "-" + $("#NroComprobanteNumero").val();
+	//var nroCompte = $("#NroComprobantePtoVta").val() + "-" + $("#NroComprobanteNumero").val();
 	var rp = $("#Rp").val();
 	var fechaCompte = moment($("#fechaCompteDeRPSelected").val()).format("X");
-	var monto = $("#txtMonto").val();
-	var descTipoCompte = $("#tco_id option:selected").text();//
+	//var monto = $("#txtMonto").val();
+	//var descTipoCompte = $("#tco_id option:selected").text();//
 	var cta = $("#Cuenta").val();
 	var link = VerDetalleDeCompteDeRPUrl + "?idTipoCompte=" + tipoCompte + "&nroCompte=" + nroCompte + "&depoSelec=" + depoSelec + "&notaAuto=" + notaAuto + "&turno=" + turno + "&ponerEnCurso=" + ponerEnCurso + "&ulCantidad=" + ul + "&rp=" + rp + "&ctaId=" + cta + "&tipoCuenta=" + tipoCuenta + "&fechaCompte=" + fechaCompte + "&monto=" + monto + "&descTipoCompte=" + descTipoCompte;
 	if (!tipoCompte || tipoCompte.trim() === "" || !nroCompte || nroCompte.trim() === "" || nroCompte === "-") {
@@ -325,8 +339,10 @@ function EliminarAutoRP() {
 }
 
 function EliminarComprobanteRPR(rp) {
+	AbrirWaiting("");
 	datos = { rp };
 	PostGen(datos, eliminarComprobanteRPRUrl, function (o) {
+		CerrarWaiting("");
 		if (o.error === true) {
 			AbrirMensaje("Atención", o.msg, function () {
 				$("#msjModal").modal("hide");
@@ -369,10 +385,11 @@ function AceptarAutoRP() {
 }
 
 function RegresarASelAuto() {
-
+	AbrirWaiting("");
 	//Antes de volver debo validar si hay productos cargados en el detalle, si es así consultar con el operador
 	datos = {};
 	PostGen(datos, verificarDetalleCargadoURL, function (o) {
+		CerrarWaiting();
 		if (o.error === true) {
 			AbrirMensaje("Atención", o.msg, function () {
 				$("#msjModal").modal("hide");
@@ -478,7 +495,9 @@ function NuevoCompteDeRP() {
 }
 
 function AgregarComprobante() {
+	AbrirWaiting("");
 	PostGen(datos, buscarCuentaUrl, function (obj) {
+		CerrarWaiting();
 		if (obj.error === true) {
 			AbrirMensaje("Atención", obj.msg, function () {
 				$("#msjModal").modal("hide");
@@ -574,12 +593,15 @@ function limparCompteDeRPSelected() {
 }
 
 function VerCompteDeRP() {
+	AbrirWaiting("");
 	var tipo = $("#idTipoCompteDeRPSelected").val();
 	var nroComprobante = $("#nroCompteDeRPSelected").val();
 	var data = { tipo, nroComprobante };
 	PostGen(data, VerDetalleDeCompteDeRPUrl, function (obj) {
+		CerrarWaiting();
 		return true;
 	}, function (obj) {
+		CerrarWaiting();
 		ControlaMensajeError(obj.message);
 		return true;
 	});
@@ -587,11 +609,14 @@ function VerCompteDeRP() {
 
 function eliminarComptesDeRPGrid(tipo, nroComprobante) {
 	var data = { tipo, nroComprobante };
+	AbrirWaiting("");
 	PostGenHtml(data, ActualizarComptesDeRPUrl, function (obj) {
 		$("#divComptesDeRPGrid").html(obj);
+		CerrarWaiting();
 		return true;
 	}, function (obj) {
 		ControlaMensajeError(obj.message);
+		CerrarWaiting();
 		return true;
 	});
 }
@@ -606,6 +631,7 @@ function comptesDeRPGrid(tipo, tipoDescripcion, nroComprobante, fecha, importe, 
 		setTimeout(() => {
 			SelecccionarPrimerRegistro("tbComptesDeRP")
 		}, 250);
+		LimpiarDatosSeleccionadosEnCompte();
 		CerrarWaiting();
 		return true;
 	}, function (obj) {
@@ -613,6 +639,14 @@ function comptesDeRPGrid(tipo, tipoDescripcion, nroComprobante, fecha, importe, 
 		CerrarWaiting();
 		return true;
 	});
+}
+
+function LimpiarDatosSeleccionadosEnCompte() {
+	$("#tco_id").val("");
+	$("#NroComprobantePtoVta").val("");
+	$("#NroComprobanteNumero").val("");
+	$("#dtpFechCompte").val(new Date().toISOString().split("T")[0]);
+	$("#txtMonto").val("0");
 }
 
 function SelecccionarPrimerRegistro(grilla) {
@@ -714,8 +748,9 @@ function buscarCuentasComercial() {
 	var seccion = seccionEnVista; //-> Aca inyectar el html con los datos 
 	var vista = vistaParcial;
 	var datos = { cuenta, tipo, vista };
-
+	AbrirWaiting("");
 	PostGen(datos, buscarCuentaUrl, function (obj) {
+		CerrarWaiting();
 		if (obj.error === true) {
 			AbrirMensaje("Atención", obj.msg, function () {
 				$("#msjModal").modal("hide");
@@ -851,7 +886,9 @@ function seleccionarCuentaComercial() {
 function ActualizarCuentaComercialSeleccionada(ctaId) {
 	var tipo = tipoCuenta;
 	var datos = { ctaId, tipo }
+	AbrirWaiting("");
 	PostGen(datos, ActualizarCuentaComercialSeleccionadaUrl, function (obj) {
+		CerrarWaiting();
 		if (obj.error === true) {
 			AbrirMensaje("Atención", obj.msg, function () {
 				$("#msjModal").modal("hide");
@@ -875,8 +912,10 @@ function CargarComboTiposComptes(cuenta) {
 	if (buscarTiposComptesUrl === "") {
 		return false;
 	}
+	AbrirWaiting("");
 	var datos = { cuenta };
 	PostGenHtml(datos, buscarTiposComptesUrl, function (obj) {
+		CerrarWaiting();
 		$("#divTiposComptes").html(obj);
 		console.log("CargarComboTiposComptes");
 		$("#tco_id").on("change", analizaInputlistaTco);
@@ -892,26 +931,32 @@ function selectCompteDeRPRow(x) {
 	// Dividir por el guion
 	const partes = valor.split('-');
 	// Asignar a los inputs
-	$("#NroComprobantePtoVta").val(partes[0] || "");
-	$("#NroComprobanteNumero").val(partes[1] || "");
+	//$("#NroComprobantePtoVta").val(partes[0] || "");
+	//$("#NroComprobanteNumero").val(partes[1] || "");
 
 	var monto = x.cells[4].innerText.trim();
-	if (monto.includes(",")) {
-		$("#txtMonto").val(x.cells[4].innerText.trim().replace(".", ""));
-	} else {
-		$("#txtMonto").val(x.cells[4].innerText.trim().replace(".", ","));
-	}
+	// if (monto.includes(",")) {
+	// 	$("#txtMonto").val(x.cells[4].innerText.trim().replace(".", ""));
+	// } else {
+	// 	$("#txtMonto").val(x.cells[4].innerText.trim().replace(".", ","));
+	// }
 
-	$("#tco_id").val(x.cells[0].innerText.trim());
-	$("#tco_id").trigger("change");
-	$("#idTipoCompteDeRPSelected").val(x.cells[0].innerText.trim());
-	$("#nroCompteDeRPSelected").val(x.cells[2].innerText.trim());
-	$("#fechaCompteDeRPSelected").val(x.cells[3].innerText.trim());
-	$("#descTipoCompteDeRPSelected").val(x.cells[1].innerText.trim());
-	var tipoCompte = x.cells[0].innerText.trim();
-	var descTipoCompte = x.cells[1].innerText.trim();
-	var nroCompte = x.cells[2].innerText.trim();
-	var monto = x.cells[4].innerText.trim();
+	//$("#tco_id").val(x.cells[0].innerText.trim());
+	//$("#tco_id").trigger("change");
+	//$("#idTipoCompteDeRPSelected").val(x.cells[0].innerText.trim());
+	//$("#nroCompteDeRPSelected").val(x.cells[2].innerText.trim());
+	//$("#fechaCompteDeRPSelected").val(x.cells[3].innerText.trim());
+	//$("#descTipoCompteDeRPSelected").val(x.cells[1].innerText.trim());
+	//var tipoCompte = x.cells[0].innerText.trim();
+	var obj = obtenerCompteSeleccionado(x);
+	var tipoCompte = obj.tipoId;
+	var nroCompte = obj.comprobante.completo;
+	var monto = obj.importe;
+	var descTipoCompte = obj.tipoDescripcion;
+
+	//var descTipoCompte = x.cells[1].innerText.trim();
+	//var nroCompte = x.cells[2].innerText.trim();
+	//var monto = x.cells[4].innerText.trim();
 	var fechaCompte = moment($("#fechaCompteDeRPSelected").val()).format("X");
 	var depoSelec = $("#listaDeposito").val();
 	var notaAuto = $("#txtNota").val();
@@ -922,6 +967,87 @@ function selectCompteDeRPRow(x) {
 	var cta = $("#Cuenta").val();
 	var link = VerDetalleDeCompteDeRPUrl + "?idTipoCompte=" + tipoCompte + "&nroCompte=" + nroCompte + "&depoSelec=" + depoSelec + "&notaAuto=" + notaAuto + "&turno=" + turno + "&ponerEnCurso=" + ponerEnCurso + "&ulCantidad=" + ul + "&rp=" + rp + "&ctaId=" + cta + "&tipoCuenta=" + tipoCuenta + "&fechaCompte=" + fechaCompte + "&monto=" + monto + "&descTipoCompte=" + descTipoCompte;
 	$("#VerDetalle").prop("href", link);
+}
+
+function obtenerCompteSeleccionado(row) {
+	const $row = $(row).find("td");
+
+	// Campos según tu DOM
+	const tipoId = $row.eq(0).text().trim();   // oculto
+	const tipoDescripcion = $row.eq(1).text().trim();
+	const comprobanteFull = $row.eq(2).text().trim();   // ej: "0001-00000001"
+	const fecha = $row.eq(3).text().trim();
+	const importe = $row.eq(4).text().trim();
+
+	// Separar comprobante
+	let ptoVta = "";
+	let numero = "";
+
+	if (comprobanteFull.includes("-")) {
+		const partes = comprobanteFull.split("-");
+		ptoVta = partes[0];
+		numero = partes[1];
+	}
+
+	// Armar JSON final
+	const data = {
+		tipoId,
+		tipoDescripcion,
+		comprobante: {
+			completo: comprobanteFull,
+			puntoVenta: ptoVta,
+			numero: numero
+		},
+		fecha,
+		importe
+	};
+
+	console.log("Datos seleccionados:", data);
+
+	return data;
+}
+
+function obtenerCompteDeRPSeleccionado() {
+
+	// Buscar la fila seleccionada
+	const $row = $("#tbComptesDeRP tbody tr.selected-row");
+
+	// Si no hay fila seleccionada, devolver null
+	if ($row.length === 0) {
+		return null;
+	}
+
+	const tds = $row.find("td");
+
+	// Extraer valores
+	const tipoId = tds.eq(0).text().trim();   // oculto
+	const tipoDescripcion = tds.eq(1).text().trim();
+	const comprobanteFull = tds.eq(2).text().trim();   // ej: "0001-00000001"
+	const fecha = tds.eq(3).text().trim();
+	const importe = tds.eq(4).text().trim();
+
+	// Separar comprobante
+	let puntoVenta = "";
+	let numero = "";
+
+	if (comprobanteFull.includes("-")) {
+		const partes = comprobanteFull.split("-");
+		puntoVenta = partes[0];
+		numero = partes[1];
+	}
+
+	// Armar JSON final
+	return {
+		tipoId,
+		tipoDescripcion,
+		comprobante: {
+			completo: comprobanteFull,
+			puntoVenta,
+			numero
+		},
+		fecha,
+		importe
+	};
 }
 
 

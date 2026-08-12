@@ -6,6 +6,9 @@
 
 	string grupoActual = string.Empty;
 	string grupoAnterior = string.Empty;
+
+	decimal totalCosto = 0;
+	decimal totalPallet = 0;
 }
 @section styles {
 	<link rel="stylesheet" href="~/css/compras/ndecypi/ndecypi.css" />
@@ -26,6 +29,7 @@
 		overflow-y: auto;
 		overflow-x: auto;
 		z-index: auto;
+		background: #fff; /* evita que el footer se mezcle con el fondo */
 	}
 
 	.table-golden {
@@ -96,6 +100,17 @@
 			font-size: 1rem;
 			line-height: 1;
 		}
+
+	#tbListaProducto tfoot {
+		position: sticky;
+		bottom: 0;
+		z-index: 2;
+	}
+
+		#tbListaProducto tfoot .total-row {
+			border-top: 2px solid #999;
+			background-color: #e9ecef; /* igual que table-secondary */
+		}
 </style>
 <div class="table-responsive table-wrapper-full-width" id="containerListaProducto">
 	<table class="table table-sm mb-0 table-hover table-golden" id="tbListaProducto">
@@ -141,6 +156,7 @@
 			@if (Model != null && Model.ListaDatosProductos != null && Model.ListaDatosProductos.ListaDatos != null && Model.ListaDatosProductos.ListaDatos.Count > 0)
 			{
 				var productos = Model.ListaDatosProductos.ListaDatos.OrderBy(x => x.cta_id).ThenBy(y => y.pg_id).ThenBy(z => z.p_orden_pg).ToList();
+				
 				@foreach (var item in productos)
 				{
 					grupoActual = item.cta_id + item.pg_id;
@@ -234,29 +250,27 @@
 					</tr>
 				}
 				
-				decimal totalCosto = productos.Sum(x => x.costo_total);
-				decimal totalPallet = productos.Sum(x => x.paletizado);
-				<tr class="table-secondary fw-bold">
-					<!-- Label Total -->
-					<td colspan="13" class="text-end">Total:</td>
-
-					<!-- Total Costo -->
-					<td class="align-right tiny-row" style="font-weight:bold;">
-						@GridHelper.FormatearPrecio(totalCosto, TipoPrecio.Costo)
-					</td>
-
-					<!-- Total Pallet -->
-					<td class="align-right tiny-row" style="font-weight:bold;">
-						@totalPallet
-					</td>
-
-					<!-- Columnas ocultas -->
-					<td style="display:none;"></td>
-					<td style="display:none;"></td>
-				</tr>
-
+				totalCosto = productos.Sum(x => x.costo_total);
+				totalPallet = productos.Sum(x => x.paletizado);
 			}
 		</tbody>
+		<tfoot>
+			<tr class="table-secondary fw-bold total-row">
+				<td colspan="12" class="text-end">Total:</td>
+
+				<td class="align-right tiny-row" style="font-weight:bold;">
+					@GridHelper.FormatearPrecio(totalCosto, TipoPrecio.Costo)
+				</td>
+				<td class="align-right tiny-row" style="font-weight:bold;">
+				</td>
+				<td class="align-right tiny-row" style="font-weight:bold;">
+					@totalPallet
+				</td>
+
+				<td style="display:none;"></td>
+				<td style="display:none;"></td>
+			</tr>
+		</tfoot>
 	</table>
 </div>
 <script>

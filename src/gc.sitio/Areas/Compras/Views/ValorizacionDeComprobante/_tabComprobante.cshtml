@@ -82,6 +82,10 @@
 		text-align: center;
 		font-size: small;
 	}
+
+	.columna-total {
+		font-weight: bold !important;
+	}
 </style>
 <div class="row" style="padding-top: 10px;">
 	@Html.Hidden("cm_compte", Model.DescFinanc.cm_compte)
@@ -114,14 +118,14 @@
 							var nombre = "chk" + item.cm_compte;
 							<tr class="@clase" onclick="selectListaValorizacion(this)">
 								<td class="@Model.GrillaValoracion.ObtenerClase(item.cm_compte_obs)">@Model.GrillaValoracion.FormatearDato(item.cm_compte_obs, FormatDato.Ninguno)</td>
-								<td class="@Model.GrillaValoracion.ObtenerClase(item.cm_no_gravado)">@Model.GrillaValoracion.FormatearDato(item.cm_no_gravado, FormatDato.Monto)</td>
-								<td class="@Model.GrillaValoracion.ObtenerClase(item.cm_exento)">@Model.GrillaValoracion.FormatearDato(item.cm_exento, FormatDato.Monto)</td>
-								<td class="@Model.GrillaValoracion.ObtenerClase(item.cm_gravado)">@Model.GrillaValoracion.FormatearDato(item.cm_gravado, FormatDato.Monto)</td>
-								<td class="@Model.GrillaValoracion.ObtenerClase(item.cm_iva)">@Model.GrillaValoracion.FormatearDato(item.cm_iva, FormatDato.Monto)</td>
-								<td class="@Model.GrillaValoracion.ObtenerClase(item.cm_ii)">@Model.GrillaValoracion.FormatearDato(item.cm_ii, FormatDato.Monto)</td>
-								<td class="@Model.GrillaValoracion.ObtenerClase(item.cm_percepciones)">@Model.GrillaValoracion.FormatearDato(item.cm_percepciones, FormatDato.Monto)</td>
-								<td class="@Model.GrillaValoracion.ObtenerClase(item.cm_otro_ng)">@Model.GrillaValoracion.FormatearDato(item.cm_otro_ng, FormatDato.Monto)</td>
-								<td class="@Model.GrillaValoracion.ObtenerClase(item.cm_total)">@Model.GrillaValoracion.FormatearDato(item.cm_total, FormatDato.Monto)</td>
+								<td class="@Model.GrillaValoracion.ObtenerClase(item.cm_no_gravado)">@GridHelper.FormatearDato(item.cm_no_gravado, FormatDato.Monto, true)</td>
+								<td class="@Model.GrillaValoracion.ObtenerClase(item.cm_exento)">@GridHelper.FormatearDato(item.cm_exento, FormatDato.Monto, true)</td>
+								<td class="@Model.GrillaValoracion.ObtenerClase(item.cm_gravado)">@GridHelper.FormatearDato(item.cm_gravado, FormatDato.Monto, true)</td>
+								<td class="@Model.GrillaValoracion.ObtenerClase(item.cm_iva)">@GridHelper.FormatearDato(item.cm_iva, FormatDato.Monto, true)</td>
+								<td class="@Model.GrillaValoracion.ObtenerClase(item.cm_ii)">@GridHelper.FormatearDato(item.cm_ii, FormatDato.Monto, true)</td>
+								<td class="@Model.GrillaValoracion.ObtenerClase(item.cm_percepciones)">@GridHelper.FormatearDato(item.cm_percepciones, FormatDato.Monto, true)</td>
+								<td class="@Model.GrillaValoracion.ObtenerClase(item.cm_otro_ng)">@GridHelper.FormatearDato(item.cm_otro_ng, FormatDato.Monto, true)</td>
+								<td class="@Model.GrillaValoracion.ObtenerClase(item.cm_total) columna-total">@GridHelper.FormatearDato(item.cm_total, FormatDato.Monto, true)</td>
 								<td style="display:none;">@item.resultado</td>
 								<td style="display:none;">@item.resultado_msj</td>
 							</tr>
@@ -184,9 +188,13 @@
 														<td class="@Model.GrillaDescuentosFin.ObtenerClase(item.dto_sobre_total_bool)"><input type="checkbox" name=@nombre2 id="@nombre2" disabled /></td>
 													}
 													<td class="@Model.GrillaDescuentosFin.ObtenerClase(item.dtoc_desc)">@Model.GrillaDescuentosFin.FormatearDato(item.dtoc_desc, FormatDato.Ninguno)</td>
-													<td class="@Model.GrillaDescuentosFin.ObtenerClase(item.dto)">@Model.GrillaDescuentosFin.FormatearDato(item.dto, FormatDato.Monto)</td>
-													<td class="@Model.GrillaDescuentosFin.ObtenerClase(item.dto_importe)">@Model.GrillaDescuentosFin.FormatearDato(item.dto_importe, FormatDato.Monto)</td>
-													<td><a class="btn btn-xs btn-outline-dark" data-interaction="@item.item" onclick="quitarDescFinanc(this);"> <i class="bx bxs-trash"></i></a></td>
+													<td class="@Model.GrillaDescuentosFin.ObtenerClase(item.dto)">@GridHelper.FormatearDato(item.dto, FormatDato.Monto, true)</td>
+													<td class="@Model.GrillaDescuentosFin.ObtenerClase(item.dto_importe)">@GridHelper.FormatearDato(item.dto_importe, FormatDato.Monto, true)</td>
+													<td style="text-align:center;">
+														<a class="btn btn-xs btn-danger" data-interaction="@item.item" onclick="quitarDescFinanc(this);">
+															<i class="bx bxs-trash"></i>
+														</a>
+													</td> @*20*@
 												</tr>
 											}
 										}
