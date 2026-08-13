@@ -155,6 +155,7 @@ function selectTRSucursalesRow(x) {
 		PostGenHtml(datos, TRCargarPedidosPorSucursalUrl, function (obj) {
 			$("#divListaPedidosSucursal").html(obj);
 			AddEventListenerToGrid("tbListaPedidosSucursal");
+			ocultarPedidosYaIncluidosEnTablaSuperior();
 			CerrarWaiting();
 			return true
 		});
@@ -166,6 +167,26 @@ function selectTRSucursalesRow(x) {
 			return true;
 		}, false, ["Aceptar"], "error!", null);
 	}
+}
+
+function ocultarPedidosYaIncluidosEnTablaSuperior() {
+	const incluidos = obtenerPedidosIncluidos();
+
+	incluidos.forEach(pi => {
+		ocultarFilaPedidoSucursal(pi);
+	});
+}
+
+function obtenerPedidosIncluidos() {
+	const filas = document.querySelectorAll("#tbListaPedidosIncluidos tr[data-pi-compte]");
+	const lista = [];
+
+	filas.forEach(f => {
+		const pi = f.getAttribute("data-pi-compte");
+		if (pi) lista.push(pi);
+	});
+
+	return lista;
 }
 
 function AddEventListenerToGrid(tabla) {

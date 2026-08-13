@@ -83,7 +83,12 @@ namespace gc.sitio.Areas.Compras.Controllers
 			try
 			{
 				if (TRSucursalesLista != null && TRSucursalesLista.Count > 0)
+				{
+					var temp1 = TRSucursalesLista;
+					temp1.ForEach(x => { x.tiene_pi = false; });
+					TRSucursalesLista = temp1;
 					model.ListaAutSucursales = ObtenerGridCoreSmart<TRAutSucursalesDto>(TRSucursalesLista);
+				}
 				else
 				{
 					var itemsAutSucursales = await _productoServicio.TRObtenerAutSucursales(AdministracionId, TokenCookie);
@@ -103,7 +108,10 @@ namespace gc.sitio.Areas.Compras.Controllers
 				if (!string.IsNullOrEmpty(ti) && TRAutPedidosIncluidosILista != null)
 					model.ListaPedidosIncluidos = ObtenerGridCoreSmart<TRAutPIDto>(TRAutPedidosIncluidosILista);
 				else
+				{
+					TRAutPedidosIncluidosILista = [];
 					model.ListaPedidosIncluidos = ObtenerGridCoreSmart<TRAutPIDto>([]);
+				}
 				var itemsAutDepo = await _productoServicio.TRObtenerAutDepositos(AdministracionId, TokenCookie);
 				model.ListaDepositosDeEnvio = ObtenerGridCoreSmart<TRAutDepoDto>(itemsAutDepo);
 			}
