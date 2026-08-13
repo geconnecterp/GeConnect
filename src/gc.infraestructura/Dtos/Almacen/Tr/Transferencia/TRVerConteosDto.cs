@@ -1,7 +1,7 @@
 ﻿
 namespace gc.infraestructura.Dtos.Almacen.Tr.Transferencia
 {
-	public class TRVerConteosDto : Dto
+	public class TRVerConteosDto : Dto, IProductoConUnidad
 	{
 		public string ti { get; set; } = string.Empty;
 		public string p_id { get; set; } = string.Empty;
@@ -23,7 +23,7 @@ namespace gc.infraestructura.Dtos.Almacen.Tr.Transferencia
 		public decimal cantidad_c { get; set; } = 0.000M;
 		public decimal cantidad_pi { get; set; } = 0.000M;
 		public string concepto { get; set; } = string.Empty;
-
+		public string up_tipo { get; set; } = string.Empty;
 		private decimal diferencia;
 
 		public decimal Diferencia
@@ -52,5 +52,6 @@ namespace gc.infraestructura.Dtos.Almacen.Tr.Transferencia
 			set { myVar = value; }
 		}
 
+		public bool PermiteDecimales => up_tipo == "P";
 	}
 }

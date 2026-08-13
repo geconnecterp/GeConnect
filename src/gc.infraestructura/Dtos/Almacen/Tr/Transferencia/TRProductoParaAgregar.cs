@@ -1,6 +1,6 @@
 ﻿namespace gc.infraestructura.Dtos.Almacen.Tr.Transferencia
 {
-	public class TRProductoParaAgregar : Dto
+	public class TRProductoParaAgregar : Dto, IProductoConUnidad
 	{
 		public string adm_id { get; set; } = string.Empty;
 		public string adm_nombre { get; set; } = string.Empty;
@@ -13,5 +13,9 @@
 		public string depo_nombre { get; set; } = string.Empty;
 		public string fv { get; set; } = string.Empty;
 		public decimal unidad_palet { get; set; } = 0;
-    }
+		public string up_id { get; set; } = string.Empty;
+		public string up_tipo { get; set; } = string.Empty;
+		public bool PermiteDecimales => up_tipo == "P";
+		public decimal pedido { get; set; } = 0;
+	}
 }

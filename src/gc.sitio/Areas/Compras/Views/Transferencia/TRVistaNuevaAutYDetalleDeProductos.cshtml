@@ -4,6 +4,7 @@
 	BusquedaProducto busquedaProducto = new();
 	var alt = true;
 	string clase = string.Empty;
+	string ultimoProducto = null;
 }
 <style>
 	.btn-icon-compact {
@@ -15,14 +16,68 @@
 		.btn-icon-compact i {
 			font-size: 0.9rem;
 		}
+
+	fieldset > .d-flex {
+		padding: 4px 2px;
+	}
+
+	fieldset h5 {
+		font-weight: 600;
+	}
+
+	.table-area {
+		max-height: 350px; 
+		overflow-y: auto; 
+		overflow-x: hidden;
+		padding-right: 4px; 
+	}
+
+	.modal-body {
+		overflow: hidden; 
+		padding-bottom: 0; 
+	}
+
+		.modal-body .d-flex {
+			flex-wrap: wrap;
+		}
+
+	#modalCargarNuevoProducto .input-group-text {
+		padding: 2px 6px;
+		font-size: 0.75rem;
+	}
+
+	#modalCargarNuevoProducto .form-control {
+		padding: 2px 6px;
+		font-size: 0.75rem;
+		height: 28px;
+	}
+
+	.a-transferir{
+		width: 40%;
+		max-width: 40%;
+	}
+
+	.btn-modal{
+		width: 100px;
+		height: 30px;
+	}
 </style>
 <div class="card">
 	<div class="row">
 		<div class="col-4" style="padding-right:0px;">
 			<fieldset>
-				<legend>
-					<h5>Nuevas Aut. TR</h5>
-				</legend>
+				<div class="d-flex justify-content-between align-items-center mb-2">
+					<h5 class="mb-0">Nuevas Aut. TR</h5>
+
+					<div class="d-flex gap-2">
+						<button type="button" class="btn btn-secondary btn-sm" id="btnRegresarANuevaAut" title="Volver a pantalla anterior">
+							<i class="bx bx-chevron-left"></i> Regresar
+						</button>
+						<button type="button" class="btn btn-success btn-sm" id="btnConfirmarAuto" title="Confirmar autorizaciones">
+							<i class="bx bx-badge-check"></i> Confirmar
+						</button>
+					</div>
+				</div>
 				<div id="divNuevaAutListaSucursales">
 					<div class="table-responsive text-nowrap table-wrapper">
 						<table class="table table-sm mb-0 table-hover table-golden" id="tbNuevaAutListaSucursales">
@@ -44,7 +99,7 @@
 										<tr class="@clase" onclick="selectNuevaAutListaSucursalesRow(this)">
 											<td style="text-align: right;">@item.aut_a_generar</td>
 											<td>@item.adm_nombre</td>
-											<td style="text-align: right;">@item.pallet_aprox</td>
+											<td style="text-align: right;">@GridHelper.FormatearDato(item.pallet_aprox, GridHelper.FormatDato.Monto, true)</td>
 											<td class="text-center align-middle">
 												<button type="button" class="btn btn-info btn-sm btn-icon-compact" data-interaction="@item.adm_id" data-interaction2="@item.aut_a_generar" onclick="verNotaEnSucursal(this);">
 													<i class="bx bx-detail"></i>
@@ -58,27 +113,31 @@
 						</table>
 					</div>
 				</div>
-				<div class="d-flex justify-content-center gap-2 pt-3">
-					<button type="button" class="btn btn-secondary btn-sm mt-1 me-1" id="btnRegresarANuevaAut" title="Volver a pantalla anterior">
-						<i class="bx bx-chevron-left"></i> Regresar
-					</button>
-					@* <a href="#" id="btnRegresarANuevaAut" class="btn btn-primary fixed-width-130" title="Volver a pantalla anterior">
-						<span class="tf-icons bx bx-left-arrow-circle me-1">Regresar</span>
-					</a> *@
-					<button type="button" class="btn btn-success btn-sm mt-1 me-1" id="btnConfirmarAuto" title="Confirmar autorizaciones">
-						<i class="bx bx-badge-check"></i> Confirmar
-					</button>
-					@* <a href="#" id="btnConfirmarAuto" class="btn btn-success fixed-width-130" title="Confirmar autorizaciones">
-						<span class="tf-icons bx bx-check-circle me-1">Confirmar</span>
-					</a> *@
-				</div>
 			</fieldset>
 		</div>
 		<div class="col-8" style="padding-left: 0px;">
 			<fieldset>
-				<legend>
-					<h5>Detalle de Productos de TR</h5>
-				</legend>
+				<div class="d-flex justify-content-between align-items-center mb-2">
+					<h5 class="mb-0">Detalle de Productos de TR</h5>
+
+					<div class="d-flex gap-2">
+						<button id="btnAgregar" class="btn btn-primary btn-sm" onclick="abrirlModalAgregaProductoATR();" title="Agregar un nuevo producto">
+							<i class="bx bx-plus-circle"></i> Agregar
+						</button>
+
+						@*<button id="btnSustituto" class="btn btn-primary btn-sm" onclick="abrirlModalSustitutoDeProductoATR();" disabled title="Buscar sustituto" >
+							<i class="bx bx-plus-circle"></i> Sustituto
+						</button>*@
+
+						<button id="btnEliminar" class="btn btn-danger btn-sm" onclick="eliminarProductoATR();" disabled title="Eliminar">
+							<i class="bx bx-trash"></i> Eliminar
+						</button>
+
+						<button id="btnModCantidad" class="btn btn-info btn-sm" onclick="abrirlModalModCantDeProductoATR();" disabled title="Modificar">
+							<i class="bx bx-edit"></i> Modificar
+						</button>
+					</div>
+				</div>
 				<div id="divNuevaAutListaProductos">
 					<div class="table-responsive text-nowrap table-wrapper">
 						<table class="table table-sm mb-0 table-hover table-golden" id="tbNuevaAutListaProductos">
@@ -104,27 +163,56 @@
 									<th style="width:0%; display:none;">box_id</th>
 								</tr>
 							</thead>
+							
 							<tbody>
 								@if (Model != null && Model.Detalle != null && Model.Detalle.ListaDatos != null && Model.Detalle.ListaDatos.Count > 0)
 								{
-									@foreach (var item in Model.Detalle.ListaDatos)
+									foreach (var item in Model.Detalle.ListaDatos)
 									{
+										var dif = item.pedido - item.a_transferir;
+
+										bool esRepetido = (ultimoProducto == item.p_id + "|" + item.p_desc);
+										ultimoProducto = item.p_id + "|" + item.p_desc;
+
 										if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+
 										<tr class="@clase" onclick="selectNuevaAutListaProductosRow(this)">
-											<td class="align-center">@item.p_id</td>
-											<td class="align-left">@item.p_desc</td>
-											<td class="align-center">@item.p_id_prov</td>
-											<td class="align-center">@item.pi_compte</td>
-											<td style="text-align: right;">@item.stk</td>
-											<td style="text-align: right;">@item.stk_adm</td>
-											<td style="text-align: right;">@item.a_transferir</td>
-											<td style="text-align: right;">@item.a_transferir</td>
-											<td>@item.box_id</td>
-											<td style="text-align: right;">@item.a_transferir_box</td>
-											<td>
-												@if (item.nota != "")
+											<td class="align-center">
+												@(esRepetido ? "" : item.p_id)
+											</td>
+											<td class="align-left">
+												@(esRepetido ? "" : item.p_desc)
+											</td>
+											<td class="align-center">
+												@(esRepetido ? "" : item.p_id_prov)
+											</td>
+											<td class="align-center">
+												@(esRepetido ? "" : item.pi_compte)
+											</td>
+											<td class="align-right">
+												@(esRepetido ? "" : GridHelper.FormatearDato(item.stk, GridHelper.FormatDato.Monto, item.PermiteDecimales))
+											</td>
+											<td class="align-right">
+												@(esRepetido ? "" : GridHelper.FormatearDato(item.pedido, GridHelper.FormatDato.Monto, item.PermiteDecimales))
+											</td>
+											<td class="align-right">
+												@(esRepetido ? "" : GridHelper.FormatearDato(item.a_transferir, GridHelper.FormatDato.Monto, item.PermiteDecimales))
+											</td>
+											<td class="align-right">
+												@(esRepetido ? "" : GridHelper.FormatearDato(dif, GridHelper.FormatDato.Monto, item.PermiteDecimales))
+											</td>
+											<td class="align-center">@item.box_id</td>
+											<td class="align-right">@GridHelper.FormatearDato(item.a_transferir_box, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
+											<td class="text-center align-middle">
+												@if (!string.IsNullOrEmpty(item.nota))
 												{
-													<a class="btn btn-xs btn-outline-success" data-interaction="@item.p_id" onclick="verNotaEnProducto(this);"> <i class="bx bx-detail"></i></a>
+													<button type="button" class="btn btn-info btn-sm btn-icon-compact"
+															data-interaction="@item.p_id"
+															data-adm_id="@item.adm_id"
+															data-autorizacion="@item.autorizacion"
+															onclick="verNotaEnProducto(this);">
+														<i class="bx bx-detail"></i>
+													</button>
 												}
 											</td>
 											@if (item.p_sustituto)
@@ -145,30 +233,13 @@
 						</table>
 					</div>
 				</div>
-				<div class="container col-sm" style="padding-top: 15px;">
-					<button id="btnAgregar" class="btn btn-primary btn-sm mt-1 me-1" title="Agregar un nuevo producto a la transferencia seleccionada" onclick="abrirlModalAgregaProductoATR();">
-						<i class="bx bx-plus-circle"></i> Agregar
-					</button>
-					@* <a href="#" id="btnAgregar" class="btn btn-success fixed-width-130" title="Agregar un nuevo producto a la transferencia seleccionada" onclick="abrirlModalAgregaProductoATR();">
-						<span class="tf-icons bx bx-plus-circle me-1">Agregar</span>
-					</a> *@
-					<button id="btnSustituto" class="btn btn-primary btn-sm mt-1 me-1" onclick="abrirlModalSustitutoDeProductoATR();" disabled title="Buscar sustituto para producto seleccionado.">
-						<i class="bx bx-plus-circle"></i> Sustituto
-					</button>
-					<button id="btnEliminar" class="btn btn-danger btn-sm mt-1 me-1" title="Eliminar Transferencia" onclick="eliminarProductoATR();" disabled>
-						<i class="bx bx-trash"></i> Eliminar
-					</button>
-					<button id="btnModCantidad" class="btn btn-info btn-sm mt-1 me-1" title="Modificar Transferencia" onclick="abrirlModalModCantDeProductoATR();" disabled>
-						<i class="bx bx-edit"></i> Modificar
-					</button>
-				</div>
 			</fieldset>
 		</div>
 	</div>
 </div>
 
 <div class="modal fade modal-golden" id="modalNotaEnSucursal" tabindex="-1" style="display: none;" aria-hidden="true">
-	<div class="modal-dialog modal-xl" role="document">
+	<div class="modal-dialog modal-md" role="document">
 		<div class="modal-content">
 			<div id="divNotaEnSucursal">
 			</div>
@@ -177,7 +248,7 @@
 </div>
 
 <div class="modal fade modal-golden" id="modalNotaEnProducto" tabindex="-1" style="display: none;" aria-hidden="true">
-	<div class="modal-dialog modal-xl" role="document">
+	<div class="modal-dialog modal-md" role="document">
 		<div class="modal-content">
 			<div id="divNotaEnProducto">
 			</div>
@@ -186,7 +257,7 @@
 </div>
 
 <div class="modal fade modal-golden" id="modalCargarNuevoProducto" tabindex="-1" style="display: none;" aria-hidden="true">
-	<div class="modal-dialog modal-xl" role="document">
+	<div class="modal-dialog modal-lg" role="document">
 		<div class="modal-content">
 			<div class="modal-header">
 				<h5 class="modal-title" id="modalCenterTitle"></h5>
@@ -195,28 +266,33 @@
 			<div class="modal-body">
 				<fieldset>
 					<legend>
-						<h5 id="leyendaNuevoProducto">Cargar Nuevo Producto Aut TR</h5>
+						<h5 id="leyendaNuevoProducto" style="margin-bottom: 0px;">Cargar Nuevo Producto Aut TR</h5>
 					</legend>
 					<div id="divBusquedaProducto">
 						<partial name="~/areas/ControlComun/views/producto/_ctrBuscarProducto.cshtml" model="@busquedaProducto" />
 					</div>
-					<div class="row" style="padding-top: 5px;">
-						<div class="input-group">
-							<span class="input-group-text">A Transferir: </span>
-							<input type="number" id="txtAtransferir" class="form-control" style="width:20%;max-width:20%;" />
-							<button type="button" class="btn btn-icon btn-success" style="margin-left:5px;" id="btnEditarCantidad">
-								<span class="tf-icons bx bx-plus-circle"></span>
-							</button>
-						</div>
+					<!-- TABLA -->
+					<div id="divListaProductosParaAgregar" class="mt-3 table-area">
 					</div>
-					<div id="divListaProductosParaAgregar" style="padding-top:5px;">
+
+					<!-- CONTROLES ABAJO -->
+					<div class="d-flex justify-content-start align-items-center gap-2 mt-3">
+
+						<div class="input-group" style="width: 200px;">
+							<span class="input-group-text">A Transferir</span>
+							<input type="number" id="txtAtransferir" class="form-control a-transferir" />
+						</div>
+
+						<button type="button" class="btn btn-sm btn-success btn-modal" id="btnAceptarNuevoProducto">
+							<i class="bx bx-check"></i> Aceptar
+						</button>
+
+						<button type="button" class="btn btn-sm btn-secondary btn-modal" data-bs-dismiss="modal">
+							Cerrar
+						</button>
+
 					</div>
 				</fieldset>
-			</div>
-			<div class="modal-footer">
-				<button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
-					Cerrar
-				</button>
 			</div>
 		</div>
 	</div>

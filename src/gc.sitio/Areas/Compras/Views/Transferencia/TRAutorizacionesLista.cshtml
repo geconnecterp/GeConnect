@@ -4,7 +4,15 @@
 	string clase = string.Empty;
 	Layout = "~/views/shared/_Layout.cshtml";
 }
-<div class="card">
+<style>
+	.table-golden thead th {
+		position: sticky;
+		top: 0;
+		z-index: 2;
+		background-color: inherit;
+	}
+</style>
+<div class="card w-50 mx-auto">
 	<div class="card-body">
 		<div class="row mb-2">
 			<h5>Autorizaciones TR</h5>
@@ -20,13 +28,13 @@
 					</div>
 				</div>
 				<div>
-					<button id="btnNuevaAut" class="btn btn-primary btn-sm mt-1 me-1" type="button" title="Agregar Nueva Transferencia" asp-action="NuevaTR" asp-controller="Transferencia" asp-area="Compras">
+					<button id="btnNuevaAut" class="btn btn-primary btn-sm mt-1 me-1" style="width:150px;" type="button" title="Agregar Nueva Transferencia" asp-action="NuevaTR" asp-controller="Transferencia" asp-area="Compras">
 						<i class="bx bx-plus-circle"></i> Nueva Transferencia
 					</button>
-					<button id="btnModificarAut" class="btn btn-info btn-sm mt-1 me-1" type="button" title="Modificar Transferencia seleccionada">
+@* 					<button id="btnModificarAut" class="btn btn-info btn-sm mt-1 me-1" type="button" title="Modificar Transferencia seleccionada">
 						<i class="bx bx-edit-alt"></i> Modificar Transferencia
-					</button>
-					<button id="btnVer" class="btn btn-info btn-sm mt-1 me-1" type="button" title="Ver Autorización seleccionada" onclick="verTransferencia();return false;">
+					</button> *@
+					<button id="btnVer" class="btn btn-info btn-sm mt-1 me-1" style="width:150px;" type="button" title="Ver Autorización seleccionada" onclick="verTransferencia();return false;">
 						<i class="bx bx-show"></i> Ver Transferencia
 					</button>
 				</div>
@@ -41,9 +49,9 @@
 								<th style="width:10%;" class="align-center">N° Auto</th>
 								<th style="width:10%;" class="align-center">Sucursal</th>
 								<th style="width:10%;" class="align-center">Fecha</th>
-								<th style="width:50%;" class="align-center">Nota</th>
 								<th style="width:10%;" class="align-center">PI</th>
 								<th style="width:10%;" class="align-center">Estado</th>
+								<th style="width:50%;" class="align-center">Nota</th>
 								<th style="width:0%; display:none;">adm_id_des</th>
 								<th style="width:0%; display:none;">usu_id</th>
 								<th style="width:0%; display:none;">tie_id</th>
@@ -59,9 +67,9 @@
 										<td class="align-center">@item.ti</td>
 										<td>@item.adm_nombre</td>
 										<td class="align-center">@item.fecha.ToString("dd/MM/yyyy")</td>
-										<td>@item.nota</td>
 										<td class="align-center">@item.pi_compte</td>
 										<td class="align-center">@item.tie_desc</td>
+										<td>@item.nota</td>
 										<td style="display:none;">@item.adm_id_des</td>
 										<td style="display:none;">@item.usu_id</td>
 										<td style="display:none;">@item.tie_id</td>

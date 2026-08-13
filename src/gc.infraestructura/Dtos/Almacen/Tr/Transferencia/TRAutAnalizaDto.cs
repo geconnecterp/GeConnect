@@ -1,7 +1,7 @@
 ﻿
 namespace gc.infraestructura.Dtos.Almacen.Tr.Transferencia
 {
-	public class TRAutAnalizaDto : Dto
+	public class TRAutAnalizaDto : Dto, IProductoConUnidad
 	{
 		public string adm_id { get; set; } = string.Empty;
 		public string adm_nombre { get; set; } = string.Empty;
@@ -24,5 +24,8 @@ namespace gc.infraestructura.Dtos.Almacen.Tr.Transferencia
 		public string p_id_sustituto { get; set; } = string.Empty;
 		public string nota { get; set; } = string.Empty;
 		public string p_id_prov { get; set; } = string.Empty;
-    }
+		public string up_id { get; set; } = string.Empty;
+		public string up_tipo { get; set; } = string.Empty;
+		public bool PermiteDecimales => up_tipo == "P";
+	}
 }

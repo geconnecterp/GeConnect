@@ -2,6 +2,7 @@
 @{
 	var alt = true;
 	string clase = string.Empty;
+	string ultimoProducto = null;
 }
 <div class="table-responsive text-nowrap table-wrapper">
 	<table class="table table-sm mb-0 table-hover table-golden" id="tbNuevaAutListaProductos">
@@ -28,34 +29,79 @@
 				<th style="width:0%; display:none;">autorizacion</th>
 			</tr>
 		</thead>
-		<tbody>
-			@if (Model != null && Model.ListaDatos != null && Model.ListaDatos.Count > 0)
-			{
-				@foreach (var item in Model.ListaDatos)
-				{
-					if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
-					<tr class="@clase" onclick="selectNuevaAutListaProductosRow(this)">
-						<td class="align-center">@item.p_id</td>
-						<td class="align-left">@item.p_desc</td>
-						<td class="align-center">@item.p_id_prov</td>
-						<td class="align-center">@item.pi_compte</td>
-						<td class="align-right">@item.stk</td>
-						<td class="align-right">@item.stk_adm</td>
-						<td class="align-right">@item.a_transferir</td>
-						<td class="align-right">@item.a_transferir</td>
-						<td class="align-center">@item.box_id</td>
-						<td class="align-right">@item.a_transferir_box</td>
-						<td class="text-center align-middle">
-							@if (item.nota != "")
-							{
-								<button type="button" class="btn btn-info btn-sm btn-icon-compact" data-interaction="@item.p_id" data-adm_id="@item.adm_id" data-autorizacion="@item.autorizacion" onclick="verNotaEnProducto(this);">
-									<i class="bx bx-detail"></i>
-								</button>
-								@* <a class="btn btn-xs btn-outline-success" data-interaction="@item.p_id" onclick="verNotaEnProducto(this);"> 
-									<i class="bx bx-detail"></i>
-								</a> *@
-							}
-						</td>
+        <tbody>
+            @if (Model != null && Model.ListaDatos != null && Model.ListaDatos.Count > 0)
+            {
+                foreach (var item in Model.ListaDatos)
+                {
+                    var dif = item.pedido - item.a_transferir;
+
+                    bool esRepetido = (ultimoProducto == item.p_id + "|" + item.p_desc);
+                    ultimoProducto = item.p_id + "|" + item.p_desc;
+
+                    if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+
+                    <tr class="@clase" onclick="selectNuevaAutListaProductosRow(this)">
+
+                        <!-- ID -->
+                        <td class="align-center">
+                            @(esRepetido ? "" : item.p_id)
+                        </td>
+
+                        <!-- Descripción -->
+                        <td class="align-left">
+                            @(esRepetido ? "" : item.p_desc)
+                        </td>
+
+                        <!-- Id Prov -->
+                        <td class="align-center">
+                            @(esRepetido ? "" : item.p_id_prov)
+                        </td>
+
+                        <!-- PI -->
+                        <td class="align-center">
+                            @(esRepetido ? "" : item.pi_compte)
+                        </td>
+
+                        <!-- Stk Suc -->
+                        <td class="align-right">
+                            @(esRepetido ? "" : GridHelper.FormatearDato(item.stk, GridHelper.FormatDato.Monto, item.PermiteDecimales))
+                        </td>
+
+                        <!-- Pedido -->
+                        <td class="align-right">
+                            @(esRepetido ? "" : GridHelper.FormatearDato(item.pedido, GridHelper.FormatDato.Monto, item.PermiteDecimales))
+                        </td>
+
+                        <!-- A transf -->
+                        <td class="align-right">
+                            @(esRepetido ? "" : GridHelper.FormatearDato(item.a_transferir, GridHelper.FormatDato.Monto, item.PermiteDecimales))
+                        </td>
+
+                        <!-- Dif -->
+                        <td class="align-right">
+                            @(esRepetido ? "" : GridHelper.FormatearDato(dif, GridHelper.FormatDato.Monto, item.PermiteDecimales))
+                        </td>
+
+                        <!-- Box (siempre se muestra) -->
+                        <td class="align-center">@item.box_id</td>
+
+                        <!-- A transf. Box (siempre se muestra) -->
+                        <td class="align-right">@GridHelper.FormatearDato(item.a_transferir_box, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
+
+                        <!-- Nota -->
+                        <td class="text-center align-middle">
+                            @if (!string.IsNullOrEmpty(item.nota))
+                            {
+                                <button type="button" class="btn btn-info btn-sm btn-icon-compact"
+                                        data-interaction="@item.p_id"
+                                        data-adm_id="@item.adm_id"
+                                        data-autorizacion="@item.autorizacion"
+                                        onclick="verNotaEnProducto(this);">
+                                    <i class="bx bx-detail"></i>
+                                </button>
+                            }
+                        </td>
 						@if (item.p_sustituto)
 						{
 							<td style="display:none;"><input type="checkbox" name="p_sustituto" value="@item.p_sustituto" checked disabled="disabled" /></td>

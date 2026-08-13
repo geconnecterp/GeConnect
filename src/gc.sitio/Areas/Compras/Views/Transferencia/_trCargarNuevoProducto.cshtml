@@ -23,9 +23,9 @@
 						<td class="align-left">@item.p_desc</td>
 						<td class="align-center">@item.adm_id</td>
 						<td class="align-center">@item.adm_id</td>
-						<td class="align-right">@item.stk_adm</td>
+						<td class="align-right">@GridHelper.FormatearDato(item.pedido, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
 						<td class="align-center">@item.box_id</td>
-						<td class="align-right">@item.stk</td>
+						<td class="align-right">@GridHelper.FormatearDato(item.stk, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
 					</tr>
 				}
 			}

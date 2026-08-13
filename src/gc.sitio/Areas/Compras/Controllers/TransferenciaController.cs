@@ -44,6 +44,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 			try
 			{
 				var items = await _productoServicio.TRObtenerPendientes(AdministracionId, "%", "S", TokenCookie);
+				TRAutPedidosIncluidosILista = [];
 				grid = ObtenerGridCoreSmart<TRPendienteDto>(items);
 			}
 			catch (Exception ex)
@@ -289,7 +290,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 				var orden = 0;
 				var listaSucursales = from i in TRAutAnaliza
 									  group i by new { i.adm_id, i.adm_nombre, i.autorizacion } into x
-									  select new TRNuevaAutSucursalDto() { adm_id = x.Key.adm_id, adm_nombre = x.Key.adm_nombre, pallet_aprox = x.Sum(y => y.unidad_palet), aut_a_generar = x.Max(y => y.autorizacion), orden = orden++ };
+									  select new TRNuevaAutSucursalDto() { adm_id = x.Key.adm_id, adm_nombre = x.Key.adm_nombre, pallet_aprox = x.Sum(y => y.palet), aut_a_generar = x.Max(y => y.autorizacion), orden = orden++ };
 				TRNuevaAutSucursalLista = listaSucursales.ToList();
 				model.Sucursales = ObtenerGridCoreSmart<TRNuevaAutSucursalDto>(listaSucursales.ToList());
 				TRNuevaAutDetallelLista = TRAutAnaliza.Select(x => new TRNuevaAutDetalleDto()
@@ -316,6 +317,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 					stk_adm = x.stk_adm,
 					unidad_palet = x.unidad_palet,
 					p_id_prov = x.p_id_prov,
+					up_tipo = x.up_tipo
 					#endregion
 				}).OrderBy(y => y.p_id).ToList();
 				model.Detalle = ObtenerGridCoreSmart<TRNuevaAutDetalleDto>(TRNuevaAutDetallelLista);
@@ -627,6 +629,8 @@ namespace gc.sitio.Areas.Compras.Controllers
 					stk_adm = producto.stk_adm,
 					box_id = producto.box_id,
 					stk = producto.a_transferir_box,
+					up_tipo = producto.up_tipo,
+					pedido = producto.pedido,
 				});
 				model.Productos = ObtenerGridCoreSmart<TRProductoParaAgregar>(listaProdAEditar);
 				return PartialView("_trCargarNuevoProducto", model);

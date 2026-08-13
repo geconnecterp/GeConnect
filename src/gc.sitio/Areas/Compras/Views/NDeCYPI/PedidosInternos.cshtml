@@ -47,10 +47,10 @@
 		</div>
 		<div class="col-md-6">
 			<div class="collapse" style="text-align: right;align-content: center;padding-bottom:5px;" id="divBtnOpciones">
-				<button type="button" class="btn btn-sm btn-primary btn-sm mt-1 me-1" id="btnPasarAPI" title="Pedido Interno">
+				<button type="button" class="btn btn-sm btn-primary btn-sm mt-1 me-1" id="btnPasarAPI" title="Pedido Interno" style="margin-left:5px;width: 100px;">
 					<i class="bx bx-check-circle"></i> Pasar a PI
 				</button>
-				<button type="button" class="btn btn-sm btn-primary btn-sm mt-1 me-1" id="btnPIAuto" title="Pedido Interno Automático">
+				<button type="button" class="btn btn-sm btn-primary btn-sm mt-1 me-1" id="btnPIAuto" title="Pedido Interno Automático" style="margin-left:5px;width: 100px;">
 					<i class="bx bx-check-circle"></i> PI Auto
 				</button>
 			</div>
@@ -85,7 +85,7 @@
 		<div class="row">
 			<div class="col-12">
 				<div id="divListaProducto">
-					<div class="table-responsive text-nowrap table-wrapper">
+					<div class="table-responsive text-nowrap table-wrapper" id="containerListaProducto">
 						<table class="table table-sm mb-0 table-hover table-golden" id="tbListaProducto">
 							<thead>
 								<tr class="header">
@@ -122,9 +122,6 @@
 			</div>
 			<div class="col-2"></div>
 		</div>
-		@* <div class="collapse" id="divFiltro" style="">
-			@Html.Hidden("pagEstado", false)
-		</div> *@
 	</div>
 	<div id="divPasarPI" class="collapse"></div>
 	<div id="divInfoAdicionaDeProducto" class="collapse"></div>

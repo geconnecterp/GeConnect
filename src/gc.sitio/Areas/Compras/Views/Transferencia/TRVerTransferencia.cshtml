@@ -4,7 +4,15 @@
 	string clase = string.Empty;
 	Layout = "~/views/shared/_Layout.cshtml";
 }
-<div class="card">
+<style>
+	.table-golden thead th {
+		position: sticky;
+		top: 0;
+		z-index: 2;
+		background-color: inherit;
+	}
+</style>
+<div class="card w-75 mx-auto">
 	<div class="card-body">
 		<div class="row">
 			@Html.Hidden("ti", Model.ti)
@@ -60,12 +68,12 @@
 										<td>@item.p_desc</td>
 										<td class="align-center">@item.p_id_prov</td>
 										<td style="text-align: right;">@item.unidad_pres</td>
-										<td style="text-align: right;">@item.cantidad_pi</td>
-										<td style="text-align: right;">@item.cantidad</td>
-										<td style="text-align: right;">@item.cantidad_c</td>
+										<td style="text-align: right;">@GridHelper.FormatearDato(item.cantidad_pi, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
+										<td style="text-align: right;">@GridHelper.FormatearDato(item.cantidad, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
+										<td style="text-align: right;">@GridHelper.FormatearDato(item.cantidad_c, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
 										@if (item.Row_color != "")
 										{
-											<td class="table-fontsize" style="border-right: 5px solid @item.Row_color;text-align: right;">@item.Diferencia</td>
+											<td class="table-fontsize" style="border-right: 5px solid @item.Row_color;text-align: right;">@GridHelper.FormatearDato(item.Diferencia, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
 										}
 										else
 										{

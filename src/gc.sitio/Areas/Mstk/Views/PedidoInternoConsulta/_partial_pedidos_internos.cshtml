@@ -1,104 +1,103 @@
 ﻿@model GridCoreSmart<PedidoInternoListaDto>
 @{
-	var alt = true;
-	string clase = string.Empty;
+    var alt = true;
+    string clase = string.Empty;
 }
 <style>
 </style>
 <div class="row gx-2">
-	<div class="col-md-10">
-		<div class="grid-golden">
-			<div class="grid-golden-body p-1">
-				<div id="divOrdenesDeReparto" class="table-responsive table-wrapper-700">
-					<table class="table table-sm table-hover mb-0 table-golden" id="tbGridPedidosInternos">
-						<thead class="sticky-top table-golden-header-compact">
-							<tr class="header">
-								<th class="text-center th-compact">PI N°</th>
-								<th class="text-center th-compact">Fecha</th>
-								<th class="text-center th-compact">Sucursal Generó</th>
-								<th class="text-center th-compact">Sucursal Entrega</th>
-								<th class="text-center th-compact">Estado</th>
-								<th class="text-center th-compact">Usuario</th>
-							</tr>
-						</thead>
-						<tbody>
-							@if (Model?.ListaDatos?.Any() == true)
-							{
-								foreach (var item in Model.ListaDatos)
-								{
-									if (alt) { clase = "alt"; alt = false; } else { clase = ""; alt = true; }
-									<tr class="@clase"
-										data-pi-compte="@item.pi_compte"
-										data-pie-id="@item.pie_id">
-										<td class="text-center">
-											@item.pi_compte
-										</td>
-										<td class="text-center">
-											@item.pi_fecha.ToString("dd/MM/yy")
-										</td>
-										<td>
-											@item.adm_id_gen_nombre
-										</td>
-										<td>
-											@item.adm_id_des_nombre
-										</td>
-										<td>
-											@item.pie_desc
-										</td>
-										<td>
-											@item.usu_apellidoynombre
-										</td>
-									</tr>
-								}
-							}
-							else
-							{
-								<tr class="fila-vacia">
-									<td colspan="5" class="text-center text-muted py-2">
-										<i class="bx bx-info-circle me-1"></i>No hay pedidos internos
-									</td>
-								</tr>
-							}
-						</tbody>
-					</table>
-				</div>
-			</div>
-		</div>
-		<div class="row">
-			<div class="offset-md-3 col-md-6">
-				<div id="divPaginacion">
-				</div>
-			</div>
-		</div>
-	</div>
-	<div class="col-md-2">
-		<div class="d-flex flex-column gap-2 align-items-stretch">
-			<button id="btnCerrarPI" type="button" class="btn btn-success d-flex align-items-center">
-				<i class="bx bx-x-square"></i> Cerrar PI
-			</button>
+    <div class="col-md-10">
+        <div class="grid-golden">
+            <div class="grid-golden-body p-1">
+                <div id="divOrdenesDeReparto" class="table-responsive table-wrapper-700">
+                    <table class="table table-sm table-hover mb-0 table-golden" id="tbGridPedidosInternos">
+                        <thead class="sticky-top table-golden-header-compact">
+                            <tr class="header">
+                                <th class="text-center th-compact">PI N°</th>
+                                <th class="text-center th-compact">Fecha</th>
+                                <th class="text-center th-compact">Sucursal Generó</th>
+                                <th class="text-center th-compact">Sucursal Entrega</th>
+                                <th class="text-center th-compact">Estado</th>
+                                <th class="text-center th-compact">Usuario</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Model?.ListaDatos?.Any() == true)
+                            {
+                                foreach (var item in Model.ListaDatos)
+                                {
+                                    if (alt) { clase = "alt"; alt = false; } else { clase = ""; alt = true; }
+                                    <tr class="@clase"
+                                        data-pi-compte="@item.pi_compte"
+                                        data-pie-id="@item.pie_id">
+                                        <td class="text-center">
+                                            @item.pi_compte
+                                        </td>
+                                        <td class="text-center">
+                                            @item.pi_fecha.ToString("dd/MM/yy")
+                                        </td>
+                                        <td>
+                                            @item.adm_id_gen_nombre
+                                        </td>
+                                        <td>
+                                            @item.adm_id_des_nombre
+                                        </td>
+                                        <td>
+                                            @item.pie_desc
+                                        </td>
+                                        <td>
+                                            @item.usu_apellidoynombre
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr class="fila-vacia">
+                                    <td colspan="5" class="text-center text-muted py-2">
+                                        <i class="bx bx-info-circle me-1"></i>No hay pedidos internos
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="offset-md-3 col-md-6">
+                <div id="divPaginacion">
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2" style="padding-right: 20px;padding-left: 20px;">
 
-			<button id="btnAnularPI" type="button" class="btn btn-outline-success d-flex align-items-center">
-				<i class="bx bx-eraser"></i> Anular PI
-			</button>
+        <button id="btnCerrarPI" type="button" class="btn btn-sm btn-success w-100 btn-sm mt-1 me-1">
+            <i class="bx bx-x-square"></i> Cerrar PI
+        </button>
 
-			<button id="btnImprimirLista" type="button" class="btn btn-primary d-flex align-items-center">
-				<i class="bx bx-printer"></i> Imprimir Lista
-			</button>
+        <button id="btnAnularPI" type="button" class="btn btn-sm btn-outline-success w-100 btn-sm mt-1 me-1">
+            <i class="bx bx-eraser"></i> Anular PI
+        </button>
 
-			<button id="btnImprimirPI" type="button" class="btn btn-primary d-flex align-items-center">
-				<i class="bx bx-printer"></i> Imprimir PI
-			</button>
-		</div>
-	</div>
+        <button id="btnImprimirLista" type="button" class="btn btn-sm btn-primary w-100 btn-sm mt-1 me-1">
+            <i class="bx bx-printer"></i> Imprimir Lista
+        </button>
+
+        <button id="btnImprimirPI" type="button" class="btn btn-sm btn-primary w-100 btn-sm mt-1 me-1">
+            <i class="bx bx-printer"></i> Imprimir PI
+        </button>
+    </div>
 </div>
 <script>
-	// Delegación mínima para selección de fila (se puede integrar con el JS existente)
-	(function () {
-		const $table = $('#tbGridPedidosInternos');
-		$table.on('click', 'tbody tr.row-item', function () {
-			$table.find('tbody tr').removeClass('selected-row');
-			$(this).addClass('selected-row');
-			// Exponer data para scripts: data-or-compte
-		});
-	})();
+    // Delegación mínima para selección de fila (se puede integrar con el JS existente)
+    (function () {
+        const $table = $('#tbGridPedidosInternos');
+        $table.on('click', 'tbody tr.row-item', function () {
+            $table.find('tbody tr').removeClass('selected-row');
+            $(this).addClass('selected-row');
+            // Exponer data para scripts: data-or-compte
+        });
+    })();
 </script>

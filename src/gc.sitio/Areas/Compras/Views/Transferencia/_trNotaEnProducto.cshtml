@@ -3,6 +3,12 @@
 @Html.Hidden("p_id_en_modal_producto", Model.p_id)
 @Html.Hidden("adm_id_en_modal_producto", Model.adm_id)
 @Html.Hidden("autorizacion_en_modal_producto", Model.autorizacion)
+<style>
+	.btn-modal {
+		width: 100px;
+		height: 30px;
+	}
+</style>
 <div class="modal-header">
 	<h5 class="modal-title" id="modalCenterTitle">@Model.Titulo</h5>
 	<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -11,8 +17,8 @@
 	<textarea class="form-control" id="txtNotaEnProducto" asp-for="@Model.Nota" rows="4"></textarea>
 </div>
 <div class="modal-footer">
-	<button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+	<button type="button" class="btn btn-sm btn-secondary btn-modal" data-bs-dismiss="modal">
 		Cerrar
 	</button>
-	<button type="button" class="btn btn-primary" onclick="guardarNotaDeProducto();">Guardar</button>
+	<button type="button" class="btn btn-sm btn-primary btn-modal" onclick="guardarNotaDeProducto();">Guardar</button>
 </div>

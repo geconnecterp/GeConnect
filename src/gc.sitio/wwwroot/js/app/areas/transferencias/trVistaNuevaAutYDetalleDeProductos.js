@@ -54,6 +54,7 @@ function RegresarANuevaAut() {
 		} else {
 			CerrarWaiting();
 			$("#modalNotaEnSucursal").modal("hide");
+			window.location.href = TRAbrirVistaTRCrudAutorizacionUrl;
 		}
 	});
 }
@@ -360,6 +361,7 @@ function abrirlModalAgregaProductoATR() {
 	PostGenHtml(datos, TRInicializarModalAgregarProductoATRUrl, function (obj) {
 		$("#divListaProductosParaAgregar").html(obj);
 		document.getElementById("modalCenterTitle").outerHTML = "<h5 class=\"modal-title\" id=\"modalCenterTitle\"> Detalle de TR (" + admSeleccionado + ") " + admSeleccionadoNombre + "</h5>";
+		document.getElementById("leyendaNuevoProducto").outerHTML = "<h5 id=\"leyendaNuevoProducto\" style=\"margin-bottom: 0px;\"> Agregar Valor a Transferir del Box</h5>";
 		$('#modalCargarNuevoProducto').modal('show')
 		esProductoSustituto = false;
 		tipoFuncion = FuncionSobreProductosAAgregar.NUEVO;
@@ -379,6 +381,7 @@ function abrirlModalSustitutoDeProductoATR() {
 	PostGenHtml(datos, TRInicializarModalAgregarProductoSustitutoATRUrl, function (obj) {
 		$("#divListaProductosParaAgregar").html(obj);
 		document.getElementById("modalCenterTitle").outerHTML = "<h5 class=\"modal-title\" id=\"modalCenterTitle\"> Detalle de TR (" + admSeleccionado + ") " + admSeleccionadoNombre + "</h5>";
+		// document.getElementById("leyendaNuevoProducto").outerHTML = "<h5 id=\"leyendaNuevoProducto\"> Modificar el Valor a Transferir del Box</h5>";
 		document.getElementById("leyendaNuevoProducto").outerHTML = "<h5 id=\"leyendaNuevoProducto\"> Producto Sustituto de (" + prodSeleccionado + ") " + prodSeleccionadoNombre + "</h5>";
 		document.getElementById("divBusquedaProducto").style.display = 'none'
 		$('#modalCargarNuevoProducto').modal('show')
@@ -399,8 +402,10 @@ function abrirlModalModCantDeProductoATR() {
 	PostGenHtml(datos, TRInicializarModalModificarCantidadATRUrl, function (obj) {
 		$("#divListaProductosParaAgregar").html(obj);
 		document.getElementById("modalCenterTitle").outerHTML = "<h5 class=\"modal-title\" id=\"modalCenterTitle\"> Detalle de TR (" + admSeleccionado + ") " + admSeleccionadoNombre + "</h5>";
-		document.getElementById("leyendaNuevoProducto").outerHTML = "<h5 id=\"leyendaNuevoProducto\"> Producto Sustituto de (" + prodSeleccionado + ") " + prodSeleccionadoNombre + "</h5>";
+		document.getElementById("leyendaNuevoProducto").outerHTML = "<h5 id=\"leyendaNuevoProducto\" style=\"margin-bottom: 0px;\"> Modificar el Valor a Transferir del Box</h5>";
+		//document.getElementById("leyendaNuevoProducto").outerHTML = "<h5 id=\"leyendaNuevoProducto\"> Producto Sustituto de (" + prodSeleccionado + ") " + prodSeleccionadoNombre + "</h5>";
 		document.getElementById("divBusquedaProducto").style.display = 'none'
+		$("#txtAtransferir").val("0")
 		$('#modalCargarNuevoProducto').modal('show')
 		esProductoSustituto = false;
 		tipoFuncion = FuncionSobreProductosAAgregar.EDICION;

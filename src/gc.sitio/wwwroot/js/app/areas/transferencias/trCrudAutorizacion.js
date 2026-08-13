@@ -4,6 +4,20 @@
 	setMaxValueTotxtMaxPallet();
 	SeleccionarFila(1, "tbListaSucursales");
 	$("#txtMaxPallet").hide();
+
+	// Seleccionar / deseleccionar todos
+	$(document).on("change", "#chkSelectAllDepositos", function () {
+		const checked = $(this).is(":checked");
+		$(".chkDeposito").prop("checked", checked);
+	});
+
+	// Actualizar el checkbox maestro según las filas
+	$(document).on("change", ".chkDeposito", function () {
+		const total = $(".chkDeposito").length;
+		const marcados = $(".chkDeposito:checked").length;
+
+		$("#chkSelectAllDepositos").prop("checked", total === marcados);
+	});
 });
 
 function setMaxValueTotxtMaxPallet() {
@@ -119,15 +133,18 @@ function ExistenDepositosSeleccionados() {
 }
 
 function ObtenerListaDepositoSeleccionado() {
-	var lista = "";
-	$('#tbDepositosDeEnvio tbody tr').each(function (index, tr) {
-		if (tr.cells[1] && tr.cells[1].firstChild) {
-			if (tr.cells[1].firstChild.checked) {
-				lista += tr.cells[2].innerText.trim() + "@";
-			}
+	var lista = [];
+
+	$("#tbDepositosDeEnvio tbody tr").each(function () {
+		var chk = $(this).find(".chkDeposito");
+
+		if (chk.length && chk.is(":checked")) {
+			var depoId = $(this).find("td:eq(2)").text().trim();   // columna oculta depo_id
+			lista.push(depoId);
 		}
 	});
-	return lista.substring(0, lista.length - 1);
+
+	return lista;
 }
 
 function selectTRSucursalesRow(x) {

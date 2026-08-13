@@ -8,6 +8,12 @@
 		pi_compte = Model.Detalle.ListaDatos.First().pi_compte;
 	}
 }
+<style>
+	.btn-modal {
+		width: 100px;
+		height: 30px;
+	}
+</style>
 <div class="modal-header">
 	<h5 class="modal-title" id="modalCenterTitle">@Model.Titulo</h5>
 	<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -37,9 +43,9 @@
 							<td class="align-center">@item.pid_item</td>
 							<td class="align-center">@item.p_id</td>
 							<td class="align-left">@item.p_desc</td>
-							<td class="align-right">@item.pid_cantidad</td>
-							<td class="align-right">@item.pid_enviado</td>
-							<td class="align-right">@item.pid_stk</td>
+							<td class="align-right">@GridHelper.FormatearDato(item.pid_cantidad, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
+							<td class="align-right">@GridHelper.FormatearDato(item.pid_enviado, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
+							<td class="align-right">@GridHelper.FormatearDato(item.pid_stk, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
 						</tr>
 					}
 				}
@@ -48,10 +54,10 @@
 	</div>
 </div>
 <div class="modal-footer">
-	<button class="btn btn-secondary btn-sm mt-1 me-1" type="button" title="Imprimir" id="btnImprimirDetallePI" @* onclick="imprimirPIDetalle(@pi_compte);" *@>
+	<button class="btn btn-secondary btn-sm mt-1 me-1 btn-modal" type="button" title="Imprimir" id="btnImprimirDetallePI" @* onclick="imprimirPIDetalle(@pi_compte);" *@>
 		<i class="bx bx-printer"></i> Imprimir
 	</button>
-	<button class="btn btn-outline-secondary btn-sm mt-1 me-1" data-bs-dismiss="modal">
+	<button class="btn btn-secondary btn-sm mt-1 me-1 btn-modal" data-bs-dismiss="modal">
 		<i class="bx bx-log-out-circle"></i> Cerrar
 	</button>
 </div>

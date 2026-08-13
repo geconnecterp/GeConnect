@@ -29,7 +29,7 @@
 		overflow-y: auto;
 		overflow-x: auto;
 		z-index: auto;
-		background: #fff; /* evita que el footer se mezcle con el fondo */
+		background: #fff; 
 	}
 
 	.table-golden {
@@ -86,13 +86,13 @@
 
 	.btn-info-producto {
 		position: absolute;
-		right: 4px; /* margen a la derecha */
+		right: 4px;
 		top: 50%;
 		transform: translateY(-50%);
 		background: transparent !important;
 		border: none !important;
 		padding: 0;
-		color: #fff; /* o el color del header */
+		color: #fff; 
 		cursor: pointer;
 	}
 
@@ -109,7 +109,7 @@
 
 		#tbListaProducto tfoot .total-row {
 			border-top: 2px solid #999;
-			background-color: #e9ecef; /* igual que table-secondary */
+			background-color: #e9ecef;
 		}
 </style>
 <div class="table-responsive table-wrapper-full-width" id="containerListaProducto">
@@ -223,10 +223,10 @@
 						{
 							<td class="align-right tiny-row">@item.cantidad</td>
 							<td class="align-right tiny-row">
-								@GridHelper.FormatearPrecio(item.costo, TipoPrecio.Costo)
+								@GridHelper.FormatearDato(item.costo, GridHelper.FormatDato.Monto, true)
 							</td>
 							<td class="align-right tiny-row" style="font-weight:bold;">
-								@GridHelper.FormatearPrecio(item.costo_total, TipoPrecio.Venta)
+								@GridHelper.FormatearDato(item.costo_total, GridHelper.FormatDato.Monto, true)
 							</td>
 						}
 						else
@@ -234,14 +234,14 @@
 							if (item.pedido_tipo == "M")
 							{
 								<td class="align-right tiny-row" style="background-color: lightgreen;">@item.cantidad</td>
-								<td class="align-right tiny-row" style="background-color: lightgreen;">@GridHelper.FormatearPrecio(item.costo, TipoPrecio.Costo)</td>
-								<td class="align-right tiny-row" style="background-color: lightgreen;font-weight:bold;">@GridHelper.FormatearPrecio(item.costo_total, TipoPrecio.Venta)</td>
+								<td class="align-right tiny-row" style="background-color: lightgreen;">@GridHelper.FormatearDato(item.costo, GridHelper.FormatDato.Monto, true)</td>
+								<td class="align-right tiny-row" style="background-color: lightgreen;font-weight:bold;">@GridHelper.FormatearDato(item.costo_total, GridHelper.FormatDato.Monto, true)</td>
 							}
 							else
 							{
 								<td class="align-right tiny-row" style="background-color: #6cc6f3;">@item.cantidad</td>
-								<td class="align-right tiny-row" style="background-color: #6cc6f3;">@GridHelper.FormatearPrecio(item.costo, TipoPrecio.Costo)</td>
-								<td class="align-right tiny-row" style="background-color: #6cc6f3;font-weight:bold;">@GridHelper.FormatearPrecio(item.costo_total, TipoPrecio.Venta)</td>
+								<td class="align-right tiny-row" style="background-color: #6cc6f3;">@GridHelper.FormatearDato(item.costo, GridHelper.FormatDato.Monto, true)</td>
+								<td class="align-right tiny-row" style="background-color: #6cc6f3;font-weight:bold;">@GridHelper.FormatearDato(item.costo_total, GridHelper.FormatDato.Monto, true)</td>
 							}
 						}
 						<td class="align-right tiny-row">@item.paletizado</td>
@@ -259,7 +259,7 @@
 				<td colspan="12" class="text-end">Total:</td>
 
 				<td class="align-right tiny-row" style="font-weight:bold;">
-					@GridHelper.FormatearPrecio(totalCosto, TipoPrecio.Costo)
+					@GridHelper.FormatearDato(totalCosto, GridHelper.FormatDato.Monto, true)
 				</td>
 				<td class="align-right tiny-row" style="font-weight:bold;">
 				</td>

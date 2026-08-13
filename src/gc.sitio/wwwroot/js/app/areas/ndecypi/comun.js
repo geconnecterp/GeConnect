@@ -1114,11 +1114,91 @@ function BuscarProductos(pag = 1) {
 
 		});
 		AgregarHanlderColumnaDescripcion();
+		recalcularFooterOC(Tipo);
+		// if (Tipo == 'PI') {
+		// 	recalcularFooterOC();
+		// }
 		CerrarWaiting();
 		viendeDesdeBusquedaDeProducto = false;
 		return true
 	});
 }
+
+function recalcularFooterOC(Tipo) {
+
+	// 1) Ubicar la tabla correcta
+	const tabla =
+		document.querySelector("#divListaProducto #tbListaProducto") ||
+		document.querySelector("#containerListaProducto #tbListaProducto") ||
+		document.querySelector("#tbListaProducto");
+
+	if (!tabla) {
+		console.warn("No se encontró la tabla tbListaProducto");
+		return;
+	}
+
+	const filas = tabla.querySelectorAll("tbody tr");
+
+	let totalCosto = 0;
+	let totalPallet = 0;
+
+	filas.forEach(tr => {
+
+		// Ignorar filas de grupo (colspan)
+		if (tr.querySelector("td[colspan]")) return;
+
+		// --- Total Costo (columna 14) ---
+		const tdCosto = tr.querySelector("td:nth-child(14)");
+		if (tdCosto) {
+			const raw = tdCosto.textContent.trim();
+
+			// Formato: 1,742.31 → miles = "," / decimales = "."
+			const normalizado = raw.replace(/,/g, ""); // quita separador de miles
+			const num = parseFloat(normalizado);
+
+			if (!isNaN(num)) totalCosto += num;
+		}
+
+
+		const tdPallet = tr.querySelector("td:nth-child(16)");
+		if (tdPallet) {
+			const raw = tdPallet.textContent.trim();
+			const normalizado = raw.replace(/,/g, "");
+			const num = parseFloat(normalizado);
+			console.log("pallet:" , num);
+			if (!isNaN(num)) totalPallet += num;
+		}
+	});
+
+	// 2) Formateo final con miles = "," y decimales = "."
+	const fmt = n => n.toLocaleString("en-US", {
+		minimumFractionDigits: 2,
+		maximumFractionDigits: 2
+	});
+
+	// 3) Ubicar footer
+	const footer = tabla.querySelector("tfoot tr");
+	if (!footer) {
+		console.warn("No se encontró el footer en tbListaProducto");
+		return;
+	}
+
+	const tds = footer.querySelectorAll("td");
+
+	// 4) Actualizar celdas correctas
+	// Estructura real del footer:
+	// td[0] = "Total:" (colspan=12)
+	// td[1] = Total Costo
+	// td[2] = vacío
+	// td[3] = Total Pallet
+	// td[4] = oculto
+	// td[5] = oculto
+
+	if (tds[1]) tds[1].textContent = fmt(totalCosto);
+	if (tds[3]) tds[3].textContent = fmt(totalPallet);
+}
+
+
 
 function AddEventListenerToGrid(tabla) {
 	var grilla = document.getElementById(tabla);
