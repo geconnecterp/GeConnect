@@ -527,6 +527,8 @@ namespace gc.sitio.Areas.Compras.Controllers
 					if (producto != null)
 					{
 						producto.a_transferir_box = ConvertToDecimal(cantidad, 3);
+						var suma = listaTemp.Where(x => x.p_id == idProdDeProdSeleccionado && x.adm_id == admSeleccionado).Sum(y => y.a_transferir_box);
+						listaTemp.ForEach(x => x.a_transferir = suma);
 						TRNuevaAutDetallelLista = listaTemp;
 					}
 					return Json(new { error = false, warn = false, msg = "" });

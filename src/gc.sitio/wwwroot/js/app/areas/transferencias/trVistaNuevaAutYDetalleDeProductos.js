@@ -361,10 +361,20 @@ function abrirlModalAgregaProductoATR() {
 	PostGenHtml(datos, TRInicializarModalAgregarProductoATRUrl, function (obj) {
 		$("#divListaProductosParaAgregar").html(obj);
 		document.getElementById("modalCenterTitle").outerHTML = "<h5 class=\"modal-title\" id=\"modalCenterTitle\"> Detalle de TR (" + admSeleccionado + ") " + admSeleccionadoNombre + "</h5>";
-		document.getElementById("leyendaNuevoProducto").outerHTML = "<h5 id=\"leyendaNuevoProducto\" style=\"margin-bottom: 0px;\"> Agregar Valor a Transferir del Box</h5>";
-		$('#modalCargarNuevoProducto').modal('show')
+		document.getElementById("leyendaNuevoProducto").outerHTML = "<h5 id=\"leyendaNuevoProducto\" style=\"margin-bottom: 0px;\"> Agregar el Valor a Transferir del Box</h5>";
+		//document.getElementById("divBusquedaProducto").style.display = 'block';
+		$("#txtAtransferir").val("0");
+		$("#Busqueda").val("");
+		$("#divBusquedaProducto").show();
+		// $('#modalCargarNuevoProducto').modal('show')
+		var modal = new bootstrap.Modal(document.getElementById('modalCargarNuevoProducto'), {
+			backdrop: 'static',
+			keyboard: false
+		});
+		modal.show();
 		esProductoSustituto = false;
 		tipoFuncion = FuncionSobreProductosAAgregar.NUEVO;
+		$("#btnAceptarNuevoProducto").off("click");
 		CerrarWaiting();
 		return true
 	});
@@ -384,9 +394,14 @@ function abrirlModalSustitutoDeProductoATR() {
 		// document.getElementById("leyendaNuevoProducto").outerHTML = "<h5 id=\"leyendaNuevoProducto\"> Modificar el Valor a Transferir del Box</h5>";
 		document.getElementById("leyendaNuevoProducto").outerHTML = "<h5 id=\"leyendaNuevoProducto\"> Producto Sustituto de (" + prodSeleccionado + ") " + prodSeleccionadoNombre + "</h5>";
 		document.getElementById("divBusquedaProducto").style.display = 'none'
-		$('#modalCargarNuevoProducto').modal('show')
+		var modal = new bootstrap.Modal(document.getElementById('modalCargarNuevoProducto'), {
+			backdrop: 'static',
+			keyboard: false
+		});
+		modal.show();
 		esProductoSustituto = true;
 		tipoFuncion = FuncionSobreProductosAAgregar.SUSTITUTO;
+		$("#btnAceptarNuevoProducto").off("click");
 		AddEventListenerToGrid("tbListaProductosParaAgregar");
 		CerrarWaiting();
 		return true
@@ -406,16 +421,54 @@ function abrirlModalModCantDeProductoATR() {
 		//document.getElementById("leyendaNuevoProducto").outerHTML = "<h5 id=\"leyendaNuevoProducto\"> Producto Sustituto de (" + prodSeleccionado + ") " + prodSeleccionadoNombre + "</h5>";
 		document.getElementById("divBusquedaProducto").style.display = 'none'
 		$("#txtAtransferir").val("0")
-		$('#modalCargarNuevoProducto').modal('show')
+		var modal = new bootstrap.Modal(document.getElementById('modalCargarNuevoProducto'), {
+			backdrop: 'static',
+			keyboard: false
+		});
+		modal.show();
 		esProductoSustituto = false;
 		tipoFuncion = FuncionSobreProductosAAgregar.EDICION;
 		AddEventListenerToGrid("tbListaProductosParaAgregar");
 		SeleccionarFila(1, "tbListaProductosParaAgregar");
+		$("#btnAceptarNuevoProducto").off("click");
+		$("#btnAceptarNuevoProducto").on("click", EditarCantidad);
 		CerrarWaiting();
 		return true
 	});
 	CerrarWaiting();
 }
+
+function btnAceptarNuevoProductoHandler() {
+
+	// 1. Obtener la fila seleccionada
+	const fila = document.querySelector("#tbListaProductosParaAgregar tr.selected");
+
+	if (!fila) {
+		MostrarError("Debe seleccionar un producto.");
+		return;
+	}
+
+	// 2. Leer atributos data-*
+	const p_id = fila.getAttribute("data-p-id");
+	const box_id = fila.getAttribute("data-box-id");
+
+	// 3. Leer el valor del input del modal
+	const a_transferir = $("#txtAtransferir").val();
+
+	// 4. Armar el JSON
+	const datos = {
+		p_id: p_id,
+		box_id: box_id,
+		a_transferir: a_transferir,
+		adm_id: admSeleccionado
+	};
+
+	console.log("JSON preparado:", datos);
+
+	// 5. Aquí llamás a tu función real
+	// PostGenHtml(datos, TRGuardarCantidadATRUrl, callback);
+}
+
 
 function SeleccionarFila(fila, tabla) {
 	var grilla = document.getElementById(tabla);
@@ -521,7 +574,16 @@ function EditarCantidad() {
 	else {
 		switch (tipoFuncion) {
 			case FuncionSobreProductosAAgregar.NUEVO:
-				var datos = { idProdDeProdSeleccionado, idProvDeProdSeleccionado, pedidoDeProdSeleccionado, boxDeProdSeleccionado, stkDeProdSeleccionado, cantidad, admSeleccionado, admSeleccionadoNombre };
+				var datos = {
+					idProdDeProdSeleccionado,
+					idProvDeProdSeleccionado,
+					pedidoDeProdSeleccionado,
+					boxDeProdSeleccionado,
+					stkDeProdSeleccionado,
+					cantidad,
+					admSeleccionado,
+					admSeleccionadoNombre
+				};
 				PostGen(datos, TRAgregarNuevoProductoUrl, function (o) {
 					if (o.error === true) {
 						CerrarWaiting();
@@ -552,7 +614,17 @@ function EditarCantidad() {
 				break;
 			case FuncionSobreProductosAAgregar.SUSTITUTO:
 				var idProductoSustituto = prodSeleccionado;
-				var datos = { idProdDeProdSeleccionado, idProductoSustituto, idProvDeProdSeleccionado, pedidoDeProdSeleccionado, boxDeProdSeleccionado, stkDeProdSeleccionado, cantidad, admSeleccionado, admSeleccionadoNombre };
+				var datos = {
+					idProdDeProdSeleccionado,
+					idProductoSustituto,
+					idProvDeProdSeleccionado,
+					pedidoDeProdSeleccionado,
+					boxDeProdSeleccionado,
+					stkDeProdSeleccionado,
+					cantidad,
+					admSeleccionado,
+					admSeleccionadoNombre
+				};
 				PostGen(datos, TRAgregarProductoSustitutoUrl, function (o) {
 					if (o.error === true) {
 						CerrarWaiting();
