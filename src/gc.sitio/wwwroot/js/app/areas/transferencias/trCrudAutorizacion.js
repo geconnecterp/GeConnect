@@ -191,6 +191,7 @@ function agregarAPedidosIncl(x) {
 		PostGenHtml(datos, TRAgregarAPedidosIncluidosParaAutUrl, function (obj) {
 			$("#divListaPedidosIncluidos").html(obj);
 			AddEventListenerToGrid("tbListaPedidosIncluidos");
+			ocultarFilaPedidoSucursal(picompte);
 			ActualizarInfoSucursales();
 			CerrarWaiting();
 			return true
@@ -199,6 +200,10 @@ function agregarAPedidosIncl(x) {
 	CerrarWaiting();
 }
 
+function ocultarFilaPedidoSucursal(pi_compte) {
+	const fila = document.querySelector(`#tbListaPedidosSucursal tr[data-pi-compte="${pi_compte}"]`);
+	if (fila) fila.style.display = "none";
+}
 
 function imprimirDetallePI(pi_compte) {
 	console.log(pi_compte);
@@ -225,6 +230,11 @@ function verDetalleDePedido(x) {
 	CerrarWaiting();
 }
 
+function mostrarFilaPedidoSucursal(pi_compte) {
+	const fila = document.querySelector(`#tbListaPedidosSucursal tr[data-pi-compte="${pi_compte}"]`);
+	if (fila) fila.style.display = "";
+}
+
 function quitarDePedidosIncl(x) {
 	AbrirWaiting();
 	var picompte = x.dataset.interaction;
@@ -233,6 +243,7 @@ function quitarDePedidosIncl(x) {
 		PostGenHtml(datos, TRQuitarDePedidosIncluidosParaAutUrl, function (obj) {
 			$("#divListaPedidosIncluidos").html(obj);
 			AddEventListenerToGrid("tbListaPedidosIncluidos");
+			mostrarFilaPedidoSucursal(picompte);
 			ActualizarInfoSucursales();
 			CerrarWaiting();
 			return true

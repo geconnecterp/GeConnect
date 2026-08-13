@@ -100,7 +100,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 				var titulo = "NUEVA TRANSFERENCIA";
 				ViewData["Titulo"] = titulo;
 				model.ListaPedidosSucursal = ObtenerGridCoreSmart<TRAutPIDto>([]);
-				if (TRAutPedidosIncluidosILista != null)
+				if (!string.IsNullOrEmpty(ti) && TRAutPedidosIncluidosILista != null)
 					model.ListaPedidosIncluidos = ObtenerGridCoreSmart<TRAutPIDto>(TRAutPedidosIncluidosILista);
 				else
 					model.ListaPedidosIncluidos = ObtenerGridCoreSmart<TRAutPIDto>([]);

@@ -24,7 +24,8 @@
 				@foreach (var item in Model.ListaDatos)
 				{
 					if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
-					<tr class="@clase" onclick="selectTRPedidoSucursalRow(this)">
+					<tr data-pi-compte="@item.pi_compte" 
+						class="@clase" onclick="selectTRPedidoSucursalRow(this)">
 						<td class="align-center">@item.pi_compte</td>
 						<td class="align-center">@item.pi_fecha.ToString("dd/MM/yyyy")</td>
 						<td class="align-left">@item.pie_desc</td>
