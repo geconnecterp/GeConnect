@@ -41,7 +41,9 @@
 
                     if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
 
-                    <tr class="@clase" onclick="selectNuevaAutListaProductosRow(this)">
+                    <tr data-pi-compte="@item.pi_compte" 
+                        class="@clase" 
+                        onclick="selectNuevaAutListaProductosRow(this)">
 
                         <!-- ID -->
                         <td class="align-center">

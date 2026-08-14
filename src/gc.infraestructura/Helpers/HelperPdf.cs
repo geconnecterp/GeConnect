@@ -2655,50 +2655,77 @@ namespace gc.infraestructura.Helpers
 
 		public static void CargarTablaChequesEmitidosPropios(Document pdf, List<FinancieroBcoVencChequeEmitidoListaDto> regs, Font fuenteEtiqueta, Font fuenteValor)
 		{
-			List<string> _campos = ["che_op_tra", "op_compte", "che_fecha_emi", "che_fecha", "che_nro", "che_anombre", "che_estado_desc", "che_importe",];
-			List<string> _titulosTabla = ["Tipo", "Comprobante", "Fec. Emi.", "Fec. Vto.", "N° Cheque", "Cheque a Nombre de", "Estado", "Importe",];
+			List<string> _campos = ["che_op_tra", "op_compte", "che_fecha_emi", "che_fecha", "che_nro", "che_anombre", "che_estado_desc", "che_importe"];
+			List<string> _titulosTabla = ["Tipo", "Comprobante", "Fec. Emi.", "Fec. Vto.", "N° Cheque", "Cheque a Nombre de", "Estado", "Importe"];
 			float[] _anchosTitulosTabla = [5, 12, 10, 10, 10, 35, 8, 10];
 
 			var reportePorCtaf = regs
-									.GroupBy(x => new { x.ctaf_id, x.ctaf_denominacion })
-									.Select(g => new
-									{
-										g.Key.ctaf_id,
-										g.Key.ctaf_denominacion,
-										Cheques = g.ToList()
-									})
-									.ToList();
+				.GroupBy(x => new { x.ctaf_id, x.ctaf_denominacion })
+				.Select(g => new
+				{
+					g.Key.ctaf_id,
+					g.Key.ctaf_denominacion,
+					Cheques = g.ToList()
+				})
+				.ToList();
 
 			foreach (var grupo in reportePorCtaf)
 			{
-				// FILA 0 TITULO
-				PdfPTable tablaSubTitulo = GeneraTabla(1, [100f], 100, 0, 10);
-				PdfPCell celdaSubTitulo = new(new Phrase($"{grupo.ctaf_denominacion} ({grupo.ctaf_id})", HelperPdf.FontNormalPredeterminado(true)))
+				// SUBTÍTULO
+				PdfPTable tablaSubTitulo = new PdfPTable(1);
+				tablaSubTitulo.WidthPercentage = 100;
+
+				PdfPCell celdaSubTitulo = new PdfPCell(new Phrase($"{grupo.ctaf_denominacion} ({grupo.ctaf_id})", HelperPdf.FontNormalPredeterminado(true)))
 				{
 					Border = Rectangle.NO_BORDER,
 					HorizontalAlignment = Element.ALIGN_LEFT,
-					VerticalAlignment = Element.ALIGN_MIDDLE,
 					PaddingTop = 4f,
-					PaddingBottom = 4f,
-					MinimumHeight = 18f,
-					BackgroundColor = BaseColor.LightGray
+					PaddingBottom = 4f
 				};
+				celdaSubTitulo.CellEvent = new SubrayadoCellEvent();
+
 				tablaSubTitulo.AddCell(celdaSubTitulo);
 				pdf.Add(tablaSubTitulo);
 
-				// FILA 1 CABEZERA
-				HelperPdf.GeneraCabeceraLista(pdf, _titulosTabla, _anchosTitulosTabla, HelperPdf.FontNormalPredeterminado(true), 0, 0);
+				// 🔥 TABLA COMPLETA (cabecera + cuerpo)
+				PdfPTable tabla = new PdfPTable(_titulosTabla.Count);
+				tabla.WidthPercentage = 100;
+				tabla.SetWidths(_anchosTitulosTabla);
+
+				// CABECERA (se repetirá automáticamente)
+				foreach (var titulo in _titulosTabla)
+				{
+					PdfPCell celda = new PdfPCell(new Phrase(titulo, HelperPdf.FontNormalPredeterminado(true)))
+					{
+						BackgroundColor = new BaseColor(240, 240, 240),
+						HorizontalAlignment = Element.ALIGN_CENTER,
+						Padding = 4
+					};
+					tabla.AddCell(celda);
+				}
+
+				tabla.HeaderRows = 1; // 🔥 ESTA LÍNEA HACE QUE LA CABECERA SE REPITA
 
 				// CUERPO
-				HelperPdf.GenerarListadoDesdeLista(pdf, grupo.Cheques, _campos, _anchosTitulosTabla, fuenteEtiqueta);
-				// Espaciador entre grupos
-				PdfPTable espaciador = new PdfPTable(1)
+				foreach (var item in grupo.Cheques)
 				{
-					TotalWidth = 100f
-				};
+					tabla.AddCell(new PdfPCell(new Phrase(item.che_op_tra, fuenteEtiqueta)));
+					tabla.AddCell(new PdfPCell(new Phrase(item.op_compte, fuenteEtiqueta)));
+					tabla.AddCell(new PdfPCell(new Phrase(item.che_fecha_emi.ToString("dd/MM/yyyy"), fuenteEtiqueta)));
+					tabla.AddCell(new PdfPCell(new Phrase(item.che_fecha.ToString("dd/MM/yyyy"), fuenteEtiqueta)));
+					tabla.AddCell(new PdfPCell(new Phrase(item.che_nro, fuenteEtiqueta)));
+					tabla.AddCell(new PdfPCell(new Phrase(item.che_anombre, fuenteEtiqueta)));
+					tabla.AddCell(new PdfPCell(new Phrase(item.che_estado_desc, fuenteEtiqueta)));
+					tabla.AddCell(new PdfPCell(new Phrase(item.che_importe.ToString("N2"), fuenteEtiqueta)) { HorizontalAlignment = Element.ALIGN_RIGHT });
+				}
+
+				pdf.Add(tabla);
+
+				// ESPACIADOR
+				PdfPTable espaciador = new PdfPTable(1);
+				espaciador.WidthPercentage = 100;
 				espaciador.DefaultCell.Border = Rectangle.NO_BORDER;
-				espaciador.DefaultCell.FixedHeight = 10f; // Altura del espacio
-				espaciador.DefaultCell.HorizontalAlignment = Element.ALIGN_CENTER;
+				espaciador.DefaultCell.FixedHeight = 10f;
 				espaciador.AddCell("");
 				pdf.Add(espaciador);
 			}

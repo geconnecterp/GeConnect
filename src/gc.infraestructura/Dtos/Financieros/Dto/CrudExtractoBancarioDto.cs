@@ -1,7 +1,7 @@
 ﻿
 namespace gc.infraestructura.Dtos.Financieros
 {
-	public class CrudExtractoBancarioDto : Dto
+	public class CrudExtractoBancarioDto : Dto, ICloneable
 	{
 		public int orden { get; set; }
 		public string ctaf_id { get; set; } = string.Empty;
@@ -44,5 +44,10 @@ namespace gc.infraestructura.Dtos.Financieros
 		public string? resultado_msj { get; set; }
 		public bool cargado_desde_filtros { get; set; } = false;
 		public DateTime? ext_fecha_ori { get; set; }
+
+		public object Clone()
+		{
+			return MemberwiseClone(); // copia superficial
+		}
 	}
 }

@@ -161,7 +161,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 			try
 			{
 				var itemsAutPIDetalle = await _productoServicio.TRObtenerAutPIDetalle(piCompte, TokenCookie);
-				model.Detalle = ObtenerGridCoreSmart<TRAutPIDetalleDto>(itemsAutPIDetalle);
+				model.Detalle = ObtenerGridCoreSmart<TRAutPIDetalleDto>(itemsAutPIDetalle.OrderBy(x => x.pid_item).ToList());
 				model.Titulo = $"Detalle de Pedido {piCompte}";
 			}
 			catch (Exception ex)
@@ -400,7 +400,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 			}
 		}
 
-		public async Task<JsonResult> AgregarNuevoProducto(string idProdDeProdSeleccionado, string idProvDeProdSeleccionado, string pedidoDeProdSeleccionado, string boxDeProdSeleccionado, string stkDeProdSeleccionado, string cantidad, string admSeleccionado, string admSeleccionadoNombre)
+		public async Task<JsonResult> AgregarNuevoProducto(string idProdDeProdSeleccionado, string idProvDeProdSeleccionado, string pedidoDeProdSeleccionado, string boxDeProdSeleccionado, string stkDeProdSeleccionado, string cantidad, string admSeleccionado, string admSeleccionadoNombre, string piCompteSeleccionado)
 		{
 			try
 			{
@@ -426,6 +426,13 @@ namespace gc.sitio.Areas.Compras.Controllers
 					{
 						pedido = 0;
 					}
+					var listaTemp = TRNuevaAutDetallelLista;
+					var existeProdEnBox=listaTemp.Where(x=>x.p_id == idProdDeProdSeleccionado && x.adm_id == admSeleccionado && x.box_id == boxDeProdSeleccionado).Any();
+					if (existeProdEnBox) 
+					{
+						return Json(new { error = true, warn = false, msg = $"Le producto '{idProdDeProdSeleccionado}' ya existe en el box '{boxDeProdSeleccionado}' seleccionado." });
+					}
+					var item = TRNuevaAutDetallelLista.FirstOrDefault();
 					var productoBase = ObtenerDatosDeProducto(idProdDeProdSeleccionado);
 					var nuevoProducto = new TRNuevaAutDetalleDto
 					{
@@ -439,9 +446,12 @@ namespace gc.sitio.Areas.Compras.Controllers
 						nota = "",
 						p_sustituto = false,
 						a_transferir = ctd,
-
+						a_transferir_box = ctd,
+						p_id_prov = productoBase.P_id_prov,
+						pi_compte = piCompteSeleccionado,
+						autorizacion = item.autorizacion
 					};
-					var listaTemp = TRNuevaAutDetallelLista;
+					
 					listaTemp.Add(nuevoProducto);
 					TRNuevaAutDetallelLista = listaTemp;
 					return Json(new { error = false, warn = false, msg = "" });
@@ -579,7 +589,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 			}
 		}
 
-		public async Task<IActionResult> InicializarModalAgregarProductoATR(string admId)
+		public async Task<IActionResult> InicializarModalAgregarProductoATR(string admId, string pi_compte)
 		{
 			var model = new TRAgregarProductoDto();
 			try
@@ -588,7 +598,8 @@ namespace gc.sitio.Areas.Compras.Controllers
 				var listaTemp = new List<TRProductoParaAgregar>();
 				model.Productos = ObtenerGridCoreSmart<TRProductoParaAgregar>(listaTemp);
 				model.adm_id = admId;
-			}
+				model.PiCompte = pi_compte;
+			}	
 			catch (Exception ex)
 			{
 				_logger?.LogError(ex, "Error al inicializar modal de carga de producto a TR.");

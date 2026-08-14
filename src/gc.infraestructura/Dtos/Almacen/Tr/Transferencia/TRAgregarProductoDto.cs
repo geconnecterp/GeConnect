@@ -8,7 +8,8 @@ namespace gc.infraestructura.Dtos.Almacen.Tr.Transferencia
         public string Titulo { get; set; } = string.Empty;
         public string adm_id { get; set; } = string.Empty;
         public string Leyenda { get; set; } = string.Empty;
-        public TRAgregarProductoDto() 
+        public string PiCompte { get; set; } = string.Empty;
+		public TRAgregarProductoDto() 
         {
 			Productos = new GridCoreSmart<TRProductoParaAgregar>();
         }

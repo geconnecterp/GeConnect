@@ -256,9 +256,11 @@ namespace gc.sitio.Areas.Financieros.Controllers
 				if (orden <= 0)
 					return Json(new { error = true, warn = false, msg = $"Debe especificar un ítem extracto a quitar." });
 
-				var item = ListaCrudExtractoBancario.Where(x => x.orden == orden).FirstOrDefault();
-				if (item == null)
+				var itemOriginal = ListaCrudExtractoBancario.Where(x => x.orden == orden).FirstOrDefault();
+				if (itemOriginal == null)
 					return Json(new { error = true, warn = false, msg = $"No se ha encontrado el elemento a quitar." });
+
+				var item = (CrudExtractoBancarioDto)itemOriginal.Clone();
 
 				//Actualizar lista de grilla
 				var listaTemp = ListaCrudExtractoBancario;
@@ -487,7 +489,7 @@ namespace gc.sitio.Areas.Financieros.Controllers
 				var jsonExtractoEliminado = ListaCrudExtractoBancarioEliminados.OrderBy(x=>x.ext_fecha).Select((x, index) => new JsonExtractoEliminadoModel
 				{
 					ctaf_id = x.ctaf_id,
-					ext_fecha = x.ext_fecha,
+					ext_fecha = x.ext_fecha_ori.Value,
 					ext_debe = x.ext_debe,
 					ext_haber = x.ext_haber,
 				});
@@ -986,6 +988,7 @@ namespace gc.sitio.Areas.Financieros.Controllers
 
 			if (TipoConciliadoLista.Count == 0)
 				ObtenerTiposConciliado(_tipoConciliadoServicio);
+			ListaCrudExtractoBancarioEliminados = [];
 		}
 		#endregion
 	}

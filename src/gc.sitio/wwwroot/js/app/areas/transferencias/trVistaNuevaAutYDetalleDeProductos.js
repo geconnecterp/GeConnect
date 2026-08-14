@@ -354,10 +354,17 @@ function guardarNotaDeProducto() {
 	}
 }
 
+function obtenerPrimerPiCompte() {
+	const fila = document.querySelector("#tbNuevaAutListaProductos tbody tr[data-pi-compte]");
+	if (!fila) return null;
+	return fila.getAttribute("data-pi-compte");
+}
+
 function abrirlModalAgregaProductoATR() {
 	AbrirWaiting();
 	var admId = admSeleccionado;
-	var datos = { admId };
+	var piCompte = obtenerPrimerPiCompte();
+	var datos = { admId, pi_compte: piCompte };
 	PostGenHtml(datos, TRInicializarModalAgregarProductoATRUrl, function (obj) {
 		$("#divListaProductosParaAgregar").html(obj);
 		document.getElementById("modalCenterTitle").outerHTML = "<h5 class=\"modal-title\" id=\"modalCenterTitle\"> Detalle de TR (" + admSeleccionado + ") " + admSeleccionadoNombre + "</h5>";
@@ -366,7 +373,7 @@ function abrirlModalAgregaProductoATR() {
 		$("#txtAtransferir").val("0");
 		$("#Busqueda").val("");
 		$("#divBusquedaProducto").show();
-		// $('#modalCargarNuevoProducto').modal('show')
+		pi_compte_para_agregar = piCompte;
 		var modal = new bootstrap.Modal(document.getElementById('modalCargarNuevoProducto'), {
 			backdrop: 'static',
 			keyboard: false
@@ -375,11 +382,14 @@ function abrirlModalAgregaProductoATR() {
 		esProductoSustituto = false;
 		tipoFuncion = FuncionSobreProductosAAgregar.NUEVO;
 		$("#btnAceptarNuevoProducto").off("click");
+		$("#btnAceptarNuevoProducto").on("click", EditarCantidad);
 		CerrarWaiting();
 		return true
 	});
 	CerrarWaiting();
 }
+
+var pi_compte_para_agregar = "";
 
 function abrirlModalSustitutoDeProductoATR() {
 	AbrirWaiting();
@@ -582,7 +592,8 @@ function EditarCantidad() {
 					stkDeProdSeleccionado,
 					cantidad,
 					admSeleccionado,
-					admSeleccionadoNombre
+					admSeleccionadoNombre,
+					piCompteSeleccionado: pi_compte_para_agregar,
 				};
 				PostGen(datos, TRAgregarNuevoProductoUrl, function (o) {
 					if (o.error === true) {
