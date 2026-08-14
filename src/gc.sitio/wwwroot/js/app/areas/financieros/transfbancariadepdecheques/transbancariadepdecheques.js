@@ -88,6 +88,7 @@ function btnAbmAceptarControlar() {
 					$("#msjModal").modal("hide");
 					switch (e) {
 						case "SI": //Confirmar
+							AbrirWaiting("Confirmando Transferencia...");
 							var ttra_id = $("#parametro_confirmacion").val();
 							var tra_concepto = $("#concepto").val();
 							if ($("#fechaAcreditacion").val() != undefined) {
@@ -98,6 +99,7 @@ function btnAbmAceptarControlar() {
 							}
 							var data = { ttra_id, tra_concepto, tra_fecha };
 							PostGen(data, confirmarTransferenciaUrl, function (obj) {
+								CerrarWaiting();
 								if (obj.error === true) {
 									AbrirMensaje("ATENCIÓN", obj.msg, function () {
 										$("#msjModal").modal("hide");

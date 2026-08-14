@@ -2,42 +2,66 @@
 @{
 	var list = Model.ListaCuentaValoresEnCartera;
 }
-<fieldset style="height: 210px;">
-	<legend></legend>
-	<div class="input-group input-group-sm mt-1">
-		<span class="input-group-text">Cuenta de Valores en Cartera: </span>
-		@Html.DropDownListFor(m => m.ctafIdSelected, list, "Seleccionar...", new { @id = "ListaCuentaValoresEnCartera", @class = "form-control activable" })
-	</div>
-	<div class="input-group input-group-sm mt-2">
-		<div class="form-check form-check-inline form-switch mb-2">
-			<input class="form-check-input" type="checkbox" name="EstadoActivo" id="chkCliente" />
-			<label class="form-check-label" for="chkCliente" id="lbCliente">Cliente</label>
+<!-- FRAME 1: DATOS DE CUENTAS -->
+<fieldset>
+	<legend style="max-width:130px;">Datos de Cuentas</legend>
+
+	<div class="frame-row mt-2">
+
+		<span class="input-group-text">Cuenta de Valores en Cartera:</span>
+
+		@Html.DropDownListFor(m => m.ctafIdSelected, list, "Seleccionar...",
+			new { @id = "ListaCuentaValoresEnCartera", @class = "form-control activable select-compact" })
+
+		<div class="form-check form-check-inline form-switch">
+			<input class="form-check-input" type="checkbox" id="chkCliente" />
+			<label class="form-check-label" for="chkCliente">Cliente</label>
 		</div>
-		<input type="text" class="form-control inputEditable" name="txtCliente" id="txtCliente" disabled />
+
+		<input type="text" class="form-control inputEditable full-width"
+			   name="txtCliente" id="txtCliente" disabled />
+
 		@Html.Hidden("txtClienteItem")
 	</div>
-	<div class="input-group input-group-sm mt-2">
-		<div class="form-check form-check-inline form-switch mb-2">
-			<input class="form-check-input" type="checkbox" name="EstadoActivo" id="chkDocumentoEnCuenta" />
-			<label class="form-check-label" for="chkDocumentoEnCuenta" id="lbCliente">Documento en Cuenta (Cheque paga Acá)</label>
+</fieldset>
+
+<!-- FRAME 2: OPCIONES -->
+<fieldset class="mt-3">
+	<legend style="max-width:90px;">Opciones</legend>
+
+	<div class="frame-row mt-2">
+
+		<div class="form-check form-check-inline form-switch">
+			<input class="form-check-input" type="checkbox"
+				   id="chkDocumentoEnCuenta" checked />
+			<label class="form-check-label" for="chkDocumentoEnCuenta">
+				Documento en Cuenta (Cheque paga Acá)
+			</label>
 		</div>
-	</div>
-	<div class="input-group input-group-sm mt-1">
-		<div class="form-check form-check-inline form-switch mb-2">
-			<input class="form-check-input" type="checkbox" name="EstadoActivo" id="chkCambioDeFechaDePresentacion" />
-			<label class="form-check-label" for="chkCambioDeFechaDePresentacion" id="lbCliente">Cambio de Fecha de Presentación</label>
+
+		<div class="form-check form-check-inline form-switch">
+			<input class="form-check-input" type="checkbox"
+				   id="chkCambioDeFechaDePresentacion" />
+			<label class="form-check-label" for="chkCambioDeFechaDePresentacion">
+				Cambio de Fecha de Presentación
+			</label>
 		</div>
-	</div>
-	<div class="row mt-3">
-		<div class="col-4"></div>
-		<div class="col-4">
-			<button type="button" id="btnBuscar" class="btn btn-sm btn-primary" style="width: 100px;">
-				<i class="bx bx-search"></i>Buscar
-			</button>
-			<button type="button" id="btnCancel" class="btn btn-sm btn-danger" style="width: 100px;">
-				<i class="bx bx-x-circle"></i>Cancelar
-			</button>
-		</div>
-		<div class="col-4"></div>
+
 	</div>
 </fieldset>
+
+<!-- BOTONES -->
+<div class="row mt-3">
+	<div class="col-2"></div>
+	<div class="col-8">
+		<div class="d-flex justify-content-around">
+			<button type="button" id="btnCancel" style="width:150px;" class="btn btn-lg btn-danger">
+				<i class="bx bx-sm bx-x-circle"></i> Inicializa
+			</button>
+			<button type="button" id="btnBuscar" style="width:150px;" class="btn btn-lg btn-success">
+				<i class="bx bx-sm bx-search"></i> Ver
+			</button>
+		</div>
+	</div>
+	<div class="col-2"></div>
+</div>
