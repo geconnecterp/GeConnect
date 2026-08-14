@@ -55,6 +55,8 @@
 	}
 
 	#tbListaValorizacion thead th {
+		border-left: none !important;
+		border-right: none !important;
 	}
 
 	#tbListaValorizacion tr {
@@ -85,6 +87,21 @@
 
 	.columna-total {
 		font-weight: bold !important;
+	}
+
+	#tbListaDescFinanc thead th {
+		border-left: none !important;
+		border-right: none !important;
+	}
+
+	#tbListaDescFinanc tbody td {
+		border-left: none !important;
+		border-right: none !important;
+	}
+
+	#tbListaValorizacion tbody td {
+		border-left: none !important;
+		border-right: none !important;
 	}
 </style>
 <div class="row" style="padding-top: 10px;">
@@ -169,7 +186,13 @@
 												if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
 												var nombre1 = "chkNetoFijo" + item.cm_compte;
 												var nombre2 = "chkDtoTot" + item.cm_compte;
-												<tr class="@clase" onclick="selectListaDescFinanc(this)" class="sortme">
+												<tr class="@clase" 
+													onclick="selectListaDescFinanc(this)"
+													data-cm_compte="@item.cm_compte"
+													data-dia_movi="@item.dia_movi"
+													data-tco_id="@item.tco_id"
+													data-dtoc_id="@item.dtoc_id"
+													data-dto_obs="@item.dto_obs">
 													<td style="display:none;">@item.item</td>
 													@if (item.dto_fijo_bool)
 													{

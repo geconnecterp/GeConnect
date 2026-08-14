@@ -36,10 +36,19 @@ $(function () {
 	/*$("#estadoFuncion").on("change", verificaEstado); //este control debe ser insertado el mismo o similar para cada modulo.*/
 
 	$(document).on("mouseup", "#tbListaDescFinanc tbody tr", function (e) {
+
+		// Ignorar click derecho (botón 2) y botón central (botón 3)
+		if (e.button !== 0) return;
+
+		// Ejecutar solo si realmente se seleccionó la fila
+		// (evita disparos por clicks en elementos internos)
+		if (!$(e.target).closest("tr").is(this)) return;
+
 		setTimeout(() => {
-			RecalcularItemValue()
+			RecalcularItemValue();
 		}, 500);
 	});
+
 
 	InicializarPantallaDeFiltros();
 });
@@ -447,44 +456,96 @@ function RecalcularItemValue() {
 
 function ActualizarOrdenDeDescFinancEnBackEnd() {
 	var listaDesFinanc = [];
-	$("#tbListaDescFinanc").find('tr').each(function (i, el) {
-		var td = $(this).find('td');
+
+	$("#tbListaDescFinanc tbody tr").each(function () {
+
 		var $tr = $(this);
-		if (td.length > 0 && td[0].innerText !== undefined) {
-			var cm_compte = td[7].innerText;
-			var dia_movi = td[8].innerText;
-			var dto_fijo_bool = $tr.find(".chkNetoFijo").is(":checked");
-			var dto_fijo = dto_fijo_bool; //tomar el valor bool
-			var dto_sobre_total_bool = $tr.find(".chkDtoTot").is(":checked");
-			var dto_sobre_total = dto_sobre_total_bool; //tomar el valor bool
-			var tco_id = td[9].innerText;
-			var dto = Number(td[4].innerText); //tomar valor decimal
-			var dto_importe = Number(td[5].innerText.replace(',', '')); //tomar valor decimal
-			var dtoc_id = td[10].innerText;
-			var dtoc_desc = td[3].innerText;
-			var item = td[0].innerText;
-			var dto_obs = td[11].innerText;
-			var item_data = { cm_compte, dia_movi, dto_fijo, dto_sobre_total, tco_id, dto, dto_importe, dtoc_id, dtoc_desc, item, dto_obs };
-			listaDesFinanc.push(item_data);
-		}
+		var td = $tr.find("td");
+
+		var cm_compte = $tr.data("cm_compte");
+		var dia_movi = $tr.data("dia_movi");
+		var tco_id = $tr.data("tco_id");
+		var dtoc_id = $tr.data("dtoc_id");
+		var dto_obs = $tr.data("dto_obs");
+
+		var dto_fijo = $tr.find(".chkNetoFijo").is(":checked");
+		var dto_sobre_total = $tr.find(".chkDtoTot").is(":checked");
+
+		var dtoc_desc = td.eq(3).text().trim();
+		var dto = Number(td.eq(4).text().replace(",", "."));
+		var dto_importe = Number(td.eq(5).text().replace(",", "."));
+		var item = td.eq(0).text().trim();
+
+		listaDesFinanc.push({
+			cm_compte,
+			dia_movi,
+			dto_fijo,
+			dto_sobre_total,
+			tco_id,
+			dto,
+			dto_importe,
+			dtoc_id,
+			dtoc_desc,
+			item,
+			dto_obs
+		});
 	});
+
 	if (listaDesFinanc.length > 0) {
 		AbrirWaiting();
-		var data = { listaDesFinanc };
-		PostGen(data, actualizarOrdenDescFinancURL, function (obj) {
-			if (obj.error === true) {
+		PostGen({ listaDesFinanc }, actualizarOrdenDescFinancURL, function (obj) {
+			if (obj.error) {
 				AbrirMensaje("ATENCIÓN", obj.msg, function () {
 					$("#msjModal").modal("hide");
-					return true;
 				}, false, ["Aceptar"], "error!", null);
-			}
-			else {
+			} else {
 				ActualizarListaValorizaciones();
 				CerrarWaiting();
 			}
 		});
 	}
 }
+
+// function ActualizarOrdenDeDescFinancEnBackEnd() {
+// 	var listaDesFinanc = [];
+// 	$("#tbListaDescFinanc").find('tr').each(function (i, el) {
+// 		var td = $(this).find('td');
+// 		var $tr = $(this);
+// 		if (td.length > 0 && td[0].innerText !== undefined) {
+// 			var cm_compte = td[7].innerText;
+// 			var dia_movi = td[8].innerText;
+// 			var dto_fijo_bool = $tr.find(".chkNetoFijo").is(":checked");
+// 			var dto_fijo = dto_fijo_bool; 
+// 			var dto_sobre_total_bool = $tr.find(".chkDtoTot").is(":checked");
+// 			var dto_sobre_total = dto_sobre_total_bool; 
+// 			var tco_id = td[9].innerText;
+// 			var dto = Number(td[4].innerText); 
+// 			var dto_importe = Number(td[5].innerText.replace(',', '')); 
+// 			var dtoc_id = td[10].innerText;
+// 			var dtoc_desc = td[3].innerText;
+// 			var item = td[0].innerText;
+// 			var dto_obs = td[11].innerText;
+// 			var item_data = { cm_compte, dia_movi, dto_fijo, dto_sobre_total, tco_id, dto, dto_importe, dtoc_id, dtoc_desc, item, dto_obs };
+// 			listaDesFinanc.push(item_data);
+// 		}
+// 	});
+// 	if (listaDesFinanc.length > 0) {
+// 		AbrirWaiting();
+// 		var data = { listaDesFinanc };
+// 		PostGen(data, actualizarOrdenDescFinancURL, function (obj) {
+// 			if (obj.error === true) {
+// 				AbrirMensaje("ATENCIÓN", obj.msg, function () {
+// 					$("#msjModal").modal("hide");
+// 					return true;
+// 				}, false, ["Aceptar"], "error!", null);
+// 			}
+// 			else {
+// 				ActualizarListaValorizaciones();
+// 				CerrarWaiting();
+// 			}
+// 		});
+// 	}
+// }
 
 function ActualizarListaValorizaciones() {
 	AbrirWaiting("");
