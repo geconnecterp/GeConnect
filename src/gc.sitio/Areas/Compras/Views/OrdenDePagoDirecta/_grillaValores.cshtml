@@ -8,6 +8,36 @@
 	#tbListaValores_Paso2 thead th {
 		color: #1565c0 !important; /* azul profesional */
 		font-weight: bold;
+		border-left: none !important;
+		border-right: none !important;
+	}
+
+	#tbListaValores_Paso2 tbody td {
+		border-left: none !important;
+		border-right: none !important;
+	}
+
+	#containerValores_Paso2 {
+		overflow-x: hidden; /* nada de scroll horizontal */
+	}
+
+	/* La tabla NO se estira más allá del contenedor */
+	#tbListaValores_Paso2 {
+		table-layout: fixed; /* clave para que los % de los th se respeten */
+		width: 100%; /* ocupa solo el ancho del contenedor */
+	}
+
+		/* Las celdas no pueden crecer por contenido */
+		#tbListaValores_Paso2 td {
+			max-width: 0; /* truco para que el contenido dependa del span */
+		}
+
+	.cell-ellipsis {
+		display: inline-block; /* que el span tenga caja propia */
+		max-width: 100%; /* limitado al ancho de la celda */
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
 	}
 </style>
 <div class="col-11 mt-2 table-responsive table-wrapper-200" id="containerValores_Paso2" style="padding-right: 0px;width: 100%;">
@@ -15,8 +45,8 @@
 		<thead>
 			<tr>
 				<th style="width:35%;" class="col-header-small align-center tiny-row">Cuenta Financiera</th>
-				<th style="width:55%;" class="col-header-small align-center tiny-row">Valor</th>
-				<th style="width:10%;" class="col-header-small align-center tiny-row">Importe</th>
+				<th style="width:50%;" class="col-header-small align-center tiny-row">Valor</th>
+				<th style="width:15%;" class="col-header-small align-center tiny-row">Importe</th>
 				<th style="width:0%; display:none;">orden</th>
 				<th style="width:0%; display:none;">dia_movi</th>
 				<th style="width:0%; display:none;">fc_compte</th>
@@ -30,8 +60,16 @@
 				{
 					if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
 					<tr class="@clase" onclick="selectReg(this, 'tbListaValores_Paso2')" ondblclick="selectRegDblGrillaValores(this);">
-						<td class="@Model.ObtenerClase(item.ctaf_denominacion) cell-fit-content">@Model.FormatearDato(item.ctaf_denominacion, FormatDato.Ninguno)</td>
-						<td class="@Model.ObtenerClase(item.concepto_valor) cell-fit-content">@Model.FormatearDato(item.concepto_valor, FormatDato.Monto)</td>
+						<td class="@Model.ObtenerClase(item.ctaf_denominacion) cell-fit-content">
+							<span class="cell-ellipsis" title="@item.ctaf_denominacion">
+								@Model.FormatearDato(item.ctaf_denominacion, FormatDato.Ninguno)
+							</span>
+						</td>
+						<td class="@Model.ObtenerClase(item.concepto_valor) cell-fit-content">
+							<span class="cell-ellipsis" title="@item.concepto_valor">
+								@Model.FormatearDato(item.concepto_valor, FormatDato.Monto)
+							</span>
+						</td>
 						<td class="@Model.ObtenerClase(item.op_importe) text-end cell-fit-content">@GridHelper.FormatearDato(item.op_importe, FormatDato.Monto, true)</td>
 						<td style="display:none;">@item.orden</td>
 						<td style="display:none;">@item.fc_dia_movi</td>

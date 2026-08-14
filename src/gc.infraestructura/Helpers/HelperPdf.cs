@@ -2160,9 +2160,10 @@ namespace gc.infraestructura.Helpers
 
 		public static void CargarTablaDatosDeAcuseDeTransferencia_Origen(Document pdf, List<FinancieroTraRepoDDto> registros, Font fuenteEtiqueta, Font fuenteValor, Font titulo)
 		{
-			// FILA 1 - TITULO DE SECCION
-			PdfPTable tabla = GeneraTabla(1, [100f], 100, 10, 10);
-			PdfPCell celdaTitulo = new PdfPCell(new Phrase("Origen de Transferencias", HelperPdf.FontSubtituloPredeterminado(true)))
+			// FILA 1 - TÍTULO DE SECCIÓN
+			PdfPTable tablaTitulo = GeneraTabla(1, new float[] { 100f }, 100, 10, 10);
+			PdfPCell celdaTitulo = new PdfPCell(
+				new Phrase("Origen de Transferencias", HelperPdf.FontSubtituloPredeterminado(true)))
 			{
 				Border = Rectangle.NO_BORDER,
 				HorizontalAlignment = Element.ALIGN_LEFT,
@@ -2170,43 +2171,76 @@ namespace gc.infraestructura.Helpers
 				PaddingTop = 0f,
 				PaddingBottom = 0f
 			};
-			tabla.AddCell(celdaTitulo);
+			tablaTitulo.AddCell(celdaTitulo);
+			pdf.Add(tablaTitulo);
+
+			// CABECERA
+			List<string> _titulosTabla = new() { "Código", "Denominación", "Concepto", "Monto" };
+			float[] _anchosTitulosTabla = new float[] { 8f, 30f, 47f, 15f };
+
+			PdfPTable tabla = new PdfPTable(_titulosTabla.Count);
+			tabla.WidthPercentage = 100;
+			tabla.SetWidths(_anchosTitulosTabla);
+
+			// CABECERA (centrada)
+			foreach (var tituloCol in _titulosTabla)
+			{
+				PdfPCell celda = new PdfPCell(new Phrase(tituloCol, HelperPdf.FontNormalPredeterminado(true)))
+				{
+					HorizontalAlignment = Element.ALIGN_CENTER,
+					VerticalAlignment = Element.ALIGN_MIDDLE,
+					BackgroundColor = new BaseColor(230, 230, 230),
+					Padding = 4
+				};
+				tabla.AddCell(celda);
+			}
+
+			tabla.HeaderRows = 1; // cabecera repetible
+
+			// CUERPO
+			foreach (var x in registros)
+			{
+				// Código → centrado
+				tabla.AddCell(Celda(x.ctaf_id.ToString(), fuenteEtiqueta, Element.ALIGN_CENTER));
+
+				// Denominación → izquierda
+				tabla.AddCell(Celda(x.ctaf_denominacion, fuenteEtiqueta, Element.ALIGN_LEFT));
+
+				// Concepto → izquierda
+				tabla.AddCell(Celda(x.concepto, fuenteEtiqueta, Element.ALIGN_LEFT));
+
+				// Monto → derecha
+				tabla.AddCell(Celda(
+					x.fc_importe.ToString("N2"),
+					fuenteEtiqueta,
+					Element.ALIGN_RIGHT
+				));
+			}
+
 			pdf.Add(tabla);
 
-			//FILA 2 - TABLA
-			List<string> _titulosTabla = ["Código", "Denominación", "Concepto", "Monto",];
-			float[] _anchosTitulosTabla = [10f, 30f, 40f, 20f];
-			List<string> _campos = ["ctaf_id", "ctaf_denominacion", "concepto", "fc_importe",];
-
-			HelperPdf.GeneraCabeceraLista(pdf, _titulosTabla, _anchosTitulosTabla, HelperPdf.FontNormalPredeterminado(true));
-
-			var regsAux = registros.Select(x => new
-			{
-				x.ctaf_id,
-				x.ctaf_denominacion,
-				x.concepto,
-				x.fc_importe
-			}).ToList();
-			HelperPdf.GenerarListadoDesdeLista(pdf, regsAux, _campos, _anchosTitulosTabla, fuenteEtiqueta);
-
-			// FILA 3
-			PdfPTable tablaTotal = GeneraTabla(1, [100f], 100, 0, 10);
-			PdfPCell celdaTotal = new PdfPCell(new Phrase($"Total Egreso Cuentas Origen: {registros.Sum(y => y.fc_importe).ToString("C", ForzarObtenerFormatoMonetario())}", HelperPdf.FontNormalPredeterminado(true)))
+			// FILA 3 - TOTAL
+			PdfPTable tablaTotal = GeneraTabla(1, new float[] { 100f }, 100, 0, 10);
+			PdfPCell celdaTotal = new PdfPCell(
+				new Phrase($"Total Egreso Cuentas Origen: {registros.Sum(y => y.fc_importe).ToString("C", ForzarObtenerFormatoMonetario())}",
+				HelperPdf.FontNormalPredeterminado(true)))
 			{
 				Border = Rectangle.NO_BORDER,
 				HorizontalAlignment = Element.ALIGN_RIGHT,
 				VerticalAlignment = Element.ALIGN_MIDDLE,
 				PaddingTop = 0f
 			};
+
 			tablaTotal.AddCell(celdaTotal);
 			pdf.Add(tablaTotal);
 		}
 
 		public static void CargarTablaDatosDeAcuseDeTransferencia_Destino(Document pdf, List<FinancieroTraRepoDDto> registros, Font fuenteEtiqueta, Font fuenteValor, Font titulo)
 		{
-			// FILA 1 - TITULO DE SECCION
-			PdfPTable tabla = GeneraTabla(1, [100f], 100, 10, 10);
-			PdfPCell celdaTitulo = new PdfPCell(new Phrase("Destino de Transferencias", HelperPdf.FontSubtituloPredeterminado(true)))
+			// FILA 1 - TÍTULO DE SECCIÓN
+			PdfPTable tablaTitulo = GeneraTabla(1, new float[] { 100f }, 100, 10, 10);
+			PdfPCell celdaTitulo = new PdfPCell(
+				new Phrase("Origen de Transferencias", HelperPdf.FontSubtituloPredeterminado(true)))
 			{
 				Border = Rectangle.NO_BORDER,
 				HorizontalAlignment = Element.ALIGN_LEFT,
@@ -2214,43 +2248,76 @@ namespace gc.infraestructura.Helpers
 				PaddingTop = 0f,
 				PaddingBottom = 0f
 			};
-			tabla.AddCell(celdaTitulo);
+			tablaTitulo.AddCell(celdaTitulo);
+			pdf.Add(tablaTitulo);
+
+			// CABECERA
+			List<string> _titulosTabla = new() { "Código", "Denominación", "Concepto", "Monto" };
+			float[] _anchosTitulosTabla = new float[] { 8f, 30f, 47f, 15f };
+
+			PdfPTable tabla = new PdfPTable(_titulosTabla.Count);
+			tabla.WidthPercentage = 100;
+			tabla.SetWidths(_anchosTitulosTabla);
+
+			// CABECERA (centrada)
+			foreach (var tituloCol in _titulosTabla)
+			{
+				PdfPCell celda = new PdfPCell(new Phrase(tituloCol, HelperPdf.FontNormalPredeterminado(true)))
+				{
+					HorizontalAlignment = Element.ALIGN_CENTER,
+					VerticalAlignment = Element.ALIGN_MIDDLE,
+					BackgroundColor = new BaseColor(230, 230, 230),
+					Padding = 4
+				};
+				tabla.AddCell(celda);
+			}
+
+			tabla.HeaderRows = 1; // cabecera repetible
+
+			// CUERPO
+			foreach (var x in registros)
+			{
+				// Código → centrado
+				tabla.AddCell(Celda(x.ctaf_id.ToString(), fuenteEtiqueta, Element.ALIGN_CENTER));
+
+				// Denominación → izquierda
+				tabla.AddCell(Celda(x.ctaf_denominacion, fuenteEtiqueta, Element.ALIGN_LEFT));
+
+				// Concepto → izquierda
+				tabla.AddCell(Celda(x.concepto, fuenteEtiqueta, Element.ALIGN_LEFT));
+
+				// Monto → derecha
+				tabla.AddCell(Celda(
+					x.fc_importe.ToString("N2"),
+					fuenteEtiqueta,
+					Element.ALIGN_RIGHT
+				));
+			}
+
 			pdf.Add(tabla);
 
-			//FILA 2 - TABLA
-			List<string> _titulosTabla = ["Código", "Denominación", "Concepto", "Monto",];
-			float[] _anchosTitulosTabla = [10f, 30f, 40f, 20f];
-			List<string> _campos = ["ctaf_id", "ctaf_denominacion", "concepto", "fc_importe",];
-
-			HelperPdf.GeneraCabeceraLista(pdf, _titulosTabla, _anchosTitulosTabla, HelperPdf.FontNormalPredeterminado(true));
-
-			var regsAux = registros.Select(x => new
-			{
-				x.ctaf_id,
-				x.ctaf_denominacion,
-				x.concepto,
-				x.fc_importe
-			}).ToList();
-			HelperPdf.GenerarListadoDesdeLista(pdf, regsAux, _campos, _anchosTitulosTabla, fuenteEtiqueta);
-
-			// FILA 3
-			PdfPTable tablaTotal = GeneraTabla(1, [100f], 100, 0, 10);
-			PdfPCell celdaTotal = new PdfPCell(new Phrase($"Total Ingreso Cuentas Destino: {registros.Sum(y => y.fc_importe).ToString("C", ForzarObtenerFormatoMonetario())}", HelperPdf.FontNormalPredeterminado(true)))
+			// FILA 3 - TOTAL
+			PdfPTable tablaTotal = GeneraTabla(1, new float[] { 100f }, 100, 0, 10);
+			PdfPCell celdaTotal = new PdfPCell(
+				new Phrase($"Total Ingreso Cuentas Destino: {registros.Sum(y => y.fc_importe).ToString("C", ForzarObtenerFormatoMonetario())}",
+				HelperPdf.FontNormalPredeterminado(true)))
 			{
 				Border = Rectangle.NO_BORDER,
 				HorizontalAlignment = Element.ALIGN_RIGHT,
 				VerticalAlignment = Element.ALIGN_MIDDLE,
 				PaddingTop = 0f
 			};
+
 			tablaTotal.AddCell(celdaTotal);
 			pdf.Add(tablaTotal);
 		}
 
 		public static void CargarTablaDatosDeAcuseDeTransferencia_Ctag(Document pdf, List<FinancieroTraRepoCtagDto> registros, Font fuenteEtiqueta, Font fuenteValor, Font titulo)
 		{
-			// FILA 1 - TITULO DE SECCION
-			PdfPTable tabla = GeneraTabla(1, [100f], 100, 10, 10);
-			PdfPCell celdaTitulo = new PdfPCell(new Phrase("Gastos por Transferencias", HelperPdf.FontSubtituloPredeterminado(true)))
+			// FILA 1 - TÍTULO DE SECCIÓN
+			PdfPTable tablaTitulo = GeneraTabla(1, new float[] { 100f }, 100, 10, 10);
+			PdfPCell celdaTitulo = new PdfPCell(
+				new Phrase("Gastos por Transferencias", HelperPdf.FontSubtituloPredeterminado(true)))
 			{
 				Border = Rectangle.NO_BORDER,
 				HorizontalAlignment = Element.ALIGN_LEFT,
@@ -2258,36 +2325,76 @@ namespace gc.infraestructura.Helpers
 				PaddingTop = 0f,
 				PaddingBottom = 0f
 			};
-			tabla.AddCell(celdaTitulo);
+			tablaTitulo.AddCell(celdaTitulo);
+			pdf.Add(tablaTitulo);
+
+			// CABECERA
+			List<string> _titulosTabla = new()
+	{
+		"Código", "Denominación", "Tipo Comprobante", "Comprobante", "Número", "Importe"
+	};
+
+			float[] _anchosTitulosTabla = new float[] { 10f, 30f, 10f, 20f, 20f, 10f };
+
+			PdfPTable tabla = new PdfPTable(_titulosTabla.Count);
+			tabla.WidthPercentage = 100;
+			tabla.SetWidths(_anchosTitulosTabla);
+
+			// CABECERA (centrada)
+			foreach (var tituloCol in _titulosTabla)
+			{
+				PdfPCell celda = new PdfPCell(new Phrase(tituloCol, HelperPdf.FontNormalPredeterminado(true)))
+				{
+					HorizontalAlignment = Element.ALIGN_CENTER,
+					VerticalAlignment = Element.ALIGN_MIDDLE,
+					BackgroundColor = new BaseColor(230, 230, 230),
+					Padding = 4
+				};
+				tabla.AddCell(celda);
+			}
+
+			tabla.HeaderRows = 1; // cabecera repetible
+
+			// CUERPO
+			foreach (var x in registros)
+			{
+				// Código → centrado
+				tabla.AddCell(Celda(x.ctag_id.ToString(), fuenteEtiqueta, Element.ALIGN_CENTER));
+
+				// Denominación → izquierda
+				tabla.AddCell(Celda(x.ctag_denominacion, fuenteEtiqueta, Element.ALIGN_LEFT));
+
+				// Tipo Comprobante → izquierda
+				tabla.AddCell(Celda(x.tco_id, fuenteEtiqueta, Element.ALIGN_LEFT));
+
+				// Comprobante → izquierda
+				tabla.AddCell(Celda(x.tco_desc, fuenteEtiqueta, Element.ALIGN_LEFT));
+
+				// Número → centrado
+				tabla.AddCell(Celda(x.cm_compte, fuenteEtiqueta, Element.ALIGN_CENTER));
+
+				// Importe → derecha
+				tabla.AddCell(Celda(
+					x.cm_importe.ToString("N2"),
+					fuenteEtiqueta,
+					Element.ALIGN_RIGHT
+				));
+			}
+
 			pdf.Add(tabla);
 
-			//FILA 2 - TABLA
-			List<string> _titulosTabla = ["Código", "Denominación", "Tipo Comprobante", "Comprobante", "Número", "Importe",];
-			float[] _anchosTitulosTabla = [10f, 30f, 10f, 20f, 20f, 10f];
-			List<string> _campos = ["ctag_id", "ctag_denominacion", "tco_id", "tco_desc", "cm_compte", "cm_importe",];
-
-			HelperPdf.GeneraCabeceraLista(pdf, _titulosTabla, _anchosTitulosTabla, HelperPdf.FontNormalPredeterminado(true));
-
-			var regsAux = registros.Select(x => new
-			{
-				x.ctag_id,
-				x.ctag_denominacion,
-				x.tco_id,
-				x.tco_desc,
-				x.cm_compte,
-				x.cm_importe,
-			}).ToList();
-			HelperPdf.GenerarListadoDesdeLista(pdf, regsAux, _campos, _anchosTitulosTabla, fuenteEtiqueta);
-
-			// FILA 3
-			PdfPTable tablaTotal = GeneraTabla(1, [100f], 100, 0, 10);
-			PdfPCell celdaTotal = new PdfPCell(new Phrase($"Total: {registros.Sum(y => y.cm_importe).ToString("C", ForzarObtenerFormatoMonetario())}", HelperPdf.FontNormalPredeterminado(true)))
+			// FILA 3 - TOTAL
+			PdfPTable tablaTotal = GeneraTabla(1, new float[] { 100f }, 100, 0, 10);
+			PdfPCell celdaTotal = new PdfPCell(
+				new Phrase($"Total: {registros.Sum(y => y.cm_importe).ToString("C", ForzarObtenerFormatoMonetario())}",
+				HelperPdf.FontNormalPredeterminado(true)))
 			{
 				Border = Rectangle.NO_BORDER,
 				HorizontalAlignment = Element.ALIGN_RIGHT,
 				VerticalAlignment = Element.ALIGN_MIDDLE,
 				PaddingTop = 0f
 			};
+
 			tablaTotal.AddCell(celdaTotal);
 			pdf.Add(tablaTotal);
 		}
@@ -2310,36 +2417,69 @@ namespace gc.infraestructura.Helpers
 
 		public static void CargarTablaMovimientosFinancieros(Document pdf, List<MovimientoFinancieroListaDto> regs, Font fuenteEtiqueta, Font fuenteValor)
 		{
-			List<string> _campos = ["op_compte", "opt_desc", "op_fecha", "cta_denominacion", "op_anulada_desc", "usu_apellidoynombre", "op_importe",];
-			List<string> _titulosTabla = ["Nro", "Fecha", "Tipo", "Concepto", "Anulada", "Usuario", "Importe",];
-			float[] _anchosTitulosTabla = [10f, 20f, 10, 20, 10f, 20, 10];
-			PdfPTable tablaTitulo = GeneraTabla(1, [100f], 100, 10, 0);
+			List<string> _titulosTabla = ["Nro", "Fecha", "Tipo", "Concepto", "Anulada", "Usuario", "Importe"];
+			float[] _anchosTitulosTabla = [8f, 8f, 17, 34, 8f, 15, 10];
 
-			// FILA 1
-			HelperPdf.GeneraCabeceraLista(pdf, _titulosTabla, _anchosTitulosTabla, HelperPdf.FontNormalPredeterminado(true));
+			// 🔥 TABLA COMPLETA
+			PdfPTable tabla = new PdfPTable(_titulosTabla.Count);
+			tabla.WidthPercentage = 100;
+			tabla.SetWidths(_anchosTitulosTabla);
 
-			// FILA 2
-			var regsAux = regs.Select(x => new
+			// 🔥 CABECERA (centrada)
+			foreach (var titulo in _titulosTabla)
 			{
-				Nro = x.tra_compte,
-				Fecha = x.tra_fecha,
-				Tipo = x.ttra_desc,
-				Concepto = x.tra_concepto,
-				Anulada = x.strAnulada,
-				Usuario = x.usu_apellidoynombre,
-				Importe = x.tra_importe
-			}).ToList();
-			HelperPdf.GenerarListadoDesdeLista(pdf, regsAux, _titulosTabla, _anchosTitulosTabla, fuenteEtiqueta);
+				PdfPCell celda = new PdfPCell(new Phrase(titulo, HelperPdf.FontNormalPredeterminado(true)))
+				{
+					HorizontalAlignment = Element.ALIGN_CENTER,
+					VerticalAlignment = Element.ALIGN_MIDDLE,
+					BackgroundColor = new BaseColor(230, 230, 230),
+					Padding = 4
+				};
+				tabla.AddCell(celda);
+			}
 
-			// FILA 3
+			tabla.HeaderRows = 1; // cabecera repetible
+
+			// 🔥 CUERPO
+			foreach (var x in regs)
+			{
+				// Columna 1: Nro → centrado
+				tabla.AddCell(Celda(x.tra_compte, fuenteEtiqueta, Element.ALIGN_CENTER));
+
+				// Columna 2: Fecha → centrado
+				tabla.AddCell(Celda(x.tra_fecha.ToString("dd/MM/yyyy"), fuenteEtiqueta, Element.ALIGN_CENTER));
+
+				// Columna 3: Tipo → izquierda
+				tabla.AddCell(Celda(x.ttra_desc, fuenteEtiqueta, Element.ALIGN_LEFT));
+
+				// Columna 4: Concepto → izquierda
+				tabla.AddCell(Celda(x.tra_concepto, fuenteEtiqueta, Element.ALIGN_LEFT));
+
+				// Columna 5: Anulada → centrado
+				tabla.AddCell(Celda(x.strAnulada, fuenteEtiqueta, Element.ALIGN_CENTER));
+
+				// Columna 6: Usuario → izquierda
+				tabla.AddCell(Celda(x.usu_apellidoynombre, fuenteEtiqueta, Element.ALIGN_LEFT));
+
+				// Columna 7: Importe → derecha
+				tabla.AddCell(Celda(
+					x.tra_importe.ToString("N2"),
+					fuenteEtiqueta,
+					Element.ALIGN_RIGHT
+				));
+			}
+
+			pdf.Add(tabla);
+
+			// 🔥 TOTAL
 			PdfPTable tablaTotal = GeneraTabla(1, [100f], 100, 0, 10);
-			PdfPCell celdaTotal = new(new Phrase($"Total Ordenes de Pago: {regs.Sum(y => y.tra_importe).ToString("C", ForzarObtenerFormatoMonetario())}", HelperPdf.FontNormalPredeterminado(true)))
+			PdfPCell celdaTotal = new PdfPCell(
+				new Phrase($"Total Ordenes de Pago: {regs.Sum(y => y.tra_importe).ToString("C", ForzarObtenerFormatoMonetario())}",
+				HelperPdf.FontNormalPredeterminado(true)))
 			{
 				Border = Rectangle.NO_BORDER,
 				HorizontalAlignment = Element.ALIGN_RIGHT,
-				VerticalAlignment = Element.ALIGN_MIDDLE,
-				PaddingTop = 0f,
-				BackgroundColor = BaseColor.LightGray
+				VerticalAlignment = Element.ALIGN_MIDDLE
 			};
 
 			tablaTotal.AddCell(celdaTotal);

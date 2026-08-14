@@ -183,6 +183,7 @@ function ValidarPrevioAConfirmar() {
 				$("#msjModal").modal("hide");
 				switch (e) {
 					case "SI": //Confirmar
+						AbrirWaiting("Generando Orden de Pago a Proveedor...")
 						var cta_obs = $("#CuentaObs").val();
 						var opt_id = "";
 						if (esPagoAnticipado)
@@ -191,6 +192,7 @@ function ValidarPrevioAConfirmar() {
 							opt_id = "PP";
 						var data = { cta_obs, opt_id };
 						PostGen(data, confirmarOPaProveedorUrl, function (obj) {
+							CerrarWaiting();
 							if (obj.error === true) {
 								AbrirMensaje("ATENCIÓN", obj.msg, function () {
 									$("#msjModal").modal("hide");

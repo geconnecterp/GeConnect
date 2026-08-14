@@ -4,8 +4,6 @@
 	var listaCondAfip = Model.listaCondAfip;
 	var listaCuentaDirecta = Model.listaCuentaDirecta;
 }
-@* @Html.Hidden("itemOPD_ctag_motivo") *@
-@* @Html.Hidden("ctag_motivo") *@
 <input type="text" asp-for="itemOPD.ctag_motivo" class="form-control activable inputEditable" style="visibility: collapse;" type="hidden" />
 <div class="row mt-1">
 	<div class="input-group input-group-sm">
@@ -29,8 +27,6 @@
 		<div id="divTipoCompte">
 			@Html.DropDownListFor(m => m.itemOPD.tco_id, listaTipoCompte, "Seleccionar...", new { @id = "listaTCompte", @class = "form-control activable", style = "font-size: 11px;max-width: 115px;" })
 		</div>
-		@* <span class="input-group-text fixed-lbl-for-abm-100">N° Compte.: </span>
-						<input type="text" asp-for="itemOPD.cm_compte" class="form-control activable inputEditable" /> *@
 		<span class="input-group-text fixed-lbl-for-abm-100">N° Compte:</span>
 		<input type="text" asp-for="itemOPD.cm_compte_pto_vta" style="max-width:50px;border-color: rgb(70,196,104);text-align: left;font-weight: 700;" class="form-control activable" />
 		<span class="input-group-text" style="display: block;float: right;text-align: right;padding-left: 2px;padding-right: 2px;">-</span>
