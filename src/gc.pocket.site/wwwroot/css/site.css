@@ -1045,6 +1045,18 @@ th, td {
     touch-action: manipulation;
 }
 
+body.confirmacion-en-proceso {
+    overflow: hidden !important;
+    touch-action: none;
+}
+
+body.confirmacion-en-proceso #wWaiting {
+    display: block;
+    pointer-events: all;
+    cursor: wait;
+    touch-action: none;
+}
+
 .pocket-content {
     width: 100%;
     max-width: 1600px;
@@ -1114,6 +1126,14 @@ th, td {
     background-color: var(--bs-golden-bg-badge, #f5e6a3) !important;
     border-color: var(--bs-golden-light, #e6d690) !important;
     font-weight: 600;
+}
+
+/* RPR - CargaUL: alinea los títulos de cabecera y el identificador de UL. */
+.rpr-carga-ul .input-group > .input-group-text:first-child {
+    flex: 0 0 4.5rem;
+    width: 4.5rem;
+    justify-content: flex-start;
+    white-space: nowrap;
 }
 
 .pocket-view .form-label,

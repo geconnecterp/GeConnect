@@ -8,6 +8,7 @@ const MAX_PRODUCTOS_ETIQUETA = 100; // Límite razonable para impresión
 
 // ✅ VARIABLES PARA CONTROL DE BÚSQUEDA (DECLARADAS UNA SOLA VEZ)
 let $inputBusqueda, $btnBuscar, $spinner, $btnConfirmar;
+let estadoConfirmacionImpresion = null;
 
 /**
  * ✅ OPTIMIZADA: Inicializa eventos del módulo de impresión de etiquetas
@@ -589,7 +590,12 @@ function confirmarCargaPrevia() {
  * @param {string} jsonProductos - JSON string con los productos
  */
 function enviarCargaPreviaAlServidor(jsonProductos) {
-    console.log("📤 Enviando datos al servidor...");
+    if (estadoConfirmacionImpresion !== null) {
+        console.warn("[Pocket][ImpresionEtiquetas] Se ignora una confirmación duplicada");
+        return false;
+    }
+
+    console.info("[Pocket][ImpresionEtiquetas] Preparando confirmación");
 
     // ═══════════════════════════════════════════════════════════════════
     // VALIDAR URL DEL ENDPOINT
@@ -597,7 +603,7 @@ function enviarCargaPreviaAlServidor(jsonProductos) {
     if (typeof confirmarCargaPreviaUrl === 'undefined' || !confirmarCargaPreviaUrl) {
         console.error("❌ URL confirmarCargaPreviaUrl no está definida");
         mostrarNotificacion("Error de configuración: URL no definida", "error");
-        return;
+        return false;
     }
 
     // ═══════════════════════════════════════════════════════════════════
@@ -607,56 +613,63 @@ function enviarCargaPreviaAlServidor(jsonProductos) {
         json: jsonProductos
     };
 
-    console.log("📡 URL destino:", confirmarCargaPreviaUrl);
-    console.log("📦 Datos a enviar:", datosEnvio);
+    estadoConfirmacionImpresion = IniciarConfirmacionSegura(
+        $btnConfirmar,
+        "Espere... se está confirmando la impresión de etiquetas...",
+        "Procesando..."
+    );
 
-    // ═══════════════════════════════════════════════════════════════════
-    // MOSTRAR INDICADOR DE CARGA
-    // ═══════════════════════════════════════════════════════════════════
-    if (typeof AbrirWaiting === "function") {
-        AbrirWaiting("Procesando carga previa...");
+    if (estadoConfirmacionImpresion === null) {
+        return false;
     }
 
-    // Deshabilitar botón durante el proceso
-    $btnConfirmar.prop("disabled", true);
+    console.info("[Pocket][ImpresionEtiquetas] Enviando productos", {
+        cantidad: productosEtiquetaCargados.length
+    });
 
     // ═══════════════════════════════════════════════════════════════════
     // REALIZAR PETICIÓN AJAX
     // ═══════════════════════════════════════════════════════════════════
-    $.ajax({
-        url: confirmarCargaPreviaUrl,
-        type: "POST",
-        contentType: "application/x-www-form-urlencoded; charset=UTF-8",
-        data: datosEnvio,
-        dataType: "json",
-        success: function (response) {
-            console.log("✅ Respuesta del servidor recibida:", response);
-            procesarRespuestaConfirmacion(response);
-        },
-        error: function (xhr, status, error) {
-            console.error("❌ Error en la petición AJAX:", error);
-            console.error("Status:", status);
-            console.error("Response:", xhr.responseText);
-            
-            if (typeof CerrarWaiting === "function") {
-                CerrarWaiting();
+    try {
+        $.ajax({
+            url: confirmarCargaPreviaUrl,
+            type: "POST",
+            contentType: "application/x-www-form-urlencoded; charset=UTF-8",
+            data: datosEnvio,
+            dataType: "json",
+            success: function (response) {
+                procesarRespuestaConfirmacion(response);
+            },
+            error: function (xhr, status, error) {
+                console.error("[Pocket][ImpresionEtiquetas] Error de comunicación durante la confirmación", {
+                    estadoHttp: xhr ? xhr.status : null,
+                    detalleHttp: status,
+                    error: error
+                });
+                FinalizarConfirmacionImpresion();
+
+                let mensajeError = "Error al confirmar la carga previa.";
+                if (xhr.status === 401) {
+                    mensajeError = "Sesión expirada. Por favor, inicie sesión nuevamente.";
+                }
+                else if (xhr.status === 0) {
+                    mensajeError = "No se pudo conectar con el servidor. Verifique su conexión.";
+                }
+                else if (xhr.responseJSON) {
+                    mensajeError = xhr.responseJSON.msg || xhr.responseJSON.message || mensajeError;
+                }
+
+                mostrarNotificacion(mensajeError, "error");
             }
-            
-            $btnConfirmar.prop("disabled", false);
-            
-            let mensajeError = "Error al confirmar la carga previa.";
-            
-            if (xhr.status === 401) {
-                mensajeError = "Sesión expirada. Por favor, inicie sesión nuevamente.";
-            } else if (xhr.status === 0) {
-                mensajeError = "No se pudo conectar con el servidor. Verifique su conexión.";
-            } else if (xhr.responseJSON && xhr.responseJSON.msg) {
-                mensajeError = xhr.responseJSON.msg;
-            }
-            
-            mostrarNotificacion(mensajeError, "error");
-        }
-    });
+        });
+    }
+    catch (error) {
+        console.error("[Pocket][ImpresionEtiquetas] Error inesperado al iniciar la confirmación", error);
+        FinalizarConfirmacionImpresion();
+        mostrarNotificacion("No se pudo iniciar la confirmación. Intente nuevamente.", "error");
+    }
+
+    return false;
 }
 
 /**
@@ -664,19 +677,14 @@ function enviarCargaPreviaAlServidor(jsonProductos) {
  * @param {Object} response - Respuesta del servidor
  */
 function procesarRespuestaConfirmacion(response) {
-    console.log("🔍 Procesando respuesta del servidor...");
-
-    // Cerrar indicador de carga
-    if (typeof CerrarWaiting === "function") {
-        CerrarWaiting();
-    }
+    FinalizarConfirmacionImpresion();
+    console.info("[Pocket][ImpresionEtiquetas] Procesando respuesta", response);
 
     // ═══════════════════════════════════════════════════════════════════
     // VALIDAR ESTRUCTURA DE RESPUESTA
     // ═══════════════════════════════════════════════════════════════════
     if (!response) {
         console.error("❌ Respuesta vacía del servidor");
-        $btnConfirmar.prop("disabled", false);
         mostrarNotificacion("Error: Respuesta inválida del servidor", "error");
         return;
     }
@@ -692,11 +700,8 @@ function procesarRespuestaConfirmacion(response) {
         
         mostrarNotificacion(mensaje, "success");
         
-        // Limpiar el grid después de confirmación exitosa
-        setTimeout(() => {
-            ejecutarLimpiezaCompleta();
-            $btnConfirmar.prop("disabled", false);
-        }, 1500);
+        // Limpiar inmediatamente evita que la misma carga pueda confirmarse otra vez.
+        ejecutarLimpiezaCompleta();
         
     } else if (response.error === true) {
         // ❌ ERROR DEL SERVIDOR
@@ -705,8 +710,6 @@ function procesarRespuestaConfirmacion(response) {
         const mensajeError = response.msg || "Error al procesar la carga previa";
         
         mostrarNotificacion(mensajeError, "error");
-        $btnConfirmar.prop("disabled", false);
-        
     } else if (response.warn === true) {
         // ⚠️ ADVERTENCIA DEL SERVIDOR
         console.warn("⚠️ Advertencia reportada por el servidor");
@@ -714,15 +717,18 @@ function procesarRespuestaConfirmacion(response) {
         const mensajeWarn = response.msg || "Advertencia al procesar la carga previa";
         
         mostrarNotificacion(mensajeWarn, "warning");
-        $btnConfirmar.prop("disabled", false);
-        
     } else {
         // ❓ RESPUESTA NO RECONOCIDA
         console.warn("⚠️ Respuesta no reconocida del servidor");
         
         mostrarNotificacion("Respuesta inesperada del servidor", "warning");
-        $btnConfirmar.prop("disabled", false);
     }
+}
+
+function FinalizarConfirmacionImpresion() {
+    const contexto = estadoConfirmacionImpresion;
+    estadoConfirmacionImpresion = null;
+    FinalizarConfirmacionSegura(contexto);
 }
 
 // ════════════════════════════════════════════════════════════════

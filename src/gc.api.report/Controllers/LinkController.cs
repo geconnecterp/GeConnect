@@ -12,11 +12,16 @@ namespace gc.api.Controllers.Codigos
     {
         private readonly ILogger<LinkController> _logger;
         private readonly ILinkServicio _linkServicio;
+        private readonly IConfiguration _configuration;
 
-        public LinkController(ILogger<LinkController> logger, ILinkServicio linkServicio)
+        public LinkController(
+            ILogger<LinkController> logger,
+            ILinkServicio linkServicio,
+            IConfiguration configuration)
         {
             _logger = logger;
             _linkServicio = linkServicio;
+            _configuration = configuration;
         }
 
         /// <summary>
@@ -90,11 +95,45 @@ namespace gc.api.Controllers.Codigos
             _logger?.LogInformation("📡 Obteniendo solicitud - Código: {Codigo}", codigo);
 
             // Invocar servicio
-            var res = _linkServicio.ObtenerSolicitud(codigo);
+            var contexto = new ReporteLinkAccesoContextoDto
+            {
+                Ip = Request.Headers["X-Geco-Client-IP"].FirstOrDefault()
+                    ?? HttpContext.Connection.RemoteIpAddress?.ToString(),
+                UserAgent = Request.Headers["X-Geco-User-Agent"].FirstOrDefault()
+                    ?? Request.Headers.UserAgent.FirstOrDefault(),
+                Referer = Request.Headers["X-Geco-Referer"].FirstOrDefault()
+                    ?? Request.Headers.Referer.FirstOrDefault()
+            };
+
+            var res = _linkServicio.ObtenerSolicitud(codigo, contexto);
 
             _logger?.LogInformation("✅ Solicitud obtenida correctamente - Código: {Codigo}", codigo);
 
-            return Ok(new ApiResponse<ReporteSolicitudDto>(res));
+            if (!_configuration.GetValue(
+                "Reportes:EnlacesPublicos:ControlDescargasHabilitado",
+                false))
+            {
+                return Ok(new ApiResponse<ReporteSolicitudDto>(res.Solicitud));
+            }
+
+            return Ok(new ApiResponse<ReporteLinkAccesoResponseDto>(res));
+        }
+
+        [HttpPost("ConfirmarDescarga")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public IActionResult ConfirmarDescarga([FromBody] ReporteLinkDescargaDto descarga)
+        {
+            var res = _linkServicio.ConfirmarDescarga(descarga);
+            return Ok(new ApiResponse<ReporteLinkOperacionResponseDto>(res));
+        }
+
+        [HttpPost("RegistrarFallo")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public IActionResult RegistrarFallo([FromBody] ReporteLinkDescargaDto descarga)
+        {
+            _linkServicio.RegistrarFallo(descarga);
+            return Ok(new { success = true });
         }
     }
 }

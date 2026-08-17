@@ -13,6 +13,8 @@ using Newtonsoft.Json;
 using System.Net;
 using System.Net.Mail;
 using System.Text;
+using iTextSharp.text;
+using iTextSharp.text.pdf;
 
 namespace gc.sitio.Areas.ControlComun.Controllers
 {
@@ -49,19 +51,27 @@ namespace gc.sitio.Areas.ControlComun.Controllers
         }
 
         [HttpPost]
-        public IActionResult OrquestadorDeModulos(string modulo, params string[] parametros)
+        public IActionResult OrquestadorDeModulos(string modulo, string? moduloGestor, string? contextoId, params string[] parametros)
         {
             RespuestaGenerica<EntidadBase> response = new();
 
             try
             {
                 var docMgr = DocumentManager;
-                
+                var moduloId = !string.IsNullOrWhiteSpace(moduloGestor)
+                    ? moduloGestor
+                    : docMgr.Id;
+                contextoId = NormalizarContextoId(contextoId);
+
                 // ✅ Buscar configuración del módulo actual
-                var moduloConfig = _docsManager.Modulos.FirstOrDefault(m => m.Id == docMgr.Id);
-                
+                var moduloConfig = _docsManager.Modulos.FirstOrDefault(m =>
+                    string.Equals(m.Id, moduloId, StringComparison.OrdinalIgnoreCase));
+
                 if (moduloConfig != null)
                 {
+                    // Cuando el llamador informa el módulo, el modelo deja de depender
+                    // del último DocumentManager guardado por otra pestaña en la sesión.
+                    docMgr = _docMSv.InicializaObjeto(moduloConfig.Titulo, moduloConfig);
                     // ✅ NUEVO: Pasar configuración de MENSAJERÍA (común para Email y WhatsApp)
                     if (moduloConfig.MensajeriaTemplate != null)
                     {
@@ -96,6 +106,19 @@ namespace gc.sitio.Areas.ControlComun.Controllers
                     // ✅ Pasar ID y título del módulo
                     ViewBag.ModuloId = moduloConfig.Id;
                     ViewBag.ModuloTitulo = moduloConfig.Titulo;
+                    ViewBag.ContextoId = contextoId;
+                    ViewBag.ReportesNoGlobales = moduloConfig.Reportes
+                        .Where(r => !r.PermiteImpresionGlobal)
+                        .Select(r => r.Id)
+                        .ToList();
+                    ViewBag.ReportesSinEnlacePublico = moduloConfig.Reportes
+                        .Where(r => !r.PermiteEnlacePublico)
+                        .Select(r => r.Id)
+                        .ToList();
+                    ViewBag.ReportesConAuditoriaEnlace = moduloConfig.Reportes
+                        .Where(r => r.RequiereAuditoriaEnlace)
+                        .Select(r => r.Id)
+                        .ToList();
                     
                     // ✅ Pasar datos de la empresa para el pie
                     ViewBag.EmpresaNombre = _empresaGeco.Nombre;
@@ -117,9 +140,13 @@ namespace gc.sitio.Areas.ControlComun.Controllers
                     // ✅ FALLBACK: Asignar valores por defecto
                     ViewBag.ModuloId = modulo;
                     ViewBag.ModuloTitulo = "Documentación";
+                    ViewBag.ContextoId = contextoId;
                     ViewBag.MensajeriaTemplate = null;
                     ViewBag.EmailTemplate = null;
                     ViewBag.WhatsAppTemplate = null;
+                    ViewBag.ReportesNoGlobales = new List<int>();
+                    ViewBag.ReportesSinEnlacePublico = new List<int>();
+                    ViewBag.ReportesConAuditoriaEnlace = new List<int>();
                 }
                 
                 return View("~/areas/ControlComun/views/GestorImpresion/_docManagerModal.cshtml", docMgr);
@@ -184,6 +211,240 @@ namespace gc.sitio.Areas.ControlComun.Controllers
                 return Json(new { error = true, warn = false, msg = ex.Message });
             }
         }
+
+        /// <summary>
+        /// Genera los documentos seleccionados en el orden recibido y los consolida
+        /// en un único PDF. Los generadores individuales no son modificados.
+        /// </summary>
+        [HttpPost]
+        public async Task<IActionResult> GenerarPaqueteImpresion([FromBody] PaqueteImpresionRequest request)
+        {
+            try
+            {
+                var auth = EstaAutenticado;
+                if (!auth.Item1 || auth.Item2 < DateTime.Now)
+                {
+                    return Unauthorized(new
+                    {
+                        error = false,
+                        warn = true,
+                        auth = true,
+                        msg = "Su sesión se ha terminado. Debe volver a autenticarse."
+                    });
+                }
+
+                if (request?.Solicitudes == null || request.Solicitudes.Count == 0)
+                {
+                    return BadRequest(new
+                    {
+                        error = false,
+                        warn = true,
+                        msg = "Debe seleccionar al menos un documento para imprimir."
+                    });
+                }
+
+                request.ContextoId = NormalizarContextoId(request.ContextoId);
+                _logger?.LogInformation(
+                    "Generando paquete de impresión. Contexto {ContextoId}, módulo {ModuloId}, documentos {Cantidad}",
+                    request.ContextoId,
+                    request.ModuloGestor,
+                    request.Solicitudes.Count);
+
+                var opciones = _docsManager.PrintPackage ?? new PrintPackageOptions();
+                var maxDocumentos = Math.Max(1, opciones.MaxDocumentos);
+                var maxPaginas = Math.Max(1, opciones.MaxPaginas);
+                var maxBytes = Math.Max(1, opciones.MaxTamanoMb) * 1024L * 1024L;
+                var timeout = TimeSpan.FromMinutes(Math.Max(1, opciones.TimeoutMinutos));
+
+                if (request.Solicitudes.Count > maxDocumentos)
+                {
+                    return BadRequest(new
+                    {
+                        error = false,
+                        warn = true,
+                        msg = $"Puede consolidar hasta {maxDocumentos} documentos por paquete."
+                    });
+                }
+
+                if (request.Unificar)
+                {
+                    var moduloConfig = _docsManager.Modulos.FirstOrDefault(m =>
+                        string.Equals(m.Id, request.ModuloGestor, StringComparison.OrdinalIgnoreCase));
+
+                    if (moduloConfig == null)
+                    {
+                        return BadRequest(new
+                        {
+                            error = false,
+                            warn = true,
+                            msg = "No se pudo identificar la configuración del módulo de impresión."
+                        });
+                    }
+
+                    if (request.ReportesIds.Count != request.Solicitudes.Count ||
+                        request.ReportesIds.Any(id => moduloConfig.Reportes.All(r => r.Id != id)))
+                    {
+                        return BadRequest(new
+                        {
+                            error = false,
+                            warn = true,
+                            msg = "La selección de reportes no coincide con la configuración del módulo."
+                        });
+                    }
+
+                    var idsNoGlobales = moduloConfig.Reportes
+                        .Where(r => !r.PermiteImpresionGlobal)
+                        .Select(r => r.Id)
+                        .ToHashSet();
+                    var seleccionNoCompatible = request.ReportesIds
+                        .Where(idsNoGlobales.Contains)
+                        .Distinct()
+                        .ToList();
+
+                    if (seleccionNoCompatible.Count > 0)
+                    {
+                        return BadRequest(new
+                        {
+                            error = false,
+                            warn = true,
+                            msg = "La selección contiene reportes que solo admiten impresión individual. " +
+                                  "Desactive la opción de unificar e intente nuevamente."
+                        });
+                    }
+                }
+
+                var documentos = new List<byte[]>();
+                var paginasTotales = 0;
+                long bytesTotales = 0;
+
+                foreach (var solicitud in request.Solicitudes)
+                {
+                    var resultado = await _docMSv
+                        .ObtenerPdfDesdeAPI(solicitud, TokenCookie)
+                        .WaitAsync(timeout);
+
+                    if (resultado.resultado != 0 || string.IsNullOrWhiteSpace(resultado.Base64))
+                    {
+                        throw new NegocioException(
+                            $"No se pudo generar '{solicitud.Titulo}': {resultado.resultado_msj}");
+                    }
+
+                    byte[] pdfBytes;
+                    try
+                    {
+                        pdfBytes = Convert.FromBase64String(resultado.Base64);
+                    }
+                    catch (FormatException)
+                    {
+                        throw new NegocioException(
+                            $"El documento '{solicitud.Titulo}' no devolvió un PDF válido.");
+                    }
+
+                    var lector = new PdfReader(pdfBytes);
+                    var paginasDocumento = lector.NumberOfPages;
+                    lector.Close();
+
+                    paginasTotales += paginasDocumento;
+                    bytesTotales += pdfBytes.LongLength;
+
+                    if (paginasTotales > maxPaginas)
+                    {
+                        throw new NegocioException(
+                            $"El paquete supera el límite configurado de {maxPaginas} páginas. " +
+                            "Seleccione menos documentos; la división automática se habilitará en la siguiente etapa.");
+                    }
+
+                    if (bytesTotales > maxBytes)
+                    {
+                        throw new NegocioException(
+                            $"El paquete supera el límite configurado de {opciones.MaxTamanoMb} MB. " +
+                            "Seleccione menos documentos; la división automática se habilitará en la siguiente etapa.");
+                    }
+
+                    documentos.Add(pdfBytes);
+                }
+
+                var paquete = CombinarDocumentosPdf(documentos);
+                var nombreArchivo = SanitizarNombreArchivo(request.NombreArchivo);
+
+                Response.Headers.Append("X-Geco-Documentos", documentos.Count.ToString());
+                Response.Headers.Append("X-Geco-Paginas", paginasTotales.ToString());
+
+                return File(paquete, "application/pdf", nombreArchivo);
+            }
+            catch (TimeoutException ex)
+            {
+                _logger?.LogWarning(ex, "Tiempo agotado al generar el paquete de impresión");
+                return StatusCode(StatusCodes.Status408RequestTimeout, new
+                {
+                    error = false,
+                    warn = true,
+                    msg = "La generación superó el tiempo permitido. Intente con menos documentos."
+                });
+            }
+            catch (NegocioException ex)
+            {
+                return BadRequest(new { error = false, warn = true, msg = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, "Error al generar el paquete de impresión");
+                return StatusCode(StatusCodes.Status500InternalServerError, new
+                {
+                    error = true,
+                    warn = false,
+                    msg = "No se pudo generar el paquete de impresión. Consulte el registro del sistema."
+                });
+            }
+        }
+
+        private static byte[] CombinarDocumentosPdf(IEnumerable<byte[]> documentos)
+        {
+            using var salida = new MemoryStream();
+            var documentoDestino = new Document();
+            var copia = new PdfCopy(documentoDestino, salida);
+
+            documentoDestino.Open();
+            try
+            {
+                foreach (var contenido in documentos)
+                {
+                    var lector = new PdfReader(contenido);
+                    try
+                    {
+                        for (var pagina = 1; pagina <= lector.NumberOfPages; pagina++)
+                        {
+                            copia.AddPage(copia.GetImportedPage(lector, pagina));
+                        }
+
+                        copia.FreeReader(lector);
+                    }
+                    finally
+                    {
+                        lector.Close();
+                    }
+                }
+            }
+            finally
+            {
+                documentoDestino.Close();
+            }
+
+            return salida.ToArray();
+        }
+
+        private static string SanitizarNombreArchivo(string? nombre)
+        {
+            var baseNombre = string.IsNullOrWhiteSpace(nombre)
+                ? "documentos"
+                : Path.GetFileNameWithoutExtension(nombre.Trim());
+            var invalidos = Path.GetInvalidFileNameChars();
+            var seguro = new string(baseNombre
+                .Select(c => invalidos.Contains(c) ? '_' : c)
+                .ToArray());
+
+            return $"{seguro}.pdf";
+        }
         [HttpPost]
         public async Task<JsonResult> GeneradorArchivo(ReporteSolicitudDto reporteSolicitud)
         {
@@ -238,7 +499,7 @@ namespace gc.sitio.Areas.ControlComun.Controllers
 
 
         [HttpPost]
-        public JsonResult PresentarArchivos()
+        public JsonResult PresentarArchivos(string? moduloGestor, string? contextoId)
         {
             try
             {
@@ -248,7 +509,14 @@ namespace gc.sitio.Areas.ControlComun.Controllers
                     return Json(new { error = false, warn = true, auth = true, msg = "Su sesión se ha terminado. Debe volver a autenticarse." });
                 }
 
-                var arbol = ArchivosCargadosModulo;
+                contextoId = NormalizarContextoId(contextoId);
+                var moduloConfig = !string.IsNullOrWhiteSpace(moduloGestor)
+                    ? _docsManager.Modulos.FirstOrDefault(m =>
+                        string.Equals(m.Id, moduloGestor, StringComparison.OrdinalIgnoreCase))
+                    : null;
+                var arbol = moduloConfig != null
+                    ? _docMSv.GeneraArbolArchivos(moduloConfig)
+                    : ArchivosCargadosModulo;
                 var jarbol = JsonConvert.SerializeObject(arbol);
                 CuentaDatoDto cuenta = new();
                 if (CuentaComercialDatosSeleccionada != null)
@@ -256,7 +524,12 @@ namespace gc.sitio.Areas.ControlComun.Controllers
                     cuenta = CuentaComercialDatosSeleccionada;
                 }
 
-                return Json(new { error = false, warn = false, arbol = jarbol, cuenta });
+                _logger?.LogDebug(
+                    "Presentando archivos. Contexto {ContextoId}, módulo {ModuloId}",
+                    contextoId,
+                    moduloConfig?.Id ?? "LEGACY");
+
+                return Json(new { error = false, warn = false, arbol = jarbol, cuenta, contextoId });
 
             }
             catch (NegocioException ex)
@@ -974,7 +1247,10 @@ namespace gc.sitio.Areas.ControlComun.Controllers
         /// ✅ MODIFICADO: Ahora usa LinkController para generar códigos únicos
         /// </summary>
         [HttpPost]
-        public async Task<JsonResult> GenerarURLsDocumentos([FromBody] List<ReporteSolicitudDto> solicitudes)
+        public async Task<JsonResult> GenerarURLsDocumentos(
+            [FromBody] List<ReporteSolicitudDto> solicitudes,
+            string? contextoId,
+            string? moduloGestor)
         {
             try
             {
@@ -999,9 +1275,82 @@ namespace gc.sitio.Areas.ControlComun.Controllers
                     });
                 }
 
+                contextoId = NormalizarContextoId(contextoId);
                 _logger?.LogInformation(
-                    "🔗 Generando {Cantidad} URL(s) de documentos usando LinkController",
-                    solicitudes.Count);
+                    "🔗 Generando {Cantidad} URL(s). Contexto {ContextoId}, módulo {ModuloId}",
+                    solicitudes.Count,
+                    contextoId,
+                    moduloGestor ?? "LEGACY");
+
+                if (string.IsNullOrWhiteSpace(moduloGestor))
+                {
+                    return Json(new
+                    {
+                        error = true,
+                        msg = "No se pudo identificar el módulo que solicita los enlaces."
+                    });
+                }
+
+                var moduloConfig = _docsManager.Modulos.FirstOrDefault(m =>
+                    string.Equals(m.Id, moduloGestor, StringComparison.OrdinalIgnoreCase));
+
+                if (moduloConfig == null)
+                {
+                    return Json(new
+                    {
+                        error = true,
+                        msg = "El módulo informado no posee una configuración válida para compartir documentos."
+                    });
+                }
+
+                if (solicitudes.Count > Math.Max(1, _docsManager.PrintPackage.MaxDocumentos))
+                {
+                    return Json(new
+                    {
+                        error = true,
+                        msg = $"Puede compartir hasta {Math.Max(1, _docsManager.PrintPackage.MaxDocumentos)} documentos por operación."
+                    });
+                }
+
+                var reportesSolicitados = solicitudes
+                    .Select(s => (int)s.Reporte)
+                    .Distinct()
+                    .ToList();
+                var reportesNoConfigurados = reportesSolicitados
+                    .Where(id => moduloConfig.Reportes.All(r => r.Id != id))
+                    .ToList();
+
+                if (reportesNoConfigurados.Count > 0)
+                {
+                    _logger?.LogWarning(
+                        "Intento de compartir reportes ajenos al módulo {ModuloId}. Reportes {Reportes}",
+                        moduloGestor,
+                        string.Join(",", reportesNoConfigurados));
+                    return Json(new
+                    {
+                        error = true,
+                        msg = "La selección no coincide con los reportes configurados para este módulo."
+                    });
+                }
+
+                var reportesRestringidos = moduloConfig.Reportes
+                    .Where(r => reportesSolicitados.Contains(r.Id) && !r.PermiteEnlacePublico)
+                    .ToList();
+
+                if (reportesRestringidos.Count > 0)
+                {
+                    _logger?.LogWarning(
+                        "Enlace público rechazado. Contexto {ContextoId}, módulo {ModuloId}, usuario {Usuario}, reportes {Reportes}",
+                        contextoId,
+                        moduloGestor,
+                        UserName,
+                        string.Join(",", reportesRestringidos.Select(r => r.Id)));
+                    return Json(new
+                    {
+                        error = true,
+                        msg = "La selección contiene documentación sensible que no está autorizada para descarga mediante enlace."
+                    });
+                }
 
                 var enlaces = new List<EnlaceArchivoDto>();
                 var dominioBase = _setting.PathApp?.TrimEnd('/')
@@ -1010,13 +1359,15 @@ namespace gc.sitio.Areas.ControlComun.Controllers
                 // ✅ NUEVO: Obtener usuario actual
                 var usuarioId = UserName;
 
-                // ✅ NUEVO: Obtener cliente actual (opcional)
-                var clienteId = CuentaComercialSeleccionada?.Cta_Id;
-
                 foreach (var solicitud in solicitudes)
                 {
                     try
                     {
+                        // Priorizar la cuenta incluida en la solicitud de esta
+                        // pestaña; la sesión queda únicamente como compatibilidad.
+                        var clienteId = ObtenerCuentaDeSolicitud(solicitud)
+                            ?? CuentaComercialSeleccionada?.Cta_Id;
+
                         // ✅ PASO 1: Llamar a LinkController para crear el código
                         var linkRequest = new
                         {
@@ -1170,6 +1521,8 @@ namespace gc.sitio.Areas.ControlComun.Controllers
             public string Bcc { get; set; } = string.Empty;
             public string Subject { get; set; } = string.Empty;
             public string Body { get; set; } = string.Empty;
+            public string ContextoId { get; set; } = string.Empty;
+            public string ModuloGestor { get; set; } = string.Empty;
         }
 
         /// <summary>
@@ -1179,6 +1532,8 @@ namespace gc.sitio.Areas.ControlComun.Controllers
         {
             public string To { get; set; } = string.Empty;
             public string Message { get; set; } = string.Empty;
+            public string ContextoId { get; set; } = string.Empty;
+            public string ModuloGestor { get; set; } = string.Empty;
         }
 
         public class ArchivoSendDto
@@ -1213,6 +1568,46 @@ namespace gc.sitio.Areas.ControlComun.Controllers
             /// Cuerpo del email (puede contener HTML)
             /// </summary>
             public string EmailBody { get; set; } = string.Empty;
+            public string ContextoId { get; set; } = string.Empty;
+            public string ModuloGestor { get; set; } = string.Empty;
+        }
+
+        public class PaqueteImpresionRequest
+        {
+            public List<ReporteSolicitudDto> Solicitudes { get; set; } = new();
+            public string NombreArchivo { get; set; } = "documentos";
+            public string ModuloGestor { get; set; } = string.Empty;
+            public string ContextoId { get; set; } = string.Empty;
+            public List<int> ReportesIds { get; set; } = new();
+            public bool Unificar { get; set; } = true;
+        }
+
+        private static string NormalizarContextoId(string? contextoId)
+        {
+            if (string.IsNullOrWhiteSpace(contextoId))
+            {
+                return Guid.NewGuid().ToString("N");
+            }
+
+            var valor = contextoId.Trim();
+            return valor.Length <= 64 ? valor : valor[..64];
+        }
+
+        private static string? ObtenerCuentaDeSolicitud(ReporteSolicitudDto solicitud)
+        {
+            if (!string.IsNullOrWhiteSpace(solicitud.Cuenta?.Cta_Id))
+            {
+                return solicitud.Cuenta.Cta_Id;
+            }
+
+            var parametroCuenta = solicitud.Parametros.FirstOrDefault(p =>
+                string.Equals(p.Key, "cta_id", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(p.Key, "ctaId", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(p.Key, "clienteId", StringComparison.OrdinalIgnoreCase));
+
+            return string.IsNullOrWhiteSpace(parametroCuenta.Value)
+                ? null
+                : parametroCuenta.Value;
         }
 
     }    

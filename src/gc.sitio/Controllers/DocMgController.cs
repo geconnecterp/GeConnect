@@ -10,6 +10,8 @@ using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using System.Diagnostics;
 using System.Text; // ✅ AGREGADO
 
 namespace gc.sitio.Controllers
@@ -48,6 +50,9 @@ namespace gc.sitio.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> GenerarDocumentoPorCodigo(string codigo)
         {
+            long? accesoId = null;
+            var cronometro = Stopwatch.StartNew();
+
             try
             {
                 _logger.LogInformation("📥 Solicitud de documento con código: {Codigo}", codigo);
@@ -77,7 +82,18 @@ namespace gc.sitio.Controllers
 
                     _logger.LogDebug("📡 Llamando a: {Url}", obtenerSolicitudUrl);
 
-                    var response = await httpClient.GetAsync(obtenerSolicitudUrl);
+                    using var request = new HttpRequestMessage(HttpMethod.Get, obtenerSolicitudUrl);
+                    request.Headers.TryAddWithoutValidation(
+                        "X-Geco-Client-IP",
+                        HttpContext.Connection.RemoteIpAddress?.ToString() ?? string.Empty);
+                    request.Headers.TryAddWithoutValidation(
+                        "X-Geco-User-Agent",
+                        Request.Headers.UserAgent.ToString());
+                    request.Headers.TryAddWithoutValidation(
+                        "X-Geco-Referer",
+                        Request.Headers.Referer.ToString());
+
+                    var response = await httpClient.SendAsync(request);
 
                     if (!response.IsSuccessStatusCode)
                     {
@@ -150,9 +166,23 @@ namespace gc.sitio.Controllers
                     var responseContent = await response.Content.ReadAsStringAsync();
 
                     // ✅ MODIFICADO: Usar JsonConvert en lugar de JsonSerializer
-                    var apiResponse = JsonConvert.DeserializeObject<ApiResponse<ReporteSolicitudDto>>(responseContent);
+                    var sobre = JObject.Parse(responseContent);
+                    var data = sobre.GetValue("data", StringComparison.OrdinalIgnoreCase);
+                    var dataObject = data as JObject;
+                    var solicitudNueva = dataObject?.GetValue("solicitud", StringComparison.OrdinalIgnoreCase);
 
-                    solicitud = apiResponse?.Data;
+                    if (solicitudNueva != null)
+                    {
+                        var acceso = dataObject?.ToObject<ReporteLinkAccesoResponseDto>();
+                        accesoId = acceso?.AccesoId;
+                        solicitud = acceso?.Solicitud;
+                    }
+                    else
+                    {
+                        // Compatibilidad durante despliegues graduales: una API anterior
+                        // devuelve la solicitud directamente y conserva el uso único.
+                        solicitud = data?.ToObject<ReporteSolicitudDto>();
+                    }
                 }
 
                 if (solicitud == null)
@@ -177,6 +207,13 @@ namespace gc.sitio.Controllers
 
                 if (resultado.resultado != 0)
                 {
+                    await RegistrarFalloAsync(
+                        codigo,
+                        accesoId,
+                        cronometro.ElapsedMilliseconds,
+                        StatusCodes.Status500InternalServerError,
+                        resultado.resultado_msj);
+
                     _logger.LogError(
                         "❌ Error al generar PDF: {Mensaje}",
                         resultado.resultado_msj);
@@ -189,6 +226,12 @@ namespace gc.sitio.Controllers
                 }
 
                 var pdfBytes = Convert.FromBase64String(resultado.Base64);
+
+                await ConfirmarDescargaAsync(
+                    codigo,
+                    accesoId,
+                    pdfBytes.LongLength,
+                    cronometro.ElapsedMilliseconds);
 
                 _logger.LogInformation(
                     "✅ PDF generado exitosamente: {Tamaño} KB (Código: {Codigo})",
@@ -211,6 +254,13 @@ namespace gc.sitio.Controllers
             }
             catch (NegocioException ex)
             {
+                await RegistrarFalloAsync(
+                    codigo,
+                    accesoId,
+                    cronometro.ElapsedMilliseconds,
+                    StatusCodes.Status405MethodNotAllowed,
+                    ex.Message);
+
                 _logger.LogError(ex, "❌ Error de validación al intentar obtener el documento según Código: {Codigo}", codigo);
                 return StatusCode(StatusCodes.Status405MethodNotAllowed,
                     new
@@ -221,6 +271,13 @@ namespace gc.sitio.Controllers
             }
             catch (Exception ex)
             {
+                await RegistrarFalloAsync(
+                    codigo,
+                    accesoId,
+                    cronometro.ElapsedMilliseconds,
+                    StatusCodes.Status500InternalServerError,
+                    ex.Message);
+
                 _logger.LogError(ex, "❌ Error crítico al generar documento por código: {Codigo}", codigo);
 
                 return StatusCode(500, new
@@ -228,6 +285,119 @@ namespace gc.sitio.Controllers
                     error = true,
                     mensaje = "Error interno del servidor al generar el documento."
                 });
+            }
+        }
+
+        private async Task ConfirmarDescargaAsync(
+            string codigo,
+            long? accesoId,
+            long bytes,
+            long duracionMs)
+        {
+            if (!accesoId.HasValue || accesoId.Value <= 0)
+            {
+                return;
+            }
+
+            var dto = new ReporteLinkDescargaDto
+            {
+                Codigo = codigo,
+                AccesoId = accesoId.Value,
+                Bytes = bytes,
+                DuracionMs = NormalizarDuracion(duracionMs),
+                ResultadoHttp = StatusCodes.Status200OK
+            };
+
+            using var httpClient = new HttpClient
+            {
+                Timeout = TimeSpan.FromSeconds(30)
+            };
+
+            var apiUrl = _docsManager.ApiReporteUrl?.TrimEnd('/')
+                ?? throw new NegocioException("ApiReporteUrl no configurada");
+            var url = $"{apiUrl}/api/{_docsManager.ApiLink}/ConfirmarDescarga";
+            using var content = new StringContent(
+                JsonConvert.SerializeObject(dto),
+                Encoding.UTF8,
+                "application/json");
+            var response = await httpClient.PostAsync(url, content);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                var detalle = await response.Content.ReadAsStringAsync();
+                throw new NegocioException(ObtenerMensajeError(
+                    detalle,
+                    "No se pudo confirmar la descarga del documento."));
+            }
+        }
+
+        private async Task RegistrarFalloAsync(
+            string codigo,
+            long? accesoId,
+            long duracionMs,
+            int resultadoHttp,
+            string? detalle)
+        {
+            if (!accesoId.HasValue || accesoId.Value <= 0)
+            {
+                return;
+            }
+
+            try
+            {
+                var dto = new ReporteLinkDescargaDto
+                {
+                    Codigo = codigo,
+                    AccesoId = accesoId.Value,
+                    DuracionMs = NormalizarDuracion(duracionMs),
+                    ResultadoHttp = resultadoHttp,
+                    Detalle = detalle
+                };
+
+                using var httpClient = new HttpClient
+                {
+                    Timeout = TimeSpan.FromSeconds(10)
+                };
+                var apiUrl = _docsManager.ApiReporteUrl?.TrimEnd('/');
+                if (string.IsNullOrWhiteSpace(apiUrl))
+                {
+                    return;
+                }
+
+                var url = $"{apiUrl}/api/{_docsManager.ApiLink}/RegistrarFallo";
+                using var content = new StringContent(
+                    JsonConvert.SerializeObject(dto),
+                    Encoding.UTF8,
+                    "application/json");
+                await httpClient.PostAsync(url, content);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(
+                    ex,
+                    "No se pudo registrar el fallo de descarga para el código {Codigo}",
+                    codigo);
+            }
+        }
+
+        private static int NormalizarDuracion(long duracionMs)
+        {
+            return duracionMs > int.MaxValue ? int.MaxValue : (int)duracionMs;
+        }
+
+        private static string ObtenerMensajeError(string contenido, string mensajePredeterminado)
+        {
+            try
+            {
+                var error = JsonConvert.DeserializeObject<ErrorResponse>(contenido);
+                var detalle = error?.Error?.FirstOrDefault()?.Detail;
+                return string.IsNullOrWhiteSpace(detalle)
+                    ? mensajePredeterminado
+                    : detalle;
+            }
+            catch (JsonException)
+            {
+                return mensajePredeterminado;
             }
         }
 
@@ -240,7 +410,7 @@ namespace gc.sitio.Controllers
         [Obsolete("Usar /d/{codigo} en su lugar")]
         public async Task<IActionResult> Index(string parametros)
         {
-            _logger.LogWarning("⚠️ Usando endpoint DEPRECADO /docmanager/{parametros}");
+            _logger.LogWarning("⚠️ Usando endpoint DEPRECADO /docmanager con parámetros heredados");
 
             return StatusCode(410, new
             {

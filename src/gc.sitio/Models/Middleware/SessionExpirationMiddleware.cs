@@ -1,5 +1,6 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 using gc.infraestructura.Core.EntidadesComunes.Options;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Options;
 
 namespace gc.sitio.Models.Middleware
@@ -22,6 +23,14 @@ namespace gc.sitio.Models.Middleware
 
         public async Task InvokeAsync(HttpContext context)
         {
+            // Los endpoints declarados expresamente anónimos no dependen de una sesión
+            // de usuario. Esto permite, por ejemplo, resolver los enlaces públicos /d/{codigo}.
+            if (context.GetEndpoint()?.Metadata.GetMetadata<IAllowAnonymous>() != null)
+            {
+                await _next(context);
+                return;
+            }
+
             // Rutas públicas que no requieren verificación de sesión
             if (context.Request.Path.StartsWithSegments("/seguridad/Token/Login") ||
                 context.Request.Path.StartsWithSegments("/css") ||

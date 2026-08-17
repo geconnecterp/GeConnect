@@ -8,87 +8,105 @@ function inicializacionEventosOrCtl() {
     $("#btnConfirmar").on("click", confirmarProductosOrCtl);
 }
 
+var estadoConfirmacionControlOr = null;
+
 function confirmarProductosOrCtl() {
+    if (estadoConfirmacionControlOr !== null) {
+        console.warn("[Pocket][ControlOR] Se ignora una confirmación duplicada");
+        return false;
+    }
 
-    datos = {};
-    $.ajax({
-        url: ReguardaProductosEnServerOrCtlUrl,
-        type: 'POST',
-        contentType: 'application/json; charset=utf-8',
-        dataType: 'json',
-        data: JSON.stringify(datos),
-        success: function (obj) {
-            console.log("✅ Respuesta recibida:", obj);
-            CerrarWaiting();
+    var datos = {};
+    estadoConfirmacionControlOr = IniciarConfirmacionSegura(
+        "#btnConfirmar",
+        "Espere... se están confirmando los productos controlados...",
+        "Procesando..."
+    );
 
-            if (obj.error === true) {
-                AbrirMensaje(
-                    "Error",
-                    obj.msg || "Ocurrió un error al cargar el producto",
-                    function () {
+    if (estadoConfirmacionControlOr === null) {
+        return false;
+    }
+
+    console.info("[Pocket][ControlOR] Enviando productos controlados");
+
+    try {
+        $.ajax({
+            url: ReguardaProductosEnServerOrCtlUrl,
+            type: 'POST',
+            contentType: 'application/json; charset=utf-8',
+            dataType: 'json',
+            data: JSON.stringify(datos),
+            success: function (obj) {
+                FinalizarConfirmacionControlOr();
+
+                var mensaje = obj.msg || obj.message || "Productos cargados exitosamente";
+                var esError = obj.error === true || obj.success === false;
+                console.info("[Pocket][ControlOR] Respuesta de confirmación", {
+                    error: esError,
+                    advertencia: obj.warn === true,
+                    exitoso: obj.success === true,
+                    mensaje: mensaje
+                });
+
+                if (esError) {
+                    AbrirMensaje("Error", mensaje, function () {
                         $("#msjModal").modal("hide");
-                    },
-                    false,
-                    ["Aceptar"],
-                    "error!",
-                    null
-                );
-            } else if (obj.warn === true) {
-                AbrirMensaje(
-                    "Advertencia",
-                    obj.msg || "Verifique los datos ingresados",
-                    function () {
+                    }, false, ["Aceptar"], "error!", null);
+                }
+                else if (obj.warn === true) {
+                    AbrirMensaje("Advertencia", mensaje, function () {
                         $("#msjModal").modal("hide");
-                    },
-                    false,
-                    ["Aceptar"],
-                    "warn!",
-                    null
-                );
-            } else {
-                AbrirMensaje(
-                    "Éxito",
-                    obj.msg || "Productos cargados exitosamente",
-                    function () {
+                    }, false, ["Aceptar"], "warn!", null);
+                }
+                else {
+                    console.info("[Pocket][ControlOR] Productos controlados confirmados correctamente");
+                    AbrirMensaje("Éxito", mensaje, function () {
                         $("#msjModal").modal("hide");
                         $("#btnConfirmar").hide("fast");
-                    },
-                    false,
-                    ["Aceptar"],
-                    "succ!",
-                    null
-                );
-            }
-        },
-        error: function (xhr, status, error) {
-            console.error("❌ Error AJAX:", error, xhr);
-            CerrarWaiting();
-
-            let mensajeError = "Error de conexión al cargar el producto";
-            if (xhr.responseJSON && xhr.responseJSON.msg) {
-                mensajeError = xhr.responseJSON.msg;
-            } else if (xhr.responseText) {
-                try {
-                    const response = JSON.parse(xhr.responseText);
-                    mensajeError = response.msg || mensajeError;
-                } catch (e) {
-                    console.error("Error al parsear respuesta:", e);
+                    }, false, ["Aceptar"], "succ!", null);
                 }
-            }
+            },
+            error: function (xhr, status, error) {
+                FinalizarConfirmacionControlOr();
+                console.error("[Pocket][ControlOR] Error de comunicación durante la confirmación", {
+                    estadoHttp: xhr ? xhr.status : null,
+                    detalleHttp: status,
+                    error: error
+                });
 
-            AbrirMensaje(
-                "Error",
-                mensajeError,
-                function () {
+                var mensajeError = "Error de conexión al cargar los productos";
+                if (xhr.responseJSON) {
+                    mensajeError = xhr.responseJSON.msg || xhr.responseJSON.message || mensajeError;
+                }
+                else if (xhr.responseText) {
+                    try {
+                        var response = JSON.parse(xhr.responseText);
+                        mensajeError = response.msg || response.message || mensajeError;
+                    }
+                    catch (parseError) {
+                        console.error("[Pocket][ControlOR] No se pudo interpretar la respuesta de error", parseError);
+                    }
+                }
+
+                AbrirMensaje("Error", mensajeError, function () {
                     $("#msjModal").modal("hide");
-                },
-                false,
-                ["Aceptar"],
-                "error!",
-                null
-            );
-        }
-    });
+                }, false, ["Aceptar"], "error!", null);
+            }
+        });
+    }
+    catch (error) {
+        console.error("[Pocket][ControlOR] Error inesperado al iniciar la confirmación", error);
+        FinalizarConfirmacionControlOr();
+        ControlaMensajeError("No se pudo iniciar la confirmación. Intente nuevamente.");
+    }
+
+    return false;
+}
+
+function FinalizarConfirmacionControlOr() {
+    var contexto = estadoConfirmacionControlOr;
+    estadoConfirmacionControlOr = null;
+    FinalizarConfirmacionSegura(contexto);
 }
 
 function cargarProductosOrCtl(orCompte) {
