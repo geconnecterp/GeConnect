@@ -2122,6 +2122,19 @@ namespace gc.sitio.Controllers
             {
                 var json = JsonConvert.SerializeObject(value);
                 _context.HttpContext?.Session.SetString("DocumentManager", json);
+
+                // El valor de sesión se conserva por compatibilidad, pero cada
+                // respuesta identifica también su propio módulo. De esta manera
+                // dos pestañas no dependen de cuál escribió la sesión por última vez.
+                var moduloId = value?.Id ?? string.Empty;
+                ViewData["GestorModuloId"] = moduloId;
+
+                if (!string.IsNullOrWhiteSpace(moduloId) &&
+                    HttpContext?.Response != null &&
+                    !HttpContext.Response.HasStarted)
+                {
+                    HttpContext.Response.Headers["X-GECO-Print-Module"] = moduloId;
+                }
             }
         }
 

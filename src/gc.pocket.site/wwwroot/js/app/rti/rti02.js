@@ -40,11 +40,6 @@
         }
     })
 
-    $("#btnConfirmarUL").on("click", function () {
-
-
-    });
-
     //input del control. Sirve para permitir inicializar pantalla.
     $("input#Busqueda").on("focus", function () {
         InicializaPantallaRTI02();
@@ -374,39 +369,81 @@ function AcumularProducto() {
 //        return true;
 //    });
 //}
-function confirmarRTI() {
-    //obtener deposito y UL
-    var ul = $("#ul_Id").val();
-   
-    datos = { ul }
-    AbrirWaiting("Espere... se estan grabando los datos...");
-    PostGen(datos, ConfirmarRTIUrl, function (obj) {
-        if (obj.error === true) {
-            CerrarWaiting();
-            AbrirMensaje("ATENCIÓN", obj.msg, function () {
-                $("#msjModal").modal("hide");
-                return true;
-            },
-                false, ["Aceptar"], "error!", null);
-        }
-        else if (obj.warn === true) {
-            CerrarWaiting();
-            AbrirMensaje("ATENCIÓN", obj.msg, function () {
-                $("#msjModal").modal("hide");
-                return true;
-            },
-                false, ["Aceptar"], "warn!", null);
-        }
-        else {
-            CerrarWaiting();
-            AbrirMensaje("ATENCIÓN", obj.msg, function () {
+var estadoConfirmacionRtr = null;
 
-                $("#msjModal").modal("hide");
-                window.location.href = homeUrl;
-                return true;
-            },
-                false, ["Aceptar"], "succ!", null);
-        }
-    })
-    return true;
+function confirmarRTI() {
+    if (estadoConfirmacionRtr !== null) {
+        console.warn("[Pocket][RTR] Se ignora una confirmación duplicada");
+        return false;
+    }
+
+    // Obtener UL. Las validaciones funcionales continúan realizándose en el servidor.
+    var ul = $("#ul_Id").val();
+    var datos = { ul };
+
+    estadoConfirmacionRtr = IniciarConfirmacionSegura(
+        "#btnConfirmarUL",
+        "Espere... se están grabando los datos de la transferencia...",
+        "Procesando..."
+    );
+
+    if (estadoConfirmacionRtr === null) {
+        return false;
+    }
+
+    console.info("[Pocket][RTR] Confirmando recepción de transferencia", { ul: ul });
+
+    try {
+        PostGen(datos, ConfirmarRTIUrl, function (obj) {
+            FinalizarConfirmacionRtr();
+            console.info("[Pocket][RTR] Respuesta de confirmación", {
+                error: obj.error === true,
+                advertencia: obj.warn === true,
+                mensaje: obj.msg,
+                ul: ul
+            });
+
+            if (obj.error === true) {
+                AbrirMensaje("ATENCIÓN", obj.msg, function () {
+                    $("#msjModal").modal("hide");
+                    return true;
+                }, false, ["Aceptar"], "error!", null);
+            }
+            else if (obj.warn === true) {
+                AbrirMensaje("ATENCIÓN", obj.msg, function () {
+                    $("#msjModal").modal("hide");
+                    return true;
+                }, false, ["Aceptar"], "warn!", null);
+            }
+            else {
+                console.info("[Pocket][RTR] Recepción confirmada correctamente", { ul: ul });
+                AbrirMensaje("ATENCIÓN", obj.msg, function () {
+                    $("#msjModal").modal("hide");
+                    window.location.href = homeUrl;
+                    return true;
+                }, false, ["Aceptar"], "succ!", null);
+            }
+        }, function (jqXHR) {
+            console.error("[Pocket][RTR] Error de comunicación durante la confirmación", {
+                estadoHttp: jqXHR ? jqXHR.status : null,
+                detalleHttp: jqXHR ? jqXHR.statusText : null,
+                ul: ul
+            });
+            FinalizarConfirmacionRtr();
+            fnError(jqXHR);
+        });
+    }
+    catch (error) {
+        console.error("[Pocket][RTR] Error inesperado al iniciar la confirmación", error);
+        FinalizarConfirmacionRtr();
+        ControlaMensajeError("No se pudo iniciar la confirmación. Intente nuevamente.");
+    }
+
+    return false;
+}
+
+function FinalizarConfirmacionRtr() {
+    var contexto = estadoConfirmacionRtr;
+    estadoConfirmacionRtr = null;
+    FinalizarConfirmacionSegura(contexto);
 }

@@ -11,7 +11,20 @@ namespace gc.infraestructura.EntidadesComunes.Options
         public string ApiLink { get; set; } = string.Empty;
         public string Crear { get; set; } = string.Empty;
         public string Obtener { get; set; } = string.Empty;
+        public PrintPackageOptions PrintPackage { get; set; } = new();
         public List<AppModulo> Modulos { get; set; } = new();
+    }
+
+    /// <summary>
+    /// Límites operativos para la generación de paquetes de impresión.
+    /// Los valores se pueden ajustar sin modificar los generadores individuales.
+    /// </summary>
+    public class PrintPackageOptions
+    {
+        public int MaxDocumentos { get; set; } = 8;
+        public int MaxPaginas { get; set; } = 300;
+        public int MaxTamanoMb { get; set; } = 50;
+        public int TimeoutMinutos { get; set; } = 5;
     }
 
     /// <summary>
@@ -104,6 +117,25 @@ namespace gc.infraestructura.EntidadesComunes.Options
     {
         public List<string> Titulos { get; set; } = new();
         public int Id { get; set; }
+        /// <summary>
+        /// Permite incluir el reporte en un PDF consolidado con otros reportes.
+        /// Es true por defecto para mantener compatibilidad con la configuración existente.
+        /// </summary>
+        public bool PermiteImpresionGlobal { get; set; } = true;
+
+        /// <summary>
+        /// Permite crear un enlace anónimo y temporal para este reporte.
+        /// Se mantiene en true por compatibilidad; los documentos sensibles
+        /// deben declararse explícitamente en false en la configuración.
+        /// </summary>
+        public bool PermiteEnlacePublico { get; set; } = true;
+
+        /// <summary>
+        /// Identifica reportes que, si se habilitan para enlaces, requieren
+        /// auditoría reforzada en la capa de persistencia.
+        /// </summary>
+        public bool RequiereAuditoriaEnlace { get; set; }
+
         public bool ImprimeDuplicado { get; set; }
         public bool ImprimeSoloDuplicado { get; set; }
     }

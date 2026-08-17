@@ -91,6 +91,83 @@ function DesactivarSpinnerBoton(btnSelector, estadoOriginal) {
         .removeClass('btn-loading');
 }
 
+var confirmacionSeguraActiva = null;
+
+function BloquearInteraccionDuranteConfirmacion(evento) {
+    evento.preventDefault();
+    evento.stopImmediatePropagation();
+}
+
+function AdvertirSalidaDuranteConfirmacion(evento) {
+    evento.preventDefault();
+    evento.returnValue = '';
+    return '';
+}
+
+/**
+ * Inicia una confirmación que no admite interacción ni navegación accidental.
+ * Combina spinner en el botón, bloqueo visual, bloqueo de teclado y aria-busy.
+ * @returns {object|null} Contexto que debe enviarse a FinalizarConfirmacionSegura.
+ */
+function IniciarConfirmacionSegura(btnSelector, mensajePantalla, textoBoton) {
+    if (confirmacionSeguraActiva !== null) {
+        console.warn('[Pocket][Confirmacion] Se ignoró una confirmación duplicada');
+        return null;
+    }
+
+    var $btn = typeof btnSelector === 'string' ? $(btnSelector) : btnSelector;
+    var estadoBoton = ActivarSpinnerBoton($btn, textoBoton || 'Procesando...');
+    if (!estadoBoton) {
+        return null;
+    }
+
+    var contexto = {
+        boton: $btn,
+        estadoBoton: estadoBoton,
+        finalizada: false
+    };
+
+    confirmacionSeguraActiva = contexto;
+    $btn.attr('aria-busy', 'true');
+    $('#formulario').attr({ 'aria-busy': 'true', 'inert': '' });
+    $('body').addClass('confirmacion-en-proceso');
+
+    // Se usa la fase de captura para frenar primero el teclado físico y el
+    // lector de códigos de los colectores, antes de que lleguen a la vista.
+    document.addEventListener('keydown', BloquearInteraccionDuranteConfirmacion, true);
+    window.addEventListener('beforeunload', AdvertirSalidaDuranteConfirmacion);
+
+    AbrirWaiting(mensajePantalla || 'Procesando... Espere un momento por favor.');
+    console.info('[Pocket][Confirmacion] Pantalla bloqueada y operación iniciada');
+    return contexto;
+}
+
+/**
+ * Libera todos los recursos de una confirmación. Es seguro llamarla una sola vez
+ * desde cualquier salida: éxito, advertencia, error funcional o error HTTP.
+ */
+function FinalizarConfirmacionSegura(contexto) {
+    if (!contexto || contexto.finalizada) {
+        return false;
+    }
+
+    contexto.finalizada = true;
+    CerrarWaiting();
+    DesactivarSpinnerBoton(contexto.boton, contexto.estadoBoton);
+    contexto.boton.removeAttr('aria-busy');
+    $('#formulario').removeAttr('aria-busy inert');
+    $('body').removeClass('confirmacion-en-proceso');
+    document.removeEventListener('keydown', BloquearInteraccionDuranteConfirmacion, true);
+    window.removeEventListener('beforeunload', AdvertirSalidaDuranteConfirmacion);
+
+    if (confirmacionSeguraActiva === contexto) {
+        confirmacionSeguraActiva = null;
+    }
+
+    console.info('[Pocket][Confirmacion] Pantalla y controles restaurados');
+    return true;
+}
+
 /**
  * Wrapper para ejecutar función con spinner en botón
  * Maneja automáticamente la activación y desactivación del spinner
@@ -178,7 +255,7 @@ function AbrirWaiting(Mensaje) {
     } else {
         $('#lblWaiting').text("Cargando...");
     }
-    $('#wWaiting').fadeIn(0);
+    $('#wWaiting').attr('aria-hidden', 'false').fadeIn(0);
 }
 
 
@@ -186,7 +263,7 @@ function AbrirWaiting(Mensaje) {
 ///haya definido una funcion de callback, 
 ///para ejecutar funcionalidad luego de cerrar modal waiting
 function CerrarWaiting(ejecutar) {
-    $('#wWaiting').fadeOut(0);
+    $('#wWaiting').attr('aria-hidden', 'true').fadeOut(0);
     if (ejecutar === true) {
         FunctionCallback();
         return true;

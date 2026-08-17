@@ -110,10 +110,32 @@ $(function () {
                     dataType: "json",
                     data: data,
                     success: function (obj) {
-                        response($.map(obj, function (item) {
-                            var tipo = ""; if (item.tipo === 'P') { tipo = 'Proveedor' } else { tipo = 'Cliente' }
-                            var texto = "" + item.descripcion + " ("+ item.id + ") ("+tipo + ")";
-                            return { label: texto, value: item.descripcion, id: item.id, tipo: item.tipo };
+                        const cuentas = Array.isArray(obj)
+                            ? obj
+                            : (obj.lista ?? obj.Lista ?? []);
+
+                        response($.map(cuentas, function (item) {
+                            const itemId = item.id ?? item.Id
+                                ?? item.cta_Id ?? item.Cta_Id
+                                ?? item.ctaId ?? item.CtaId;
+                            const itemDescripcion = item.descripcion ?? item.Descripcion
+                                ?? item.cta_Denominacion ?? item.Cta_Denominacion
+                                ?? item.ctaDenominacion ?? item.CtaDenominacion;
+                            const itemTipo = item.tipo ?? item.Tipo
+                                ?? item.cta_Tipo ?? item.Cta_Tipo;
+
+                            if (!itemId || !itemDescripcion) {
+                                return null;
+                            }
+
+                            const tipoDescripcion = itemTipo === 'P' ? 'Proveedor' : 'Cliente';
+                            const texto = `${itemDescripcion} (${itemId}) (${tipoDescripcion})`;
+                            return {
+                                label: texto,
+                                value: itemDescripcion,
+                                id: itemId,
+                                tipo: itemTipo
+                            };
                         }));
                     }
                 })
@@ -165,6 +187,11 @@ $(function () {
                 .appendTo(ul);
         };
     });
+
+    // Inicializar el autocomplete específico al cargar la vista. De este modo
+    // reemplaza al control genérico antes de la primera búsqueda, incluso si
+    // el valor se completa por pegado, autocompletado del navegador o pruebas UI.
+    $("input#Rel01").trigger("keydown.autocompete");
 
 
     $("#btnCancel").on("click", function () {
