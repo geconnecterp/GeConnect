@@ -1,4 +1,6 @@
-﻿$(function () {
+﻿var cta_id_seleccionada = "";
+var lpId_Seleccionada = "";
+$(function () {
     InicializaPantalla();
     InicializaEventos();
 
@@ -15,9 +17,14 @@ function InicializaPantalla() {
 
 function InicializaEventos() {
     $("#btnAbmCancelar").prop("disabled", true);
+    $(document).off("click", "#btnAbmAceptar");
+    $(document).on("click", "#btnAbmAceptar", ControlaBtnAbmAceptarClick);
+    $(document).off("click", "#btnAbmModif");
     $(document).on("click", "#btnAbmModif", ControlaBtnAbmModifClick);
+    $(document).off("click", "#btnAbmCancelar");
     $(document).on("click", "#btnAbmCancelar", ControlaBtnAbmCancelarClick);
     // Captura selección de fila y envía lp_id al backend
+    $(document).off("click", "#tbGridListaPrecios tbody tr");
     $(document).on("click", "#tbGridListaPrecios tbody tr", function () {
 
         // Remover selección previa
@@ -30,7 +37,13 @@ function InicializaEventos() {
         let lpId = $(this).data("lp-id");
         let lpMgnPrincipal = $(this).data("lp-mgn-principal");
 
-        if (!lpId) return;
+        if (!lpId) {
+            lpId_Seleccionada = "";
+            return;
+        }
+        else {
+            lpId_Seleccionada = lpId;
+        }
 
 		// Enviar al backend para obtener los datos de la lista de precios seleccionada
         AbrirWaiting("Cargando información...");
@@ -50,7 +63,7 @@ function InicializaEventos() {
 
             PostGenHtml({ lp_id: lpId }, cargarDatosDeListaDePrecioRubCtaURL, function (obj) {
                 $("#divRubrosProv").html(obj);
-                deshabilitarYBlanquearActivables();
+                //deshabilitarYBlanquearActivables();
             });
 
             PostGenHtml({}, cargarDatosDeSeccionRubCtaURL, function (obj) {
@@ -58,7 +71,7 @@ function InicializaEventos() {
 
                 const $mgn = $("#divDatosRubrosProv #Mgn");
                 if ($mgn.length) {
-                    getMaskForMoneyType($mgn);
+                    CargarInputMaskDos();
                 }
 
                 cargarEventosSeccionDatosRubCta();
@@ -96,42 +109,118 @@ function InicializaEventos() {
     });
 }
 
-function habilitarActivables() {
-    $(".activable").each(function () {
-        $(this).prop("disabled", false);
+function ControlaBtnAbmAceptarClick() {
+    AbrirMensaje("ATENCIÓN", `Se pueden generar modificaciones masivas de precios, en carga temporal ¿Esta seguro de continuar?`, function (e) {
+        $("#msjModal").modal("hide");
+        switch (e) {
+            case "SI":
+                handlerBtnAbmAceptarClick();
+                break;
+            case "NO":
+                break;
+            default: //NO
+                break;
+        }
+        return true;
+
+    }, true, ["Aceptar", "Cancelar"], "question!", null);
+}
+
+function handlerBtnAbmAceptarClick() {
+    AbrirWaiting("Registrando modificaciones en Lista de Precios...");
+    let lpId = lpId_Seleccionada;
+    let abm = 'M';
+    let lpMgnPrincipal = $("#tbGridListaPrecios tr[data-lp-id='" + lpId + "']").data("lp-mgn-principal");
+
+    if (lpMgnPrincipal == 'S') {
+        let lpMargen = 0;
+        let lpMgnPrincipalPorc = $("#lp_margen").inputmask('unmaskedvalue');
+    }
+    else {
+        let lpMargen = $("#lp_margen").inputmask('unmaskedvalue');
+        let lpMgnPrincipalPorc = 0;
+    }
+    let lpPrevisionTot = $("#lp_prevision_tot").inputmask('unmaskedvalue');
+    let lpPrevisionPin = $("#lp_prevision_pin").inputmask('unmaskedvalue');
+    var data = {
+        abm,
+        lpId,
+        lpMargen,
+        lpMgnPrincipal,
+        lpMgnPrincipalPorc,
+        lpPrevisionTot,
+        lpPrevisionPin,
+    };
+    PostGen(data, registrarModificacionesEnListaDePreciosURL, function (obj) {
+        CerrarWaiting();
+        //Deberiamos actualizar la vista
+        InicializaEventos();
+
+        // Seleccionar automáticamente la primera fila al iniciar
+        SeleccionarPrimeraListaPrecio();
     });
 }
 
+function habilitarActivables() {
+    $(".activable").each(function () {
+        const $el = $(this);
+
+        // Habilitar edición
+        $el.prop("disabled", false);
+        $el.prop("readonly", false);
+
+        // Si es un input con máscara, reactivar la máscara
+        // if ($el.hasClass("lp-input")) {
+        //     getMaskForMoneyType($el);
+        // }
+    });
+    //CargarInputMask();
+}
+
 function deshabilitarYBlanquearActivables() {
+
     $(".activable").each(function () {
         const $el = $(this);
 
         // Siempre deshabilitar
-        $el.prop("disabled", true);
+        //$el.prop("disabled", true);
+        $el.prop("readonly", true);
 
-        // Blanquear según tipo (excepto checkbox)
+        // INPUT TEXT
         if ($el.is("input[type='text']")) {
 
-            if ($el.hasClass("lp-input")) {
-                $el.val("0.00");   // valor default para inputs con máscara
+            // Inputs con máscara (lp-input y lp-input-dos)
+            if ($el.hasClass("lp-input") || $el.hasClass("lp-input-dos")) {
+                $el.val("0.00");
             } else {
-                $el.val("");       // input normal
+                $el.val("");
             }
 
-        } else if ($el.is("select")) {
+            // Si es el autocomplete Rel01 → también blanquear hidden
+            if ($el.attr("id") === "Rel01") {
+                $("#Rel01Item").val("");
+            }
+        }
 
-            $el.val("");           // volver a "Seleccionar"
+        // SELECT
+        else if ($el.is("select")) {
+            // Volver a "Seleccionar"
+            $el.val("");
+        }
 
-        } else if ($el.is("input[type='checkbox']")) {
+        // CHECKBOX
+        else if ($el.is("input[type='checkbox']")) {
+            // NO cambiar estado, solo deshabilitar
+        }
 
-            // ❌ NO cambiar estado
-            // $el.prop("checked", false);  <-- eliminar esta línea
-
-            // Solo deshabilitar
-            // (ya está deshabilitado arriba)
+        // BOTONES
+        else if ($el.is("button")) {
+            // Deshabilitar botón
+            $el.prop("disabled", true);
         }
     });
 }
+
 
 
 function ControlaBtnAbmModifClick() {
@@ -139,6 +228,8 @@ function ControlaBtnAbmModifClick() {
     $("#btnAbmAceptar").prop("disabled", false);
     $("#btnAbmCancelar").prop("disabled", false);
     $("#btnAbmModif").prop("disabled", true);
+
+    $("#tbGridListaPrecios").addClass("tabla-bloqueada");
 }
 
 function ControlaBtnAbmCancelarClick() {
@@ -146,8 +237,59 @@ function ControlaBtnAbmCancelarClick() {
     $("#btnAbmAceptar").prop("disabled", true);
     $("#btnAbmCancelar").prop("disabled", true);
     $("#btnAbmModif").prop("disabled", false);
+
+    $("#tbGridListaPrecios").removeClass("tabla-bloqueada");
 }
-function agregarItemRubroCta() { }
+function agregarItemRubroCta() {
+    AbrirWaiting("Agregando registros...");
+    var valorSeleccionado = "";
+    var porSectores = $("#chkPorSectores").is(":checked");
+    var ctaId = cta_id_seleccionada ? cta_id_seleccionada : "%";
+    var valorSeleccionado = $("#contenedorSector:visible #listaSectores").val()
+        || $("#contenedorRubros:visible #listaRubros").val();
+    var mgn = $("#Mgn").inputmask('unmaskedvalue');
+    var lpId = lpId_Seleccionada;
+    var data = { lpId, valorSeleccionado, porSectores, ctaId, mgn };
+    PostGen(data, agregarRegistrosUrl, function (obj) {
+        CerrarWaiting();
+        if (obj.error === true) {
+            AbrirMensaje("ATENCIÓN", obj.mensaje, function () {
+                $("#msjModal").modal("hide");
+                return true;
+            }, false, ["Aceptar"], "error!", null);
+        }
+        else {
+            actualizarListaRubroCta(lpId_Seleccionada);
+            setTimeout(() => {
+                $("#listaSectores").val("");
+                $("#listaRubros").val("");
+                cta_id_seleccionada = "";
+                $("#Rel01").val("");
+                $("#Mgn").val("0.00");
+            }, 100);
+        }
+    });
+}
+
+function actualizarListaRubroCta(lpId) {
+    PostGenHtml({ lp_id: lpId }, cargarDatosDeListaDePrecioRubCtaURL, function (obj) {
+        $("#divRubrosProv").html(obj);
+    });
+}
+
+function actualizarDatosComplementariosRubrosCta() {
+    PostGenHtml({}, cargarDatosDeSeccionRubCtaURL, function (obj) {
+        $("#divDatosRubrosProv").html(obj);
+
+        const $mgn = $("#divDatosRubrosProv #Mgn");
+        if ($mgn.length) {
+            CargarInputMaskDos();
+        }
+
+        cargarEventosSeccionDatosRubCta();
+        return true;
+    });
+}
 
 function eliminarItemRubroCta(rubId, ctaId) {
     // Implement the logic to eliminate the item
@@ -166,7 +308,14 @@ function SeleccionarPrimeraListaPrecio() {
 
 function CargarInputMask() {
     // Aplica la máscara a todos los inputs numéricos del partial
+    console.log("CargarInputMask");
     getMaskForMoneyType("#divDatosLP .lp-input");
+}
+
+function CargarInputMaskDos() {
+    // Aplica la máscara a todos los inputs numéricos del partial
+    console.log("CargarInputMaskDos");
+    getMaskForMoneyType("#divDatosRubrosProv .lp-input-dos");
 }
 
 function getMaskForMoneyType(selector) {
@@ -203,7 +352,11 @@ function getMaskForMoneyType2(selector) {
 }
 
 function cargarEventosSeccionDatosRubCta() {
-    $("#Rel01").on("click", function () { $(this).val(""); });
+    $("#Rel01").off("click");
+    $("#Rel01").on("click", function () {
+        $(this).val("");
+        cta_id_seleccionada = "";
+    });
     $("#Rel01").autocomplete({
         source: function (request, response) {
 
@@ -217,17 +370,55 @@ function cargarEventosSeccionDatosRubCta() {
                 success: function (obj) {
                     response($.map(obj, function (item) {
                         var texto = item.descripcion;
-                        return { label: texto, value: item.descripcion, id: item.id, prov: item.provId };
+                        return {
+                            label: texto,
+                            value: item.descripcion,
+                            id: item.id,
+                            prov: item.provId
+                        };
                     }));
                 }
             })
         },
         minLength: 3,
+
+        focus: function (event, ui) {
+            // evita que el # aparezca mientras navegas con flechas
+            const partes = ui.item.value.split("#");
+            $("#Rel01").val(partes.join(" "));
+            return false;
+        },
+
         select: function (event, ui) {
-            // $("#razonsocial").val(ui.item.value);
-            // $("#Cuenta").val(ui.item.id)
-            var opc = "<option value=" + ui.item.id + ">" + ui.item.value + "</option>"
+            const partes = ui.item.value.split("#");
+            const textoSinSeparador = partes.join(" ");
+
+            // Mostrar SIN el "#"
+            $("#Rel01").val(textoSinSeparador);
+            cta_id_seleccionada = ui.item.id;
+            var opc = "<option value=" + ui.item.id + ">" + textoSinSeparador + "</option>"
+
+            event.preventDefault();
             return true;
         }
-    });
+    }).autocomplete("instance")._renderItem = function (ul, item) {
+
+        const partes = item.label.split("#");
+
+        const ctaLista = partes[0];
+        const tipoDesc = partes[1];
+
+        return $("<li>")
+            .append(
+                `<div>
+                <span style="font-weight:bold; font-size:14px;">
+                    ${ctaLista}
+                </span>
+                <span style="font-size:13px; color:#555;">
+                    ${tipoDesc}
+                </span>
+            </div>`
+            )
+            .appendTo(ul);
+    };
 }

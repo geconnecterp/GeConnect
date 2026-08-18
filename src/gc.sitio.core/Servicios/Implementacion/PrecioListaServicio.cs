@@ -1,9 +1,12 @@
 ﻿using gc.infraestructura.Core.EntidadesComunes;
 using gc.infraestructura.Core.EntidadesComunes.Options;
+using gc.infraestructura.Core.Exceptions;
 using gc.infraestructura.Core.Helpers;
 using gc.infraestructura.Core.Responses;
 using gc.infraestructura.Dtos;
+using gc.infraestructura.Dtos.Almacen.AjusteDeStock.Request;
 using gc.infraestructura.Dtos.Gen;
+using gc.infraestructura.Dtos.Productos;
 using gc.infraestructura.Dtos.Productos.Etiqueta;
 using gc.infraestructura.Dtos.Productos.Precio;
 using gc.sitio.core.Servicios.Contratos;
@@ -21,6 +24,7 @@ namespace gc.sitio.core.Servicios.Implementacion
         private const string OBTENER_LISTA_PRECIOS = "/ObtenerListaPrecios/";
         private const string OBTENER_LISTA_DETALLE = "/ObtenerDetallePrecios";
 		private const string OBTENER_LISTA_RUB_CTA = "/ObtenerListaPreciosRubCta";
+		private const string REGISTRAR_MODIFICACIONES = "/RegistrarModificacionesEnListaDePrecios";
 
 		public PrecioListaServicio(IOptions<AppSettings> options, ILogger<EtiquetaServicio> logger) : base(options, logger)
         {
@@ -100,6 +104,37 @@ namespace gc.sitio.core.Servicios.Implementacion
 			{
 				_logger.LogError($"{GetType().Name}-{MethodBase.GetCurrentMethod()?.Name} - {ex}");
 				return new() { Ok = false, Mensaje = "Error al obtener la Lista de Precios Por Rubro/Cuenta" };
+			}
+		}
+
+		public RespuestaGenerica<RespuestaDto> RegistrarModificacionesEnListaDePrecios(RegistrarModificacionesEnListaDePreciosRequest request, string token)
+		{
+			ApiResponse<List<RespuestaDto>> apiResponse;
+
+			HelperAPI helper = new();
+			HttpClient client = helper.InicializaCliente(request, token, out StringContent contentData);
+			HttpResponseMessage response;
+
+			var link = $"{_appSettings.RutaBase}{RutaAPI}{REGISTRAR_MODIFICACIONES}";
+
+			response = client.PostAsync(link, contentData).Result;
+
+			if (response.StatusCode == HttpStatusCode.OK)
+			{
+				string stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+				if (string.IsNullOrEmpty(stringData))
+				{
+					_logger.LogWarning($"La API devolvió error. ");
+					return new();
+				}
+				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<RespuestaDto>>>(stringData) ?? throw new NegocioException("Hubo un problema al deserializar los datos");
+				return new RespuestaGenerica<RespuestaDto>() { Entidad = apiResponse.Data.First() };
+			}
+			else
+			{
+				string stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+				_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+				return new();
 			}
 		}
 	}

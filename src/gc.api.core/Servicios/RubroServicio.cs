@@ -30,6 +30,21 @@ namespace gc.api.core.Servicios
                 return res.ToList();
             }
         }
-      
-    }
+
+		public List<RubroItemListaDto> GetRubroUno(string rub_id)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_RUBRO_UNO;
+			var ps = new List<SqlParameter>() { new SqlParameter("@rub_id", rub_id) };
+			var res = _repository.EjecutarLstSpExt<RubroItemListaDto>(sp, ps, true);
+
+			if (res.Count == 0)
+			{
+				return new List<RubroItemListaDto>();
+			}
+			else
+			{
+				return res.ToList();
+			}
+		}
+	}
 }

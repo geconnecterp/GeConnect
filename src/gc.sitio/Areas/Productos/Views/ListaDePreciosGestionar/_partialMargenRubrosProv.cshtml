@@ -16,9 +16,12 @@
         white-space: nowrap;
     }
 
-    .lp-input {
+    .lp-input-dos {
         width: 120px;
         text-align: right;
+                padding: 2px 4px; /* menos padding */
+        height: 24px; /* más compacto */
+        font-size: 0.80rem; /* texto más chico */
     }
 
     .lp-check {
@@ -65,7 +68,7 @@
                 @Html.Hidden("Rel01Item")
             </div>
             <button type="button" class="btn btn-primary btn-icon-compact activable" title="Agregar elemento" onclick="agregarItemRubroCta()" disabled>
-                <i class="bx bx-trash"></i>
+                <i class="bx bx-plus"></i>
             </button>
         </div>
         <div class="lp-row">
@@ -76,7 +79,7 @@
                 </div>
             </div>
             <label class="lp-label-mrp">% Mg LP:</label>
-            <input type="text" asp-for="Mgn" value="@Model.Mgn.ToString("0.00")" class="form-control activable inputEditable lp-input" disabled />
+            <input type="text" asp-for="Mgn" value="@Model.Mgn.ToString("0.00")" class="form-control activable inputEditable lp-input-dos" disabled />
         </div>
     </div>
 </div>

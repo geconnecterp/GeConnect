@@ -5,6 +5,19 @@
     string clase = string.Empty;
 	var lp = new List<ListaPrecioDto>();
 }
+<style>
+	#tbGridListaPrecios td input[type="checkbox"] {
+		display: block;
+		margin-left: auto;
+		margin-right: auto;
+	}
+
+	.tabla-bloqueada {
+		pointer-events: none;
+		opacity: 0.6; /* opcional, para mostrar que está bloqueada */
+	}
+
+</style>
 <div class="grid-golden">
 	<div class="grid-golden-header">
 		<div class="row align-items-md-center">
@@ -41,13 +54,13 @@
 								<td class="@Model.ObtenerClase(item.lp_desc) cell-fit-content">@Model.FormatearDato(item.lp_desc, FormatDato.Ninguno)</td>
 								@if (item.lp_mgn_principal == "N")
 								{
-									<td>
+									<td class="text-center cell-fit-content">
 										<input type="checkbox" checked disabled />
 									</td>
 								}
 								else
 								{
-									<td>
+									<td class="text-center cell-fit-content">
 										<input type="checkbox" disabled />
 									</td>
 								}

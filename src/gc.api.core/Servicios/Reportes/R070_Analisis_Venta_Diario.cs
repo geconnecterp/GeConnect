@@ -3,13 +3,7 @@ using gc.api.core.Contratos.Servicios.Reportes;
 using gc.api.core.Entidades;
 using gc.api.core.Interfaces.Datos;
 using gc.infraestructura.Core.Exceptions;
-using gc.infraestructura.Dtos;
-using gc.infraestructura.Dtos.Almacen.Tr.Transferencia;
-using gc.infraestructura.Dtos.Consultas.ConsCertNoRetNoPercep;
 using gc.infraestructura.Dtos.Gen;
-using gc.infraestructura.Dtos.Inventario.Request;
-using gc.infraestructura.Dtos.Productos.OrdenDeReparto;
-using gc.infraestructura.Dtos.Productos.Pedidos;
 using gc.infraestructura.Dtos.Ventas;
 using gc.infraestructura.EntidadesComunes.Options;
 using gc.infraestructura.Helpers;
@@ -105,7 +99,7 @@ namespace gc.api.core.Servicios.Reportes
 				pdf.Open();
 
 				#region Lista 
-				HelperPdf.CargarRepoAnalisisDeVentaDiario(pdf, registros, chico, normal, normalBold, titulo, tituloBig);
+				CargarRepoAnalisisDeVentaDiario(pdf, registros, chico, normal, normalBold, titulo, tituloBig);
 				#endregion
 
 				pdf.Close();
@@ -209,5 +203,175 @@ namespace gc.api.core.Servicios.Reportes
 
 			return GeneraFileXLS(regs, _titulos, _campos);
 		}
+
+		#region funciones
+		public static void CargarRepoAnalisisDeVentaDiario(Document pdf, List<AnaVtaMesDetalleDiarioDto> registros, Font chico, Font normal, Font normalBold, Font titulo, Font tituloBig)
+		{
+			// Página apaisada
+			pdf.SetPageSize(PageSize.A4.Rotate());
+			pdf.SetMargins(20f, 20f, 20f, 20f);
+
+			// ============================
+			// ENCABEZADO REPETIBLE
+			// ============================
+			PdfPTable header = new PdfPTable(1);
+			header.WidthPercentage = 100;
+
+			PdfPCell tituloCell = new PdfPCell(new Phrase("Análisis de Venta Diario", tituloBig))
+			{
+				Border = Rectangle.NO_BORDER,
+				HorizontalAlignment = Element.ALIGN_CENTER,
+				PaddingBottom = 5
+			};
+			header.AddCell(tituloCell);
+
+			PdfPCell subCell = new PdfPCell(new Phrase("Detalle por día", titulo))
+			{
+				Border = Rectangle.NO_BORDER,
+				HorizontalAlignment = Element.ALIGN_CENTER,
+				PaddingBottom = 10
+			};
+			header.AddCell(subCell);
+
+			header.HeaderRows = 2;
+			pdf.Add(header);
+
+			// ============================
+			// TABLA PRINCIPAL
+			// ============================
+			PdfPTable tabla = new PdfPTable(11)
+			{
+				WidthPercentage = 100
+			};
+
+			tabla.SetWidths(new float[] {
+				1.4f, // Día
+				2.0f, // Facturación
+				2.0f, // Fact. Ac.
+				1.8f, // % Acu MA
+				2.0f, // Costo
+				2.0f, // Rentabilidad
+				2.0f, // Rent. Ac.
+				2.2f, // Vta CtaCte (mini tabla)
+				2.0f, // Fact MA
+				2.0f, // Fact MI
+				2.0f  // Fact Dif
+			});
+
+			// ============================
+			// ENCABEZADOS
+			// ============================
+			void AddHeader(string texto)
+			{
+				PdfPCell c = new PdfPCell(new Phrase(texto, normalBold))
+				{
+					HorizontalAlignment = Element.ALIGN_CENTER,
+					BackgroundColor = new BaseColor(230, 230, 230),
+					Padding = 4
+				};
+				tabla.AddCell(c);
+			}
+
+			AddHeader("Día");
+			AddHeader("Facturación");
+			AddHeader("Fact. Ac.");
+			AddHeader("% Acu. MA");
+			AddHeader("Costo");
+			AddHeader("Rentabilidad");
+			AddHeader("Rent. Ac.");
+			AddHeader("Vta. CtaCte.");
+			AddHeader("Fact. MA");
+			AddHeader("Fact. MI");
+			AddHeader("Fact. Dif.");
+
+			// ============================
+			// COLORES PARA PORCENTAJES
+			// ============================
+			BaseColor ColorPorcentaje(decimal valor)
+			{
+				if (valor > 0) return new BaseColor(201, 228, 255); // celeste
+				if (valor < 0) return new BaseColor(255, 224, 224); // rojo suave
+				return BaseColor.White;
+			}
+
+			// ============================
+			// FILAS
+			// ============================
+			foreach (var r in registros)
+			{
+				decimal fac_may_acu_porc = r.fac_may_acu_porc * 100;
+				decimal ctacte_dif_porc = r.ctacte_dif_porc * 100;
+
+				// Día
+				tabla.AddCell(new PdfPCell(new Phrase(r.dia.ToString("dd/MM/yyyy"), normal))
+				{ HorizontalAlignment = Element.ALIGN_CENTER });
+
+				// Facturación
+				tabla.AddCell(new PdfPCell(new Phrase(r.co_facturacion.ToString("N2"), normal))
+				{ HorizontalAlignment = Element.ALIGN_RIGHT });
+
+				// Facturación acumulada
+				tabla.AddCell(new PdfPCell(new Phrase(r.co_facturacion_acu.ToString("N2"), normal))
+				{ HorizontalAlignment = Element.ALIGN_RIGHT });
+
+				// % Acu MA
+				tabla.AddCell(new PdfPCell(new Phrase($"{r.fac_may_acu_porc}%", normal))
+				{ HorizontalAlignment = Element.ALIGN_RIGHT, BackgroundColor = ColorPorcentaje(r.fac_may_acu_porc), });
+
+				// Costo
+				tabla.AddCell(new PdfPCell(new Phrase(r.co_costo.ToString("N2"), normal))
+				{ HorizontalAlignment = Element.ALIGN_RIGHT });
+
+				// Rentabilidad
+				tabla.AddCell(new PdfPCell(new Phrase(r.rentabilidad.ToString("N2"), normal))
+				{ HorizontalAlignment = Element.ALIGN_RIGHT });
+
+				// Rentabilidad acumulada
+				tabla.AddCell(new PdfPCell(new Phrase(r.rentabilidad_acu.ToString("N2"), normal))
+				{ HorizontalAlignment = Element.ALIGN_RIGHT });
+
+				// Vta. CtaCte. (porcentaje + valor)
+				{
+					PdfPTable mini = new PdfPTable(2);
+					mini.WidthPercentage = 100;
+					mini.SetWidths(new float[] { 1f, 1f });
+
+					PdfPCell porc = new PdfPCell(new Phrase($"{ctacte_dif_porc:N2}%", chico))
+					{
+						BackgroundColor = ColorPorcentaje(ctacte_dif_porc),
+						HorizontalAlignment = Element.ALIGN_LEFT,
+						Padding = 2,
+						Border = Rectangle.NO_BORDER
+					};
+
+					PdfPCell val = new PdfPCell(new Phrase(r.ctacte_dif.ToString("N2"), chico))
+					{
+						HorizontalAlignment = Element.ALIGN_RIGHT,
+						Padding = 2,
+						Border = Rectangle.NO_BORDER
+					};
+
+					mini.AddCell(porc);
+					mini.AddCell(val);
+
+					tabla.AddCell(new PdfPCell(mini));
+				}
+
+				// Fact MA
+				tabla.AddCell(new PdfPCell(new Phrase(r.co_fac_may.ToString("N2"), normal))
+				{ HorizontalAlignment = Element.ALIGN_RIGHT });
+
+				// Fact MI
+				tabla.AddCell(new PdfPCell(new Phrase(r.co_fac_min.ToString("N2"), normal))
+				{ HorizontalAlignment = Element.ALIGN_RIGHT });
+
+				// Fact Dif
+				tabla.AddCell(new PdfPCell(new Phrase(r.co_fac_dis.ToString("N2"), normal))
+				{ HorizontalAlignment = Element.ALIGN_RIGHT });
+			}
+
+			pdf.Add(tabla);
+		}
+		#endregion
 	}
 }

@@ -468,6 +468,7 @@ namespace gc.sitio.Areas.Financieros.Controllers
 				{
 					ctaf_id = x.ctaf_id,
 					ext_fecha = x.ext_fecha,
+					ext_fecha_ori = x.ext_fecha_ori,
 					extr_id = x.extr_id,
 					extr_desc = x.extr_desc,
 					ext_concepto = x.ext_concepto,
@@ -483,13 +484,13 @@ namespace gc.sitio.Areas.Financieros.Controllers
 					ext_conciliado_nro = x.ext_conciliado_nro,
 					ext_conciliado_tipo = x.ext_conciliado_tipo,
 					usu_id_carga = UserName,
-					usu_id_concilia = x.usu_id_concilia,
-					ext_fecha_ori = x.ext_fecha_ori
+					usu_id_concilia = x.usu_id_concilia
 				});
 				var jsonExtractoEliminado = ListaCrudExtractoBancarioEliminados.OrderBy(x=>x.ext_fecha).Select((x, index) => new JsonExtractoEliminadoModel
 				{
 					ctaf_id = x.ctaf_id,
 					ext_fecha = x.ext_fecha_ori.Value,
+					ext_fecha_ori = x.ext_fecha_ori.Value,
 					ext_debe = x.ext_debe,
 					ext_haber = x.ext_haber,
 				});
@@ -908,12 +909,12 @@ namespace gc.sitio.Areas.Financieros.Controllers
 			}
 
 			// Base: fecha sin hora del primer ítem
-			DateTime fechaBase = lista[0].ext_fecha.Date;
+			DateTime fechaBase = lista[0].ext_fecha;
 			TimeSpan incremento = TimeSpan.FromSeconds(1); // Podés usar segundos si necesitás más granularidad
 
 			for (int i = 0; i < lista.Count; i++)
 			{
-				var fecha = lista[i].ext_fecha.Date;
+				var fecha = lista[i].ext_fecha;
 				lista[i].ext_fecha = fecha.Add(incremento * i);
 			}
 		}
@@ -958,24 +959,27 @@ namespace gc.sitio.Areas.Financieros.Controllers
 			}
 
 			// Recalcular fechas con segundos incrementales si hay fechas iguales
-			var fechaBase = lista[0].ext_fecha.Date;
+			var fechaBase = lista[0].ext_fecha;
 			var segundos = 0;
 
 			for (int i = 0; i < lista.Count; i++)
 			{
 				var actual = lista[i];
+				//actual.ext_fecha = actual.ext_fecha.AddSeconds(segundos);
+				actual.ext_fecha = fechaBase.AddSeconds(segundos);
+				segundos++;
 
-				if (actual.ext_fecha.Date == fechaBase)
-				{
-					actual.ext_fecha = actual.ext_fecha.Date.AddSeconds(segundos);
-					segundos++;
-				}
-				else
-				{
-					fechaBase = actual.ext_fecha.Date;
-					segundos = 0;
-					actual.ext_fecha = actual.ext_fecha.Date;
-				}
+				//if (actual.ext_fecha == fechaBase)
+				//{
+				//	actual.ext_fecha = actual.ext_fecha.AddSeconds(segundos);
+				//	segundos++;
+				//}
+				//else
+				//{
+				//	fechaBase = actual.ext_fecha;
+				//	segundos = 0;
+				//	actual.ext_fecha = actual.ext_fecha;
+				//}
 			}
 		}
 

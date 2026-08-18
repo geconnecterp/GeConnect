@@ -75,13 +75,14 @@
 
 						@foreach (var item in lp)
 						{
+							var cta = $"({item.cta_id}) {item.cta_denominacion}";
 							if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
 							<tr class="@clase"
 								data-lp-id="@item.lp_id"
 								data-rub-id="@item.rub_id"
 								data-cta-id="@item.cta_id">
 								<td class="@Model.ObtenerClase(item.rub_desc) cell-fit-content">@Model.FormatearDato(item.rub_desc, FormatDato.Ninguno)</td>
-								<td class="@Model.ObtenerClase(item.cta_denominacion) cell-fit-content">@Model.FormatearDato(item.cta_denominacion, FormatDato.Ninguno)</td>
+								<td class="@Model.ObtenerClase(item.cta_denominacion) cell-fit-content">@Model.FormatearDato(cta, FormatDato.Ninguno)</td>
 								<td class="@Model.ObtenerClase(item.lpp_mgn_principal_porc) cell-fit-content">@GridHelper.FormatearDato(item.lpp_mgn_principal_porc, FormatDato.Monto, true)</td>
 								<td class="text-center align-middle td-btn-icon">
 									<div class="d-flex justify-content-center gap-1">

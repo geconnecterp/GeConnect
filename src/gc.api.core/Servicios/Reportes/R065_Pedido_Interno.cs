@@ -104,7 +104,7 @@ namespace gc.api.core.Servicios.Reportes
 				pdf.Open();
 
 				#region Lista 
-				HelperPdf.CargarRepoPedidoInterno(pdf, registros, chico, normal, normalBold, titulo, tituloBig);
+				CargarRepoPedidoInterno(pdf, registros, chico, normal, normalBold, titulo, tituloBig);
 				#endregion
 
 				pdf.Close();
@@ -191,5 +191,158 @@ namespace gc.api.core.Servicios.Reportes
 
 			return GeneraFileXLS(regs, _titulos, _campos);
 		}
+
+		#region funciones
+		public static void CargarRepoPedidoInterno(Document pdf, List<PIDetalleDto> registros, Font chico, Font normal, Font normalBold, Font titulo, Font tituloBig)
+		{
+			if (registros == null || registros.Count == 0)
+				return;
+
+			var reg0 = registros.First();
+
+			// ================================
+			// ENCABEZADO MANUAL
+			// ================================
+			AgregarEncabezado(pdf, reg0, normal, normalBold);
+
+			// ================================
+			// TÍTULO
+			// ================================
+			Paragraph tit = new Paragraph("Detalle de Productos Solicitados", titulo);
+			tit.Alignment = Element.ALIGN_CENTER;
+			tit.SpacingAfter = 10f;
+			pdf.Add(tit);
+
+			// ================================
+			// TABLA PRINCIPAL
+			// ================================
+			PdfPTable tabla = new PdfPTable(4);
+			tabla.WidthPercentage = 100;
+			tabla.SetWidths(new float[] { 10f, 55f, 15f, 20f });
+
+			// Encabezados
+			AgregarCeldaHeader(tabla, "Código", normalBold);
+			AgregarCeldaHeader(tabla, "Descripción", normalBold);
+			AgregarCeldaHeader(tabla, "Ref. Prov.", normalBold);
+			AgregarCeldaHeader(tabla, "Código de Barras", normalBold);
+
+			// ================================
+			// AGRUPADOR ÚNICO POR RUBRO
+			// ================================
+			string grupoActual = "";
+
+			foreach (var item in registros
+				.OrderBy(x => x.rub_id)
+				.ThenBy(x => x.p_id))
+			{
+				// Detectar salto de página
+				if (writerFitsNewPage(pdf, tabla))
+				{
+					pdf.NewPage();
+					AgregarEncabezado(pdf, reg0, normal, normalBold);
+
+					Paragraph titulo2 = new Paragraph("Detalle de Productos Solicitados", normalBold);
+					titulo2.Alignment = Element.ALIGN_CENTER;
+					titulo2.SpacingAfter = 10f;
+					pdf.Add(titulo2);
+
+					// Reimprimir encabezados
+					AgregarCeldaHeader(tabla, "Código", normalBold);
+					AgregarCeldaHeader(tabla, "Descripción", normalBold);
+					AgregarCeldaHeader(tabla, "Ref. Prov.", normalBold);
+					AgregarCeldaHeader(tabla, "Código de Barras", normalBold);
+					AgregarCeldaHeader(tabla, "Bultos Aprox.", normalBold);
+				}
+
+				// ---- ÚNICO AGRUPADOR ----
+				string grupo = $"{item.rub_desc} ({item.rub_id})";
+
+				if (grupo != grupoActual)
+				{
+					PdfPCell celdaGrupo = new(new Phrase(grupo, normalBold))
+					{
+						Colspan = 4,
+						BackgroundColor = new BaseColor(230, 230, 230),
+						Padding = 5,
+						HorizontalAlignment = Element.ALIGN_CENTER
+					};
+					tabla.AddCell(celdaGrupo);
+
+					grupoActual = grupo;
+				}
+
+				// ---- Fila de producto ----
+				AgregarCelda(tabla, item.p_id, chico, Element.ALIGN_CENTER);
+				AgregarCelda(tabla, item.p_desc, chico, Element.ALIGN_LEFT);
+				AgregarCelda(tabla, item.p_id_prov ?? "", chico, Element.ALIGN_RIGHT);
+				AgregarCelda(tabla, item.p_id_barrado, chico, Element.ALIGN_CENTER);
+			}
+
+			pdf.Add(tabla);
+		}
+
+		private static void AgregarCelda(PdfPTable tabla, string texto, Font fuente, int Align = 0, bool esEncabezado = false, BaseColor? fondo = null)
+		{
+			var celda = new PdfPCell(new Phrase(texto, fuente))
+			{
+				HorizontalAlignment = Align,
+				Padding = 4f
+			};
+			if (esEncabezado && fondo != null)
+				celda.BackgroundColor = fondo;
+
+			tabla.AddCell(celda);
+		}
+
+		private static void AgregarEncabezado(Document pdf, PIDetalleDto reg, Font normal, Font bold)
+		{
+			PdfPTable header = new(4)
+			{
+				WidthPercentage = 100
+			};
+			header.SetWidths([20f, 30f, 20f, 30f]);
+
+			header.AddCell(new PdfPCell(new Phrase("Fecha Pedido:", bold))
+			{
+				Border = 0,
+				HorizontalAlignment = Element.ALIGN_RIGHT
+			});
+			header.AddCell(new PdfPCell(new Phrase(reg.pi_fecha.ToString("dd/MM/yyyy"), normal))
+			{
+				Border = 0,
+				HorizontalAlignment = Element.ALIGN_LEFT
+			});
+
+			header.AddCell(new PdfPCell(new Phrase("Solicitado Por:", bold))
+			{
+				Border = 0,
+				HorizontalAlignment = Element.ALIGN_RIGHT
+			});
+			header.AddCell(new PdfPCell(new Phrase(reg.usu_apellidoynombre, normal))
+			{
+				Border = 0,
+				HorizontalAlignment = Element.ALIGN_LEFT
+			});
+
+			header.SpacingAfter = 10f;
+
+			pdf.Add(header);
+		}
+
+		private static void AgregarCeldaHeader(PdfPTable tabla, string texto, Font font)
+		{
+			PdfPCell celda = new PdfPCell(new Phrase(texto, font));
+			celda.HorizontalAlignment = Element.ALIGN_CENTER;
+			celda.VerticalAlignment = Element.ALIGN_MIDDLE;
+			celda.BackgroundColor = new BaseColor(230, 230, 230);
+			celda.Padding = 4f;
+			tabla.AddCell(celda);
+		}
+
+		private static bool writerFitsNewPage(Document pdf, PdfPTable tabla)
+		{
+			return tabla.TotalHeight > (pdf.PageSize.Height - pdf.TopMargin - pdf.BottomMargin - 100);
+		}
+		#endregion
 	}
 }

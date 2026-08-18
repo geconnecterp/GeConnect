@@ -54,7 +54,20 @@ namespace gc.api.Controllers.Almacen
             return Ok(response);
         }
 
-       
-    }
+		[HttpGet]
+		[Route("[action]")]
+		public IActionResult GetRubroUno(string? rub_id)
+		{
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
+			if (string.IsNullOrEmpty(rub_id)) { return BadRequest(); }
+        
+			List<RubroItemListaDto> rubros = _rubSv.GetRubroUno(rub_id);
+
+			var lista = _mapper.Map<List<RubroItemListaDto>>(rubros);
+
+			var response = new ApiResponse<List<RubroItemListaDto>>(lista);
+			return Ok(response);
+		}
+	}
 }
 

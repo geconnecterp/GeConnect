@@ -16,7 +16,8 @@ namespace gc.sitio.core.Servicios.Implementacion
     {
         private const string RutaAPI = "/api/apirubro";
         private const string RubroLista = "/GetRubroLista";
-        private readonly AppSettings _appSettings;
+		private const string RubroUno = "/GetRubroUno";
+		private readonly AppSettings _appSettings;
 
         public RubroServicio(IOptions<AppSettings> options, ILogger<RubroServicio> logger) : base(options, logger, RutaAPI)
         {
@@ -64,5 +65,47 @@ namespace gc.sitio.core.Servicios.Implementacion
                 throw;
             }
         }
-    }
+
+		public List<RubroItemListaDto> ObtenerUnRubro(string rub_id, string token)
+		{
+			ApiResponse<List<RubroItemListaDto>> respuesta;
+			string stringData;
+			try
+			{
+				HelperAPI helper = new();
+				HttpClient client = helper.InicializaCliente(token);
+				HttpResponseMessage response;
+				var link = $"{_appSettings.RutaBase}{RutaAPI}{RubroUno}?rub_id={rub_id ?? ""}";
+				response = client.GetAsync(link).GetAwaiter().GetResult();
+				if (response.StatusCode == HttpStatusCode.OK)
+				{
+					stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+					if (!string.IsNullOrEmpty(stringData))
+					{
+						respuesta = JsonConvert.DeserializeObject<ApiResponse<List<RubroItemListaDto>>>(stringData) ?? throw new NegocioException("Hubo un problema al deserializar los datos");
+					}
+					else
+					{
+						throw new Exception("No se logro obtener la respuesta de la API con los datos de los rubros. Verifique.");
+					}
+					return respuesta.Data;
+				}
+				else
+				{
+					stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+					_logger.LogError($"Error al intentar obtener los Rubros: {stringData}");
+					throw new NegocioException("Hubo un error al intentar obtener los Rubros");
+				}
+			}
+			catch (NegocioException)
+			{
+				throw;
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, "Error al intentar obtener los Rubros.");
+				throw;
+			}
+		}
+	}
 }

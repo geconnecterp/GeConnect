@@ -100,7 +100,7 @@ namespace gc.api.core.Servicios.Reportes
 				pdf.Open();
 
 				#region Lista 
-				HelperPdf.CargarRepoStkVsConteo(pdf, registros, chico, normalBold, titulo);
+				CargarRepoStkVsConteo(pdf, registros, chico, normalBold, titulo);
 				#endregion
 
 				pdf.Close();
@@ -188,5 +188,109 @@ namespace gc.api.core.Servicios.Reportes
 
 			return GeneraFileXLS(regs, _titulos, _campos);
 		}
+
+		#region funciones
+		public static void CargarRepoStkVsConteo(Document pdf, List<InvRepoStkVsConteoDto> lista, Font fChico, Font fNormal, Font fTitulo)
+		{
+			if (lista == null || lista.Count == 0)
+			{
+				pdf.Add(new Paragraph("No se encontraron datos", fNormal));
+				return;
+			}
+			BaseColor amarilloPastel = new(255, 245, 200);
+			// Tipo de inventario (se repite en todos los registros)
+			var tipo = lista.First();
+			bool incluyeGrupo2 = tipo.invt_id == 'D'; // si es 'D', agregar columna extra
+
+			// ============================================================
+			// TÍTULO DEL REPORTE
+			// ============================================================
+			//Paragraph titulo = new Paragraph($"Reporte: {tipo.invt_desc}", fTitulo);
+			//titulo.SpacingAfter = 10f;
+			//pdf.Add(titulo);
+
+			// ============================================================
+			// DEFINICIÓN DE COLUMNAS
+			// ============================================================
+			int columnas = incluyeGrupo2 ? 7 : 6;
+
+			PdfPTable tabla = new(columnas)
+			{
+				WidthPercentage = 100
+			};
+
+			if (incluyeGrupo2)
+			{
+				tabla.SetWidths(new float[] { 10, 40, 10, 10, 10, 10, 10 });
+			}
+			else
+			{
+				tabla.SetWidths(new float[] { 10, 50, 10, 10, 10, 10 });
+			}
+
+			tabla.HeaderRows = 1;
+
+			// ============================================================
+			// CABECERA
+			// ============================================================
+			tabla.AddCell(CeldaHeader("Código", fNormal, amarilloPastel));
+			tabla.AddCell(CeldaHeader("Descripción", fNormal, amarilloPastel));
+			tabla.AddCell(CeldaHeader("Dif. a Ajustar", fNormal, amarilloPastel));
+			tabla.AddCell(CeldaHeader("Aplico Ajuste", fNormal, amarilloPastel));
+			tabla.AddCell(CeldaHeader("Stk", fNormal, amarilloPastel));
+			tabla.AddCell(CeldaHeader("Conteo Grupo 1", fNormal, amarilloPastel));
+
+			if (incluyeGrupo2)
+				tabla.AddCell(CeldaHeader("Grupo Conteo 2", fNormal, amarilloPastel));
+
+			// ============================================================
+			// FILAS DE DATOS
+			// ============================================================
+			bool alt = true;
+
+			foreach (var item in lista)
+			{
+				BaseColor fondo = alt ? new BaseColor(245, 245, 245) : BaseColor.White;
+				alt = !alt;
+
+				decimal difAjustar = item.ps_conteo - item.ps_stk;
+
+				tabla.AddCell(CeldaDato(item.p_id, fChico, fondo));
+				tabla.AddCell(CeldaDato(item.p_des, fChico, fondo));
+				tabla.AddCell(CeldaDato(difAjustar.ToString("N2"), fChico, fondo, Element.ALIGN_RIGHT));
+
+				// Checkbox
+				string chk = item.ps_ajuste == 'S' ? "✔" : "✘";
+				tabla.AddCell(CeldaDato(chk, fChico, fondo, Element.ALIGN_CENTER));
+				tabla.AddCell(CeldaDato(GridHelper.FormatearDato(item.ps_stk, GridHelper.FormatDato.Monto, item.PermiteDecimales), fChico, fondo, Element.ALIGN_RIGHT));
+				tabla.AddCell(CeldaDato(item.conteo1.ToString("N2"), fChico, fondo, Element.ALIGN_RIGHT));
+
+				if (incluyeGrupo2)
+					tabla.AddCell(CeldaDato(item.conteo2.ToString("N2"), fChico, fondo, Element.ALIGN_RIGHT));
+
+			}
+
+			pdf.Add(tabla);
+		}
+
+		private static PdfPCell CeldaHeader(string texto, Font f, BaseColor color, int rowspan = 1, int colspan = 1)
+		{
+			PdfPCell c = new PdfPCell(new Phrase(texto, f));
+			c.BackgroundColor = color;
+			c.HorizontalAlignment = Element.ALIGN_CENTER;
+			c.VerticalAlignment = Element.ALIGN_MIDDLE;
+			c.Rowspan = rowspan;
+			c.Colspan = colspan;
+			return c;
+		}
+
+		private static PdfPCell CeldaDato(string texto, Font f, BaseColor fondo, int align = Element.ALIGN_LEFT)
+		{
+			PdfPCell c = new PdfPCell(new Phrase(texto, f));
+			c.BackgroundColor = fondo;
+			c.HorizontalAlignment = align;
+			return c;
+		}
+		#endregion
 	}
 }

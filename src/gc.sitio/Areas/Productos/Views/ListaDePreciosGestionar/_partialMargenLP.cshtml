@@ -43,14 +43,14 @@
         <!-- % Mg / Neto LP + Independiente -->
         <div class="lp-row">
             <label class="lp-label">@labelMargen:</label>
-            <input type="text" asp-for="lp_margen" class="form-control activable inputEditable lp-input" disabled />
+            <input type="text" asp-for="lp_margen" class="form-control activable inputEditable lp-input" readonly />
 
             <div class="form-check lp-check">
                 <input type="checkbox"
                        class="form-check-input activable"
                        id="lp_mgn_principal"
                        name="lp_mgn_principal"
-                @(esAsociada ? "checked" : "") disabled />
+                @(esAsociada ? "checked" : "") readonly />
 
                 <label class="form-check-label" for="lp_mgn_principal">
                     Asociada
@@ -61,13 +61,13 @@
         <!-- % Sobre Margen -->
         <div class="lp-row">
             <label class="lp-label">% Sobre Margen:</label>
-            <input type="text" asp-for="lp_prevision_tot" class="form-control activable inputEditable lp-input" disabled />
+            <input type="text" asp-for="lp_prevision_tot" class="form-control activable inputEditable lp-input" readonly />
         </div>
 
         <!-- % Sobre Margen II -->
         <div class="lp-row">
             <label class="lp-label">% Sobre Margen II:</label>
-            <input type="text" asp-for="lp_prevision_pin" class="form-control activable inputEditable lp-input" disabled />
+            <input type="text" asp-for="lp_prevision_pin" class="form-control activable inputEditable lp-input" readonly />
         </div>
 
     </div>

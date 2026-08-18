@@ -3,13 +3,7 @@ using gc.api.core.Contratos.Servicios.Reportes;
 using gc.api.core.Entidades;
 using gc.api.core.Interfaces.Datos;
 using gc.infraestructura.Core.Exceptions;
-using gc.infraestructura.Dtos;
-using gc.infraestructura.Dtos.Almacen.Tr.Transferencia;
-using gc.infraestructura.Dtos.Consultas.ConsCertNoRetNoPercep;
 using gc.infraestructura.Dtos.Gen;
-using gc.infraestructura.Dtos.Inventario.Request;
-using gc.infraestructura.Dtos.Productos.OrdenDeReparto;
-using gc.infraestructura.Dtos.Productos.Pedidos;
 using gc.infraestructura.Dtos.Ventas;
 using gc.infraestructura.EntidadesComunes.Options;
 using gc.infraestructura.Helpers;
@@ -105,7 +99,7 @@ namespace gc.api.core.Servicios.Reportes
 				pdf.Open();
 
 				#region Lista 
-				HelperPdf.CargarRepoAnalisisDeVentaHora(pdf, registros, chico, normal, normalBold, titulo, tituloBig);
+				CargarRepoAnalisisDeVentaHora(pdf, registros, chico, normal, normalBold, titulo, tituloBig);
 				#endregion
 
 				pdf.Close();
@@ -209,5 +203,148 @@ namespace gc.api.core.Servicios.Reportes
 
 			return GeneraFileXLS(regs, _titulos, _campos);
 		}
+
+		#region funciones
+		public static void CargarRepoAnalisisDeVentaHora(Document pdf, List<AnaVtaMesDetalleHoraDto> registros, Font chico, Font normal, Font normalBold, Font titulo, Font tituloBig)
+		{
+			// Página apaisada
+			pdf.SetPageSize(PageSize.A4.Rotate());
+			pdf.SetMargins(20f, 20f, 20f, 20f);
+
+			// ============================
+			// ENCABEZADO REPETIBLE
+			// ============================
+			PdfPTable header = new PdfPTable(1);
+			header.WidthPercentage = 100;
+
+			PdfPCell tituloCell = new PdfPCell(new Phrase("Análisis de Venta por Hora", tituloBig))
+			{
+				Border = Rectangle.NO_BORDER,
+				HorizontalAlignment = Element.ALIGN_CENTER,
+				PaddingBottom = 5
+			};
+			header.AddCell(tituloCell);
+
+			PdfPCell subCell = new PdfPCell(new Phrase("Detalle por franja horaria", titulo))
+			{
+				Border = Rectangle.NO_BORDER,
+				HorizontalAlignment = Element.ALIGN_CENTER,
+				PaddingBottom = 10
+			};
+			header.AddCell(subCell);
+
+			header.HeaderRows = 2;
+			pdf.Add(header);
+
+			// ============================
+			// TABLA PRINCIPAL
+			// ============================
+			PdfPTable tabla = new PdfPTable(16)
+			{
+				WidthPercentage = 100
+			};
+
+			tabla.SetWidths(new float[] {
+				1.6f, // Día
+				1.4f,1.4f,1.4f,1.4f,1.4f,1.4f,1.4f,1.4f,
+				1.4f,1.4f,1.4f,1.4f,1.4f,1.4f,1.4f // 6-8 ... 21-22
+			});
+
+			// ============================
+			// ENCABEZADOS
+			// ============================
+			void AddHeader(string texto)
+			{
+				PdfPCell c = new PdfPCell(new Phrase(texto, normalBold))
+				{
+					HorizontalAlignment = Element.ALIGN_CENTER,
+					BackgroundColor = new BaseColor(230, 230, 230),
+					Padding = 4
+				};
+				tabla.AddCell(c);
+			}
+
+			AddHeader("Día");
+			AddHeader("6 a 8");
+			AddHeader("8 a 9");
+			AddHeader("9 a 10");
+			AddHeader("10 a 11");
+			AddHeader("11 a 12");
+			AddHeader("12 a 13");
+			AddHeader("13 a 14");
+			AddHeader("14 a 15");
+			AddHeader("15 a 16");
+			AddHeader("16 a 17");
+			AddHeader("17 a 18");
+			AddHeader("18 a 19");
+			AddHeader("19 a 20");
+			AddHeader("20 a 21");
+			AddHeader("21 a 22");
+
+			// ============================
+			// FUNCIÓN MINI‑CELDA (FA / OP)
+			// ============================
+			PdfPCell CeldaDual(decimal fa, decimal op)
+			{
+				PdfPTable mini = new PdfPTable(1);
+				mini.WidthPercentage = 100;
+
+				PdfPCell c1 = new PdfPCell(new Phrase(fa.ToString("N2"), chico))
+				{
+					HorizontalAlignment = Element.ALIGN_RIGHT,
+					Padding = 2,
+					Border = Rectangle.NO_BORDER
+				};
+
+				PdfPCell c2 = new PdfPCell(new Phrase(op.ToString("N0"), chico))
+				{
+					HorizontalAlignment = Element.ALIGN_RIGHT,
+					Padding = 2,
+					Border = Rectangle.NO_BORDER
+				};
+
+				// Línea divisoria entre FA y OP
+				c1.BorderWidthBottom = 0.5f;
+				c1.BorderColorBottom = new BaseColor(200, 200, 200);
+
+				mini.AddCell(c1);
+				mini.AddCell(c2);
+
+				return new PdfPCell(mini)
+				{
+					Padding = 0
+				};
+			}
+
+			// ============================
+			// FILAS
+			// ============================
+			foreach (var r in registros)
+			{
+				// Día
+				tabla.AddCell(new PdfPCell(new Phrase(r.dia.ToString("dd/MM/yyyy"), normal))
+				{ HorizontalAlignment = Element.ALIGN_CENTER });
+
+				// 6 a 8
+				tabla.AddCell(CeldaDual(r.fa_6a8, r.op_6a8));
+				tabla.AddCell(CeldaDual(r.fa_8a9, r.op_8a9));
+				tabla.AddCell(CeldaDual(r.fa_9a10, r.op_9a10));
+				tabla.AddCell(CeldaDual(r.fa_10a11, r.op_10a11));
+				tabla.AddCell(CeldaDual(r.fa_11a12, r.op_11a12));
+				tabla.AddCell(CeldaDual(r.fa_12a13, r.op_12a13));
+				tabla.AddCell(CeldaDual(r.fa_13a14, r.op_13a14));
+				tabla.AddCell(CeldaDual(r.fa_14a15, r.op_14a15));
+				tabla.AddCell(CeldaDual(r.fa_15a16, r.op_15a16));
+				tabla.AddCell(CeldaDual(r.fa_16a17, r.op_16a17));
+				tabla.AddCell(CeldaDual(r.fa_17a18, r.op_17a18));
+				tabla.AddCell(CeldaDual(r.fa_18a19, r.op_18a19));
+				tabla.AddCell(CeldaDual(r.fa_19a20, r.op_19a20));
+				tabla.AddCell(CeldaDual(r.fa_20a21, r.op_20a21));
+				tabla.AddCell(CeldaDual(r.fa_21a22, r.op_21a22));
+			}
+
+			pdf.Add(tabla);
+		}
+		#endregion
 	}
 }

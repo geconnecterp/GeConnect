@@ -3,13 +3,7 @@ using gc.api.core.Contratos.Servicios.Reportes;
 using gc.api.core.Entidades;
 using gc.api.core.Interfaces.Datos;
 using gc.infraestructura.Core.Exceptions;
-using gc.infraestructura.Dtos;
-using gc.infraestructura.Dtos.Almacen.Tr.Transferencia;
-using gc.infraestructura.Dtos.Consultas.ConsCertNoRetNoPercep;
 using gc.infraestructura.Dtos.Gen;
-using gc.infraestructura.Dtos.Inventario.Request;
-using gc.infraestructura.Dtos.Productos.OrdenDeReparto;
-using gc.infraestructura.Dtos.Productos.Pedidos;
 using gc.infraestructura.Dtos.Ventas;
 using gc.infraestructura.Dtos.Ventas.Request;
 using gc.infraestructura.EntidadesComunes.Options;
@@ -18,6 +12,7 @@ using iTextSharp.text;
 using iTextSharp.text.pdf;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using static gc.infraestructura.Helpers.GridHelper;
 
 namespace gc.api.core.Servicios.Reportes
 {
@@ -106,7 +101,7 @@ namespace gc.api.core.Servicios.Reportes
 				pdf.Open();
 
 				#region Lista 
-				HelperPdf.CargarRepoAnalisisDeValoresDeVentaPV(pdf, registros, chico, normal, normalBold, titulo, tituloBig);
+				CargarRepoAnalisisDeValoresDeVentaPV(pdf, registros, chico, normal, normalBold, titulo, tituloBig);
 				#endregion
 
 				pdf.Close();
@@ -201,5 +196,108 @@ namespace gc.api.core.Servicios.Reportes
 
 			return GeneraFileXLS(regs, _titulos, _campos);
 		}
+
+		#region funciones
+		public static void CargarRepoAnalisisDeValoresDeVentaPV(Document pdf, List<AnaValDeVtaDetPVDto> registros, Font chico, Font normal, Font normalBold, Font titulo, Font tituloBig)
+		{
+			if (registros == null || !registros.Any())
+			{
+				pdf.Add(new Paragraph("No hay datos para mostrar", normalBold));
+				return;
+			}
+
+			// Título
+			Paragraph tituloPar = new("Análisis de Valores de Venta - Detalle por Punto de Venta", tituloBig)
+			{
+				Alignment = Element.ALIGN_CENTER,
+				SpacingAfter = 10f
+			};
+			pdf.Add(tituloPar);
+
+			// Definición de columnas
+			float[] widths = { 1.6f, 2.5f, 1.4f, 2f, 2f, 2f, 2f, 2f, 2f };
+			PdfPTable tabla = new(widths)
+			{
+				WidthPercentage = 100
+			};
+
+			// Encabezados
+			string[] headers = {
+				"Día",
+				"Suc.",
+				"PV",
+				"Efectivo",
+				"Tarjetas",
+				"Transf. Bco.",
+				"Mutual",
+				"Vales",
+				"Otros"
+			};
+
+			foreach (var h in headers)
+			{
+				PdfPCell celda = new PdfPCell(new Phrase(h, normalBold))
+				{
+					HorizontalAlignment = Element.ALIGN_CENTER,
+					BackgroundColor = new BaseColor(230, 230, 230),
+					Padding = 4
+				};
+				tabla.AddCell(celda);
+			}
+
+			// Filas
+			foreach (var item in registros)
+			{
+				// Día
+				tabla.AddCell(new PdfPCell(new Phrase(item.dia.ToString("dd/MM/yyyy"), normal)));
+
+				// Sucursal
+				PdfPCell suc = new(new Phrase(item.adm_nombre, normal))
+				{
+					HorizontalAlignment = Element.ALIGN_LEFT
+				};
+				tabla.AddCell(suc);
+
+				// PV
+				PdfPCell pv = new(new Phrase(item.caja_id, normal))
+				{
+					HorizontalAlignment = Element.ALIGN_CENTER
+				};
+				tabla.AddCell(pv);
+
+				// Efectivo
+				tabla.AddCell(CeldaSoloMonto(item.efectivos, normal));
+
+				// Tarjetas
+				tabla.AddCell(CeldaSoloMonto(item.tarjetas, normal));
+
+				// Transferencias
+				tabla.AddCell(CeldaSoloMonto(item.bco_transf, normal));
+
+				// Mutual
+				tabla.AddCell(CeldaSoloMonto(item.mutuales, normal));
+
+				// Vales
+				tabla.AddCell(CeldaSoloMonto(item.vales, normal));
+
+				// Otros
+				tabla.AddCell(CeldaSoloMonto(item.otros, normal));
+			}
+
+			pdf.Add(tabla);
+		}
+
+		private static PdfPCell CeldaSoloMonto(decimal monto, Font normal)
+		{
+			PdfPCell c = new(new Phrase(GridHelper.FormatearPrecio(monto, TipoPrecio.Venta), normal))
+			{
+				HorizontalAlignment = Element.ALIGN_RIGHT,
+				VerticalAlignment = Element.ALIGN_MIDDLE, // ← clave
+				Padding = 4
+			};
+
+			return c;
+		}
+		#endregion
 	}
 }

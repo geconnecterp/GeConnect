@@ -182,6 +182,7 @@ namespace gc.api.core.Constantes
 			public const string SP_CAJA_ACTUALIZA_MEPAID = "dbo.SP_CajaActualizaIdMePa";
 			public const string SP_PROVEEDOR_LISTA = "dbo.SPGECO_Proveedores_lista";
 			public const string SP_RUBRO_LISTA = "dbo.SPGECO_Rubros_lista";
+			public const string SP_RUBRO_UNO = "dbo.SPGECO_Rubros_Uno";
 			public const string SP_PROVEEDOR_FAMILIA_LISTA = "dbo.SPGECO_Proveedores_Familia_lista";
 			public const string SP_UP_LISTA = "SPGECO_UP_Lista";
 			public const string SP_BARRADO_LISTA = "SPGECO_ABM_P_Barrados_Lista";
@@ -281,6 +282,7 @@ namespace gc.api.core.Constantes
 			public const string SP_LP_LISTA = "SPGECO_LP_Lista";
 			public const string SP_LP_DETALLE = "SPGECO_P_PR_lista";
 			public const string SP_LP_RUB_CTA = "SPGECO_LP_RUB_CTA";
+			public const string SP_LP_CONFIRMA = "SPGECO_LP_Confirma";
 
 			//DISCONTINUOS
 			public const string SP_DISCONTINUO_DETALLE = "SPGECO_P_Pasar_DI_IN_Carga";

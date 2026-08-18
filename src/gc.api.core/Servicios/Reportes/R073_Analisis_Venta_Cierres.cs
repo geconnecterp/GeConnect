@@ -3,13 +3,7 @@ using gc.api.core.Contratos.Servicios.Reportes;
 using gc.api.core.Entidades;
 using gc.api.core.Interfaces.Datos;
 using gc.infraestructura.Core.Exceptions;
-using gc.infraestructura.Dtos;
-using gc.infraestructura.Dtos.Almacen.Tr.Transferencia;
-using gc.infraestructura.Dtos.Consultas.ConsCertNoRetNoPercep;
 using gc.infraestructura.Dtos.Gen;
-using gc.infraestructura.Dtos.Inventario.Request;
-using gc.infraestructura.Dtos.Productos.OrdenDeReparto;
-using gc.infraestructura.Dtos.Productos.Pedidos;
 using gc.infraestructura.Dtos.Ventas;
 using gc.infraestructura.EntidadesComunes.Options;
 using gc.infraestructura.Helpers;
@@ -105,7 +99,7 @@ namespace gc.api.core.Servicios.Reportes
 				pdf.Open();
 
 				#region Lista 
-				HelperPdf.CargarRepoAnalisisDeVentaCierre(pdf, registros, chico, normal, normalBold, titulo, tituloBig);
+				CargarRepoAnalisisDeVentaCierre(pdf, registros, chico, normal, normalBold, titulo, tituloBig);
 				#endregion
 
 				pdf.Close();
@@ -209,5 +203,139 @@ namespace gc.api.core.Servicios.Reportes
 
 			return GeneraFileXLS(regs, _titulos, _campos);
 		}
+
+		#region funciones
+		public static void CargarRepoAnalisisDeVentaCierre(Document pdf, List<AnaVtaMesDetalleCierreDto> registros, Font chico, Font normal, Font normalBold, Font titulo, Font tituloBig)
+		{
+			// Página apaisada
+			pdf.SetPageSize(PageSize.A4.Rotate());
+			pdf.SetMargins(20f, 20f, 20f, 20f);
+
+			// ============================
+			// ENCABEZADO REPETIBLE
+			// ============================
+			PdfPTable header = new PdfPTable(1);
+			header.WidthPercentage = 100;
+
+			PdfPCell tituloCell = new PdfPCell(new Phrase("Análisis de Venta - Cierres", tituloBig))
+			{
+				Border = Rectangle.NO_BORDER,
+				HorizontalAlignment = Element.ALIGN_CENTER,
+				PaddingBottom = 5
+			};
+			header.AddCell(tituloCell);
+
+			PdfPCell subCell = new PdfPCell(new Phrase("Detalle de cierres por sucursal", titulo))
+			{
+				Border = Rectangle.NO_BORDER,
+				HorizontalAlignment = Element.ALIGN_CENTER,
+				PaddingBottom = 10
+			};
+			header.AddCell(subCell);
+
+			header.HeaderRows = 2;
+			pdf.Add(header);
+
+			// ============================
+			// TABLA PRINCIPAL
+			// ============================
+			PdfPTable tabla = new PdfPTable(11)
+			{
+				WidthPercentage = 100
+			};
+
+			tabla.SetWidths(new float[] {
+				3.0f, // Sucursal
+				1.4f, // Proceso
+				1.4f, // Cierre
+				2.0f, // Facturación
+				2.0f, // Fact. Dif.
+				2.0f, // Cta Cte
+				2.0f, // Cobranza
+				2.0f, // Cob. Dif.
+				2.0f, // Devoluciones y NC
+				2.0f, // Créditos Usados
+				2.0f  // A Rendir
+			});
+
+			// ============================
+			// ENCABEZADOS
+			// ============================
+			void AddHeader(string texto)
+			{
+				PdfPCell c = new PdfPCell(new Phrase(texto, normalBold))
+				{
+					HorizontalAlignment = Element.ALIGN_CENTER,
+					BackgroundColor = new BaseColor(230, 230, 230),
+					Padding = 4
+				};
+				tabla.AddCell(c);
+			}
+
+			AddHeader("Sucursal");
+			AddHeader("Proceso");
+			AddHeader("Cierre");
+			AddHeader("Facturación");
+			AddHeader("Fact. Dif.");
+			AddHeader("Cta. Cte.");
+			AddHeader("Cobranza");
+			AddHeader("Cob. Dif.");
+			AddHeader("Devoluciones y NC");
+			AddHeader("Créditos Usados");
+			AddHeader("A Rendir");
+
+			// ============================
+			// FILAS
+			// ============================
+			foreach (var r in registros)
+			{
+				// Sucursal
+				tabla.AddCell(new PdfPCell(new Phrase(r.adm_nombre, normal))
+				{ HorizontalAlignment = Element.ALIGN_LEFT });
+
+				// Proceso
+				tabla.AddCell(new PdfPCell(new Phrase(r.caja_nro_proceso.ToString(), normal))
+				{ HorizontalAlignment = Element.ALIGN_CENTER });
+
+				// Cierre
+				tabla.AddCell(new PdfPCell(new Phrase(r.caja_nro_cierre.ToString(), normal))
+				{ HorizontalAlignment = Element.ALIGN_CENTER });
+
+				// Facturación
+				tabla.AddCell(new PdfPCell(new Phrase(r.co_facturacion.ToString("N2"), normal))
+				{ HorizontalAlignment = Element.ALIGN_RIGHT });
+
+				// Facturación Diferida
+				tabla.AddCell(new PdfPCell(new Phrase(r.co_facturacion_dif.ToString("N2"), normal))
+				{ HorizontalAlignment = Element.ALIGN_RIGHT });
+
+				// Cta. Cte.
+				tabla.AddCell(new PdfPCell(new Phrase(r.co_ctacte.ToString("N2"), normal))
+				{ HorizontalAlignment = Element.ALIGN_RIGHT });
+
+				// Cobranza
+				tabla.AddCell(new PdfPCell(new Phrase(r.co_cobranza.ToString("N2"), normal))
+				{ HorizontalAlignment = Element.ALIGN_RIGHT });
+
+				// Cobranza Diferida
+				tabla.AddCell(new PdfPCell(new Phrase(r.co_cobranza_dif.ToString("N2"), normal))
+				{ HorizontalAlignment = Element.ALIGN_RIGHT });
+
+				// Devoluciones y NC
+				tabla.AddCell(new PdfPCell(new Phrase(r.co_nota_credito.ToString("N2"), normal))
+				{ HorizontalAlignment = Element.ALIGN_RIGHT });
+
+				// Créditos Usados
+				tabla.AddCell(new PdfPCell(new Phrase(r.co_creditos_usados.ToString("N2"), normal))
+				{ HorizontalAlignment = Element.ALIGN_RIGHT });
+
+				// A Rendir
+				tabla.AddCell(new PdfPCell(new Phrase(r.a_rendir.ToString("N2"), normal))
+				{ HorizontalAlignment = Element.ALIGN_RIGHT });
+			}
+
+			pdf.Add(tabla);
+		}
+		#endregion
 	}
 }

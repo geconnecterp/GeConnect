@@ -3,10 +3,7 @@ using gc.api.core.Contratos.Servicios.Reportes;
 using gc.api.core.Entidades;
 using gc.api.core.Interfaces.Datos;
 using gc.infraestructura.Core.Exceptions;
-using gc.infraestructura.Dtos;
-using gc.infraestructura.Dtos.Consultas.ConsCertNoRetNoPercep;
 using gc.infraestructura.Dtos.Gen;
-using gc.infraestructura.Dtos.Inventario.Request;
 using gc.infraestructura.Dtos.Productos.Pedidos;
 using gc.infraestructura.EntidadesComunes.Options;
 using gc.infraestructura.Helpers;
@@ -100,7 +97,7 @@ namespace gc.api.core.Servicios.Reportes
 				pdf.Open();
 
 				#region Lista 
-				HelperPdf.CargarRepoPedidoDeCliente(pdf, registros, chico, normalBold);
+				CargarRepoPedidoDeCliente(pdf, registros, chico, normalBold);
 				#endregion
 
 				pdf.Close();
@@ -181,5 +178,209 @@ namespace gc.api.core.Servicios.Reportes
 
 			return GeneraFileXLS(regs, _titulos, _campos);
 		}
+
+		#region funciones
+		public static void CargarRepoPedidoDeCliente(Document pdf, List<PedidoProductoDto> registros, Font chico, Font normalBold)
+		{
+			if (registros == null || registros.Count == 0)
+				return;
+			var cab = registros.First();
+
+			// ============================
+			// CABECERA DEL PEDIDO (2x2)
+			// ============================
+
+			PdfPTable cabecera = new PdfPTable(new float[] { 15f, 35f, 15f, 35f });
+			cabecera.WidthPercentage = 100;
+			cabecera.SpacingAfter = 5f;
+
+			PdfPCell Celda(string texto, Font font, bool bold = false)
+			{
+				return new PdfPCell(new Phrase(texto, bold ? normalBold : font))
+				{
+					Border = Rectangle.NO_BORDER,
+					Padding = 2f
+				};
+			}
+
+			// Fila 1
+			cabecera.AddCell(Celda("Cliente:", normalBold, true));
+			cabecera.AddCell(Celda($"({cab.cta_id}) {cab.cta_denominacion}", chico));
+			cabecera.AddCell(Celda("Fecha:", normalBold, true));
+			cabecera.AddCell(Celda(cab.pc_fecha.ToString("dd/MM/yy"), chico));
+
+			// Fila 2
+			cabecera.AddCell(Celda("Vendedor:", normalBold, true));
+			cabecera.AddCell(Celda(cab.ve_nombre, chico));
+			cabecera.AddCell(Celda("Repartidor:", normalBold, true));
+			cabecera.AddCell(Celda(cab.rp_nombre, chico));
+
+			// Fila 3
+			cabecera.AddCell(Celda("Estado:", normalBold, true));
+			cabecera.AddCell(Celda(cab.pce_desc, chico));
+			cabecera.AddCell(Celda("Reparto N°:", normalBold, true));
+			cabecera.AddCell(Celda(cab.cm_compte, chico));
+
+			// Fila 4
+			cabecera.AddCell(Celda("Factura:", normalBold, true));
+			cabecera.AddCell(Celda(cab.facturado, chico));
+			cabecera.AddCell(Celda("Obs.:", normalBold, true));
+			cabecera.AddCell(Celda(cab.pc_obs, chico));
+
+			pdf.Add(cabecera);
+
+			// ============================
+			// SEPARADOR
+			// ============================
+			PdfPTable separador = new PdfPTable(1);
+			separador.WidthPercentage = 100;
+
+			PdfPCell linea = new PdfPCell()
+			{
+				BorderWidthBottom = 1f,
+				BorderWidthTop = 0,
+				BorderWidthLeft = 0,
+				BorderWidthRight = 0,
+				Padding = 2f
+			};
+
+			separador.AddCell(linea);
+			pdf.Add(separador);
+
+
+			// ============================
+			// DETALLE POR RUBROS
+			// ============================
+			var grupos = registros
+				.GroupBy(x => new { x.rub_id, x.rub_desc })
+				.OrderBy(g => g.Key.rub_id);
+
+			decimal totalPedido = 0m;
+			decimal totalEntregado = 0m;
+
+			foreach (var grupo in grupos)
+			{
+				// Título del Rubro
+				Paragraph titulo = new(
+					$"Rubros: {grupo.Key.rub_desc}",
+					normalBold
+				);
+				titulo.SpacingBefore = 10f;
+				titulo.SpacingAfter = 5f;
+				pdf.Add(titulo);
+
+				// ============================
+				// TABLA IZQUIERDA (Pedido)
+				// ============================
+				PdfPTable tablaPedido = new(new float[] { 12f, 48f, 10f, 15f, 15f }); // 5 columnas
+				tablaPedido.WidthPercentage = 100;
+				tablaPedido.SplitLate = false;
+				tablaPedido.SplitRows = false;
+				tablaPedido.KeepTogether = true;
+
+				AgregarCeldaHeader(tablaPedido, "Código", chico);
+				AgregarCeldaHeader(tablaPedido, "Descripción", chico);
+				AgregarCeldaHeader(tablaPedido, "Cant. Ped.", chico);
+				AgregarCeldaHeader(tablaPedido, "Precio Vta.", chico);
+				AgregarCeldaHeader(tablaPedido, "Total", chico);
+
+				foreach (var item in grupo)
+				{
+					decimal totalLinea = item.pcd_pedida * item.pcd_pvta;
+					totalPedido += totalLinea;
+
+					tablaPedido.AddCell(new PdfPCell(new Phrase(item.p_id, chico)));
+					tablaPedido.AddCell(new PdfPCell(new Phrase(item.p_desc, chico)));
+					tablaPedido.AddCell(new PdfPCell(new Phrase(item.pcd_pedida.ToString("0.##"), chico)) { HorizontalAlignment = Element.ALIGN_RIGHT });
+					tablaPedido.AddCell(new PdfPCell(new Phrase(item.pcd_pvta.ToString("0.00"), chico)) { HorizontalAlignment = Element.ALIGN_RIGHT });
+					tablaPedido.AddCell(new PdfPCell(new Phrase(totalLinea.ToString("0.00"), chico)) { HorizontalAlignment = Element.ALIGN_RIGHT });
+				}
+
+				// ============================
+				// TABLA DERECHA (Entregado)
+				// ============================
+				PdfPTable tablaEntregado = new([60f, 40f]);
+				tablaEntregado.WidthPercentage = 100;
+				tablaEntregado.SplitLate = false;
+				tablaEntregado.SplitRows = false;
+				tablaEntregado.KeepTogether = true;
+
+				AgregarCeldaHeader(tablaEntregado, "Cant. Ent.", chico);
+				AgregarCeldaHeader(tablaEntregado, "Total", chico);
+
+				foreach (var item in grupo)
+				{
+					decimal totalEnt = item.pcd_enviada * item.pcd_pvta;
+					totalEntregado += totalEnt;
+
+					tablaEntregado.AddCell(new PdfPCell(new Phrase(item.pcd_enviada.ToString("0.##"), chico)) { HorizontalAlignment = Element.ALIGN_RIGHT });
+					tablaEntregado.AddCell(new PdfPCell(new Phrase(totalEnt.ToString("0.00"), chico)) { HorizontalAlignment = Element.ALIGN_RIGHT });
+				}
+
+				// ============================
+				// CONTENEDOR (lado a lado)
+				// ============================
+				PdfPTable contenedor = new PdfPTable(new float[] { 70f, 30f });
+				contenedor.WidthPercentage = 100;
+				contenedor.SpacingBefore = 5f;
+				contenedor.KeepTogether = true;
+
+				// Celda izquierda → tablaPedido
+				PdfPCell celdaPedido = new(tablaPedido)
+				{
+					Border = Rectangle.NO_BORDER,
+					Padding = 0
+				};
+				contenedor.AddCell(celdaPedido);
+
+				// Celda derecha → tablaEntregado
+				PdfPCell celdaEntregado = new(tablaEntregado)
+				{
+					Border = Rectangle.NO_BORDER,
+					PaddingLeft = 10f   // separación visual
+				};
+				contenedor.AddCell(celdaEntregado);
+
+				pdf.Add(contenedor);
+
+			}
+
+			// ============================
+			// TOTALES FINALES
+			// ============================
+			PdfPTable tablaTotales = new PdfPTable(new float[] { 70f, 30f });
+			tablaTotales.WidthPercentage = 100;
+			tablaTotales.SpacingBefore = 10f;
+
+			// Celda izquierda → Total Pedido
+			PdfPCell celdaTotalPedido = new PdfPCell(new Phrase($"Total: {totalPedido:0.00}", normalBold))
+			{
+				Border = Rectangle.NO_BORDER,
+				HorizontalAlignment = Element.ALIGN_RIGHT,
+				PaddingRight = 10f
+			};
+			tablaTotales.AddCell(celdaTotalPedido);
+
+			// Celda derecha → Total Entregado
+			PdfPCell celdaTotalEntregado = new PdfPCell(new Phrase($"Total: {totalEntregado:0.00}", normalBold))
+			{
+				Border = Rectangle.NO_BORDER,
+				HorizontalAlignment = Element.ALIGN_RIGHT
+			};
+			tablaTotales.AddCell(celdaTotalEntregado);
+
+			pdf.Add(tablaTotales);
+		}
+
+		private static void AgregarCeldaHeader(PdfPTable tabla, string texto, Font font)
+		{
+			PdfPCell celda = new PdfPCell(new Phrase(texto, font));
+			celda.HorizontalAlignment = Element.ALIGN_CENTER;
+			celda.VerticalAlignment = Element.ALIGN_MIDDLE;
+			celda.BackgroundColor = new BaseColor(230, 230, 230);
+			celda.Padding = 4f;
+			tabla.AddCell(celda);
+		}
+		#endregion
 	}
 }

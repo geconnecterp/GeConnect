@@ -3,13 +3,7 @@ using gc.api.core.Contratos.Servicios.Reportes;
 using gc.api.core.Entidades;
 using gc.api.core.Interfaces.Datos;
 using gc.infraestructura.Core.Exceptions;
-using gc.infraestructura.Dtos;
-using gc.infraestructura.Dtos.Almacen.Tr.Transferencia;
-using gc.infraestructura.Dtos.Consultas.ConsCertNoRetNoPercep;
 using gc.infraestructura.Dtos.Gen;
-using gc.infraestructura.Dtos.Inventario.Request;
-using gc.infraestructura.Dtos.Productos.OrdenDeReparto;
-using gc.infraestructura.Dtos.Productos.Pedidos;
 using gc.infraestructura.Dtos.Ventas;
 using gc.infraestructura.EntidadesComunes.Options;
 using gc.infraestructura.Helpers;
@@ -105,7 +99,7 @@ namespace gc.api.core.Servicios.Reportes
 				pdf.Open();
 
 				#region Lista 
-				HelperPdf.CargarRepoAnalisisDeVentaAnual(pdf, registros, chico, normal, normalBold, titulo, tituloBig);
+				CargarRepoAnalisisDeVentaAnual(pdf, registros, chico, normal, normalBold, titulo, tituloBig);
 				#endregion
 
 				pdf.Close();
@@ -200,5 +194,97 @@ namespace gc.api.core.Servicios.Reportes
 
 			return GeneraFileXLS(regs, _titulos, _campos);
 		}
+
+		#region funciones
+		public static void CargarRepoAnalisisDeVentaAnual(Document pdf, List<AnaVtaMesDetalleAnualDto> registros, Font chico, Font normal, Font normalBold, Font titulo, Font tituloBig)
+		{
+			// Página vertical
+			pdf.SetPageSize(PageSize.A4);
+			pdf.SetMargins(20f, 20f, 20f, 20f);
+
+			// ============================
+			// ENCABEZADO REPETIBLE
+			// ============================
+			PdfPTable header = new PdfPTable(1);
+			header.WidthPercentage = 100;
+
+			PdfPCell tituloCell = new PdfPCell(new Phrase("Análisis de Venta Anual", tituloBig))
+			{
+				Border = Rectangle.NO_BORDER,
+				HorizontalAlignment = Element.ALIGN_CENTER,
+				PaddingBottom = 5
+			};
+			header.AddCell(tituloCell);
+
+			PdfPCell subCell = new PdfPCell(new Phrase("Detalle por año", titulo))
+			{
+				Border = Rectangle.NO_BORDER,
+				HorizontalAlignment = Element.ALIGN_CENTER,
+				PaddingBottom = 10
+			};
+			header.AddCell(subCell);
+
+			header.HeaderRows = 2;
+			pdf.Add(header);
+
+			// ============================
+			// TABLA PRINCIPAL
+			// ============================
+			PdfPTable tabla = new PdfPTable(4)
+			{
+				WidthPercentage = 100
+			};
+
+			tabla.SetWidths(new float[] {
+				1.4f, // Año
+				2.2f, // Facturación
+				2.2f, // Dif. Año Anterior
+				2.2f  // Rentabilidad
+			});
+
+			// ============================
+			// ENCABEZADOS
+			// ============================
+			void AddHeader(string texto)
+			{
+				PdfPCell c = new PdfPCell(new Phrase(texto, normalBold))
+				{
+					HorizontalAlignment = Element.ALIGN_CENTER,
+					BackgroundColor = new BaseColor(230, 230, 230),
+					Padding = 4
+				};
+				tabla.AddCell(c);
+			}
+
+			AddHeader("Año");
+			AddHeader("Facturación");
+			AddHeader("Dif. Año Anterior");
+			AddHeader("Rentabilidad");
+
+			// ============================
+			// FILAS
+			// ============================
+			foreach (var r in registros)
+			{
+				// Año
+				tabla.AddCell(new PdfPCell(new Phrase(r.periodo.ToString(), normal))
+				{ HorizontalAlignment = Element.ALIGN_CENTER });
+
+				// Facturación
+				tabla.AddCell(new PdfPCell(new Phrase(r.co_facturacion.ToString("N2"), normal))
+				{ HorizontalAlignment = Element.ALIGN_RIGHT });
+
+				// Diferencia Año Anterior
+				tabla.AddCell(new PdfPCell(new Phrase(r.diferencia.ToString("N2"), normal))
+				{ HorizontalAlignment = Element.ALIGN_RIGHT });
+
+				// Rentabilidad
+				tabla.AddCell(new PdfPCell(new Phrase(r.co_costo.ToString("N2"), normal))
+				{ HorizontalAlignment = Element.ALIGN_RIGHT });
+			}
+
+			pdf.Add(tabla);
+		}
+		#endregion
 	}
 }
