@@ -41,45 +41,72 @@
     .lp-select {
         width: 100%;
     }
+
+    .car-body-alto {
+        height: 115px;
+        max-height: 115px;
+    }
+
+    .select-readonly {
+        pointer-events: none;
+        background-color: #f8f9fa !important;
+        color: #495057 !important;
+    }
 </style>
 <div class="card mb-3">
-    <div class="card-body p-2">
+    <div class="card-body p-2 car-body-alto">
         <div class="lp-row">
+            <div class="col-4">
+                <div class="lp-row-mrp" id="contenedorSector" style="display:@(Model.CargarPorSector ? "flex" : "none")">
+                    <label class="lp-label-mrp">Sector:</label>
+                    <div class="input-group input-group-sm lp-select-wrapper">
+                        @Html.DropDownListFor(m => m.SectorSeleccionado, Model.ListaSectores, "Seleccionar",
+                            new { @id = "listaSectores", @class = "form-control inputEditable activable lp-select select-readonly" })
+                    </div>
+                </div>
 
-            <div class="lp-row-mrp" id="contenedorSector" style="display:@(Model.CargarPorSector ? "flex" : "none")">
-                <label class="lp-label-mrp">Sector:</label>
-                <div class="input-group input-group-sm lp-select-wrapper">
-                    @Html.DropDownListFor(m => m.SectorSeleccionado, Model.ListaSectores, "Seleccionar",
-                        new { @id = "listaSectores", @disabled = true, @class = "form-control inputEditable activable lp-select" })
+                <div class="lp-row-mrp" id="contenedorRubros" style="display:@(!Model.CargarPorSector ? "flex" : "none")">
+                    <label class="lp-label-mrp">Rubros:</label>
+                    <div class="input-group input-group-sm lp-select-wrapper">
+                        @Html.DropDownListFor(m => m.RubroSeleccionado, Model.ListaRubros, "Seleccionar",
+                            new { @id = "listaRubros", @class = "form-control inputEditable activable lp-select select-readonly" })
+                    </div>
+                </div>
+            </div>
+            <div class="col-8">
+                <div class="d-flex align-items-center gap-2 me-2">
+                    <label class="lp-label-mrp">Proveedor:</label>
+
+                    <div class="input-group input-group-sm">
+                        <input type="text" class="form-control inputEditable activable" name="Rel01" id="Rel01" readonly />
+                        @Html.Hidden("Rel01Item")
+                    </div>
+
+                    <button type="button" class="btn btn-primary btn-icon-compact activable"
+                            title="Agregar elemento" onclick="agregarItemRubroCta()" readonly>
+                        <i class="bx bx-plus"></i>
+                    </button>
                 </div>
             </div>
 
-            <div class="lp-row-mrp" id="contenedorRubros" style="display:@(!Model.CargarPorSector ? "flex" : "none")">
-                <label class="lp-label-mrp">Rubros:</label>
-                <div class="input-group input-group-sm lp-select-wrapper">
-                    @Html.DropDownListFor(m => m.RubroSeleccionado, Model.ListaRubros, "Seleccionar",
-                        new { @id = "listaRubros", @disabled = true, @class = "form-control inputEditable activable lp-select" })
-                </div>
-            </div>
-
-            <label class="lp-label-mrp">Proveedor:</label>
-            <div class="input-group input-group-sm">
-                <input type="text" class="form-control inputEditable activable" name="Rel01" id="Rel01" disabled />
-                @Html.Hidden("Rel01Item")
-            </div>
-            <button type="button" class="btn btn-primary btn-icon-compact activable" title="Agregar elemento" onclick="agregarItemRubroCta()" disabled>
-                <i class="bx bx-plus"></i>
-            </button>
         </div>
         <div class="lp-row">
-            <div class="input-group input-group-sm input-group-input-group-sm">
-                <div class="form-check form-check-inline form-switch mb-2">
-                    <input class="form-check-input activable" type="checkbox" asp-for="CargarPorSector" name="CargarPorSector" id="chkPorSectores" disabled />
-                    <label class="form-check-label" for="chkPorSectores" id="lbPorSectores">Por Sectores</label>
+            <div class="col-4">
+                <div class="d-flex align-items-center">
+                    <div class="form-check form-check-inline form-switch mb-2">
+                        <input class="form-check-input activable" type="checkbox"
+                               asp-for="CargarPorSector" name="CargarPorSector" id="chkPorSectores" readonly />
+                        <label class="form-check-label" for="chkPorSectores" id="lbPorSectores">Por Sectores</label>
+                    </div>
                 </div>
             </div>
-            <label class="lp-label-mrp">% Mg LP:</label>
-            <input type="text" asp-for="Mgn" value="@Model.Mgn.ToString("0.00")" class="form-control activable inputEditable lp-input-dos" disabled />
+            <div class="col-8">
+                <div class="d-flex align-items-center gap-2">
+                    <label class="lp-label-mrp">% Mg LP:</label>
+                    <input type="text" asp-for="Mgn" value="@Model.Mgn.ToString("0.00")"
+                           class="form-control activable inputEditable lp-input-dos" readonly />
+                </div>
+            </div>
         </div>
     </div>
 </div>

@@ -9,6 +9,7 @@ using gc.sitio.core.Servicios.Contratos;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
 
 namespace gc.sitio.Areas.Productos.Controllers.ListaDePreciosGestionar
 {
@@ -243,6 +244,9 @@ namespace gc.sitio.Areas.Productos.Controllers.ListaDePreciosGestionar
 						mensaje = string.Join(" | ", errores)
 					});
 				}
+				request.adm_id = AdministracionId;
+				request.usu_id = UserName;
+				request.jsonRubCta = ObtenerJson(ListaPrecioRubCta);
 				var respuesta = _precioListaSrv.RegistrarModificacionesEnListaDePrecios(request, TokenCookie);
 				return AnalizarRespuesta(respuesta, "Las modificaciones se registraron con éxito.");
 			}
@@ -258,6 +262,19 @@ namespace gc.sitio.Areas.Productos.Controllers.ListaDePreciosGestionar
 			}
 		}
 		#region Metodos Privados
+		private string ObtenerJson(List<ListaPrecioRubCtaDto> lista)
+		{
+			if (lista == null || lista.Count == 0)
+				return "[]";
+			var listaSerializada = lista.Select(x => new
+			{
+				rub_id = x.rub_id,
+				cta_id = x.cta_id,
+				lpp_mgn_principal_porc = x.lpp_mgn_principal_porc
+			}).ToList();
+			var json = JsonConvert.SerializeObject(listaSerializada);
+			return json;
+		}
 		private SelectList ObtenerListaRubros(List<RubroListaDto> rub)
 		{
 			var lista = rub.Select(x => new ComboGenDto { Id = x.Rub_Id, Descripcion = x.Rub_Desc });

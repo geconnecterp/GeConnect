@@ -1,5 +1,6 @@
 ﻿var cta_id_seleccionada = "";
 var lpId_Seleccionada = "";
+var lpMgnPrincipal_Seleccionada = "";
 $(function () {
     InicializaPantalla();
     InicializaEventos();
@@ -39,10 +40,12 @@ function InicializaEventos() {
 
         if (!lpId) {
             lpId_Seleccionada = "";
+            lpMgnPrincipal_Seleccionada = "";
             return;
         }
         else {
             lpId_Seleccionada = lpId;
+            lpMgnPrincipal_Seleccionada = lpMgnPrincipal;
         }
 
 		// Enviar al backend para obtener los datos de la lista de precios seleccionada
@@ -61,12 +64,16 @@ function InicializaEventos() {
             $("#divRubrosProv").show();
             $("#divDatosRubrosProv").show();
 
+            AbrirWaiting("Cargando márgenes de Rubros por Proveedor...");
             PostGenHtml({ lp_id: lpId }, cargarDatosDeListaDePrecioRubCtaURL, function (obj) {
+                CerrarWaiting();
                 $("#divRubrosProv").html(obj);
                 //deshabilitarYBlanquearActivables();
             });
 
+            AbrirWaiting("Cargando datos...");
             PostGenHtml({}, cargarDatosDeSeccionRubCtaURL, function (obj) {
+                CerrarWaiting();
                 $("#divDatosRubrosProv").html(obj);
 
                 const $mgn = $("#divDatosRubrosProv #Mgn");
@@ -131,14 +138,15 @@ function handlerBtnAbmAceptarClick() {
     let lpId = lpId_Seleccionada;
     let abm = 'M';
     let lpMgnPrincipal = $("#tbGridListaPrecios tr[data-lp-id='" + lpId + "']").data("lp-mgn-principal");
-
+    let lpMargen = 0;
+    let lpMgnPrincipalPorc = 0;
     if (lpMgnPrincipal == 'S') {
-        let lpMargen = 0;
-        let lpMgnPrincipalPorc = $("#lp_margen").inputmask('unmaskedvalue');
+        lpMargen = 0;
+        lpMgnPrincipalPorc = $("#lp_margen").inputmask('unmaskedvalue');
     }
     else {
-        let lpMargen = $("#lp_margen").inputmask('unmaskedvalue');
-        let lpMgnPrincipalPorc = 0;
+        lpMargen = $("#lp_margen").inputmask('unmaskedvalue');
+        lpMgnPrincipalPorc = 0;
     }
     let lpPrevisionTot = $("#lp_prevision_tot").inputmask('unmaskedvalue');
     let lpPrevisionPin = $("#lp_prevision_pin").inputmask('unmaskedvalue');
@@ -153,11 +161,24 @@ function handlerBtnAbmAceptarClick() {
     };
     PostGen(data, registrarModificacionesEnListaDePreciosURL, function (obj) {
         CerrarWaiting();
-        //Deberiamos actualizar la vista
-        InicializaEventos();
+        if (obj && obj.error === true) {
+            AbrirMensaje("ATENCIÓN", obj.msg, function () {
+                $("#msjModal").modal("hide");
+                return true;
+            }, false, ["Aceptar"], "error!", null);
+        }
+        else {
+            AbrirMensaje("ATENCIÓN", "Se han registrado las modificaciones con éxito.", function () {
+                $("#msjModal").modal("hide");
+                
+                //Deberiamos actualizar la vista
+                InicializaEventos();
 
-        // Seleccionar automáticamente la primera fila al iniciar
-        SeleccionarPrimeraListaPrecio();
+                // Seleccionar automáticamente la primera fila al iniciar
+                SeleccionarPrimeraListaPrecio();
+                return true;
+            }, false, ["Aceptar"], "succ!", null);
+        }
     });
 }
 
@@ -174,7 +195,11 @@ function habilitarActivables() {
         //     getMaskForMoneyType($el);
         // }
     });
-    //CargarInputMask();
+    $("#listaSectores, #listaRubros").removeClass("select-readonly");
+    if (lpMgnPrincipal_Seleccionada == "S") {
+        $("#lp_mgn_principal").removeClass("checkbox-readonly");
+    }
+    //
 }
 
 function deshabilitarYBlanquearActivables() {
@@ -219,6 +244,10 @@ function deshabilitarYBlanquearActivables() {
             $el.prop("disabled", true);
         }
     });
+    $("#listaSectores, #listaRubros").addClass("select-readonly");
+    if (lpMgnPrincipal_Seleccionada == "S") {
+        $("#lp_mgn_principal").addClass("checkbox-readonly");
+    }
 }
 
 

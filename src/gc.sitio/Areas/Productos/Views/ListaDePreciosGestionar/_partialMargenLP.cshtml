@@ -18,10 +18,10 @@
     }
 
     .lp-label {
-        min-width: 140px; 
+        min-width: 140px;
         font-weight: 600;
         white-space: nowrap;
-    } 
+    }
 
     .lp-input {
         width: 120px;
@@ -34,11 +34,21 @@
     .lp-check {
         margin-left: 10px;
         margin-top: 4px;
-        }
+    }
+
+    .car-body-alto {
+        height: 115px;
+        max-height: 115px;
+    }
+
+    .checkbox-readonly {
+        pointer-events: none; /* no permite click */
+        opacity: 1 !important; /* mantiene el estilo normal */
+    }
 </style>
 
 <div class="card mb-3">
-    <div class="card-body p-2">
+    <div class="card-body p-2 car-body-alto">
 
         <!-- % Mg / Neto LP + Independiente -->
         <div class="lp-row">
@@ -47,7 +57,7 @@
 
             <div class="form-check lp-check">
                 <input type="checkbox"
-                       class="form-check-input activable"
+                       class="form-check-input activable checkbox-readonly"
                        id="lp_mgn_principal"
                        name="lp_mgn_principal"
                 @(esAsociada ? "checked" : "") readonly />

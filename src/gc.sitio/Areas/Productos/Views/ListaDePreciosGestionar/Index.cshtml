@@ -21,8 +21,8 @@
 }
 <style>
     #containerListaProducto {
-        max-height: 325px;
-        min-height: 325px;
+        max-height: 400px;
+        min-height: 400px;
         overflow-y: auto;
         margin-bottom: 25px;
     }
@@ -68,6 +68,7 @@
         let cargarDatosDeSeccionRubCtaURL = "@Url.Action("CargarDatosDeSeccionRubCta", "ListaDePreciosGestionar", new { area = "Productos" })";
         let autoComRel01Url = "@Url.Action("BuscarProvs", "cargaprecios", new { area = "productos" })";
         let agregarRegistrosUrl = "@Url.Action("AgregarRegistros", "ListaDePreciosGestionar", new { area = "Productos" })";
+        let registrarModificacionesEnListaDePreciosURL = "@Url.Action("RegistrarModificacionesEnListaDePrecios", "ListaDePreciosGestionar", new { area = "Productos" })";
     </script>
 
     <script src="~/lib/jstree/jstree.min.js"></script>
