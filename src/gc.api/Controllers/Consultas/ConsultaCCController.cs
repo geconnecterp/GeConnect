@@ -502,6 +502,42 @@ namespace gc.api.Controllers.Consultas
 		}
 
 		[HttpPost]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<MovStkProductoDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult ConsultarProductoMovStk(BuscarMovStockProductosRequest request)
+		{
+			MovStkProductoDto reg = new() { total_paginas = 0, total_registros = 0 };
+
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
+			var res = _consSv.ConsultarProductoMovStk(request);
+
+			if (res.Count > 0)
+				reg = res.First();
+
+			var metadata = new MetadataGrid
+			{
+				TotalCount = reg.total_registros,
+				PageSize = request.Registros ?? 0,
+				CurrentPage = request.Pagina ?? 0,
+				TotalPages = reg.total_paginas,
+				HasNextPage = (request.Pagina ?? 0) < reg.total_paginas,
+				HasPreviousPage = (request.Pagina ?? 0) > 1,
+				NextPageUrl = _uriService.GetPostPaginationUri(request, Url.RouteUrl(nameof(MovStkProductoDto)) ?? "").ToString(),
+				PreviousPageUrl = _uriService.GetPostPaginationUri(request, Url.RouteUrl(nameof(MovStkProductoDto)) ?? "").ToString(),
+
+			};
+
+			var response = new ApiResponse<IEnumerable<MovStkProductoDto>>(res)
+			{
+				Meta = metadata
+			};
+			Response.Headers.Append("X-Pagination", JsonConvert.SerializeObject(metadata));
+
+			return Ok(response);
+		}
+
+		[HttpPost]
 		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<MovimientoListaDto>))]
 		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
 		[Route("[action]")]

@@ -653,6 +653,108 @@ namespace gc.api.core.Servicios
 			return lstProductos;
 		}
 
+		public List<MovStkProductoDto> ConsultarProductoMovStk(BuscarMovStockProductosRequest filtros)
+		{
+			filtros.Pagina = filtros.Pagina == null || filtros.Pagina <= 0 ? _pagSet.DefaultPageNumber : filtros.Pagina;
+			filtros.Registros = filtros.Registros == null || filtros.Registros <= 0 ? _pagSet.DefaultPageSize : filtros.Registros;
+
+			string sp = ConstantesGC.StoredProcedures.SP_INFO_MOV_STK_ALL;
+
+			var ps = new List<SqlParameter>();
+
+			if (filtros.lMovTipo != null && filtros.lMovTipo.Count > 0)
+			{
+				StringBuilder sb = new();
+				bool first = true;
+				foreach (var item in filtros.lMovTipo)
+				{
+					if (first)
+						first = false;
+					else
+						sb.Append(',');
+
+					sb.Append(item);
+				}
+				ps.Add(new SqlParameter("@sm_tipo_list", sb.ToString()));
+			}
+			else
+				ps.Add(new SqlParameter("@sm_tipo_list", "%"));
+
+			if (filtros.lDep != null && filtros.lDep.Count > 0)
+			{
+				StringBuilder sb = new();
+				bool first = true;
+				foreach (var item in filtros.lDep)
+				{
+					if (first)
+						first = false;
+					else
+						sb.Append(',');
+
+					sb.Append(item);
+				}
+				ps.Add(new SqlParameter("@depo_list", sb.ToString()));
+			}
+			else
+				ps.Add(new SqlParameter("@depo_list", "%"));
+
+			if (filtros.lBox != null && filtros.lBox.Count > 0)
+			{
+				StringBuilder sb = new();
+				bool first = true;
+				foreach (var item in filtros.lBox)
+				{
+					if (first)
+						first = false;
+					else
+						sb.Append(',');
+
+					sb.Append(item);
+				}
+				ps.Add(new SqlParameter("@box_list", sb.ToString()));
+			}
+			else
+				ps.Add(new SqlParameter("@box_list", "%"));
+
+			if (filtros.lProv != null && filtros.lProv.Count > 0)
+			{
+				StringBuilder sb = new();
+				bool first = true;
+				foreach (var item in filtros.lProv)
+				{
+					if (first)
+						first = false;
+					else
+						sb.Append(',');
+
+					sb.Append(item);
+				}
+				ps.Add(new SqlParameter("@cta_list", sb.ToString()));
+			}
+			else
+				ps.Add(new SqlParameter("@cta_list", "%"));
+
+			if (filtros.pId != null && string.IsNullOrEmpty(filtros.pId))
+			{
+				StringBuilder sb = new();
+				
+				ps.Add(new SqlParameter("@p_id", filtros.pId));
+			}
+			else
+				ps.Add(new SqlParameter("@p_id", "%"));
+
+			ps.Add(new SqlParameter("@d", filtros.desde));
+			ps.Add(new SqlParameter("@h", filtros.hasta));
+
+			ps.Add(new SqlParameter("@registros", filtros.Registros));
+			ps.Add(new SqlParameter("@pagina", filtros.Pagina));
+			ps.Add(new SqlParameter("@ordenar", filtros.Sort ?? ""));
+
+			List<MovStkProductoDto> lstProductos = _repository.EjecutarLstSpExt<MovStkProductoDto>(sp, ps, true);
+
+			return lstProductos;
+		}
+
 		public List<MovimientoListaDto> ConsultaMovimientoLista(BuscarMovDeCuentaDirectaRequest filtros)
 		{
 			var sp = ConstantesGC.StoredProcedures.SP_G_MOVIMIENTOS;
@@ -671,7 +773,7 @@ namespace gc.api.core.Servicios
 					sb.Append(item);
 				}
 				if (sb.Length > 1)
-					ps.Add(new SqlParameter("@ctag_list", sb.ToString() + ','));
+					ps.Add(new SqlParameter("@ctag_list", sb.ToString()));
 				else
 					ps.Add(new SqlParameter("@ctag_list", sb.ToString()));
 			}

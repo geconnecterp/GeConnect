@@ -98,6 +98,10 @@ namespace gc.sitio.Areas.Mstk.Controllers
 
 			try
 			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+					return RedirectToAction("Login", "Token", new { area = "seguridad" });
+
 				if (!buscaNew)
 				{
 					lista = ListaProductoStk.ToList();

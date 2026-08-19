@@ -40,7 +40,8 @@ namespace gc.sitio.core.Servicios.Contratos
 		Task<(List<ProductoStkDto>, MetadataGrid)> ConsultarProductoStk(ConsultarStockRequest filters, string token);
 		Task<(List<ProductoStkDto>, MetadataGrid)> ConsultarProductoStkValor(ConsultarStockValorizadoRequest filters, string token);
 		Task<(List<ProductoStkCompensadoDto>, MetadataGrid)> ConsultarProductoStkCompensado(ConsultarStockCompensadoRequest filters, string token);
-        List<MovimientoListaDto> ConsultaMovimientoLista(BuscarMovDeCuentaDirectaRequest request, string token);
+        Task<(List<MovStkProductoDto>, MetadataGrid)> ConsultarProductoMovStk(BuscarMovStockProductosRequest filters, string token);
+		List<MovimientoListaDto> ConsultaMovimientoLista(BuscarMovDeCuentaDirectaRequest request, string token);
         List<SaldoDetalleDto> BuscarSaldoDetalleCtaDistribuidora(BuscarSaldoDetalleRequest request, string token);
         List<SaldoResumenDto> BuscarSaldoResumenCtaDistribuidora(BuscarSaldoDetalleRequest request, string token);
         List<ComisionesDeVendedoresDetalleDto> BuscarComisionDeVendedorDetalle(ComisionesDeVendedoresRequest request, string token);

@@ -1,0 +1,118 @@
+﻿@using gc.infraestructura.Dtos.Mstk
+@using gc.infraestructura.Helpers
+@model MovDeStockListaModel
+@using static gc.infraestructura.Helpers.GridHelper
+@{
+    var alt = true;
+    string clase = string.Empty;
+
+	var productos = new List<MovStkProductoDto>();
+	var leyenda = Model.Leyenda;
+}
+<style>
+
+</style>
+<div class="grid-golden">
+	<div class="grid-golden-header">
+		<div class="row align-items-md-center">
+			<div class="col-md-10 col-sm-6 d-flex align-items-center">
+				<h5 class="mb-0 flex-grow-1">
+					<i class="bx bx-package me-2"></i>
+					<strong>@leyenda</strong>
+				</h5>
+				<i class="bx bx-chevrons-down fs-4 ms-2"
+				   id="toggleFiltros"
+				   data-bs-toggle="collapse"
+				   data-bs-target="#filtrosCollapse"
+				   role="button"
+				   data-bs-placement="top"
+				   title="Haz click acá para conocer los filtros aplicados"
+				   style="
+					cursor:pointer;
+					transition: transform .25s ease, color .25s ease;
+					color:#666;
+					">
+				</i>
+			</div>
+
+			<div class="col-md-2 col-sm-6">
+				<div class="d-flex justify-content-sm-end"></div>
+			</div>
+		</div>
+	</div>
+	<div class="collapse" id="filtrosCollapse">
+		<div class="mt-2">
+			<span class="badge bg-secondary me-1">@Model.LeyendaTipoMov</span>
+			<span class="badge bg-secondary me-1">@Model.LeyendaDep</span>
+			<span class="badge bg-secondary me-1">@Model.LeyendaBox</span>
+			<span class="badge bg-secondary me-1">@Model.LeyendaProv</span>
+			<span class="badge bg-secondary me-1">@Model.FechaDesde</span>
+			<span class="badge bg-secondary me-1">@Model.FechaHasta</span>
+			<span class="badge bg-secondary me-1">@Model.Producto</span>
+		</div>
+	</div>
+	<div class="grid-golden-body">
+		<div class="table-wrapper" id="containerListaProducto">
+			<table class="table table-sm table-golden" id="tbGridProductos">
+				<thead>
+					<tr class="header">
+						<th class="text-center" style="width: 5%;">Fecha</th>
+						<th class="text-center" style="width: 35%;">Concepto</th>
+						<th class="text-center" style="width: 10%;">Box</th>
+						<th class="text-center" style="width: 10%;">Id</th>
+						<th class="text-center" style="width: 20%;">Descripción</th>
+						<th class="text-center" style="width: 10%;">E/S</th>
+						<th class="text-center" style="width: 10%;">Stock</th>
+					</tr>
+				</thead>
+				<tbody>
+					@if (Model != null && Model.GrillaProductoMovStk != null && Model.GrillaProductoMovStk.ListaDatos != null && Model.GrillaProductoMovStk.ListaDatos.Count > 0)
+					{
+						productos = Model.GrillaProductoMovStk.ListaDatos.ToList();
+						@foreach (var item in productos)
+						{
+							if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+							<tr class="@clase" onclick="selectReg(this, 'tbGridProductos')">
+								<td class="@Model.GrillaProductoMovStk.ObtenerClase(item.FechaFormateada) align-center cell-fit-content">@Model.GrillaProductoMovStk.FormatearDato(item.FechaFormateada, FormatDato.Ninguno)</td>
+								<td class="@Model.GrillaProductoMovStk.ObtenerClase(item.sm_concepto) text-start cell-fit-content">@Model.GrillaProductoMovStk.FormatearDato(item.sm_concepto, FormatDato.Ninguno)</td>
+								<td class="@Model.GrillaProductoMovStk.ObtenerClase(item.box_id) align-center cell-fit-content">@Model.GrillaProductoMovStk.FormatearDato(item.box_id, FormatDato.Ninguno)</td>
+								<td class="@Model.GrillaProductoMovStk.ObtenerClase(item.p_id) align-center cell-fit-content">@Model.GrillaProductoMovStk.FormatearDato(item.p_id, FormatDato.Ninguno)</td>
+								<td class="@Model.GrillaProductoMovStk.ObtenerClase(item.sm_desc) text-start cell-fit-content">@Model.GrillaProductoMovStk.FormatearDato(item.sm_desc, FormatDato.Ninguno)</td>
+								<td class="@Model.GrillaProductoMovStk.ObtenerClase(item.sm_es) text-right cell-fit-content">@GridHelper.FormatearDato(item.sm_es, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
+								<td class="@Model.GrillaProductoMovStk.ObtenerClase(item.sm_stk) text-right cell-fit-content">@GridHelper.FormatearDato(item.sm_stk, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
+							</tr>
+						}
+					}
+					else
+					{
+						<tr>
+							<td colspan="9" class="text-center text-muted py-4">
+								<i class="bx bx-info-circle me-2"></i>
+								No se encontraron productos con los criterios especificados
+							</td>
+						</tr>
+					}
+				</tbody>
+			</table>
+		</div>
+		<div class="row mt-3">
+			<div class="offset-md-3 col-md-6">
+				<div id="divPaginacion" class="">
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<script>
+	// Rotación del doble-chevron al abrir/cerrar
+	const toggle = document.getElementById('toggleFiltros');
+	const collapse = document.getElementById('filtrosCollapse');
+
+	collapse.addEventListener('show.bs.collapse', () => {
+		toggle.style.transform = 'rotate(180deg)';
+	});
+
+	collapse.addEventListener('hide.bs.collapse', () => {
+		toggle.style.transform = 'rotate(0deg)';
+	});
+</script>
