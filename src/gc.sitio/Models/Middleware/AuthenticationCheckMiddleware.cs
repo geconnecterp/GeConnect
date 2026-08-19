@@ -1,5 +1,7 @@
 ﻿namespace gc.sitio.Models.Middleware
 {
+    using Microsoft.AspNetCore.Authorization;
+
     public class AuthenticationCheckMiddleware
     {
         private readonly RequestDelegate _next;
@@ -11,6 +13,14 @@
 
         public async Task InvokeAsync(HttpContext context)
         {
+            // Respetar únicamente los endpoints declarados explícitamente públicos.
+            // La decisión sigue centralizada en los atributos de autorización de cada acción.
+            if (context.GetEndpoint()?.Metadata.GetMetadata<IAllowAnonymous>() != null)
+            {
+                await _next(context);
+                return;
+            }
+
             //// ✅ PERMITIR acceso público a /docmanager SIN autenticación
             //if (context.Request.Path.StartsWithSegments("/docmanager", StringComparison.OrdinalIgnoreCase))
             //{

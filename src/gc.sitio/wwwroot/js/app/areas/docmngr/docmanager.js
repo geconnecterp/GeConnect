@@ -9,6 +9,16 @@
  */
 
 $(function () {
+    // Cada pestaña conserva el módulo informado por sus propias respuestas.
+    // El encabezado se emite desde ControladorBase cuando una acción configura
+    // el gestor, incluso en pantallas que alternan entre varios reportes.
+    $(document).ajaxComplete(function (_event, xhr) {
+        const moduloRespuesta = xhr.getResponseHeader('X-GECO-Print-Module');
+        if (moduloRespuesta) {
+            window.gestorModuloPagina = moduloRespuesta;
+        }
+    });
+
     // Código para añadir efectos al abrir el modal
     $(document).on('shown.bs.modal', '#docmgrmodal', function () {
         // Animar la aparición del árbol de archivos
@@ -21,11 +31,17 @@ $(function () {
     });
 
     $(document).on("click", "#btnCancelarGD", function () {
+        limpiarColaImpresionIndividual();
         $("#docmgrmodal").modal("hide");
         $("#modalGestorDocumental").hide();
     });
 
     $(document).on("click", "#btnArchImprimir", imprimirArchivoSeleccionado);
+
+    $(document).on("change", "#chkImpresionGlobal", function () {
+        limpiarColaImpresionIndividual();
+        actualizarModoImpresion();
+    });
 
     $(document).on("click", "input[name='rdgenera']", function () {
         if ($(this).is(":checked")) {
@@ -55,11 +71,6 @@ $(function () {
             .attr('class', `text-muted ${color}`);
     });
 
-    // Actualizar información de archivos para WhatsApp cuando cambia la selección
-    $(document).on('changed.jstree', '#archivosDispuestos', function () {
-        updateWhatsAppFilesInfo();
-    });
-
     inicializaArbolArchivos();
 });
 
@@ -68,6 +79,38 @@ $(function () {
  * ✅ FUNCIÓN PRINCIPAL: Enviar Email con archivos adjuntos o enlaces
  * CORREGIDO: Unifica generación de PDFs y URLs para TODOS los proveedores
  */
+function validarSeleccionParaEnlaces(archivosSeleccionados) {
+    const restringidos = Array.isArray(window.currentModuleConfig?.reportesSinEnlacePublico)
+        ? window.currentModuleConfig.reportesSinEnlacePublico.map(Number)
+        : [];
+    const noAutorizados = (archivosSeleccionados || []).filter(node =>
+        restringidos.includes(Number(node.id)));
+
+    if (noAutorizados.length === 0) {
+        return true;
+    }
+
+    const nombres = noAutorizados.map(node => node.text).join(', ');
+    AbrirMensaje(
+        "ATENCIÓN",
+        `La documentación seleccionada no está autorizada para descarga mediante enlace: ${nombres}.`,
+        function () { $("#msjModal").modal("hide"); },
+        false,
+        ["Aceptar"],
+        "warn!",
+        null);
+    return false;
+}
+
+function convertirHtmlATextoPlano(contenido) {
+    const htmlConSaltos = String(contenido || '')
+        .replace(/<br\s*\/?>/gi, '\n')
+        .replace(/<\/p\s*>/gi, '\n\n')
+        .replace(/<\/div\s*>/gi, '\n');
+
+    return $('<div>').html(htmlConSaltos).text().trim();
+}
+
 function enviarEmail() {
     console.log('📧 Iniciando proceso de envío de email...');
 
@@ -121,6 +164,10 @@ function enviarEmail() {
 
     console.log(`📊 Total archivos seleccionados: ${archivosSeleccionados.length}`);
 
+    if (!validarSeleccionParaEnlaces(archivosSeleccionados)) {
+        return;
+    }
+
     // ✅ NUEVO: Procesar archivos de manera unificada ANTES de llamar a los proveedores específicos
     if (archivosSeleccionados.length > 0) {
         procesarArchivosParaEmail(emailProvider, emailTo, emailSubject, emailBody, archivosSeleccionados);
@@ -161,24 +208,28 @@ function procesarArchivosParaEmail(emailProvider, emailTo, emailSubject, emailBo
                 cuerpoConEnlaces.includes('<p>') ||
                 cuerpoConEnlaces.includes('<div>');
 
-            // ✅ Para Outlook Web y Gmail: Convertir a HTML si es necesario
-            if (!esHtml && (emailProvider === 'outlookweb' || emailProvider === 'gmail')) {
+            // Gmail recibe HTML. Los deeplinks de Outlook Web y mailto trabajan
+            // de forma más fiable con texto plano y URLs visibles.
+            if (!esHtml && emailProvider === 'gmail') {
                 cuerpoConEnlaces = cuerpoConEnlaces
                     .replace(/\r\n/g, '\n')
                     .replace(/\n\n/g, '<br/><br/>')
                     .replace(/\n/g, '<br/>');
+            } else if (esHtml && emailProvider !== 'gmail') {
+                cuerpoConEnlaces = convertirHtmlATextoPlano(cuerpoConEnlaces);
             }
 
             // ✅ Agregar enlaces según el proveedor
             if (enlaces.length > 0) {
-                if (emailProvider === 'outlookweb' || emailProvider === 'gmail') {
-                    // ✅ HTML para Outlook Web y Gmail
+                if (emailProvider === 'gmail') {
+                    // HTML únicamente para el envío SMTP de Gmail.
                     cuerpoConEnlaces += '<br/><br/>📎 <strong>Documentos disponibles:</strong><br/><br/>';
                     enlaces.forEach((enlace, index) => {
                         cuerpoConEnlaces += `${index + 1}. <a href="${enlace.url}" target="_blank" style="color: #0066cc; text-decoration: none;">${enlace.nombre}</a><br/><br/>`;
                     });
                 } else {
-                    // ✅ Texto plano para Outlook Desktop (mailto)
+                    // Outlook Web y Outlook local: texto plano con URL completa.
+                    // Ambos clientes detectan estas URLs y las convierten en enlaces.
                     cuerpoConEnlaces += '\n\n📎 Documentos disponibles:\n\n';
                     enlaces.forEach((enlace, index) => {
                         cuerpoConEnlaces += `${index + 1}. ${enlace.nombre}\n   ${enlace.url}\n\n`;
@@ -197,7 +248,12 @@ function procesarArchivosParaEmail(emailProvider, emailTo, emailSubject, emailBo
                     enviarEmailOutlookLocal(emailTo, emailSubject, cuerpoConEnlaces, enlaces);
                     break;
                 default:
-                    enviarEmailGmailConAdjuntos(emailTo, emailSubject, cuerpoConEnlaces, []);
+                    enviarEmailGmailConAdjuntos(
+                        emailTo,
+                        emailSubject,
+                        cuerpoConEnlaces,
+                        [],
+                        enlaces.length);
             }
         })
         .catch(error => {
@@ -452,7 +508,7 @@ function procesarArchivosParaEmail(emailProvider, emailTo, emailSubject, emailBo
  * ✅ FUNCIÓN MODIFICADA: Envía email por SMTP usando Gmail
  * Ahora recibe archivos YA clasificados
  */
-function enviarEmailGmailConAdjuntos(emailTo, emailSubject, emailBody, archivosPequeños) {
+function enviarEmailGmailConAdjuntos(emailTo, emailSubject, emailBody, archivosPequeños, cantidadEnlaces = 0) {
     AbrirWaiting("Enviando email por Gmail...");
 
     const archivosParaAdjuntar = archivosPequeños.map(a => ({
@@ -470,7 +526,9 @@ function enviarEmailGmailConAdjuntos(emailTo, emailSubject, emailBody, archivosP
             archivos: archivosParaAdjuntar,
             emailTo: emailTo,
             emailSubject: emailSubject,
-            emailBody: emailBody
+            emailBody: emailBody,
+            contextoId: window.gestorDocumentalContexto?.contextoId || '',
+            moduloGestor: window.gestorDocumentalContexto?.moduloGestor || ''
         }),
         success: function (response) {
             CerrarWaiting();
@@ -482,12 +540,17 @@ function enviarEmailGmailConAdjuntos(emailTo, emailSubject, emailBody, archivosP
             } else {
                 console.log('✅ Email enviado exitosamente por Gmail');
 
-                AbrirMensaje("Éxito",
-                    `✅ Email enviado exitosamente a ${emailTo}\n\n` +
-                    `📎 Archivos adjuntos: ${archivosPequeños.length}`,
+                const destinatarioSeguro = $('<div>').text(emailTo).html();
+                const detalleDocumentos = cantidadEnlaces === 1
+                    ? 'Se incluyó 1 enlace de descarga.'
+                    : `Se incluyeron ${cantidadEnlaces} enlaces de descarga.`;
+
+                AbrirMensaje("Correo enviado",
+                    `El correo fue enviado correctamente a ${destinatarioSeguro}.<br><br>` +
+                    `<strong>${detalleDocumentos}</strong>`,
                     function () {
                         $("#msjModal").modal("hide");
-                    }, false, ["Aceptar"], "success", null);
+                    }, false, ["Aceptar"], "succ!", null);
             }
         },
         error: function (xhr, status, error) {
@@ -540,7 +603,9 @@ function enviarEmailOutlookWeb(emailTo, emailSubject, emailBody, enlaces) {
         data: JSON.stringify({
             To: emailTo,
             Subject: emailSubject,
-            Body: emailBody // Ya incluye los enlaces del FileStore
+            Body: emailBody, // Ya incluye los enlaces del FileStore
+            ContextoId: window.gestorDocumentalContexto?.contextoId || '',
+            ModuloGestor: window.gestorDocumentalContexto?.moduloGestor || ''
         }),
         success: function (response) {
             CerrarWaiting();
@@ -558,14 +623,16 @@ function enviarEmailOutlookWeb(emailTo, emailSubject, emailBody, enlaces) {
                         }, false, ["Aceptar"], "warn!", null);
                 } else {
                     setTimeout(() => {
-                        AbrirMensaje("Éxito",
-                            `✅ Outlook Web abierto exitosamente\n\n` +
-                            `📧 Destinatario: ${emailTo}\n` +
-                            `🔗 Enlaces incluidos: ${enlaces.length}\n\n` +
-                            `Los enlaces están disponibles en el mensaje.`,
+                        const detalleEnlaces = enlaces.length === 1
+                            ? 'Se incluyó 1 enlace de descarga.'
+                            : `Se incluyeron ${enlaces.length} enlaces de descarga.`;
+
+                        AbrirMensaje("Borrador abierto",
+                            `Outlook Web se abrió con el destinatario y el contenido preparados.<br><br>` +
+                            `<strong>${detalleEnlaces}</strong>`,
                             function () {
                                 $("#msjModal").modal("hide");
-                            }, false, ["Aceptar"], "success", null);
+                            }, false, ["Aceptar"], "succ!", null);
                     }, 500);
                 }
             } else {
@@ -612,7 +679,9 @@ function enviarEmailOutlookLocal(emailTo, emailSubject, emailBody, enlaces) {
         data: JSON.stringify({
             To: emailTo,
             Subject: emailSubject,
-            Body: emailBody // Ya incluye los enlaces del FileStore
+            Body: emailBody, // Ya incluye los enlaces del FileStore
+            ContextoId: window.gestorDocumentalContexto?.contextoId || '',
+            ModuloGestor: window.gestorDocumentalContexto?.moduloGestor || ''
         }),
         success: function (response) {
             CerrarWaiting();
@@ -621,14 +690,16 @@ function enviarEmailOutlookLocal(emailTo, emailSubject, emailBody, enlaces) {
                 window.location.href = response.mailtoLink;
 
                 setTimeout(() => {
-                    AbrirMensaje("Éxito",
-                        `✅ Outlook Local abierto exitosamente\n\n` +
-                        `📧 Destinatario: ${emailTo}\n` +
-                        `🔗 Enlaces incluidos: ${enlaces.length}\n\n` +
-                        `Los enlaces están disponibles en el mensaje.`,
+                    const detalleEnlaces = enlaces.length === 1
+                        ? 'Se incluyó 1 enlace de descarga.'
+                        : `Se incluyeron ${enlaces.length} enlaces de descarga.`;
+
+                    AbrirMensaje("Borrador abierto",
+                        `Outlook local se abrió con el destinatario y el contenido preparados.<br><br>` +
+                        `<strong>${detalleEnlaces}</strong>`,
                         function () {
                             $("#msjModal").modal("hide");
-                        }, false, ["Aceptar"], "success", null);
+                        }, false, ["Aceptar"], "succ!", null);
                 }, 500);
             } else {
                 AbrirMensaje("Error", response.message || "Error al abrir Outlook Local", function () {
@@ -732,6 +803,10 @@ function enviarWhatsApp() {
         return;
     }
 
+    if (!validarSeleccionParaEnlaces(archivosSeleccionados)) {
+        return;
+    }
+
     console.log(`📎 Procesando ${archivosSeleccionados.length} archivo(s) para WhatsApp`);
 
     AbrirWaiting("Generando enlaces de documentos...");
@@ -750,7 +825,7 @@ function enviarWhatsApp() {
             // Construir mensaje con enlaces
             let mensajeFinal = whatsappMessage;
 
-            mensajeFinal += '\n\n📎 Archivos disponibles para descarga:\n';
+            mensajeFinal += '\n\nDocumentos disponibles para descarga:\n';
             enlaces.forEach((enlace, index) => {
                 mensajeFinal += `${index + 1}. ${enlace.nombre}\n${enlace.url}\n\n`;
             });
@@ -792,7 +867,9 @@ function enviarWhatsAppSinArchivos(numero, mensaje) {
         contentType: 'application/json',
         data: JSON.stringify({
             To: numero,
-            Message: mensaje
+            Message: mensaje,
+            ContextoId: window.gestorDocumentalContexto?.contextoId || '',
+            ModuloGestor: window.gestorDocumentalContexto?.moduloGestor || ''
         }),
         success: function (response) {
             CerrarWaiting();
@@ -810,14 +887,14 @@ function enviarWhatsAppSinArchivos(numero, mensaje) {
                         }, false, ["Aceptar"], "warn!", null);
                 } else {
                     setTimeout(() => {
-                        AbrirMensaje("Éxito", 
-                            `✅ ${response.message}\n\n` +
+                        AbrirMensaje("WhatsApp Web abierto",
+                            `${response.message}\n\n` +
                             `📱 Destinatario: ${response.to}`,
                             function () {
                                 $("#msjModal").modal("hide");
                                 $('#whatsappForm')[0].reset();
                                 $('#whatsappCharCounter').text('0/5000 caracteres');
-                            }, false, ["Aceptar"], "success", null);
+                            }, false, ["Aceptar"], "succ!", null);
                     }, 500);
                 }
             } else {
@@ -868,7 +945,9 @@ function enviarWhatsAppConEnlaces(numero, mensaje, cantidadArchivos) {
         contentType: 'application/json',
         data: JSON.stringify({
             To: numero,
-            Message: mensaje
+            Message: mensaje,
+            ContextoId: window.gestorDocumentalContexto?.contextoId || '',
+            ModuloGestor: window.gestorDocumentalContexto?.moduloGestor || ''
         }),
         success: function (response) {
             CerrarWaiting();
@@ -886,16 +965,16 @@ function enviarWhatsAppConEnlaces(numero, mensaje, cantidadArchivos) {
                         }, false, ["Aceptar"], "warn!", null);
                 } else {
                     setTimeout(() => {
-                        AbrirMensaje("Éxito", 
-                            `✅ WhatsApp Web abierto exitosamente\n\n` +
+                        AbrirMensaje("WhatsApp Web abierto",
+                            `WhatsApp Web se abrió correctamente.\n\n` +
                             `📱 Destinatario: ${response.to}\n` +
                             `🔗 Enlaces incluidos: ${cantidadArchivos}\n\n` +
-                            `Los archivos están disponibles en los enlaces del mensaje.`,
+                            `Los documentos están disponibles mediante los enlaces del mensaje.`,
                             function () {
                                 $("#msjModal").modal("hide");
                                 $('#whatsappForm')[0].reset();
                                 $('#whatsappCharCounter').text('0/5000 caracteres');
-                            }, false, ["Aceptar"], "success", null);
+                            }, false, ["Aceptar"], "succ!", null);
                     }, 500);
                 }
             } else {
@@ -933,15 +1012,20 @@ function enviarWhatsAppConEnlaces(numero, mensaje, cantidadArchivos) {
 function updateWhatsAppFilesInfo() {
     const selectedNodes = $('#archivosDispuestos').jstree('get_selected', true);
     const archivosSeleccionados = selectedNodes.filter(function (node) {
-        return node.parent !== "#" && node.parent !== null && !node.children;
+        const esNodoRaiz = node.parent === "#" || node.parent === null;
+        const esCarpeta = node.children && node.children.length > 0;
+        return !esNodoRaiz && !esCarpeta;
     });
-    
+
+    const $info = $('#whatsappFileInfo');
     if (archivosSeleccionados.length > 0) {
-        let info = `⚠️ ${archivosSeleccionados.length} archivo(s) seleccionado(s).\n`;
-        info += 'Recuerda que deberás adjuntarlos manualmente en WhatsApp.';
-        $('#whatsappFilesInfo').text(info).show();
+        const cantidad = archivosSeleccionados.length;
+        const texto = cantidad === 1
+            ? '1 documento seleccionado; se incluirá 1 enlace de descarga'
+            : `${cantidad} documentos seleccionados; se incluirán ${cantidad} enlaces de descarga`;
+        $info.text(texto).show();
     } else {
-        $('#whatsappFilesInfo').hide();
+        $info.text('Sin documentos seleccionados').show();
     }
 }
 
@@ -951,13 +1035,47 @@ function inicializaArbolArchivos() {
 }
 
 function invocacionGestorDoc(data) {
-    PostGenHtml(data, OrquestadorDeModulosUrl, function (obj) {
+    data = data || {};
+
+    const reportesDisponibles = typeof arrRepoParams === 'undefined'
+        ? []
+        : arrRepoParams
+            .map((reporte, indice) => reporte ? indice + 1 : null)
+            .filter(id => id !== null);
+
+    const moduloGestor = data.moduloGestor || window.gestorModuloPagina || '';
+    const contextoId = data.contextoId || crearContextoIdGestor();
+
+    window.gestorDocumentalContexto = {
+        contextoId: contextoId,
+        moduloGestor: moduloGestor,
+        reportesPreseleccionados: Array.isArray(data.reportesPreseleccionados)
+            ? data.reportesPreseleccionados.map(Number)
+            : reportesDisponibles
+    };
+
+    const solicitudGestor = $.extend({}, data, {
+        contextoId: contextoId,
+        moduloGestor: moduloGestor
+    });
+
+    PostGenHtml(solicitudGestor, OrquestadorDeModulosUrl, function (obj) {
         $("#modalGestorDocumental").html(obj);
         
         // ✅ NUEVO: Inicializar configuración antes de presentar archivos
         // Esperar un momento para que el script de configuración del modal se ejecute
         setTimeout(function() {
             inicializarConfiguracionModulo();
+
+            // La configuración devuelta por el servidor es la identidad
+            // autoritativa del contexto abierto en esta pestaña.
+            if (window.currentModuleConfig?.moduloId &&
+                window.currentModuleConfig.moduloId !== 'DEFAULT') {
+                window.gestorDocumentalContexto.moduloGestor = window.currentModuleConfig.moduloId;
+                window.gestorModuloPagina = window.currentModuleConfig.moduloId;
+            }
+            window.gestorDocumentalContexto.contextoId =
+                window.currentModuleConfig?.contextoId || contextoId;
             
             //detectaremos primero si hubo error
             if ($("input#msgError").length > 0 || $("input#msgWarm").length > 0) {
@@ -990,6 +1108,9 @@ function inicializarConfiguracionModulo() {
             mensajeriaTemplate: null,
             emailTemplate: null,
             whatsappTemplate: null,
+            reportesNoGlobales: [],
+            reportesSinEnlacePublico: [],
+            reportesConAuditoriaEnlace: [],
             empresa: {
                 nombre: 'GeCoNet',
                 telefono: '',
@@ -1120,7 +1241,11 @@ function presentarArchivos() {
         </div>
     `);
 
-    PostGen({}, presentarArchivosUrl, function (obj) {
+    const contexto = window.gestorDocumentalContexto || {};
+    PostGen({
+        moduloGestor: contexto.moduloGestor || '',
+        contextoId: contexto.contextoId || ''
+    }, presentarArchivosUrl, function (obj) {
         if (obj.error === true) {
             AbrirMensaje("ATENCIÓN", obj.msg, function () {
                 $("#msjModal").modal("hide");
@@ -1292,6 +1417,15 @@ function presentarArchivos() {
                         "icon": "bx bxs-folder"
                     }
                 }
+            }).on('changed.jstree', function () {
+                // El evento propio de jsTree no siempre se propaga hasta document.
+                // Se procesa en el control y en el siguiente ciclo, cuando la
+                // selección interna ya quedó consolidada.
+                setTimeout(function () {
+                    updateWhatsAppFilesInfo();
+                    limpiarColaImpresionIndividual();
+                    actualizarModoImpresion();
+                }, 0);
             }).on('ready.jstree', function () {
                 $(this).find('.jstree-anchor').css({
                     'padding': '4px 7px',
@@ -1310,6 +1444,8 @@ function presentarArchivos() {
                         $(this).find('.count-badge').remove();
                     }
                 });
+
+                actualizarModoImpresion();
             });
         }
     });
@@ -1336,7 +1472,7 @@ function procesarNodosArbol(nodos) {
             const reporteId = parseInt(nodo.id);
 
             // Verificar si el reporte tiene parámetros guardados
-            if (typeof arrRepoParams === 'undefined' ||
+            const noDisponible = typeof arrRepoParams === 'undefined' ||
                 reporteId <= 0 ||
                 reporteId > arrRepoParams.length ||
                 arrRepoParams[reporteId - 1] === null ||
@@ -1344,11 +1480,13 @@ function procesarNodosArbol(nodos) {
                 (arrRepoParams[reporteId - 1] && (
                     !arrRepoParams[reporteId - 1].parametros ||
                     Object.keys(arrRepoParams[reporteId - 1].parametros).length === 0
-                ))
-            ) {
+                ));
+
+            if (noDisponible) {
                 // No hay parámetros guardados o son insuficientes, deshabilitar el nodo
                 nodo.state = nodo.state || {};
                 nodo.state.disabled = true;
+                nodo.state.selected = false;
 
                 nodo.type = "locked";
 
@@ -1358,6 +1496,15 @@ function procesarNodosArbol(nodos) {
                 nodo.li_attr.title = "Este reporte no está disponible porque no se han ejecutado sus parámetros";
 
                 nodo.text = nodo.text + " 🔒";
+            } else {
+                const contexto = window.gestorDocumentalContexto || {};
+                const preseleccionados = Array.isArray(contexto.reportesPreseleccionados)
+                    ? contexto.reportesPreseleccionados.map(Number)
+                    : [];
+
+                nodo.state = nodo.state || {};
+                nodo.state.disabled = false;
+                nodo.state.selected = preseleccionados.includes(reporteId);
             }
         }
 
@@ -1368,110 +1515,305 @@ function procesarNodosArbol(nodos) {
     });
 }
 
-function imprimirArchivoSeleccionado() {
+function obtenerReportesSeleccionados() {
+    const instancia = $('#archivosDispuestos').jstree(true);
+    if (!instancia) {
+        return [];
+    }
 
-    var selectedNodes = $('#archivosDispuestos').jstree('get_selected', true);
-
-    // Filtrar para eliminar el nodo raíz
-    selectedNodes = selectedNodes.filter(function (node) {
-        return node.parent !== "#" && node.parent !== null;
+    return instancia.get_selected(true).filter(function (node) {
+        const esNodoRaiz = node.parent === "#" || node.parent === null;
+        const esCarpeta = node.children && node.children.length > 0;
+        return !esNodoRaiz && !esCarpeta;
     });
+}
+
+function crearContextoIdGestor() {
+    if (window.crypto && typeof window.crypto.randomUUID === 'function') {
+        return window.crypto.randomUUID().replace(/-/g, '');
+    }
+
+    return `${Date.now().toString(36)}${Math.random().toString(36).slice(2)}`;
+}
+
+function actualizarModoImpresion() {
+    const $check = $('#chkImpresionGlobal');
+    if ($check.length === 0) {
+        return;
+    }
+
+    const seleccionados = obtenerReportesSeleccionados();
+    const noGlobales = Array.isArray(window.currentModuleConfig?.reportesNoGlobales)
+        ? window.currentModuleConfig.reportesNoGlobales.map(Number)
+        : [];
+    const incompatibles = seleccionados.filter(node => noGlobales.includes(Number(node.id)));
+    const $advertencia = $('#impresionGlobalAdvertencia');
+
+    if (incompatibles.length > 0) {
+        $check.prop('checked', false).prop('disabled', true);
+        $advertencia
+            .removeClass('d-none')
+            .text('La selección contiene reportes configurados para impresión individual.');
+    } else {
+        $check.prop('disabled', seleccionados.length < 2);
+        $advertencia.addClass('d-none').text('');
+    }
+
+    const modoGlobal = $check.is(':checked');
+    $('#impresionGlobalAyuda').text(modoGlobal
+        ? 'Los reportes se generarán en un único PDF, respetando el orden de selección.'
+        : 'Los reportes se generarán por separado y quedarán disponibles en una cola de impresión.');
+}
+
+function limpiarColaImpresionIndividual() {
+    if (Array.isArray(window.gestorImpresionUrls)) {
+        window.gestorImpresionUrls.forEach(url => URL.revokeObjectURL(url));
+    }
+
+    window.gestorImpresionUrls = [];
+    $('#colaImpresionIndividualLista').empty();
+    $('#colaImpresionIndividual').addClass('d-none');
+}
+
+function generarPdfIndividual(solicitud) {
+    return new Promise(function (resolve, reject) {
+        PostGen(solicitud, generadorArchivoUrl, function (obj) {
+            if (obj?.auth === true) {
+                window.location.href = login;
+                reject(new Error('Su sesión se ha terminado. Debe volver a autenticarse.'));
+                return;
+            }
+
+            if (obj?.error === true || obj?.warn === true || !obj?.base64) {
+                reject(new Error(obj?.msg || `No se pudo generar "${solicitud.Titulo}".`));
+                return;
+            }
+
+            resolve(obj.base64);
+        }, function (xhr) {
+            let mensaje = 'No se pudo generar uno de los documentos.';
+            if (xhr?.responseJSON?.msg) {
+                mensaje = xhr.responseJSON.msg;
+            }
+            reject(new Error(mensaje));
+        }, 'json');
+    });
+}
+
+async function generarColaImpresionIndividual(solicitudes) {
+    limpiarColaImpresionIndividual();
+    $('#btnArchImprimir').prop('disabled', true);
+    AbrirWaiting(`Generando ${solicitudes.length} documento(s) por separado...`);
+
+    try {
+        const documentos = [];
+        for (const solicitud of solicitudes) {
+            const base64 = await generarPdfIndividual(solicitud);
+            const blob = base64ToBlob(base64, 'application/pdf');
+            documentos.push({
+                titulo: solicitud.Titulo,
+                url: URL.createObjectURL(blob)
+            });
+        }
+
+        window.gestorImpresionUrls = documentos.map(documento => documento.url);
+        const $lista = $('#colaImpresionIndividualLista').empty();
+
+        documentos.forEach(function (documento, indice) {
+            const $item = $('<div>').addClass(
+                'list-group-item d-flex justify-content-between align-items-center gap-2');
+            $('<span>')
+                .addClass('text-truncate')
+                .text(`${indice + 1}. ${documento.titulo}`)
+                .appendTo($item);
+            $('<a>')
+                .addClass('btn btn-sm btn-outline-warning flex-shrink-0')
+                .attr({ href: documento.url, target: '_blank', rel: 'noopener' })
+                .html('<i class="bx bx-printer"></i> Abrir / Imprimir')
+                .appendTo($item);
+            $lista.append($item);
+        });
+
+        $('#colaImpresionIndividual').removeClass('d-none');
+    } catch (error) {
+        limpiarColaImpresionIndividual();
+        AbrirMensaje('Atención!', error.message,
+            function () { $('#msjModal').modal('hide'); },
+            false, ['Aceptar'], 'warn!', null);
+    } finally {
+        CerrarWaiting();
+        $('#btnArchImprimir').prop('disabled', false);
+    }
+}
+
+function normalizarParametrosPaquete(parametros) {
+    const resultado = {};
+
+    Object.entries(parametros || {}).forEach(function ([clave, valor]) {
+        if (clave.toLowerCase() === 'ids') {
+            return;
+        }
+
+        if (valor === null || valor === undefined) {
+            resultado[clave] = '';
+        } else if (typeof valor === 'string') {
+            resultado[clave] = valor;
+        } else if (typeof valor === 'object') {
+            resultado[clave] = JSON.stringify(valor);
+        } else {
+            resultado[clave] = String(valor);
+        }
+    });
+
+    return resultado;
+}
+
+function normalizarIdsPaquete(ids) {
+    if (!Array.isArray(ids)) {
+        return [];
+    }
+
+    return ids.map(function (item) {
+        const normalizado = {};
+        Object.entries(item || {}).forEach(function ([clave, valor]) {
+            normalizado[clave] = valor === null || valor === undefined ? '' : String(valor);
+        });
+        return normalizado;
+    });
+}
+
+async function imprimirArchivoSeleccionado() {
+    const selectedNodes = obtenerReportesSeleccionados();
 
     if (selectedNodes.length === 0) {
         AbrirMensaje("ATENCIÓN", "No hay archivos seleccionados para imprimir.", function () {
             $("#msjModal").modal("hide");
-            return true;
-        }, false, ["Aceptar"], "error!", null);
+        }, false, ["Aceptar"], "warn!", null);
         return;
     }
-    else {
-        AbrirWaiting("Espere mientras se genera el archivo para imprimir...");
-        selectedNodes.forEach(function (node) {
-            if (node.data) {
-                var id = node.id;
-                if (arrRepoParams[id - 1] !== undefined) {
-                    data = arrRepoParams[id - 1];
 
-                    const solicitudReporte = {
-                        Reporte: data.reporte,
-                        Parametros: data.parametros,
-                        Ids: data.parametros.Ids,
-                        Titulo: node.text,
-                        SubTitulo: data.subTitulo,
-                        Observacion: data.observacion || "",
-                        Formato: "P",
-                        LogoPath: "",
-                        Administracion: data.administracion || administracion
-                    };
+    const solicitudes = [];
+    const reportesIds = [];
+    for (const node of selectedNodes) {
+        const id = Number(node.id);
+        const datosReporte = arrRepoParams[id - 1];
 
-                    PostGen(solicitudReporte, repoApiUrl, function (obj) {
-                        CerrarWaiting();
-                        if (obj.error === true) {
-                            AbrirMensaje("Atención", obj.resultado_msg, function () {
-                                $("#msjModal").modal("hide");
-                                return true;
-                            }, false, ["Aceptar"], "warn!", null);
-                        }
-                        else if (obj.warn === true) {
-                            AbrirMensaje("Atención!", obj.msg, function () {
-                                if (obj.auth === true) {
-                                    window.location.href = login;
-                                } else {
-                                    $("#msjModal").modal("hide");
-                                    return true;
-                                }
-                            }, false, ["Aceptar"], "error!", null);
-                        } else {
-                            var archivoBase64 = obj.base64;
-                            var reporteAbierto = false;
-                            if (!archivoBase64.includes("|")) {
-                                var blob = b64toBlob(archivoBase64, 'application/pdf');
-                                var url = URL.createObjectURL(blob);
-                                var printWindow = window.open(url);
-                                if (printWindow) {
-                                    reporteAbierto = true;
-                                    printWindow.onload = function () {
-                                        printWindow.print();
-                                    };
-                                }
-                            }
-                            else {
-                                var arrArchivoBase64 = archivoBase64.split("|");
-                                arrArchivoBase64.forEach(function (elemento, indice, arrayOriginal) {
-                                    if (elemento != "") {
-                                        var blob = b64toBlob(elemento, 'application/pdf');
-                                        var url = URL.createObjectURL(blob);
-                                        var printWindow = window.open(url);
-                                        if (printWindow) {
-                                            reporteAbierto = true;
-                                            printWindow.onload = function () {
-                                                printWindow.print();
-                                            };
-                                        }
-                                    }
-                                });
-                            }
+        if (!datosReporte || !datosReporte.parametros) {
+            AbrirMensaje("Atención!",
+                `El informe "${node.text}" no está disponible. Ejecútelo visualmente antes de imprimir.`,
+                function () { $("#msjModal").modal("hide"); },
+                false, ["Aceptar"], "warn!", null);
+            return;
+        }
 
-                            // Notificación pasiva para los módulos que necesitan
-                            // confirmar el impacto únicamente cuando el PDF se abrió.
-                            if (reporteAbierto) {
-                                $(document).trigger("gestorDocumental:reporteAbierto");
-                            } else {
-                                $(document).trigger("gestorDocumental:reporteBloqueado");
-                            }
-                        }
-                    });
-                }
-                else {
-                    CerrarWaiting();
-                    AbrirMensaje("Atención!", "El Informe no esta disponible, aún. Ejecutelo visualmente y recien podrá realizar la impresión del mismo.",
-                        function () {
-                            $("#msjModal").modal("hide");
-                            return true;
-                        }, false, ["Aceptar"], "error!", null);
-                }
-            }
+        solicitudes.push({
+            Reporte: datosReporte.reporte,
+            Parametros: normalizarParametrosPaquete(datosReporte.parametros),
+            Ids: normalizarIdsPaquete(datosReporte.parametros.Ids),
+            Titulo: node.text,
+            SubTitulo: datosReporte.subTitulo || "",
+            Observacion: datosReporte.observacion || "",
+            Formato: "P",
+            LogoPath: "",
+            Administracion: String(datosReporte.administracion || administracion || "")
         });
+        reportesIds.push(id);
+    }
+
+    const unificar = $('#chkImpresionGlobal').is(':checked');
+    if (!unificar) {
+        await generarColaImpresionIndividual(solicitudes);
+        return;
+    }
+
+    limpiarColaImpresionIndividual();
+
+    // La ventana se crea durante el gesto del usuario para que el navegador no
+    // la interprete como un popup generado por una respuesta asíncrona.
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) {
+        $(document).trigger("gestorDocumental:reporteBloqueado");
+        AbrirMensaje("Atención!",
+            "El navegador bloqueó la ventana de impresión. Habilite las ventanas emergentes para GECO e intente nuevamente.",
+            function () { $("#msjModal").modal("hide"); },
+            false, ["Aceptar"], "warn!", null);
+        return;
+    }
+
+    printWindow.document.write('<div style="font-family:Arial;padding:24px">Generando documentos para imprimir...</div>');
+    $('#btnArchImprimir').prop('disabled', true);
+    AbrirWaiting(`Generando ${solicitudes.length} documento(s) para imprimir...`);
+
+    try {
+        const contexto = window.gestorDocumentalContexto || {};
+        const tituloModulo = window.currentModuleConfig?.moduloTitulo || 'documentos';
+        const response = await fetch('/ControlComun/GestorImpresion/GenerarPaqueteImpresion', {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify({
+                Solicitudes: solicitudes,
+                NombreArchivo: tituloModulo,
+                ContextoId: contexto.contextoId || '',
+                ModuloGestor: contexto.moduloGestor || window.currentModuleConfig?.moduloId || '',
+                ReportesIds: reportesIds,
+                Unificar: true
+            })
+        });
+
+        if (!response.ok) {
+            let errorData = null;
+            try {
+                errorData = await response.json();
+            } catch (_) {
+                errorData = null;
+            }
+
+            if (errorData?.auth === true) {
+                printWindow.close();
+                window.location.href = login;
+                return;
+            }
+
+            throw new Error(errorData?.msg || 'No se pudo generar el paquete de impresión.');
+        }
+
+        const pdfBlob = await response.blob();
+        const pdfUrl = URL.createObjectURL(pdfBlob);
+
+        printWindow.onload = function () {
+            try {
+                printWindow.focus();
+                printWindow.print();
+            } catch (error) {
+                console.warn('No se pudo abrir automáticamente el diálogo de impresión:', error);
+            }
+        };
+        printWindow.location.replace(pdfUrl);
+
+        setTimeout(function () {
+            URL.revokeObjectURL(pdfUrl);
+        }, 120000);
+
+        $(document).trigger("gestorDocumental:reporteAbierto", [{
+            documentos: solicitudes.length,
+            paginas: response.headers.get('X-Geco-Paginas')
+        }]);
+    } catch (error) {
+        if (!printWindow.closed) {
+            printWindow.close();
+        }
+
+        $(document).trigger("gestorDocumental:reporteBloqueado");
+        AbrirMensaje("Atención!", error.message,
+            function () { $("#msjModal").modal("hide"); },
+            false, ["Aceptar"], "warn!", null);
+    } finally {
+        CerrarWaiting();
+        $('#btnArchImprimir').prop('disabled', false);
     }
 }
 
@@ -1809,7 +2151,7 @@ function generarMensajeFallback(cuentaInfo, archivosAdjuntos, enlacesArchivos, c
         cuerpoBase = `Estimado/a,\n\n`;
     }
 
-    cuerpoBase += `Adjuntamos la documentación solicitada.\n\n`;
+    cuerpoBase += `Ponemos a su disposición la documentación solicitada mediante enlaces de descarga.\n\n`;
     cuerpoBase += `Saludos cordiales.`;
 
     // Agregar información de archivos
@@ -1851,13 +2193,13 @@ function generarURLsDocumentos(archivosSeleccionados) {
             // ✅ Construir ReporteSolicitudDto
             return {
                 Reporte: data.reporte,
-                Parametros: data.parametros,
-                Ids: data.parametros.Ids || [],
+                Parametros: normalizarParametrosPaquete(data.parametros),
+                Ids: normalizarIdsPaquete(data.parametros.Ids),
                 Titulo: node.text,
                 SubTitulo: data.subTitulo || "",
                 Observacion: data.observacion || "",
                 LogoPath: data.logoPath || "",
-                Administracion: data.administracion || administracion,
+                Administracion: String(data.administracion || administracion || ""),
                 Formato: "P" // PDF
             };
         });
@@ -1866,7 +2208,10 @@ function generarURLsDocumentos(archivosSeleccionados) {
 
         // ✅ PASO 2: Enviar al backend para generar URLs
         $.ajax({
-            url: '/ControlComun/GestorImpresion/GenerarURLsDocumentos',
+            url: '/ControlComun/GestorImpresion/GenerarURLsDocumentos?' + $.param({
+                contextoId: window.gestorDocumentalContexto?.contextoId || '',
+                moduloGestor: window.gestorDocumentalContexto?.moduloGestor || ''
+            }),
             type: 'POST',
             contentType: 'application/json',
             data: JSON.stringify(solicitudes),

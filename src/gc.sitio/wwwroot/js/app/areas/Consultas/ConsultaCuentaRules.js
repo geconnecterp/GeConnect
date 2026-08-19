@@ -1,31 +1,41 @@
 ﻿$(function () {
     $("#btnImprimirCtaCte").on("click", function () {
         fkey = ModImpresion.ModCtaCte;
-        var data = GeneradorParametros(fkey);
+        var data = prepararContextoGestorCuenta(GeneradorParametros(fkey), [1]);
         invocacionGestorDoc(data);
     });
     $("#btnImprimirVenc").on("click", function () {
         fkey = ModImpresion.ModVenc;
-        var data = GeneradorParametros(fkey);
+        var data = prepararContextoGestorCuenta(GeneradorParametros(fkey), [2]);
         invocacionGestorDoc(data);
     });
     $("#btnImprimirComp").on("click", function () {
         fkey = ModImpresion.ModCmpte;
-        var data = GeneradorParametros(fkey);
+        var data = prepararContextoGestorCuenta(GeneradorParametros(fkey), [3]);
         invocacionGestorDoc(data);
     });
     $("#btnImprimirOP").on("click", function () {
         fkey = ModImpresion.ModOrdPagos;
-        var data = GeneradorParametros(fkey);
+        var data = prepararContextoGestorCuenta(GeneradorParametros(fkey), [5]);
         invocacionGestorDoc(data);
     });
     $("#btnImprimirRecP").on("click", function () {
         fkey = ModImpresion.ModRecProv;
-        var data = GeneradorParametros(fkey);
+        var data = prepararContextoGestorCuenta(GeneradorParametros(fkey), [7]);
         invocacionGestorDoc(data);
     });
 
 });
+
+function prepararContextoGestorCuenta(data, reportesPreseleccionados) {
+    if (!data) {
+        return data;
+    }
+
+    data.moduloGestor = "CCUENTAS";
+    data.reportesPreseleccionados = reportesPreseleccionados;
+    return data;
+}
 
 
 //funciones que funcionaran como las variables de sesion para devolver estados de

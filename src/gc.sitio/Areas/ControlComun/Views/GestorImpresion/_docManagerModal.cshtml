@@ -9,6 +9,10 @@
     var whatsappTemplate = ViewBag.WhatsAppTemplate as WhatsAppTemplate;
     var moduloId = ViewBag.ModuloId as string ?? "";
     var moduloTitulo = ViewBag.ModuloTitulo as string ?? "";
+    var contextoId = ViewBag.ContextoId as string ?? "";
+    var reportesNoGlobales = ViewBag.ReportesNoGlobales as List<int> ?? new List<int>();
+    var reportesSinEnlacePublico = ViewBag.ReportesSinEnlacePublico as List<int> ?? new List<int>();
+    var reportesConAuditoriaEnlace = ViewBag.ReportesConAuditoriaEnlace as List<int> ?? new List<int>();
     
     // ✅ Datos de la empresa
     var empresaNombre = ViewBag.EmpresaNombre as string ?? "GeCoNet";
@@ -25,6 +29,10 @@
     window.currentModuleConfig = {
         moduloId: '@moduloId',
         moduloTitulo: '@moduloTitulo',
+        contextoId: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(contextoId)),
+        reportesNoGlobales: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(reportesNoGlobales)),
+        reportesSinEnlacePublico: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(reportesSinEnlacePublico)),
+        reportesConAuditoriaEnlace: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(reportesConAuditoriaEnlace)),
         
         // ✅ NUEVO: Configuración de MENSAJERÍA (común para Email y WhatsApp)
         mensajeriaTemplate: @if (mensajeriaTemplate != null)

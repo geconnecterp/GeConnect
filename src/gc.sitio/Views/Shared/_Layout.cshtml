@@ -4,6 +4,7 @@
     var userId = User.Claims.First(c => c.Type.Contains("name")).Value;
     var adm = User.Claims.First(c => c.Type.Contains("AdmId")).Value;
     var LPID = User.Claims.FirstOrDefault(c => c.Type.Contains("lp_id"))?.Value;
+    var gestorModuloId = ViewData["GestorModuloId"]?.ToString() ?? string.Empty;
 }
 
 <!DOCTYPE html>
@@ -76,6 +77,7 @@
         var home = "@Url.Action("index", "home", new { area = "" })";
         var login = "@Url.Action("Login", "Token", new { area = "seguridad" })";
         var cambiaMenu = "@Url.Action("CambiarPerfilUsuario", "token", new { area = "Seguridad" })"
+        window.gestorModuloPagina = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(gestorModuloId));
     </script>
     <script>
         $(function(){

@@ -102,14 +102,24 @@ function obtenerProductosDelGrid() {
  * Ejecuta la confirmación del conteo vía AJAX
  * @param {Array} productos - Array de productos a enviar
  */
+let estadoConfirmacionInventario = null;
+
 function ejecutarConfirmacionConteo(productos) {
-    // Deshabilitar botón durante la operación
-    const $btn = $("#btnConfirmarConteo");
-    const textoOriginal = $btn.html();
-    $btn.prop("disabled", true)
-        .html('<span class="spinner-border spinner-border-sm me-2"></span>Confirmando...');
-    
-    // Construir el request DTO
+    if (estadoConfirmacionInventario !== null) {
+        console.warn("[Pocket][Inventario] Se ignora una confirmación duplicada");
+        return false;
+    }
+
+    estadoConfirmacionInventario = IniciarConfirmacionSegura(
+        "#btnConfirmarConteo",
+        "Espere... se está confirmando el conteo de inventario...",
+        "Confirmando..."
+    );
+
+    if (estadoConfirmacionInventario === null) {
+        return false;
+    }
+
     const request = {
         inv_nro: estado.inv_nro || "",
         tipo: estado.tipo || "",
@@ -118,96 +128,93 @@ function ejecutarConfirmacionConteo(productos) {
         p_id: null,
         json: productos
     };
-    
-    $.ajax({
-        url: "/Gestion/Inventario/ConfirmarConteo",
-        type: "POST",
-        contentType: "application/json",
-        data: JSON.stringify(request),
-        headers: {
-            "RequestVerificationToken": $('input[name="__RequestVerificationToken"]').val()
-        },
-        success: function(response) {
-            if (response.error) {
-                // Error del servidor
-                AbrirMensaje(
-                    "Error",
-                    response.msg || "Error al confirmar el conteo",
-                    function() { $("#msjModal").modal("hide"); },
-                    false,
-                    ["Aceptar"],
-                    "error!",
-                    null
-                );
-            } else if (response.warn) {
-                // Advertencia del negocio
-                if (response.auth) {
-                    // Sesión expirada
-                    AbrirMensaje(
-                        "Sesión expirada",
-                        response.msg,
-                        function() {
-                            window.location.href = "/Account/Login";
-                        },
-                        false,
-                        ["Aceptar"],
-                        "warn!",
-                        null
-                    );
-                } else {
-                    AbrirMensaje(
-                        "Advertencia",
-                        response.msg,
-                        function() { $("#msjModal").modal("hide"); },
-                        false,
-                        ["Aceptar"],
-                        "warn!",
-                        null
-                    );
-                }
-            } else {
-                // Éxito
-                AbrirMensaje(
-                    "Conteo confirmado",
-                    response.msg || "El conteo se confirmó correctamente",
-                    function() {
-                        window.location.href = "/Gestion/Inventario/Index";
-                    },
-                    false,
-                    ["Aceptar"],
-                    "succ!",
-                    null
-                );
-            }
-        },
-        error: function(xhr) {
-            console.error("Error al confirmar conteo:", xhr);
-            
-            let mensajeError = "Error de conexión al confirmar el conteo";
-            
-            if (xhr.status === 400) {
-                mensajeError = "Datos inválidos. Verifique los productos agregados.";
-            } else if (xhr.status === 401 || xhr.status === 403) {
-                mensajeError = "No tiene permisos para confirmar el conteo.";
-            } else if (xhr.status === 500) {
-                mensajeError = "Error interno del servidor. Contacte al administrador.";
-            }
-            
-            AbrirMensaje(
-                "Error de conexión",
-                mensajeError,
-                function() { $("#msjModal").modal("hide"); },
-                false,
-                ["Aceptar"],
-                "error!",
-                null
-            );
-        },
-        complete: function() {
-            // Restaurar botón
-            $btn.prop("disabled", false).html(textoOriginal);
-        }
+
+    console.info("[Pocket][Inventario] Iniciando confirmación de conteo", {
+        inventario: request.inv_nro,
+        tipo: request.tipo,
+        tipoId: request.tipo_id,
+        cantidadProductos: productos.length
     });
+
+    try {
+        $.ajax({
+            url: "/Gestion/Inventario/ConfirmarConteo",
+            type: "POST",
+            contentType: "application/json",
+            data: JSON.stringify(request),
+            headers: {
+                "RequestVerificationToken": $('input[name="__RequestVerificationToken"]').val()
+            },
+            success: function(response) {
+                FinalizarConfirmacionInventario();
+                console.info("[Pocket][Inventario] Respuesta de confirmación", {
+                    error: response.error === true,
+                    advertencia: response.warn === true,
+                    sesionExpirada: response.auth === true,
+                    mensaje: response.msg
+                });
+
+                if (response.error) {
+                    AbrirMensaje("Error", response.msg || "Error al confirmar el conteo", function() {
+                        $("#msjModal").modal("hide");
+                    }, false, ["Aceptar"], "error!", null);
+                }
+                else if (response.warn) {
+                    if (response.auth) {
+                        AbrirMensaje("Sesión expirada", response.msg, function() {
+                            window.location.href = "/Account/Login";
+                        }, false, ["Aceptar"], "warn!", null);
+                    }
+                    else {
+                        AbrirMensaje("Advertencia", response.msg, function() {
+                            $("#msjModal").modal("hide");
+                        }, false, ["Aceptar"], "warn!", null);
+                    }
+                }
+                else {
+                    console.info("[Pocket][Inventario] Conteo confirmado correctamente");
+                    AbrirMensaje("Conteo confirmado", response.msg || "El conteo se confirmó correctamente", function() {
+                        window.location.href = "/Gestion/Inventario/Index";
+                    }, false, ["Aceptar"], "succ!", null);
+                }
+            },
+            error: function(xhr) {
+                FinalizarConfirmacionInventario();
+                console.error("[Pocket][Inventario] Error de comunicación durante la confirmación", {
+                    estadoHttp: xhr ? xhr.status : null,
+                    detalleHttp: xhr ? xhr.statusText : null
+                });
+
+                let mensajeError = "Error de conexión al confirmar el conteo";
+                if (xhr.status === 400) {
+                    mensajeError = "Datos inválidos. Verifique los productos agregados.";
+                }
+                else if (xhr.status === 401 || xhr.status === 403) {
+                    mensajeError = "No tiene permisos para confirmar el conteo.";
+                }
+                else if (xhr.status === 500) {
+                    mensajeError = "Error interno del servidor. Contacte al administrador.";
+                }
+
+                AbrirMensaje("Error de conexión", mensajeError, function() {
+                    $("#msjModal").modal("hide");
+                }, false, ["Aceptar"], "error!", null);
+            }
+        });
+    }
+    catch (error) {
+        console.error("[Pocket][Inventario] Error inesperado al iniciar la confirmación", error);
+        FinalizarConfirmacionInventario();
+        ControlaMensajeError("No se pudo iniciar la confirmación. Intente nuevamente.");
+    }
+
+    return false;
+}
+
+function FinalizarConfirmacionInventario() {
+    const contexto = estadoConfirmacionInventario;
+    estadoConfirmacionInventario = null;
+    FinalizarConfirmacionSegura(contexto);
 }
 
 function cargarConteoEnGrid() {

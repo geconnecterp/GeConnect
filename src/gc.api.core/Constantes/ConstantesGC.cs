@@ -781,6 +781,8 @@ namespace gc.api.core.Constantes
 			public const string SP_REPO_RESUELVE = "SPGECO_REPO_ReporteLink_ResuelveTodoEnUno";
 			public const string SP_REPO_EXISTE = "SPGECO_REPO_ReporteLink_ExisteXCodigo";
             public const string SP_REPO_DELETE = "SPGECO_REPO_ReporteLink_EliminarExpirados";
+            public const string SP_REPO_CONFIRMAR_DESCARGA = "SPGECO_REPO_ReporteLink_ConfirmarDescarga";
+            public const string SP_REPO_REGISTRAR_FALLO = "SPGECO_REPO_ReporteLink_RegistrarFallo";
 
 			#endregion
 

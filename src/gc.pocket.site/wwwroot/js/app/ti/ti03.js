@@ -24,39 +24,92 @@
 //    }
 //}
 
+var estadoControlSalidaTi = null;
+
 function VerificaCtrlSalida() {
-    data = { ti:autorizacionActual.ti };
-    AbrirWaiting
-    PostGen(data, ControlSalidaTIUrl, function (obj) {
+    if (estadoControlSalidaTi !== null) {
+        console.warn("[Pocket][TI] Se ignora un control de salida duplicado");
+        return false;
+    }
 
-        if (obj.error === true) {
-            CerrarWaiting();
-            AbrirMensaje("Importante", obj.msg, function () {
-                $("#msjModal").modal("hide");
-                return true;
-            }, false, ["Aceptar"], "error!", null);
-        }
-        else if (obj.warn === true) {
-            CerrarWaiting();
-            AbrirMensaje("Importante", obj.msg, function () {
-                $("#msjModal").modal("hide");
-                return true;
-            }, false, ["Aceptar"], "warn!", null);
-        }
-        else {
-            CerrarWaiting();
-            AbrirMensaje("Importante", obj.msg, function () {
-                $("#msjModal").modal("hide");
-                if (autorizacionActual.tipoTI === "S") {
-                    window.location.href = homeModUrl;
+    if (!autorizacionActual || !autorizacionActual.ti) {
+        console.error("[Pocket][TI] No se puede controlar la salida sin una transferencia activa");
+        ControlaMensajeError("No se pudo identificar la transferencia activa. Recargue la pantalla.");
+        return false;
+    }
 
-                } else {
-                    window.location.href = ConfirmarTIUrl;
-                }
-                return true;
-            }, false, ["Aceptar"], "succ!", null);                     
-        }
-    });
+    var ti = autorizacionActual.ti;
+    var data = { ti: ti };
+    estadoControlSalidaTi = IniciarConfirmacionSegura(
+        "#btnCtrlSalida",
+        "Espere... se está realizando el control de salida...",
+        "Procesando..."
+    );
+
+    if (estadoControlSalidaTi === null) {
+        return false;
+    }
+
+    console.info("[Pocket][TI] Iniciando control de salida", { ti: ti });
+
+    try {
+        PostGen(data, ControlSalidaTIUrl, function (obj) {
+            FinalizarControlSalidaTi();
+            console.info("[Pocket][TI] Respuesta del control de salida", {
+                error: obj.error === true,
+                advertencia: obj.warn === true,
+                mensaje: obj.msg,
+                ti: ti
+            });
+
+            if (obj.error === true) {
+                AbrirMensaje("Importante", obj.msg, function () {
+                    $("#msjModal").modal("hide");
+                    return true;
+                }, false, ["Aceptar"], "error!", null);
+            }
+            else if (obj.warn === true) {
+                AbrirMensaje("Importante", obj.msg, function () {
+                    $("#msjModal").modal("hide");
+                    return true;
+                }, false, ["Aceptar"], "warn!", null);
+            }
+            else {
+                console.info("[Pocket][TI] Control de salida completado", { ti: ti });
+                AbrirMensaje("Importante", obj.msg, function () {
+                    $("#msjModal").modal("hide");
+                    if (autorizacionActual.tipoTI === "S") {
+                        window.location.href = homeModUrl;
+                    }
+                    else {
+                        window.location.href = ConfirmarTIUrl;
+                    }
+                    return true;
+                }, false, ["Aceptar"], "succ!", null);
+            }
+        }, function (jqXHR) {
+            console.error("[Pocket][TI] Error de comunicación durante el control de salida", {
+                estadoHttp: jqXHR ? jqXHR.status : null,
+                detalleHttp: jqXHR ? jqXHR.statusText : null,
+                ti: ti
+            });
+            FinalizarControlSalidaTi();
+            fnError(jqXHR);
+        });
+    }
+    catch (error) {
+        console.error("[Pocket][TI] Error inesperado al iniciar el control de salida", error);
+        FinalizarControlSalidaTi();
+        ControlaMensajeError("No se pudo iniciar el control de salida. Intente nuevamente.");
+    }
+
+    return false;
+}
+
+function FinalizarControlSalidaTi() {
+    var contexto = estadoControlSalidaTi;
+    estadoControlSalidaTi = null;
+    FinalizarConfirmacionSegura(contexto);
 }
 function presentaListaProducto(orden) {
     datos = {orden};

@@ -39,39 +39,71 @@
 
 });
 
-function confirmarRPR() {
-    //obtener deposito y UL
-    var ul = $("#ul_Id").val();
-//    var dp = $("#DepoId").val();
-    datos = { ul } //dp,
-    AbrirWaiting("Espere... se estan grabando los datos...");
-    PostGen(datos, ConfirmarRPRUrl, function (obj) {
-        if (obj.error === true) {
-            CerrarWaiting();
-            AbrirMensaje("ATENCIÓN", obj.msg, function () {
-                $("#msjModal").modal("hide");
-                return true;
-            },
-                false, ["Aceptar"], "error!", null);
-        }
-        else if (obj.warn === true) {
-            CerrarWaiting();
-            AbrirMensaje("ATENCIÓN", obj.msg, function () {
-                $("#msjModal").modal("hide");
-                return true;
-            },
-                false, ["Aceptar"], "warn!", null);
-        }
-        else {
-            CerrarWaiting();
-            AbrirMensaje("ATENCIÓN", obj.msg, function () {
+var estadoConfirmacionRpr = null;
 
-                $("#msjModal").modal("hide");
-                window.location.href = homeUrl;
-                return true;
-            },
-                false, ["Aceptar"], "succ!", null);
-        }
-    })
-    return true;
+function confirmarRPR() {
+    if (estadoConfirmacionRpr !== null) {
+        console.warn("[Pocket][RPR] Se ignora una confirmación duplicada");
+        return false;
+    }
+
+    // Obtener UL. Las validaciones funcionales continúan realizándose en el servidor.
+    var ul = $("#ul_Id").val();
+    var datos = { ul };
+
+    estadoConfirmacionRpr = IniciarConfirmacionSegura(
+        "#btnConfirmarRPR",
+        "Espere... se están grabando los datos...",
+        "Procesando..."
+    );
+
+    if (estadoConfirmacionRpr === null) {
+        return false;
+    }
+
+    try {
+        PostGen(datos, ConfirmarRPRUrl, function (obj) {
+            FinalizarConfirmacionRpr();
+
+            if (obj.error === true) {
+                AbrirMensaje("ATENCIÓN", obj.msg, function () {
+                    $("#msjModal").modal("hide");
+                    return true;
+                }, false, ["Aceptar"], "error!", null);
+            }
+            else if (obj.warn === true) {
+                AbrirMensaje("ATENCIÓN", obj.msg, function () {
+                    $("#msjModal").modal("hide");
+                    return true;
+                }, false, ["Aceptar"], "warn!", null);
+            }
+            else {
+                AbrirMensaje("ATENCIÓN", obj.msg, function () {
+                    $("#msjModal").modal("hide");
+                    window.location.href = homeUrl;
+                    return true;
+                }, false, ["Aceptar"], "succ!", null);
+            }
+        }, function (jqXHR) {
+            console.error("[Pocket][RPR] Error de comunicación durante la confirmación", {
+                estadoHttp: jqXHR ? jqXHR.status : null,
+                detalleHttp: jqXHR ? jqXHR.statusText : null
+            });
+            FinalizarConfirmacionRpr();
+            fnError(jqXHR);
+        });
+    }
+    catch (error) {
+        console.error("[Pocket][RPR] Error inesperado al iniciar la confirmación", error);
+        FinalizarConfirmacionRpr();
+        ControlaMensajeError("No se pudo iniciar la confirmación. Intente nuevamente.");
+    }
+
+    return false;
+}
+
+function FinalizarConfirmacionRpr() {
+    var contexto = estadoConfirmacionRpr;
+    estadoConfirmacionRpr = null;
+    FinalizarConfirmacionSegura(contexto);
 }

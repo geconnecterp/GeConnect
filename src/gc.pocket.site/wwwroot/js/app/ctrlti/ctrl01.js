@@ -37,22 +37,74 @@ function CargaInicialProductosCtrl() {
 
 }
 
-function enviarProductos() {
-    var data = {};
-    PostGen(data, enviarProductosUrl, function (obj) {
-        if (obj.error === true) {
-            CerrarWaiting();
-            AbrirMensaje("Atención", obj.msg, function () {
-                $("#msjModal").modal("hide");
-                return true;
-            }, false, ["Aceptar"], "error!", null);
-        }
-        else {
-            CerrarWaiting();
-            window.location.href = listaAUPendientes;
-        }
+var estadoConfirmacionControlTi = null;
 
-    });
+function enviarProductos() {
+    if (estadoConfirmacionControlTi !== null) {
+        console.warn("[Pocket][ControlTI] Se ignora una confirmación duplicada");
+        return false;
+    }
+
+    var data = {};
+    estadoConfirmacionControlTi = IniciarConfirmacionSegura(
+        "#btnContinua02",
+        "Espere... se está confirmando el control de transferencia...",
+        "Procesando..."
+    );
+
+    if (estadoConfirmacionControlTi === null) {
+        return false;
+    }
+
+    console.info("[Pocket][ControlTI] Enviando productos controlados");
+
+    try {
+        PostGen(data, enviarProductosUrl, function (obj) {
+            FinalizarConfirmacionControlTi();
+            console.info("[Pocket][ControlTI] Respuesta de confirmación", {
+                error: obj.error === true,
+                advertencia: obj.warn === true,
+                mensaje: obj.msg
+            });
+
+            if (obj.error === true) {
+                AbrirMensaje("Atención", obj.msg, function () {
+                    $("#msjModal").modal("hide");
+                    return true;
+                }, false, ["Aceptar"], "error!", null);
+            }
+            else if (obj.warn === true) {
+                AbrirMensaje("Atención", obj.msg, function () {
+                    $("#msjModal").modal("hide");
+                    return true;
+                }, false, ["Aceptar"], "warn!", null);
+            }
+            else {
+                console.info("[Pocket][ControlTI] Control confirmado correctamente");
+                window.location.href = listaAUPendientes;
+            }
+        }, function (jqXHR) {
+            console.error("[Pocket][ControlTI] Error de comunicación durante la confirmación", {
+                estadoHttp: jqXHR ? jqXHR.status : null,
+                detalleHttp: jqXHR ? jqXHR.statusText : null
+            });
+            FinalizarConfirmacionControlTi();
+            fnError(jqXHR);
+        });
+    }
+    catch (error) {
+        console.error("[Pocket][ControlTI] Error inesperado al iniciar la confirmación", error);
+        FinalizarConfirmacionControlTi();
+        ControlaMensajeError("No se pudo iniciar la confirmación. Intente nuevamente.");
+    }
+
+    return false;
+}
+
+function FinalizarConfirmacionControlTi() {
+    var contexto = estadoConfirmacionControlTi;
+    estadoConfirmacionControlTi = null;
+    FinalizarConfirmacionSegura(contexto);
 }
 
 function cargarProductos() {
