@@ -1,4 +1,4 @@
-﻿<ul class="nav nav-tabs" role="tablist">
+﻿<ul class="nav nav-tabs nav-tabs-golden cons-cuenta-tabs" role="tablist">
     <li class="nav-item" role="presentation" id="liTab01">
         <button type="button" id="BtnLiTab01" class="nav-link active" role="tab" data-bs-toggle="tab" data-bs-target="#navLiTab01" aria-controls="navLiTab01" aria-selected="true">
             CUENTA CORRIENTE
@@ -25,23 +25,21 @@
         </button>
     </li>
 </ul>
-<div class="tab-content">
+<div class="tab-content tab-content-golden cons-cuenta-tab-content">
     <div class="tab-pane fade show active" id="navLiTab01" role="tabpanel">
-        <div class="row">
-            <div class="col-md-3 col-sm-6">
+        <div class="cons-cuenta-actions">
+            <div class="cons-field-date">
                 <div class="input-group input-group-sm">
                     <span class="input-group-text">Desde:</span>
                     <input type="date" class="form-control" id="fechaD" />
                 </div>
             </div>
-            <div class="col-md-3 col-sm-6">
-                <div class="input-group input-group-sm">
-                    <button type="button" class="btn btn-success" id="btnTraerCtaCte"><i class="bx bx-play"></i></button>
-                    <button type="button" class="btn btn-warning" id="btnImprimirCtaCte"><i class="bx bx-printer"></i></button>
-                </div>
+            <div class="cons-action-buttons">
+                <button type="button" class="btn btn-success cons-action-btn" id="btnTraerCtaCte"><i class="bx bx-search-alt"></i> Consultar</button>
+                <button type="button" class="btn cons-btn-print cons-action-btn" id="btnImprimirCtaCte"><i class="bx bx-printer"></i> Imprimir</button>
             </div>
         </div>
-        <div class="row mt-2" id="divpanel01">
+        <div id="divpanel01">
         </div>
         <div class="row">
             <div class="offset-md-3 col-md-6">
@@ -51,103 +49,97 @@
         </div>
     </div>
     <div class="tab-pane fade" id="navLiTab02" role="tabpanel">
-        <div class="row">
-            <div class="col-md-3 col-sm-6">
+        <div class="cons-cuenta-actions">
+            <div class="cons-field-date">
                 <div class="input-group input-group-sm">
                     <span class="input-group-text">Desde:</span>
                     <input type="date" class="form-control" id="cvfechaD" />
                 </div>
             </div>
-            <div class="col-md-3 col-sm-6">
+            <div class="cons-field-date">
                 <div class="input-group input-group-sm">
                     <span class="input-group-text">Hasta:</span>
                     <input type="date" class="form-control" id="cvfechaH" />
                 </div>
             </div>
-            <div class="col-md-3 col-sm-6">
-                <div class="input-group input-group-sm">
-                    <button type="button" class="btn btn-success" id="btnTraerVenc"><i class="bx bx-play"></i></button>
-                    <button type="button" class="btn btn-warning" id="btnImprimirVenc"><i class="bx bx-printer"></i></button>
-                </div>
+            <div class="cons-action-buttons">
+                <button type="button" class="btn btn-success cons-action-btn" id="btnTraerVenc"><i class="bx bx-search-alt"></i> Consultar</button>
+                <button type="button" class="btn cons-btn-print cons-action-btn" id="btnImprimirVenc"><i class="bx bx-printer"></i> Imprimir</button>
             </div>
         </div>
-        <div class="row mt-2" id="divpanel02">
+        <div id="divpanel02">
         </div>
     </div>
     <div class="tab-pane fade" id="navLiTab03" role="tabpanel">
-        <div class="row">
-            <div class="col-md-3 col-sm-6">
+        <div class="cons-cuenta-actions">
+            <div class="cons-field-switch">
                 <div class="input-group input-group-sm">
-                    <div class="form-check form-check-inline form-switch mb-2">
+                    <div class="form-check form-check-inline form-switch">
                         <input class="form-check-input" type="checkbox" name="relCuil" id="relCuil" />
-                        <label class="form-check-label" for="relCuil" id="lbrelCuil">Relacinoados a CUIT</label>
+                        <label class="form-check-label" for="relCuil" id="lbrelCuil">Relacionados a CUIT</label>
                     </div>
                 </div>
             </div>
-            <div class="col-md-3 col-sm-6">
+            <div class="cons-field-months">
                 <div class="input-group input-group-sm">
-                    <span class="input-group-text">MESES:</span>
+                    <span class="input-group-text">Meses:</span>
                     <input type="number" class="form-control inputEditable" style="text-align:center;" id="inMeses" min="0" max="60" />
                 </div>
             </div>
-            <div class="col-md-3 col-sm-6">
-                <div class="input-group input-group-sm">
-                    <button type="button" class="btn btn-success" id="btnTraerCmpts"><i class="bx bx-play"></i></button>
-                    <button type="button" class="btn btn-warning" id="btnImprimirComp"><i class="bx bx-printer"></i></button>
-                </div>
+            <div class="cons-action-buttons">
+                <button type="button" class="btn btn-success cons-action-btn" id="btnTraerCmpts"><i class="bx bx-search-alt"></i> Consultar</button>
+                <button type="button" class="btn cons-btn-print cons-action-btn" id="btnImprimirComp"><i class="bx bx-printer"></i> Imprimir</button>
             </div>
         </div>
 
         <div id="divpanel03">
             <div class="row">
                 <div class="col-md-4" id="divCmpteTot">
-                    <span class="text-danger">SIN REGISTROS</span>
+                    <div class="cons-cuenta-empty"><i class="bx bx-info-circle"></i> Sin registros</div>
                 </div>
                 <div class="col-md-8" id="divCmpteDet">
-                    <span class="text-danger">SIN REGISTROS</span>
+                    <div class="cons-cuenta-empty"><i class="bx bx-info-circle"></i> Sin registros</div>
                 </div>
             </div>
         </div>
     </div>
     <div class="tab-pane fade" id="navLiTab04" role="tabpanel">
-        <div class="row">
-            <div class="col-md-3 col-sm-6">
+        <div class="cons-cuenta-actions">
+            <div class="cons-field-date">
                 <div class="input-group input-group-sm">
                     <span class="input-group-text">Desde:</span>
                     <input type="date" class="form-control" id="opfechaD" />
                 </div>
             </div>
 
-            <div class="col-md-3 col-sm-6">
+            <div class="cons-field-date">
                 <div class="input-group input-group-sm">
                     <span class="input-group-text">Hasta:</span>
                     <input type="date" class="form-control" id="opfechaH" />
                 </div>
             </div>
 
-            <div class="col-md-3 col-sm-6">
-                <div class="input-group input-group-sm">
-                    <button type="button" class="btn btn-success" id="btnTraerOP"><i class="bx bx-play"></i></button>
-                    <button type="button" class="btn btn-warning" id="btnImprimirOP"><i class="bx bx-printer"></i></button>
-                </div>
+            <div class="cons-action-buttons">
+                <button type="button" class="btn btn-success cons-action-btn" id="btnTraerOP"><i class="bx bx-search-alt"></i> Consultar</button>
+                <button type="button" class="btn cons-btn-print cons-action-btn" id="btnImprimirOP"><i class="bx bx-printer"></i> Imprimir</button>
             </div>
         </div>
     
     <div id="divpanel04">
         <div class="row">
             <div class="col-md-4" id="divOpProv">
-                <span class="text-danger">SIN REGISTROS</span>
+                <div class="cons-cuenta-empty"><i class="bx bx-info-circle"></i> Sin registros</div>
             </div>
             <div class="col-md-8" id="divOpProvDet">
-                <span class="text-danger">SIN REGISTROS</span>
+                <div class="cons-cuenta-empty"><i class="bx bx-info-circle"></i> Sin registros</div>
             </div>
         </div>
     </div>
     </div>
 
     <div class="tab-pane fade" id="navLiTab05" role="tabpanel">
-        <div class="row">
-            <div class="col-md-3 col-sm-6">
+        <div class="cons-cuenta-actions">
+            <div class="cons-field-date">
 
                 <div class="input-group input-group-sm">
                     <span class="input-group-text">Desde:</span>
@@ -155,19 +147,16 @@
                 </div>
             </div>
 
-            <div class="col-md-3 col-sm-6">
+            <div class="cons-field-date">
                 <div class="input-group input-group-sm">
                     <span class="input-group-text">Hasta:</span>
                     <input type="date" class="form-control" id="rpfechaH" />
                 </div>
             </div>
 
-            <div class="col-md-3 col-sm-6">
-                <div class="input-group input-group-sm">
-
-                    <button type="button" class="btn btn-success" id="btnTraerRP"><i class="bx bx-play"></i></button>
-                    <button type="button" class="btn btn-warning" id="btnImprimirRecP"><i class="bx bx-printer"></i></button>
-                </div>
+            <div class="cons-action-buttons">
+                <button type="button" class="btn btn-success cons-action-btn" id="btnTraerRP"><i class="bx bx-search-alt"></i> Consultar</button>
+                <button type="button" class="btn cons-btn-print cons-action-btn" id="btnImprimirRecP"><i class="bx bx-printer"></i> Imprimir</button>
             </div>
 
         </div>
@@ -175,12 +164,12 @@
     <div id="divpanel05">
         <div class="row">
             <div class="col-md-12" id="divRpProv">
-                <span class="text-danger">SIN REGISTROS</span>
+                <div class="cons-cuenta-empty"><i class="bx bx-info-circle"></i> Sin registros</div>
             </div>
         </div>
         <div class="row">
             <div class="col-md-12" id="divRpProvDet">
-                <span class="text-danger">SIN REGISTROS</span>
+                <div class="cons-cuenta-empty"><i class="bx bx-info-circle"></i> Sin registros</div>
             </div>
         </div>
         </div>

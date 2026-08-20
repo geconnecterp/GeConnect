@@ -8,35 +8,304 @@
 @section styles {
     <link rel="stylesheet" href="~/css/simplePagination.css" />
     <link rel="stylesheet" href="~/lib/jstree/themes/default/style.min.css" />
-    }
+    <style>
+        .cons-cuenta-page {
+            --cons-golden: #d59e08;
+            --cons-golden-dark: #a97800;
+            --cons-golden-soft: #fff7dc;
+            --cons-border: #e4d49e;
+            font-size: .875rem;
+        }
 
-<div class="container">
+        .cons-cuenta-page .cons-cuenta-filter {
+            border: 1px solid var(--cons-border);
+            border-radius: .55rem;
+            background: #fff;
+            box-shadow: 0 .15rem .45rem rgba(66, 55, 21, .09);
+            overflow: hidden;
+        }
+
+        .cons-cuenta-page .cons-filter-body {
+            padding: .35rem .65rem .25rem;
+            background: linear-gradient(180deg, #fffdf6 0, #fff 100%);
+        }
+
+        .cons-cuenta-page .cons-filter-body > .filter-golden {
+            margin: 0;
+            border: 0;
+            box-shadow: none;
+            background: transparent;
+        }
+
+        .cons-cuenta-page .cons-filter-body > .filter-golden > .filter-golden-body {
+            padding: .35rem .55rem;
+            background: transparent;
+        }
+
+        .cons-cuenta-page .cons-filter-body > .filter-golden > .filter-golden-body > .row.mb-3.mt-3 {
+            margin-top: .2rem !important;
+            margin-bottom: .25rem !important;
+        }
+
+        .cons-cuenta-page .cons-filter-body #Rel01List {
+            min-height: 3.75rem;
+            height: 3.75rem;
+            font-size: .78rem;
+        }
+
+        .cons-cuenta-page .cons-filter-body .filter-golden-footer {
+            border-top: 1px solid #eadfb9;
+            background: #fffaf0;
+        }
+
+        .cons-cuenta-page .cons-filter-body .filter-golden-footer .row {
+            margin: .35rem !important;
+        }
+
+        .cons-cuenta-page .cons-filter-body #btnCancel {
+            width: 7.25rem !important;
+            height: 2rem;
+            padding: .25rem .55rem;
+            font-size: .78rem;
+        }
+
+        .cons-cuenta-page .cons-cuenta-account {
+            margin-top: .45rem;
+            padding: .25rem .65rem;
+            border: 1px solid #e5e7eb;
+            border-left: .28rem solid var(--cons-golden);
+            border-radius: .45rem;
+            background: #fff;
+            box-shadow: 0 .12rem .35rem rgba(30, 41, 59, .06);
+        }
+
+        .cons-cuenta-page .cons-cuenta-account .row {
+            margin-top: 0 !important;
+        }
+
+        .cons-cuenta-page .cons-cuenta-account [style*="transform: scale"] {
+            transform: none !important;
+            font-size: .78rem !important;
+        }
+
+        .cons-cuenta-page .nav-tabs-golden {
+            flex-wrap: nowrap;
+            overflow-x: auto;
+            overflow-y: hidden;
+            border-bottom: 2px solid var(--cons-golden);
+            scrollbar-width: thin;
+        }
+
+        .cons-cuenta-page .nav-tabs-golden .nav-link {
+            white-space: nowrap;
+            min-height: 2.25rem;
+            padding: .42rem .85rem;
+            border: 0;
+            color: #5e6470;
+            font-size: .76rem;
+            font-weight: 700;
+            letter-spacing: .02em;
+        }
+
+        .cons-cuenta-page .nav-tabs-golden .nav-link.active {
+            color: #fff !important;
+            background: var(--cons-golden);
+        }
+
+        .cons-cuenta-page .nav-tabs-golden .nav-link.active:hover,
+        .cons-cuenta-page .nav-tabs-golden .nav-link.active:focus {
+            color: #fff !important;
+            background: var(--cons-golden-dark);
+        }
+
+        .cons-cuenta-page .cons-cuenta-tab-content {
+            padding: .55rem;
+            border: 1px solid var(--cons-border);
+            border-top: 0;
+            border-radius: 0 0 .55rem .55rem;
+            background: #fff;
+        }
+
+        .cons-cuenta-page .cons-cuenta-actions {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: .45rem;
+            margin-bottom: .55rem;
+            padding: .4rem .5rem;
+            border: 1px solid #eee2b8;
+            border-radius: .4rem;
+            background: var(--cons-golden-soft);
+        }
+
+        .cons-cuenta-page .cons-field-date { width: 15rem; max-width: 100%; }
+        .cons-cuenta-page .cons-field-months { width: 11rem; max-width: 100%; }
+        .cons-cuenta-page .cons-field-switch { min-width: 13rem; padding-left: .25rem; }
+        .cons-cuenta-page .cons-field-switch .form-check { margin: .3rem 0 .15rem 2.1rem !important; }
+
+        .cons-cuenta-page .cons-cuenta-actions .input-group-text {
+            min-width: 4.1rem;
+            justify-content: center;
+            border-color: #ddcf9f;
+            background: #fff;
+            font-weight: 600;
+        }
+
+        .cons-cuenta-page .cons-cuenta-actions .form-control {
+            min-height: 2rem;
+            border-color: #ddcf9f;
+            background: #fff;
+        }
+
+        .cons-cuenta-page .cons-action-buttons {
+            display: flex;
+            gap: .4rem;
+            margin-left: auto;
+        }
+
+        .cons-cuenta-page .cons-action-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: .3rem;
+            width: 7rem;
+            height: 2rem;
+            padding: .25rem .6rem;
+            border-radius: .3rem;
+            font-size: .78rem;
+            font-weight: 600;
+        }
+
+        .cons-cuenta-page .cons-btn-print {
+            border-color: var(--cons-golden-dark);
+            color: #fff;
+            background: var(--cons-golden);
+        }
+
+        .cons-cuenta-page .cons-btn-print:hover,
+        .cons-cuenta-page .cons-btn-print:focus {
+            color: #fff;
+            background: var(--cons-golden-dark);
+        }
+
+        .cons-cuenta-page .cons-cuenta-empty {
+            min-height: 5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: .4rem;
+            border: 1px dashed #d8c98f;
+            border-radius: .4rem;
+            color: #7b6a32;
+            background: #fffdf5;
+            font-size: .82rem;
+        }
+
+        .cons-cuenta-page #consPaneles .row { --bs-gutter-x: .65rem; }
+        .cons-cuenta-page #consPaneles .card {
+            margin-bottom: .55rem;
+            border: 1px solid #dfd6b6;
+            border-radius: .45rem;
+            box-shadow: 0 .12rem .35rem rgba(31, 41, 55, .08);
+            overflow: hidden;
+        }
+
+        .cons-cuenta-page #consPaneles .card-body { padding: .35rem; }
+        .cons-cuenta-page #consPaneles .table-responsive { border-radius: .25rem; }
+        .cons-cuenta-page #consPaneles .table-wrapper-500 { max-height: 50vh; }
+        .cons-cuenta-page #consPaneles .table-wrapper-300 { max-height: 30vh; }
+        .cons-cuenta-page #consPaneles .table-wrapper-200 { max-height: 24vh; }
+
+        .cons-cuenta-page #consPaneles table {
+            width: 100%;
+            margin-bottom: 0;
+            font-size: .8rem;
+        }
+
+        .cons-cuenta-page #consPaneles table thead,
+        .cons-cuenta-page #consPaneles table thead.table-dark {
+            color: #fff;
+            background: var(--cons-golden) !important;
+        }
+
+        .cons-cuenta-page #consPaneles table thead th {
+            padding: .38rem .45rem !important;
+            border-color: rgba(255,255,255,.2) !important;
+            color: #fff !important;
+            background: var(--cons-golden) !important;
+            vertical-align: middle;
+            white-space: nowrap;
+            font-size: .71rem;
+            font-weight: 700;
+            line-height: 1.1;
+        }
+
+        .cons-cuenta-page #consPaneles table tbody td {
+            padding: .3rem .45rem !important;
+            vertical-align: middle;
+            line-height: 1.15;
+        }
+
+        .cons-cuenta-page #consPaneles table tbody tr:nth-child(even) > td { background: #fffaf0; }
+        .cons-cuenta-page #consPaneles table tbody tr:hover > td { background: #ffefb8 !important; }
+        .cons-cuenta-page #consPaneles table td.text-end,
+        .cons-cuenta-page #consPaneles table td[class*="right"] { font-variant-numeric: tabular-nums; }
+
+        .cons-cuenta-page .cons-concepto {
+            max-width: 34rem;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .cons-cuenta-page .input-group-sm > .input-group-text,
+        .cons-cuenta-page .input-group-sm > .form-control {
+            min-height: 1.9rem;
+            padding-top: .2rem;
+            padding-bottom: .2rem;
+            font-size: .78rem;
+        }
+
+        .cons-cuenta-page #divPaginacion { display: flex; justify-content: center; margin-top: .4rem; }
+
+        @@media (max-width: 767.98px) {
+            .cons-cuenta-page { padding-left: .35rem !important; padding-right: .35rem !important; }
+            .cons-cuenta-page .cons-cuenta-actions { align-items: stretch; }
+            .cons-cuenta-page .cons-field-date,
+            .cons-cuenta-page .cons-field-months,
+            .cons-cuenta-page .cons-field-switch { width: 100%; }
+            .cons-cuenta-page .cons-action-buttons { width: 100%; margin-left: 0; }
+            .cons-cuenta-page .cons-action-btn { flex: 1; width: auto; }
+            .cons-cuenta-page #consPaneles .table-wrapper-500 { max-height: 58vh; }
+        }
+    </style>
+}
+
+<div class="container-fluid cons-cuenta-page px-2">
     <input type="text" id="IdSelected" style="display:none;" />
-    <div class="row">
-        <div class="col-md-6">
-            <div class="d-flex justify-content-start">
-                <button id="btnFiltro" class="btn btn-primary btn-sm mt-1 me-1" type="button" data-bs-toggle="collapse" data-bs-target="#divFiltro" aria-expanded="true" aria-controls="divFiltro">
-                    <i class="bx bx-filter bx-xs"></i>
+    <div class="row mb-2">
+        <div class="col-md-2 col-sm-6">
+            <div class="d-flex justify-content-sm-around">
+                <button id="btnFiltro" class="btn btn-primary btn-sm mt-1 me-1" type="button"
+                        data-bs-toggle="collapse" data-bs-target="#divFiltro"
+                        aria-expanded="true" aria-controls="divFiltro" title="Mostrar u ocultar filtros">
+                    <i class="bx bx-filter"></i>
                 </button>
-
-                @* <button class="btn btn-primary btn-sm mt-1 me-1" type="button" id="btnDetalle" data-bs-toggle="collapse" data-bs-target="#divDetalle" aria-expanded="true" aria-controls="divDetalle">
-                    <i class="bx bx-caret-down"></i>
-                </button> *@
             </div>
         </div>
-
     </div>
-    <div class="collapse" id="divFiltro" style="">
-        <partial name="_filtroBase" model="filtro" />
-        @Html.Hidden("pagEstado", false)
+    <div class="collapse cons-cuenta-filter" id="divFiltro">
+        <div class="cons-filter-body">
+            <partial name="_filtroBase" model="filtro" />
+            @Html.Hidden("pagEstado", false)
+        </div>
     </div>
-    @*  <div class="collapse" id="divDetalle" style="">
-        <partial name="_n01tabsConsulta" />
-    </div> *@
 
-    <partial name="~/areas/controlcomun/views/cuenta/_ctrbuscarccv3.cshtml" model="@sub" />
+    <div class="cons-cuenta-account">
+        <partial name="~/areas/controlcomun/views/cuenta/_ctrbuscarccv3.cshtml" model="@sub" />
+    </div>
 
-    <div class="row mt-2" id="consPaneles" style="display:none;">
+    <div class="mt-2" id="consPaneles" style="display:none;">
         <partial name="_n01tabsConsulta"></partial>
     </div>
 </div>

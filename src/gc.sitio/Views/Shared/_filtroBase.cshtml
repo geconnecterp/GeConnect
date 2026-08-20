@@ -3,7 +3,7 @@
     var titulo = Model.TituloLeyend;
 }
 
-<div class="filter-golden">   
+<div class="filter-golden @(Model.Modelo.Equals(ModeloFilter.ETIQUETA) ? "etiqueta-filter-responsive" : "")">
     <div class="filter-golden-body">
         @if(Model.Modelo.Equals(ModeloFilter.CUENTA_DIRECTA))
         {

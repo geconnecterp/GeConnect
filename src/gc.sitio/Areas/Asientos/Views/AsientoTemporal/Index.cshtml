@@ -49,6 +49,8 @@
 @section scripts {
     <script type="text/javascript">
         const asientoTemporal = "@filtro.EsTemporal.ToString().ToLower()"==="true";
+        const usuarioActualAsiento = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(ViewBag.UsuarioActual as string ?? string.Empty));
+        const rangosEjerciciosAsiento = @Html.Raw(System.Text.Json.JsonSerializer.Serialize((object)ViewBag.RangosEjercicios));
         var primerArranque = true;
         var homeAsientosUrl = "@Url.Action("index", "AsientoTemporal", new { area = "Asientos" })";
         var buscarAsientosUrl="@Url.Action("BuscarAsientos", "AsientoTemporal", new { area = "Asientos" })";
@@ -81,6 +83,7 @@
     <script src="~/js/app/areas/abms/abmcommons.js"></script>
 
 
+    <script src="~/js/app/controlcomun/selectorcuentacontable.js" asp-append-version="true"></script>
     <script src="~/js/app/areas/asientos/selectorCuentas.js"></script>
     <script src="~/js/app/areas/asientos/asientos.js"></script>
 

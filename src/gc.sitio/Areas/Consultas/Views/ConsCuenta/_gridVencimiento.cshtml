@@ -31,14 +31,14 @@
                         if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
 
                         <tr class="@clase" onclick="selectReg(this,'tbGridVto')">
-                            <td class="@Model.ObtenerClase(item.Cv_fecha_carga)">@Model.FormatearDato(item.Cv_fecha_carga,FormatDato.Fecha)</td>
+                            <td class="@Model.ObtenerClase(item.Cv_fecha_carga)">@Model.FormatearDato(item.Cv_fecha_carga,FormatDato.FechaCompleta)</td>
                             <td class="@Model.ObtenerClase(item.Dia_movi)">@Model.FormatearDato(item.Dia_movi,FormatDato.Ninguno)</td>
                             <td class="@Model.ObtenerClase(item.Tco_desc)">@Model.FormatearDato(item.Tco_desc, FormatDato.Ninguno)</td>
                             <td class="@Model.ObtenerClase(item.Cm_compte)">@Model.FormatearDato(item.Cm_compte, FormatDato.Ninguno)</td>
-                            <td class="@Model.ObtenerClase(item.Cv_concepto)">@Model.FormatearDato(item.Cv_concepto, FormatDato.Ninguno)</td>
+                            <td class="@Model.ObtenerClase(item.Cv_concepto) cons-concepto" title="@item.Cv_concepto">@Model.FormatearDato(item.Cv_concepto, FormatDato.Ninguno)</td>
                             <td class="@Model.ObtenerClase('c')">@Model.FormatearDato(item.Cm_compte_cuota, FormatDato.Ninguno)</td>
                             <td class="@Model.ObtenerClase('c')">@Model.FormatearDato(item.Cv_estado, FormatDato.Ninguno)</td>
-                            <td class="@Model.ObtenerClase(item.Cv_fecha_vto)">@Model.FormatearDato(item.Cv_fecha_vto, FormatDato.FechaHora)</td>
+                            <td class="@Model.ObtenerClase(item.Cv_fecha_vto)">@Model.FormatearDato(item.Cv_fecha_vto, FormatDato.FechaCompleta)</td>
                             <td class="@Model.ObtenerClase(item.Cv_importe_ori)">@Model.FormatearDato(item.Cv_importe_ori, FormatDato.Monto)</td>
                             <td class="@Model.ObtenerClase(item.Cv_importe)">@Model.FormatearDato(item.Cv_importe, FormatDato.Monto)</td>
                         </tr>

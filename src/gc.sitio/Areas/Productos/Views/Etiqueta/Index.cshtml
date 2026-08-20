@@ -32,6 +32,24 @@
             padding: .15rem .35rem;
             line-height: 1;
         }
+
+        /* En pantallas angostas cada grupo comparte homogéneamente el ancho
+           disponible. En móviles pequeños Bootstrap los apila normalmente. */
+        @@media (min-width: 576px) and (max-width: 991.98px) {
+            .etiqueta-filter-responsive .row > [class*="col-"] {
+                flex: 1 1 0;
+                width: 0;
+                max-width: none;
+                min-width: 0;
+            }
+
+            .etiqueta-filter-responsive .input-group,
+            .etiqueta-filter-responsive select,
+            .etiqueta-filter-responsive input,
+            .etiqueta-filter-responsive .form-control {
+                min-width: 0;
+            }
+        }
     </style>
 }
 

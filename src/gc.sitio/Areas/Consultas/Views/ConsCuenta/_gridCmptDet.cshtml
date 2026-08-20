@@ -56,7 +56,7 @@
                             ft_tot += item.Cm_total;
                         }
                         <tr class="@clase" onclick="selectReg(this,'tbGridCmpteDet')">
-                            <td class="@Model.ObtenerClase(item.Cm_fecha)">@Model.FormatearDato(item.Cm_fecha,FormatDato.Fecha)</td>
+                            <td class="@Model.ObtenerClase(item.Cm_fecha)">@Model.FormatearDato(item.Cm_fecha,FormatDato.FechaCompleta)</td>
                             @{
                                 string cmpt = $"({item.Tco_id}) {item.Cm_compte}";
                             }
@@ -89,9 +89,9 @@
             <div class="col-md-12">
                 <div class="input-group input-group-sm">
                     <span class="input-group-text" style="width:100px;">TOTAL FT + ND</span>
-                    <input type="text" class="form-control" style="text-align:end;" readonly value="$ @ft_neto" />
-                    <input type="text" class="form-control" style="text-align:end;" readonly value="$ @ft_iva" />
-                    <input type="text" class="form-control" style="text-align:end;" readonly value="$ @ft_tot" />
+                    <input type="text" class="form-control" style="text-align:end;" readonly value="$ @FormatearDato(ft_neto, FormatDato.Monto, true)" />
+                    <input type="text" class="form-control" style="text-align:end;" readonly value="$ @FormatearDato(ft_iva, FormatDato.Monto, true)" />
+                    <input type="text" class="form-control" style="text-align:end;" readonly value="$ @FormatearDato(ft_tot, FormatDato.Monto, true)" />
                 </div>
             </div>
         </div>
@@ -99,9 +99,9 @@
             <div class="col-md-12">
                 <div class="input-group input-group-sm">
                     <span class="input-group-text" style="width:100px;">TOTAL NC</span>
-                    <input type="text" class="form-control" style="text-align:end;" readonly value="$ @nc_neto" />
-                    <input type="text" class="form-control" style="text-align:end;" readonly value="$ @nc_iva" />
-                    <input type="text" class="form-control" style="text-align:end;" readonly value="$ @nc_tot" />
+                    <input type="text" class="form-control" style="text-align:end;" readonly value="$ @FormatearDato(nc_neto, FormatDato.Monto, true)" />
+                    <input type="text" class="form-control" style="text-align:end;" readonly value="$ @FormatearDato(nc_iva, FormatDato.Monto, true)" />
+                    <input type="text" class="form-control" style="text-align:end;" readonly value="$ @FormatearDato(nc_tot, FormatDato.Monto, true)" />
                 </div>
             </div>
         </div>

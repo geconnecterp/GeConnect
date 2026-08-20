@@ -52,7 +52,8 @@
         $(document).on('click', '.btn-buscar-cuenta', function (e) {
             e.stopPropagation();
             filaEditando = $(this).closest('tr');
-            mostrarSelectorCuentas();
+            const cuentaActualId = filaEditando.find('.cuenta-id').text().trim();
+            mostrarSelectorCuentas(cuentaActualId);
         });
 
         // Evento para buscar cuentas
@@ -81,7 +82,7 @@
     /**
      * Muestra el selector de cuentas y carga el árbol si es necesario
      */
-    function mostrarSelectorCuentas() {
+    function mostrarSelectorCuentas(cuentaActualId) {
         // Mostrar el modal
         $('#modalSelectorCuentas').modal('show');
 
@@ -89,6 +90,12 @@
         if (!arbolInicializado) {
             cargarArbolCuentas();
         }
+
+        GecoSelectorCuentaContable.preparar({
+            cuentaId: cuentaActualId,
+            inputSelector: '#buscarCuenta',
+            treeSelector: '#arbolPlanCuentas'
+        });
     }
 
     /**

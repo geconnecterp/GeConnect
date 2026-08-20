@@ -46,11 +46,11 @@
             <div class="col-md-12">
                 <div class="input-group input-group-sm ">
                     <span class="input-group-text" style="width:100px;">Total FT + ND</span>
-                    <input class="form-control text-right" style="text-align:end;" readonly value="$ @ft" />
+                    <input class="form-control text-right" style="text-align:end;" readonly value="$ @FormatearDato(ft, FormatDato.Monto, true)" />
                 </div>
                 <div class="input-group input-group-sm text-right">
                     <span class="input-group-text" style="width:100px;">Total NC</span>
-                    <input class="form-control" style="text-align:end;" readonly value="$ @nc" />
+                    <input class="form-control" style="text-align:end;" readonly value="$ @FormatearDato(nc, FormatDato.Monto, true)" />
                 </div>
             </div>
         </div>

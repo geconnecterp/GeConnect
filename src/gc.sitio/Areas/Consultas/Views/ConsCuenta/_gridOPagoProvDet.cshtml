@@ -31,7 +31,7 @@
                             if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
                         }
                         <tr class="@clase" onclick="selectReg(this,'tbGridPagoDet')">
-                            <td class="@Model.ObtenerClase(item.Concepto)">@Model.FormatearDato(item.Concepto,FormatDato.Ninguno)</td>
+                            <td class="@Model.ObtenerClase(item.Concepto) cons-concepto" title="@item.Concepto">@Model.FormatearDato(item.Concepto,FormatDato.Ninguno)</td>
                             <td class="@Model.ObtenerClase(item.Cc_importe)">@Model.FormatearDato(item.Cc_importe, FormatDato.Monto)</td>
                         </tr>
                     }
