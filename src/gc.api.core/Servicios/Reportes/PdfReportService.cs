@@ -141,6 +141,7 @@ namespace gc.api.core.Servicios.Reportes
 				{ InfoReporte.R093_Reporte_Evo_Ventas_Periodos_Anteriores, new R093_Reporte_Evo_Ventas_Periodos_Anteriores(uow,consSv,empresa,ctaSv, logger) },
 				{ InfoReporte.R094_Reporte_Var_Vtas_Y_Comp_Ult_Doce_M, new R094_Reporte_Var_Vtas_Y_Comp_Ult_Doce_M(uow,consSv,empresa,ctaSv, logger) },
 				{ InfoReporte.R095_Reporte_Eval_De_Nivel_De_Servicio, new R095_Reporte_Eval_De_Nivel_De_Servicio(uow,consSv,empresa,ctaSv, logger) },
+				{ InfoReporte.R096_Consulta_Movimiento_De_Stock, new R096_Consulta_Movimiento_De_Stock(uow,consSv,empresa,ctaSv, logger) },
 			}; 
             _logger = logger;
         }

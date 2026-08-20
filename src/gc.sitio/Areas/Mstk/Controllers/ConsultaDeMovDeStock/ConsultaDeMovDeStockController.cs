@@ -5,9 +5,12 @@ using gc.infraestructura.Dtos.Almacen;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.Mstk;
 using gc.infraestructura.Dtos.Mstk.Request;
+using gc.infraestructura.EntidadesComunes.Options;
+using gc.infraestructura.Enumeraciones;
 using gc.infraestructura.Helpers;
 using gc.sitio.Areas.Mstk.Models;
 using gc.sitio.core.Servicios.Contratos;
+using gc.sitio.core.Servicios.Contratos.DocManager;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Options;
@@ -22,15 +25,27 @@ namespace gc.sitio.Areas.Mstk.Controllers.ConsultaDeMovDeStock
 		private readonly IDepositoServicio _depositoServicio;
 		private readonly ICuentaServicio _cuentaServicio;
 		private readonly IConsultasServicio _consultaServicio;
+		//PARA MODULO DE IMPRESION
+		private readonly DocsManager _docsManager; //recupero los datos desde el appsettings.json
+		private AppModulo _modulo; //tengo el AppModulo que corresponde a la consulta de cuentas
+		private string APP_MODULO = AppModulos.CONSULTA_MOVIMIENTO_DE_STOCK.ToString();
+		private readonly IDocManagerServicio _docMSv;
+
+		//************************
 		public ConsultaDeMovDeStockController(IOptions<AppSettings> options, IHttpContextAccessor contexto, ILogger<ConsultaDeMovDeStockController> logger,
 											  ITipoMovStkServicio tipoMovStkServicio, IDepositoServicio depositoServicio, ICuentaServicio cuentaServicio, 
-											  IConsultasServicio consultaServicio) : base(options, contexto, logger)
+											  IConsultasServicio consultaServicio, IDocManagerServicio docManager, IOptions<DocsManager> docsManager) : base(options, contexto, logger)
 		{
 			_setting = options.Value;
 			_tipoMovStkServicio = tipoMovStkServicio;
 			_depositoServicio = depositoServicio;
 			_cuentaServicio = cuentaServicio;
 			_consultaServicio = consultaServicio;
+
+			//PARA MODULO DE IMPRESION
+			_docsManager = docsManager.Value; //recupero los datos desde el appsettings.json
+			_modulo = _docsManager.Modulos.First(x => x.Id == APP_MODULO); //identifico los datos del modulo que necesito: CC_NR_NP
+			_docMSv = docManager; //instancio el servicio de impresión
 		}
 
 		public IActionResult Index()
@@ -46,8 +61,8 @@ namespace gc.sitio.Areas.Mstk.Controllers.ConsultaDeMovDeStock
 				ViewData["Titulo"] = titulo;
 
 				#region Gestor Impresion - Inicializacion de variables
-				//DocumentManager = _docMSv.InicializaObjeto(titulo, _modulo);
-				//ArchivosCargadosModulo = _docMSv.GeneraArbolArchivos(_modulo);
+				DocumentManager = _docMSv.InicializaObjeto(titulo, _modulo);
+				ArchivosCargadosModulo = _docMSv.GeneraArbolArchivos(_modulo);
 				#endregion
 
 				CargarDatosIniciales(model);
@@ -136,7 +151,7 @@ namespace gc.sitio.Areas.Mstk.Controllers.ConsultaDeMovDeStock
 				model.LeyendaProv = ConstruirLeyenda("Proveedores", request.lProv, request.lProvTextos);
 				model.FechaDesde = ConstruirLeyenda("Desde", request.desde.ToString("dd/MM/yyyy"));
 				model.FechaHasta = ConstruirLeyenda("Hasta", request.hasta.ToString("dd/MM/yyyy"));
-				model.Producto = ConstruirLeyenda("Producto", request.pId);
+				model.Producto = ConstruirLeyenda("Producto", request.pIdTextos);
 
 				// Leyenda final
 				var partesLeyenda = new List<string>();

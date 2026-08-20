@@ -84,7 +84,7 @@ function BuscarMovStock(pag) {
 	lProvTextos = temp.textos;
 
 	var pId = $("#Texto").val();
-	pId = (pId && pId.trim() !== "") ? pId.trim() : "%";
+	pId = (pId && pId.trim() !== "" ) ? pId.trim() : "%";
 
 	temp = [];
 
@@ -109,7 +109,7 @@ function BuscarMovStock(pag) {
 		lDepTextos,
 		lBoxTextos,
 		lProvTextos,
-		pIdTextos: pId
+		pIdTextos: (pId != "" && pId != "%" && pId != '%') ? pId.trim() : ""
 	};
 	var data = $.extend({}, data1, data2);
 
@@ -138,6 +138,102 @@ function BuscarMovStock(pag) {
 		return true
 	});
 }
+
+function ImprimirListaMovStk_Generada() {
+	ReseteoDeReportes();
+	setTimeout(() => {
+		var lTipoMov = [];
+		var lTipoMovTextos = "";
+		var lDep = [];
+		var lDepTextos = "";
+		var lBox = [];
+		var lBoxTextos = "";
+		var lProv = [];
+		var lProvTextos = "";
+		var temp = ObtenerFiltroLista("#chkTipo", "#TipoMovimientosList");
+		lTipoMov = temp.ids;
+		lTipoMovTextos = temp.textos;
+
+		temp = ObtenerFiltroLista("#chkDepositos", "#DepositosList");
+		lDep = temp.ids;
+		lDepTextos = temp.textos;
+
+		temp = ObtenerFiltroLista("#chkBox", "#BoxsList");
+		lBox = temp.ids;
+		lBoxTextos = temp.textos;
+
+		temp = ObtenerFiltroLista("#chkRel01", "#Rel01List");
+		lProv = temp.ids;
+		lProvTextos = temp.textos;
+
+		var pId = $("#Texto").val();
+		pId = (pId && pId.trim() !== "") ? pId.trim() : "%";
+
+		temp = [];
+
+		var desde = $("#FechaDesde").val();
+		var hasta = $("#FechaHasta").val();
+
+		// 🔥 Construcción del string de filtros
+		var filtrosDesc = [];
+
+		filtrosDesc.push(ConstruirDescripcionFiltro("Tipo Mov.", "#chkTipo", "#TipoMovimientosList"));
+		filtrosDesc.push(ConstruirDescripcionFiltro("Proveedores", "#chkRel01", "#Rel01List"));
+		filtrosDesc.push(ConstruirDescripcionFiltro("Depósitos", "#chkDepositos", "#DepositosList"));
+		filtrosDesc.push(ConstruirDescripcionFiltro("Box", "#chkBox", "#BoxsList"));
+		if (pId != "" && pId != "%" && pId != '%') {
+			filtrosDesc.push(`Producto: ${pId}`);
+		}
+
+		// Limpieza: eliminar vacíos
+		filtrosDesc = filtrosDesc.filter(x => x !== "");
+
+		// String final
+		var filtrosString = filtrosDesc.join(" | ");
+
+		var data = { lTipoMov: lTipoMov.join(","), lProv: lProv.join(","), lDep: lDep.join(","), lBox: lBox.join(","), desde, hasta, pId, filtrosString };
+
+		cargarReporteEnArre(96, data, "CONSULTA MOVIMIENTO DE STOCK", "", "");
+		invocacionGestorDoc({});
+	}, 500);
+}
+
+function ReseteoDeReportes() {
+	console.log("Reseto de reportes");
+	ReporteResetArre();
+}
+
+function ConstruirDescripcionFiltro(nombre, idCheckbox, idListBox) {
+
+	const activo = $(idCheckbox).is(":checked");
+
+	// Si NO está activo → devolver "Todos"
+	if (!activo) {
+		return `${nombre}: Todos`;
+	}
+
+	// Si está activo → obtener valores
+	const valores = [];
+	$(idListBox + " option").each(function () {
+		const txt = $(this).text().trim();
+
+		// Si viene "%" → reemplazar por "Todos"
+		if (txt === "%" || txt === "") {
+			valores.push("Todos");
+		} else {
+			valores.push(txt);
+		}
+	});
+
+	// Si no hay valores → "Todos"
+	if (valores.length === 0) {
+		return `${nombre}: Todos`;
+	}
+
+	return `${nombre}: ${valores.join(", ")}`;
+}
+
+
 
 function ValidarRangoFechas() {
 
@@ -336,7 +432,23 @@ function ControlalistaDepositosSelected() {
 }
 
 function ControlaCancelar() { }
-function ControlaImprimirSelected() { }
+function ControlaImprimirSelected() {
+	const filasReales = $("#tbGridProductos tbody tr")
+		.filter(function () {
+			// Fila informativa tiene un único TD con colspan
+			return $(this).find("td[colspan]").length === 0;
+		});
+
+	if (filasReales.length === 0) {
+		AbrirMensaje("ATENCIÓN", "No hay datos generar el reporte.", function () {
+			$("#msjModal").modal("hide");
+			return true;
+		}, false, ["Aceptar"], "error!", null);
+	}
+	else {
+		ImprimirListaMovStk_Generada();
+	}
+}
 
 function InicializarCamposEnFiltros(vieneDeCancelar) {
 	if (!vieneDeCancelar) {
@@ -449,7 +561,7 @@ function HandlerCheckBox() {
 			$("#Rel01List").empty();
 		}
 	});
-	
+
 }
 
 function cargaPaginacion() {

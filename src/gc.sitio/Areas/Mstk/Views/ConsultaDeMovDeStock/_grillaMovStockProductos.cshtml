@@ -3,13 +3,59 @@
 @model MovDeStockListaModel
 @using static gc.infraestructura.Helpers.GridHelper
 @{
-    var alt = true;
-    string clase = string.Empty;
+	var alt = true;
+	string clase = string.Empty;
 
 	var productos = new List<MovStkProductoDto>();
 	var leyenda = Model.Leyenda;
+
+	string fechaAnterior = null;
+	string conceptoAnterior = null;
 }
 <style>
+	#containerListaProducto {
+		height: 600px; /* o el alto que necesites */
+		max-height: 600px;
+		overflow-y: auto;
+		position: relative;
+	}
+
+	.table-golden {
+		border-collapse: separate;
+		border-spacing: 0;
+		table-layout: fixed;
+	}
+
+		.table-golden thead {
+			position: sticky;
+			top: 0;
+			z-index: 1;
+			background: linear-gradient(to bottom, #b8860b, #daa520) !important;
+			color: #fff !important;
+		}
+
+			.table-golden thead th {
+				position: sticky;
+				top: 0;
+				z-index: 4;
+				background: linear-gradient(to bottom, #b8860b, #daa520);
+				color: #fff;
+				box-shadow: 0 1px 0 rgba(0,0,0,0.05), 0 2px 2px rgba(0,0,0,0.04);
+				background-clip: padding-box;
+			}
+
+			.table-golden thead,
+			.table-golden thead th {
+				/*background-color: #b8860b;  tu dorado */
+				/* color: #333; */
+			}
+
+	#tbGridProductos th,
+	#tbGridProductos td {
+		padding: 0.4rem 0.15rem !important;
+		line-height: 1.2 !important;
+		height: auto !important;
+	}
 
 </style>
 <div class="grid-golden">
@@ -72,9 +118,20 @@
 						@foreach (var item in productos)
 						{
 							if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+
+							bool repetirFecha = item.FechaFormateada == fechaAnterior;
+							bool repetirConcepto = item.sm_concepto == conceptoAnterior;
+
 							<tr class="@clase" onclick="selectReg(this, 'tbGridProductos')">
-								<td class="@Model.GrillaProductoMovStk.ObtenerClase(item.FechaFormateada) align-center cell-fit-content">@Model.GrillaProductoMovStk.FormatearDato(item.FechaFormateada, FormatDato.Ninguno)</td>
-								<td class="@Model.GrillaProductoMovStk.ObtenerClase(item.sm_concepto) text-start cell-fit-content">@Model.GrillaProductoMovStk.FormatearDato(item.sm_concepto, FormatDato.Ninguno)</td>
+								<!-- FECHA -->
+								<td class="@Model.GrillaProductoMovStk.ObtenerClase(item.FechaFormateada) align-center cell-fit-content">
+									@(repetirFecha ? "" : Model.GrillaProductoMovStk.FormatearDato(item.FechaFormateada, FormatDato.Ninguno))
+								</td>
+
+								<!-- CONCEPTO -->
+								<td class="@Model.GrillaProductoMovStk.ObtenerClase(item.sm_concepto) text-start cell-fit-content">
+									@(repetirConcepto ? "" : Model.GrillaProductoMovStk.FormatearDato(item.sm_concepto, FormatDato.Ninguno))
+								</td>
 								<td class="@Model.GrillaProductoMovStk.ObtenerClase(item.box_id) align-center cell-fit-content">@Model.GrillaProductoMovStk.FormatearDato(item.box_id, FormatDato.Ninguno)</td>
 								<td class="@Model.GrillaProductoMovStk.ObtenerClase(item.p_id) align-center cell-fit-content">@Model.GrillaProductoMovStk.FormatearDato(item.p_id, FormatDato.Ninguno)</td>
 								<td class="@Model.GrillaProductoMovStk.ObtenerClase(item.sm_desc) text-start cell-fit-content">@Model.GrillaProductoMovStk.FormatearDato(item.sm_desc, FormatDato.Ninguno)</td>
