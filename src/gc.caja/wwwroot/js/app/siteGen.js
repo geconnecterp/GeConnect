@@ -1,4 +1,4 @@
-﻿//variables globales que son declaradas al inicio para que tengan alcance a la 
+//variables globales que son declaradas al inicio para que tengan alcance a la 
 //mayor cantidad de codigo.
 var nnControlCta01 = "";
 var nnControlCta02 = "";
@@ -1604,6 +1604,12 @@ function posicionarTecladoVirtual(inputSelector, anchorSelector, opciones = {}) 
         ''
     ).toLowerCase();
 
+    const alineacionVertical = String(
+        configuracion.verticalAlign ||
+        configuracion.alineacionVertical ||
+        ''
+    ).toLowerCase();
+
     const teclado = document.getElementById('virtual-keyboard');
 
     if (!teclado) {
@@ -1680,6 +1686,10 @@ function posicionarTecladoVirtual(inputSelector, anchorSelector, opciones = {}) 
         if (top + altoTeclado > window.innerHeight - margen) {
             top = rectReferencia.top - altoTeclado - margen;
         }
+    }
+
+    if (alineacionVertical === 'bottom' || alineacionVertical === 'inferior') {
+        top = window.innerHeight - altoTeclado - margen;
     }
 
     // Evita salir por arriba.
@@ -1799,3 +1809,4 @@ function ocultarTecladoVirtual() {
         console.log('⌨️ Teclado virtual ocultado.');
     }
 }
+

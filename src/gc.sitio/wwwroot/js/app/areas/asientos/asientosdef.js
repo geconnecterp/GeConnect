@@ -1,6 +1,52 @@
 ﻿// Al cargar, establecer variables para control de selección
 let filaClicDoble = null; // Fila seleccionada con doble clic (detalle)
 let filasSeleccionadas = []; // Filas seleccionadas para operaciones batch
+let consultaDefinitivaDisponible = false;
+
+function resetReporteAsientoDefinitivo(reporteId) {
+    if (typeof arrRepoParams !== "undefined" &&
+        arrRepoParams[reporteId - 1] !== undefined &&
+        typeof ReporteResetCeldaEnArre === "function") {
+        ReporteResetCeldaEnArre(reporteId);
+    }
+}
+
+function actualizarEstadoImpresionDefinitivo() {
+    const enOperacion = accion === AbmAction.MODIFICACION || accion === AbmAction.BAJA;
+    $("#btnImprimir").prop("disabled", enOperacion || !consultaDefinitivaDisponible);
+}
+
+function configurarRangoFechasAsientoDefinitivo(ejercicioId) {
+    if (typeof rangosEjercicios === "undefined") return;
+
+    const ejercicio = rangosEjercicios.find(x => String(x.id) === String(ejercicioId));
+    if (!ejercicio) return;
+
+    const hoy = new Date();
+    hoy.setHours(0, 0, 0, 0);
+    const desdeEjercicio = new Date(`${ejercicio.desde}T00:00:00`);
+    const hastaEjercicio = new Date(`${ejercicio.hasta}T00:00:00`);
+    const ejercicioVigente = hoy >= desdeEjercicio && hoy <= hastaEjercicio;
+
+    let desde = desdeEjercicio;
+    let hasta = hastaEjercicio;
+    if (ejercicioVigente) {
+        const inicioMes = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
+        desde = inicioMes < desdeEjercicio ? desdeEjercicio : inicioMes;
+        hasta = hoy;
+    }
+
+    const formatearInputDate = fecha => {
+        const anio = fecha.getFullYear();
+        const mes = String(fecha.getMonth() + 1).padStart(2, "0");
+        const dia = String(fecha.getDate()).padStart(2, "0");
+        return `${anio}-${mes}-${dia}`;
+    };
+
+    $("#Rango").prop("checked", true);
+    $('input[name="Desde"]').prop("disabled", false).val(formatearInputDate(desde));
+    $('input[name="Hasta"]').prop("disabled", false).val(formatearInputDate(hasta));
+}
 
 // Función para actualizar el mensaje informativo
 function actualizarMensajeSeleccion() {
@@ -67,12 +113,18 @@ function buscarAsientosDefs(pag) {
         return; // Detener la ejecución si la validación falla
     }
 
+    consultaDefinitivaDisponible = false;
+    resetReporteAsientoDefinitivo(9);
+    resetReporteAsientoDefinitivo(10);
+    actualizarEstadoImpresionDefinitivo();
+
     AbrirWaiting();
     //desactivamos los botones de acción
     activarBotones2(false);
 
     // Obtenemos los valores de los campos del filtro
     var data1 = {
+        EsTemporal: false,
         Eje_nro: $("#Eje_nro").val(), // Ejercicio
         Movi: $("#Movi").is(":checked").toString(), // bit Movimiento
         Movi_like: $("#Movi_like").val(), // Nro Movimiento
@@ -84,10 +136,6 @@ function buscarAsientosDefs(pag) {
         Desde: $("input[name='Desde']").val(), // Fecha Desde
         Hasta: $("input[name='Hasta']").val() // Fecha Hasta
     };
-
-    //let admId = administracion;
-    //agregando los parametros de la busqueda realizada
-    cargarReporteEnArre(11, data1, "Informe de Asientos Solicitados.", "Obseración:", "")
 
     var buscaNew = JSON.stringify(dataBak) != JSON.stringify(data1)
 
@@ -112,6 +160,12 @@ function buscarAsientosDefs(pag) {
         $("#divGrilla").html(obj);
         $("#divFiltro").collapse("hide")
 
+        consultaDefinitivaDisponible = $("#tbGridAsiento tbody tr[data-id]").length > 0;
+        if (consultaDefinitivaDisponible) {
+            cargarReporteEnArre(9, data1, "Informe de Asientos Solicitados.", "Observación:", administracion);
+        }
+        actualizarEstadoImpresionDefinitivo();
+
         // Agregar un pequeño retraso para asegurar que la grilla ya está cargada
         setTimeout(inicializarSeleccionAsientos, 100);
 
@@ -133,6 +187,8 @@ function buscarAsientosDefs(pag) {
         });
         CerrarWaiting();
     }, function (obj) {
+        consultaDefinitivaDisponible = false;
+        actualizarEstadoImpresionDefinitivo();
         ControlaMensajeError(obj.message);
         CerrarWaiting();
 
@@ -195,14 +251,16 @@ function configurarFiltrosAsientoDefinitivo() {
     // 1. Forzar selección y deshabilitación SOLO del checkbox de ejercicio
     $('#chkEjercicio').prop('checked', true).prop('disabled', true);
 
-    // 2. Los checkboxes de Usuario y Tipo deben poder habilitarse/deshabilitarse
-    $('#Usu, #Tipo').prop('checked', false).prop('disabled', false);
+    // 2. Usuario y Tipo comienzan activos, pero el operador puede desmarcarlos.
+    $('#Usu, #Tipo').prop('checked', true).prop('disabled', false);
 
     // 3. Habilitar el dropdown de ejercicio (siempre habilitado)
     $('#Eje_nro').prop('disabled', false);
 
-    // 4. Los dropdowns de Usuario y Tipo estarán deshabilitados inicialmente
-    $('#Usu_like, #Tipo_like').prop('disabled', true);
+    // 4. Sus listas comienzan habilitadas porque ambos filtros están activos.
+    $('#Usu_like, #Tipo_like').prop('disabled', false);
+    $('#Rango').prop('checked', true);
+    $('input[name="Desde"], input[name="Hasta"]').prop('disabled', false);
 
     // 5. Prevenir clics solo en el checkbox de ejercicio
     $('#chkEjercicio').off('click').on('click', function (e) {
@@ -232,6 +290,8 @@ function configurarFiltrosAsientoDefinitivo() {
     $('#Eje_nro').on('change', function () {
         const ejercicioId = $(this).val();
         if (!ejercicioId) return;
+
+        configurarRangoFechasAsientoDefinitivo(ejercicioId);
 
         // Desactivar los botones de búsqueda y cancelar
         const $btnBuscar = $("#btnBuscar");
@@ -385,7 +445,7 @@ function configurarFiltrosAsientoDefinitivo() {
         }
     });
 
-    console.log('Configuración de filtros para asientos definitivos aplicada');
+    configurarRangoFechasAsientoDefinitivo($('#Eje_nro').val());
 }
 
 
@@ -501,6 +561,15 @@ $(function () {
     // Llamar a la función de configuración
     configurarFiltrosAsientoDefinitivo();
 
+    $("#divFiltro")
+        .off("show.bs.collapse.asientodef")
+        .on("show.bs.collapse.asientodef", function () {
+            consultaDefinitivaDisponible = false;
+            resetReporteAsientoDefinitivo(9);
+            resetReporteAsientoDefinitivo(10);
+            actualizarEstadoImpresionDefinitivo();
+        });
+
     // Modificar la función buscarAsientoDefs para inicializar selección
     buscarAsientosDefs = function (pag) {
         buscarAsientoDefsOriginal(pag);
@@ -559,9 +628,9 @@ $(function () {
     $('#chkEjercicio').prop('checked', true).prop('disabled', true);
     $('#Eje_nro').prop('disabled', false);
 
-    // Los checkboxes de Usuario y Tipo deben poder habilitarse/deshabilitarse
-    $('#Usu, #Tipo').prop('checked', false).prop('disabled', false);
-    $('#Usu_like, #Tipo_like').prop('disabled', true);
+    // Usuario, Tipo y Rango comienzan activos.
+    $('#Usu, #Tipo, #Rango').prop('checked', true).prop('disabled', false);
+    $('#Usu_like, #Tipo_like, input[name="Desde"], input[name="Hasta"]').prop('disabled', false);
 
     // Modificar el comportamiento de toggleComponent para los campos obligatorios
     const originalToggleComponent = window.toggleComponent;
@@ -1097,6 +1166,10 @@ function activarControles(act) {
         $("#tbAsientoDetalle tbody").addClass("editable-grid");
         $("#tbAsientoDetalle tbody td:not(:last-child)").attr("contenteditable", true);
 
+        // La cuenta y su descripción se hidratan desde el selector y no se editan a mano.
+        $("#tbAsientoDetalle tbody td:nth-child(1), #tbAsientoDetalle tbody td:nth-child(2)")
+            .attr("contenteditable", false);
+
         // Configurar máscaras y validaciones para campos editables
         configurarCamposEditables();
         // LÓGICA CORREGIDA: Desactivar botón de impresión durante la edición
@@ -1117,12 +1190,15 @@ function activarControles(act) {
 
         // Ocultar botones de búsqueda de cuenta
         $("#tbAsientoDetalle tbody .btn-buscar-cuenta").hide();
-        // LÓGICA CORREGIDA: Activar botón de impresión al salir de modo edición
-        $("#btnImprimir").prop("disabled", false);
+        actualizarEstadoImpresionDefinitivo();
     }
 
     // Control de botones de acción del footer
-    $("#btnPasarContabilidad, #btnImprimir").prop("disabled", act); // Se deshabilitan al editar
+    if (act) {
+        $("#btnPasarContabilidad, #btnImprimir").prop("disabled", true);
+    } else {
+        actualizarEstadoImpresionDefinitivo();
+    }
 }
 
 /**
@@ -1464,7 +1540,7 @@ function confirmarOperacionAsientoDef() {
         const asientoData = recopilarDatosAsientoDef();
 
         // Validar los datos básicos del asiento
-        if (!validarAsientoDef(asientoData.Detalles)) {
+        if (accion !== AbmAction.BAJA && !validarAsientoDef(asientoData.Detalles)) {
             CerrarWaiting();
             return;
         }
@@ -1568,12 +1644,10 @@ function recopilarDatosAsientoDef() {
 
         // Verificar que la fecha sea válida
         if (isNaN(fecha.getTime())) {
-            console.warn("Fecha inválida, usando fecha actual:", fechaStr);
-            fecha = new Date(); // Usar fecha actual como fallback
+            throw new Error("La fecha del asiento no es válida.");
         }
     } catch (e) {
-        console.error("Error al procesar la fecha:", e);
-        fecha = new Date(); // Usar fecha actual como fallback
+        throw new Error("No se pudo interpretar la fecha del asiento.");
     }
 
     const tipoAsiento = $("#Dia_tipo").val() || "";
@@ -1668,7 +1742,7 @@ function validarAsientoDef(lineasAsiento) {
     }
 
     // Validar que el saldo sea cero (con margen de error para decimales)
-    if (Math.abs(saldoTotal) > 0.01) {
+    if (Math.round(saldoTotal * 100) !== 0) {
         AbrirMensaje("VALIDACIÓN", "El saldo del asiento debe ser cero. Revise los importes de débito y crédito.", function () {
             $("#msjModal").modal("hide");
         }, false, ["Aceptar"], "warn!", null);
@@ -1779,10 +1853,8 @@ function InicializaVistaAsientos(e) {
         accionBotones(AbmAction.CANCEL);
         removerSeleccion();
         activarGrilla(Grids.GridAsiento);
-        // CORRECCIÓN: Asegurar que el botón de imprimir esté habilitado
-        $("#btnImprimir").prop("disabled", false);
-
-        inicializaParametrosReporteAsientoDef();
+        resetReporteAsientoDefinitivo(10);
+        actualizarEstadoImpresionDefinitivo();
 
         CerrarWaiting();
         return; // Importante: salir de la función para evitar recursión
@@ -1804,10 +1876,9 @@ function InicializaVistaAsientos(e) {
     accionBotones(AbmAction.CANCEL);
     removerSeleccion();
     activarGrilla(Grids.GridAsiento);
-    // CORRECCIÓN: Asegurar que el botón de imprimir esté habilitado
-    $("#btnImprimir").prop("disabled", false);
-
-    inicializaParametrosReporteAsientoDef();
+    resetReporteAsientoDefinitivo(9);
+    resetReporteAsientoDefinitivo(10);
+    actualizarEstadoImpresionDefinitivo();
 
     CerrarWaiting();
 }
@@ -1819,6 +1890,7 @@ function inicializaParametrosReporteAsientoDef() {
     let admId = administracion;
     if (arrRepoParams[i - 1] === undefined) {
         var data1 = {
+            EsTemporal: false,
             Eje_nro: $("#Eje_nro").val(), // Ejercicio
             Movi: $("#Movi").is(":checked").toString(), // bit Movimiento
             Movi_like: $("#Movi_like").val(), // Nro Movimiento
@@ -1930,10 +2002,9 @@ function selectAsientoDbl(x, gridId) {
     //reporte #10
     //impresion del asiento
     let i = 10;
-    if (arrRepoParams[i - 1] === undefined) {
-        let data = { "dia_movi": id };
-        cargarReporteEnArre(10, data, "Detalle de Asiento Movimiento N°: " + id, "", administracion);
-    }
+    resetReporteAsientoDefinitivo(i);
+    let reporteData = { "dia_movi": id };
+    cargarReporteEnArre(10, reporteData, "Detalle de Asiento Movimiento N°: " + id, "", administracion);
 
     //se agrega por inyection el tab con los datos del producto
     EntidadEstado = x.find("td:nth-child(4)").text().trim();
@@ -1984,6 +2055,8 @@ function buscarAsientoDef(data) {
         $("#btnAbmNuevo").hide(); // Ocultar botón nuevo
         $("#btnAbmModif").show().prop("disabled", false);
         $("#btnAbmElimi").show().prop("disabled", false);        
+
+        actualizarEstadoImpresionDefinitivo();
 
         CerrarWaiting();
     });
@@ -2247,6 +2320,8 @@ function limpiarAsientoAbierto() {
     filaClicDoble = null;
     EntidadSelect = "";
     EntidadEstado = "";
+
+    resetReporteAsientoDefinitivo(10);
 
     InicializaVistaAsientos();
 

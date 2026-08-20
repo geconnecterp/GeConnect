@@ -130,7 +130,7 @@
                                 
                                 <td class="@Model.ObtenerClase(item.p_pvta)"
                                     style="@(re > 0 && re != 1 ? "color: #198754; font-weight: bold;" : "color: black; font-weight: normal;")">
-                                    @Model.FormatearDato(re, FormatDato.Monto)
+                                    @re.ToString("N2", System.Globalization.CultureInfo.GetCultureInfo("en-US"))
                                 </td>
                             </tr>
                         }

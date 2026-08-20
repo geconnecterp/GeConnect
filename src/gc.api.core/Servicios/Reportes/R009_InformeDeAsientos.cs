@@ -21,6 +21,7 @@ namespace gc.api.core.Servicios.Reportes
     public class R009_InformeDeAsientos : Servicio<EntidadBase>, IGeneradorReporte
     {
         private readonly IAsientoTemporalServicio _asTempSv;
+        private readonly IAsientoDefinitivoServicio _asDefSv;
 
         private readonly EmpresaGeco _empresaGeco;
         private readonly List<string> _titulos;
@@ -28,9 +29,11 @@ namespace gc.api.core.Servicios.Reportes
         private readonly ICuentaServicio _cuentaSv;
         private readonly ILogger _logger;
         public R009_InformeDeAsientos(IUnitOfWork uow, IAsientoTemporalServicio atempsv,
+            IAsientoDefinitivoServicio adefsv,
            IOptions<EmpresaGeco> empresa, ICuentaServicio consultaSv, ILogger logger) : base(uow)
         {
             _asTempSv = atempsv;
+            _asDefSv = adefsv;
 
             _empresaGeco = empresa.Value;
             _titulos = new List<string> { "Nro.Mov.", "Fecha", "Descripcion", "Carga", "Estado" };
@@ -202,6 +205,7 @@ namespace gc.api.core.Servicios.Reportes
         {
 
             var Eje_nro = solicitud.Parametros.GetValueOrDefault("Eje_nro", "");
+            var esTemporal = solicitud.Parametros.GetValueOrDefault("EsTemporal", "true").ToBoolean();
             var Movi = solicitud.Parametros.GetValueOrDefault("Movi", "").ToBoolean();
             var Movi_like = solicitud.Parametros.GetValueOrDefault("Movi_like", "") ?? "";
             var Usu = solicitud.Parametros.GetValueOrDefault("Usu", "").ToBoolean();
@@ -216,7 +220,7 @@ namespace gc.api.core.Servicios.Reportes
             //Se obtiene el id del usuario (userId) y se asignan los valores de pag y reg
             string dia_movi = solicitud.Parametros.GetValueOrDefault("dia_movi", "") ?? "";
             id = Movi_like;
-            return _asTempSv.ObtenerAsientos(new QueryAsiento
+            var query = new QueryAsiento
             {
                 Movi_like = Movi_like,
                 Eje_nro = Eje_nro.ToInt(),
@@ -228,9 +232,34 @@ namespace gc.api.core.Servicios.Reportes
                 Rango = Rango,
                 Desde = Desde,
                 Hasta = Hasta,
+                EsTemporal = esTemporal,
                 TotalRegistros = 999999999,
                 Paginas = 1
-            });
+            };
+
+            if (!query.EsTemporal)
+            {
+                return _asDefSv.ObtenerAsientos(query)
+                    .Select(x => new AsientoGridDto
+                    {
+                        dia_movi = x.dia_movi,
+                        dia_fecha = x.dia_fecha,
+                        dia_tipo = x.dia_tipo,
+                        dia_lista = x.dia_lista,
+                        dia_desc_asiento = x.dia_desc_asiento,
+                        dia_anulado = x.dia_anulado,
+                        dia_fecha_sistema = x.dia_fecha_sistema,
+                        dia_saldo = x.dia_saldo,
+                        sin_ccb = x.sin_ccb,
+                        revisable = x.revisable,
+                        revisable_desc = x.revisable_desc,
+                        Total_registros = x.Total_registros,
+                        Total_paginas = x.Total_paginas
+                    })
+                    .ToList();
+            }
+
+            return _asTempSv.ObtenerAsientos(query);
         }
     }
 }

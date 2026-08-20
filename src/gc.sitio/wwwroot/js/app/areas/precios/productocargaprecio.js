@@ -3985,6 +3985,11 @@ function calcularMargenDesdePrecioSincrono(row) {
         row.find('input[name="tp_iva"]').val(response.pvta.p_iva);
         row.find('input[name="tp_in"]').val(response.pvta.p_in);
 
+        // Mantener RE% sincronizado también cuando el usuario edita P.Vta.
+        // Los cambios de P.Lista/Margen ya pasan por las otras secuencias de
+        // cálculo, pero este recorrido no refrescaba la relación en pantalla.
+        actualizarRatio(row, datos.tp_pvta);
+
         actualizarEstadoCarga(row);
         resguardarCambiosProducto(row);
 

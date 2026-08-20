@@ -21,7 +21,7 @@ namespace gc.sitio.Areas.Asientos.Controllers
     {
         private readonly DocsManager _docsManager; //recupero los datos desde el appsettings.json
         private AppModulo _modulo; //tengo el AppModulo que corresponde a la consulta de cuentas
-        private string APP_MODULO = AppModulos.ASTEMP.ToString();
+        private string APP_MODULO = AppModulos.ASDEF.ToString();
 
         private readonly IAsientoFrontServicio _asientoServicio;
         private readonly IAsientoDefinitivoServicio _asDefSv;
@@ -84,6 +84,13 @@ namespace gc.sitio.Areas.Asientos.Controllers
                 ViewBag.ListaEjercicios = ComboEjercicios();
                 ViewBag.ListaTiposAsiento = ComboTiposAsiento();
                 ViewBag.ListaUsuarios = ComboUsuariosEjercicio();
+                ViewBag.RangosEjercicios = JsonConvert.SerializeObject(
+                    Ejercicios.Select(e => new
+                    {
+                        id = e.Eje_nro,
+                        desde = e.Eje_desde.ToString("yyyy-MM-dd"),
+                        hasta = e.Eje_hasta.ToString("yyyy-MM-dd")
+                    }));
 
                 return View();
             }

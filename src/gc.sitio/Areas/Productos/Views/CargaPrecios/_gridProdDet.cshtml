@@ -266,7 +266,7 @@
                                     </div>
                                 </td>
                                 
-                                <td class="@Model.ObtenerClase(item.p_pvta) tdRe" style="@GeneraStyle(re)">@Model.FormatearDato(re, FormatDato.Monto)</td>
+                                <td class="@Model.ObtenerClase(item.p_pvta) tdRe" style="@GeneraStyle(re)">@re.ToString("N2", System.Globalization.CultureInfo.GetCultureInfo("en-US"))</td>
                             </tr>
                         }
                     }

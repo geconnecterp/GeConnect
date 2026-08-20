@@ -79,6 +79,15 @@ namespace gc.sitio.Areas.Asientos.Controllers
                 ViewBag.ListaEjercicios = ComboEjercicios();
                 ViewBag.ListaTiposAsiento = ComboTiposAsiento();
                 ViewBag.ListaUsuarios = ComboUsuariosEjercicio();
+                ViewBag.UsuarioActual = UserName;
+                ViewBag.RangosEjercicios = (ViewBag.EjerciciosLista as List<EjercicioDto> ?? [])
+                    .Select(e => new
+                    {
+                        eje_nro = e.Eje_nro,
+                        desde = e.Eje_desde.ToString("yyyy-MM-dd"),
+                        hasta = e.Eje_hasta.ToString("yyyy-MM-dd")
+                    })
+                    .ToList();
                 
                 return View();
             }

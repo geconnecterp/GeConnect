@@ -24,6 +24,7 @@ namespace gc.api.core.Servicios.Reportes
 
         public ReportService(IUnitOfWork uow, IConsultaServicio consSv,
             IAsientoTemporalServicio asiento,
+            IAsientoDefinitivoServicio asientoDefinitivo,
             IApiLMayorServicio apiLMayor,
             IApiLDiarioServicio ldSv,
             IApiSumaSaldoServicio apiBSS,
@@ -57,7 +58,7 @@ namespace gc.api.core.Servicios.Reportes
                 { InfoReporte.R006_InfoOPagoDet, new R006_InformeOPagoDetalle(uow,consSv,empresa,ctaSv, logger) },
                 { InfoReporte.R007_InfoRecProv, new R007_InformeRecepcionProveedor(uow,consSv,empresa,ctaSv, logger) },
                 { InfoReporte.R008_InfoRecProvDet, new R008_InformeRecepcionProveedorDetalle(uow,consSv,empresa,ctaSv, logger) },
-                { InfoReporte.R009_InfoAsientos, new R009_InformeDeAsientos(uow,asiento,empresa,ctaSv, logger) },
+                { InfoReporte.R009_InfoAsientos, new R009_InformeDeAsientos(uow,asiento,asientoDefinitivo,empresa,ctaSv, logger) },
                 { InfoReporte.R010_InfoDetalleAsiento, new R010_DetalleDeAsiento(uow,asiento,empresa,ctaSv, logger) },
                 { InfoReporte.R011_LibroMayorContable, new R011_LibroMayorContable(uow,apiLMayor,empresa,ctaSv, logger) },
                 { InfoReporte.R012_ResumenLibroMayorContable, new R012_ResumenLibroMayorContable(uow,apiLMayor,empresa,ctaSv, logger) },

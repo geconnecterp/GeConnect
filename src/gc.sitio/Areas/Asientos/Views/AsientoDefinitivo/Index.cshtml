@@ -50,6 +50,7 @@
 @section scripts {
     <script type="text/javascript">
          const asientoTemporal = "@filtro.EsTemporal.ToString().ToLower()"==="true";
+         const rangosEjercicios = @Html.Raw(ViewBag.RangosEjercicios ?? "[]");
          var primerArranque = true;
          var homeAsientosUrl = "@Url.Action("index", "AsientoDefinitivo", new { area = "Asientos" })";
          var buscarAsientoDefsUrl ="@Url.Action("BuscarAsientos", "AsientoDefinitivo", new { area = "Asientos" })";
@@ -82,6 +83,7 @@
     <script src="~/js/app/areas/abms/abmcommons.js"></script>
 
 
+    <script src="~/js/app/controlcomun/selectorcuentacontable.js" asp-append-version="true"></script>
     <script src="~/js/app/areas/asientos/selectorCuentas.js"></script>
     <script src="~/js/app/areas/asientos/asientosdef.js"></script>
 

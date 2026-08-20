@@ -1,4 +1,4 @@
-﻿[class^="bx"] {
+[class^="bx"] {
     font-size: 1.2rem !important;
 }
 
@@ -6438,6 +6438,20 @@ input, select, textarea, button, checkbox, radio {
 /* FIN ESTILOS MODAL DETALLE EFECTIVO */
 
 /* ════════════════════════════════════════════════════════════════
+   MODAL DETALLE CHEQUE - Z-INDEX Y ESTILOS
+   ════════════════════════════════════════════════════════════════ */
+#modalDetalleCheque {
+    z-index: 5100 !important;
+}
+
+    #modalDetalleCheque.modal.show ~ .modal-backdrop {
+        z-index: 5099 !important;
+    }
+
+    #modalDetalleCheque .modal-dialog {
+        z-index: 5101 !important;
+    }
+/* ════════════════════════════════════════════════════════════════
    MODAL DETALLE TRANSFERENCIA - Z-INDEX Y ESTILOS
    ════════════════════════════════════════════════════════════════ */
 
@@ -7866,3 +7880,4 @@ span[data-bs-toggle="tooltip"] {
         text-align: left;
     }
 }
+

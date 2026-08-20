@@ -772,6 +772,7 @@ function inicializarSelectorCuentas() {
 		// Guardar referencias para los campos destino
 		$('#selectorPlanCuentasModal').data('campo-destino', campo);
 		$('#selectorPlanCuentasModal').data('campo-destino-id', campoId);
+		$('#selectorPlanCuentasModal').data('ccb-id-inicial', $('#' + campoId).val());
 
 		// Abrir el modal
 		$('#selectorPlanCuentasModal').modal('show');
@@ -874,11 +875,8 @@ function inicializarSelectorCuentas() {
 		}
 	});
 
-	// Limpiar búsqueda y selección al abrir el modal
+	// Preparar el selector con la cuenta actual al abrir el modal
 	$('#selectorPlanCuentasModal').off('shown.bs.modal').on('shown.bs.modal', function () {
-		// Limpiar campo de búsqueda y darle el foco
-		$('#txtBuscarCuentaPlan').val('').trigger("focus");
-
 		// Limpiar búsqueda previa
 		const tree = $("#cuentasTree").jstree(true);
 		if (tree) {
@@ -890,6 +888,12 @@ function inicializarSelectorCuentas() {
 		cuentaSeleccionada = null;
 		$('#btnSeleccionarCuenta').prop('disabled', true);
 		$("#resultadosBusqueda").hide();
+
+		GecoSelectorCuentaContable.preparar({
+			cuentaId: $('#selectorPlanCuentasModal').data('ccb-id-inicial'),
+			inputSelector: '#txtBuscarCuentaPlan',
+			treeSelector: '#cuentasTree'
+		});
 	});
 
 	// Limpiar búsqueda y selección al cerrar el modal

@@ -402,3 +402,4 @@ FodyWeavers.xsd
 **/archivos/
 
 ../etc/
+.codex-build/

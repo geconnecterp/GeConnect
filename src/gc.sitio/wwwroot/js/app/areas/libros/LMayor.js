@@ -729,14 +729,19 @@ function configurarArbolCuentas() {
             return;
         }
 
-        // Limpiar el campo de búsqueda antes de abrir el modal
-        $("#cuentaModalFilter").val("");
+        const cuentaActualId = $("#cuentaId").val();
 
         // Abrir el modal
         $("#modalCuentas").modal("show");
 
         // Cargar el árbol de cuentas (sin parámetros)
         cargarArbolCuentasLMayor();
+
+        GecoSelectorCuentaContable.preparar({
+            cuentaId: cuentaActualId,
+            inputSelector: '#cuentaModalFilter',
+            treeSelector: '#cuentasTree'
+        });
     });    
 
     // Botón para seleccionar cuenta
