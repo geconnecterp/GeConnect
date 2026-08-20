@@ -119,6 +119,80 @@
     </div>
 </div>
 
+<div class="modal fade modal-golden" id="modalCambioValoresConfirmacion" tabindex="-1" aria-labelledby="modalCambioValoresConfirmacionLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-gradient-golden text-white">
+                <div>
+                    <h5 class="modal-title mb-0 fw-bold" id="modalCambioValoresConfirmacionLabel"><i class="bx bx-check-shield"></i> Confirmar Operacion</h5>
+                    <small class="fw-bold">Revise los valores cargados antes de finalizar</small>
+                </div>
+            </div>
+            <div class="modal-body p-4 bg-light">
+                <div class="row g-3">
+                    <div class="col-lg-8">
+                        <div class="card card-golden shadow-sm h-100">
+                            <div class="card-header fw-bold"><i class="bx bx-list-check"></i> Valores a registrar</div>
+                            <div class="card-body p-0">
+                                <div class="table-responsive">
+                                    <table class="table table-golden table-hover mb-0">
+                                        <thead class="table-golden-header">
+                                            <tr>
+                                                <th>Medio</th>
+                                                <th>Instrumento</th>
+                                                <th>Detalle</th>
+                                                <th class="text-center">Fecha</th>
+                                                <th class="text-end">Importe</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="tbodyCambioValoresConfirmacion"></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="card-footer bg-golden-light border-top border-golden">
+                                <div class="d-flex justify-content-end align-items-center gap-3">
+                                    <span class="fw-bold text-golden-dark fs-5">TOTAL VALORES:</span>
+                                    <span class="form-control form-control-lg text-end fw-bold text-success" id="lblTotalCambioValoresConfirmacion" style="max-width: 260px;">$ 0.00</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4">
+                        <div class="card card-golden shadow-sm h-100">
+                            <div class="card-header fw-bold"><i class="bx bx-info-circle"></i> Datos de la operacion</div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <label class="form-label small fw-bold text-muted">Operacion</label>
+                                    <div class="form-control fw-bold" id="lblOperacionCambioValoresConfirmacion">-</div>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label small fw-bold text-muted">Cliente</label>
+                                    <div class="form-control fw-bold" id="lblClienteCambioValoresConfirmacion">-</div>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label small fw-bold text-muted">Cuenta</label>
+                                    <div class="form-control fw-bold" id="lblCuentaCambioValoresConfirmacion">-</div>
+                                </div>
+                                <div class="alert alert-warning mb-0" id="lblContrapartidaCambioValoresConfirmacion">
+                                    Se entregara efectivo en pesos por el total de valores ingresados.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer bg-light">
+                <div class="d-flex justify-content-between align-items-center w-100">
+                    <button type="button" class="btn btn-danger btn-lg" id="btnVolverCambioValoresConfirmacion"><i class="bx bx-left-arrow-alt"></i> VOLVER</button>
+                    <button type="button" class="btn btn-success btn-lg px-5" id="btnConfirmarCambioValoresOperacion"><i class="bx bx-check-circle"></i> CONFIRMAR</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@await Html.PartialAsync("~/Areas/Facturacion/Views/Pago/_detalleCheque.cshtml")
+@await Html.PartialAsync("~/Areas/Facturacion/Views/Pago/_detalleTransferencia.cshtml")
 @section Scripts {
     <script>
         var clienteCompleto = null;
@@ -134,7 +208,8 @@
         const verificarExistenciaCuentaCorrienteUrl = '@Url.Action("ValidarClienteRegistrado", "CambioValores", new { Area = "Facturacion" })';
         const cambioValoresMediosPagoUrl = '@Url.Action("ObtenerMediosPago", "CambioValores", new { Area = "Facturacion" })';
         const cambioValoresInstrumentosUrl = '@Url.Action("ObtenerInstrumentos", "CambioValores", new { Area = "Facturacion" })';
-        const cambioValoresPrepararConfirmacionUrl = '@Url.Action("PrepararConfirmacion", "CambioValores", new { Area = "Facturacion" })';
+        const cambioValoresConfirmarOperacionUrl = '@Url.Action("ConfirmarOperacion", "CambioValores", new { Area = "Facturacion" })';
+        const cambioValoresBancosUrl = '@Url.Action("ObtenerBancos", "CambioValores", new { Area = "Facturacion" })';
         const cambioValoresMenuUrl = '@Url.Action("Index", "Home", new { area = "" })';
     </script>
 

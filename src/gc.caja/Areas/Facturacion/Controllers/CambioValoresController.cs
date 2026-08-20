@@ -1,4 +1,4 @@
-﻿using gc.caja.Controllers;
+using gc.caja.Controllers;
 using gc.caja.core.Servicios.Contratos.Cajas;
 using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Dtos.Cajas;
@@ -18,17 +18,20 @@ namespace gc.caja.Areas.Facturacion.Controllers
 
         private readonly ICajaInitServicio _cajaInitServicio;
         private readonly ICheckoutServicio _checkoutServicio;
+        private readonly ICajaServicio _cajaServicio;
 
         public CambioValoresController(
             IOptions<AppSettings> options,
             ILogger<CambioValoresController> logger,
             IHttpContextAccessor httpContext,
             ICajaInitServicio cajaInitServicio,
-            ICheckoutServicio checkoutServicio)
+            ICheckoutServicio checkoutServicio,
+            ICajaServicio cajaServicio)
             : base(options, httpContext, logger)
         {
             _cajaInitServicio = cajaInitServicio;
             _checkoutServicio = checkoutServicio;
+            _cajaServicio = cajaServicio;
         }
 
         [HttpGet]
@@ -253,7 +256,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
         }
 
         [HttpPost]
-        public JsonResult PrepararConfirmacion([FromBody] CambioValoresConfirmarRequest request)
+        public async Task<JsonResult> ConfirmarOperacion([FromBody] CambioValoresConfirmarRequest request)
         {
             try
             {
@@ -274,26 +277,103 @@ namespace gc.caja.Areas.Facturacion.Controllers
                 }
 
                 var tipo = string.Equals(request?.Tipo, "IV", StringComparison.OrdinalIgnoreCase) ? "IV" : "CV";
-                var total = valores.Sum(x => x.rb_importe);
-                var jsonValores = JsonConvert.SerializeObject(valores);
+                var valoresConfirmacion = PrepararValoresConfirmacion(valores, tipo);
+                var totalValoresIngresados = valores.Sum(x => Math.Abs(x.rb_importe));
+                var jsonValores = SerializarValoresConfirmacion(valoresConfirmacion);
+
+                var cajaActual = CajaActual;
+                if (cajaActual?.Caja == null || string.IsNullOrWhiteSpace(cajaActual.CajaId))
+                {
+                    return Json(new { ok = false, mensaje = "No se encontraron datos validos de caja para confirmar la operacion." });
+                }
+
+                var token = TokenCookie;
+                if (string.IsNullOrWhiteSpace(token))
+                {
+                    return Json(new { ok = false, mensaje = "La sesion actual no posee un token valido." });
+                }
+
+                var requestConfirmacion = CrearRequestConfirmacion(ctaId, tipo, jsonValores);
 
                 _logger?.LogInformation(
-                    "Cambio valores: confirmacion pendiente preparada. Cta={Cta}; Tipo={Tipo}; Registros={Registros}; Total={Total}; JsonValores={JsonValores}; Usuario={Usuario}",
+                    "Cambio valores: validando PV. Cta={Cta}; Tipo={Tipo}; Registros={Registros}; Total={Total}; Usuario={Usuario}",
                     ctaId,
                     tipo,
-                    valores.Count,
-                    total,
-                    jsonValores,
+                    valoresConfirmacion.Count,
+                    totalValoresIngresados,
                     UserName);
+
+                var validacionPV = await ValidarEstadoPuntoVenta(
+                    cajaServicio: _cajaServicio,
+                    cajaId: cajaActual.CajaId ?? string.Empty,
+                    ctrlId: cajaActual.Caja.ctrl_id ?? string.Empty,
+                    nroProceso: requestConfirmacion.caja_nro_proceso,
+                    nroCierre: requestConfirmacion.caja_nro_cierre,
+                    tipoLlamada: "F");
+
+                if (!validacionPV.PuedeContinuar)
+                {
+                    _logger?.LogError(
+                        "Cambio valores: validacion PV bloqueada. Resultado={Resultado}; Mensaje={Mensaje}",
+                        validacionPV.Resultado,
+                        validacionPV.Mensaje);
+
+                    return Json(new
+                    {
+                        ok = false,
+                        mensaje = validacionPV.Mensaje,
+                        error_tipo = "estado_pv",
+                        ctrl_id = validacionPV.CtrlId,
+                        resultado_pv = validacionPV.Resultado
+                    });
+                }
+
+                requestConfirmacion.caea = cajaActual.Caja.ctrl_id == "-1" && validacionPV.Resultado == 1;
+
+                _logger?.LogInformation(
+                    "Cambio valores: request confirmacion. Cta={Cta}; Tipo={Tipo}; CAEA={Caea}; JsonValores={JsonValores}; Request={Request}",
+                    ctaId,
+                    tipo,
+                    requestConfirmacion.caea,
+                    jsonValores,
+                    JsonConvert.SerializeObject(requestConfirmacion));
+
+                var resultado = await _checkoutServicio.FinalizarCompra(requestConfirmacion, token);
+
+                _logger?.LogInformation(
+                    "Cambio valores: response confirmacion. Ok={Ok}; Mensaje={Mensaje}; Response={Response}",
+                    resultado?.Ok,
+                    resultado?.Mensaje,
+                    JsonConvert.SerializeObject(resultado));
+
+                if (resultado == null || !resultado.Ok || resultado.Entidad == null)
+                {
+                    return Json(new { ok = false, mensaje = resultado?.Mensaje ?? "No se pudo confirmar la operacion." });
+                }
+
+                var respuesta = resultado.Entidad;
+                if (respuesta.resultado != 0)
+                {
+                    return Json(new
+                    {
+                        ok = false,
+                        resultado = respuesta.resultado,
+                        resultado_id = respuesta.resultado_id,
+                        mensaje = string.IsNullOrWhiteSpace(respuesta.resultado_msj) ? resultado.Mensaje : respuesta.resultado_msj
+                    });
+                }
+
+                var comprobanteConfirmacion = ObtenerComprobanteConfirmacion(respuesta.resultado_id);
 
                 return Json(new
                 {
-                    ok = false,
-                    pendiente = true,
-                    mensaje = "La carga de valores quedo preparada, pero la confirmacion esta pendiente hasta que este disponible SPGECO_CAJA_Ope_Cv_IV.",
+                    ok = true,
+                    resultado = respuesta.resultado,
+                    resultado_id = respuesta.resultado_id,
+                    mensaje = ConstruirMensajeExito(tipo, totalValoresIngresados, respuesta.resultado_msj, comprobanteConfirmacion),
+                    comprobante = comprobanteConfirmacion,
                     tipo,
-                    total,
-                    json_valores = jsonValores
+                    total = totalValoresIngresados
                 });
             }
             catch (Exception ex)
@@ -301,6 +381,198 @@ namespace gc.caja.Areas.Facturacion.Controllers
                 _logger?.LogError(ex, "Cambio valores: error preparando confirmacion. Usuario={Usuario}", UserName);
                 return Json(new { ok = false, mensaje = "No se pudo preparar la confirmacion de valores." });
             }
+        }
+
+        [HttpGet]
+        public async Task<JsonResult> ObtenerBancos()
+        {
+            try
+            {
+                if (!VerificarAutenticacion(out IActionResult _))
+                {
+                    return Json(new { ok = false, mensaje = "La sesion ha expirado. Vuelva a iniciar sesion." });
+                }
+
+                var token = TokenCookie;
+                if (string.IsNullOrWhiteSpace(token))
+                {
+                    return Json(new { ok = false, mensaje = "La sesion actual no posee un token valido." });
+                }
+
+                var respuesta = await _checkoutServicio.GetBancoChequeLista(token);
+                return Json(new
+                {
+                    ok = respuesta.Ok,
+                    mensaje = respuesta.Ok ? "OK" : respuesta.Mensaje,
+                    datos = respuesta.ListaEntidad ?? []
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, "Cambio valores: error obteniendo bancos. Usuario={Usuario}", UserName);
+                return Json(new { ok = false, mensaje = "No se pudieron obtener los bancos." });
+            }
+        }
+
+        private CajaOpeConfirmarReq CrearRequestConfirmacion(string ctaId, string tipo, string jsonValores)
+        {
+            var cajaActual = CajaActual;
+            var cliente = ClienteActual;
+
+            return new CajaOpeConfirmarReq
+            {
+                caja_id = cajaActual?.CajaId ?? string.Empty,
+                usu_id = UserName ?? string.Empty,
+                adm_id = cajaActual?.AdmId ?? AdministracionId,
+                lp_id = !string.IsNullOrWhiteSpace(LP_Id) ? LP_Id : cajaActual?.Caja?.lp_id_min ?? string.Empty,
+                caja_nro_proceso = cajaActual?.Caja?.caja_nro_proceso ?? string.Empty,
+                caja_nro_cierre = cajaActual?.Caja?.caja_nro_cierre,
+                usu_id_autoriza = ObtenerUsuarioAutoriza(),
+                cta_id = ctaId,
+                ctac_dto = 0m,
+                co_tipo = tipo,
+                ctc_id = string.Empty,
+                tco_letra = string.Empty,
+                tco_id_ori = string.Empty,
+                cm_compte_ori = string.Empty,
+                cm_repetido_ori = string.Empty,
+                afip_id = string.Empty,
+                tdoc_id = string.Empty,
+                cta_documento = string.Empty,
+                cta_denominacion = string.Empty,
+                cta_domicilio = string.Empty,
+                ve_id = string.Empty,
+                json_p = "[]",
+                json_valores = jsonValores,
+                json_cancela = "[]",
+                json_union = "[]",
+                json_subtotal = "[]",
+                json_sorteo = "[]"
+            };
+        }
+
+        private string ObtenerUsuarioAutoriza()
+        {
+            // Punto de extension: si se activa autorizacion remota, aqui se debe tomar el usuario autorizado.
+            return UserName ?? string.Empty;
+        }
+
+        private static List<Json_Valor> PrepararValoresConfirmacion(List<Json_Valor> valores, string tipo)
+        {
+            var valoresPositivos = (valores ?? [])
+                .Where(x => x.rb_importe > 0)
+                .Select((x, index) => NormalizarValor(x, index + 1, x.rb_importe))
+                .ToList();
+
+            if (string.Equals(tipo, "CV", StringComparison.OrdinalIgnoreCase))
+            {
+                var total = valoresPositivos.Sum(x => x.rb_importe);
+                valoresPositivos.Add(new Json_Valor
+                {
+                    rb_nro_valor = (valoresPositivos.Count + 1).ToString().PadLeft(3, '0'),
+                    ins_id = "PES",
+                    rb_dato1_valor = string.Empty,
+                    rb_dato2_valor = string.Empty,
+                    rb_dato3_valor = string.Empty,
+                    rb_opcion_cuota = "0",
+                    rb_cupon_manual = "N",
+                    rb_ch_dif = "N",
+                    rb_fecha_valor = DateTime.Today,
+                    rb_importe = -Math.Abs(total),
+                    rb_rec = 0m,
+                    rb_aux = 0m,
+                    rb_estado = "A",
+                    id_externo = string.Empty
+                });
+            }
+
+            return valoresPositivos;
+        }
+
+        private static Json_Valor NormalizarValor(Json_Valor valor, int indice, decimal importe)
+        {
+            return new Json_Valor
+            {
+                rb_nro_valor = indice.ToString().PadLeft(3, '0'),
+                ins_id = valor.ins_id ?? string.Empty,
+                rb_dato1_valor = valor.rb_dato1_valor ?? string.Empty,
+                rb_dato2_valor = valor.rb_dato2_valor ?? string.Empty,
+                rb_dato3_valor = valor.rb_dato3_valor ?? string.Empty,
+                rb_opcion_cuota = string.IsNullOrWhiteSpace(valor.rb_opcion_cuota) ? "0" : valor.rb_opcion_cuota,
+                rb_cupon_manual = string.IsNullOrWhiteSpace(valor.rb_cupon_manual) ? "N" : valor.rb_cupon_manual,
+                rb_ch_dif = string.IsNullOrWhiteSpace(valor.rb_ch_dif) ? "N" : valor.rb_ch_dif,
+                rb_fecha_valor = valor.rb_fecha_valor == default ? DateTime.Today : valor.rb_fecha_valor,
+                rb_importe = Math.Abs(importe),
+                rb_rec = valor.rb_rec,
+                rb_aux = valor.rb_aux,
+                rb_estado = "A",
+                id_externo = valor.id_externo ?? string.Empty
+            };
+        }
+
+        private static string SerializarValoresConfirmacion(List<Json_Valor> valores)
+        {
+            var valoresSp = (valores ?? [])
+                .Select(valor => new
+                {
+                    rb_nro_valor = valor.rb_nro_valor,
+                    ins_id = valor.ins_id,
+                    rb_dato1_valor = valor.rb_dato1_valor ?? string.Empty,
+                    rb_dato2_valor = valor.rb_dato2_valor ?? string.Empty,
+                    rb_dato3_valor = valor.rb_dato3_valor ?? string.Empty,
+                    rb_opcion_cuota = string.IsNullOrWhiteSpace(valor.rb_opcion_cuota) ? "0" : valor.rb_opcion_cuota,
+                    rb_cupon_manual = string.IsNullOrWhiteSpace(valor.rb_cupon_manual) ? "N" : valor.rb_cupon_manual,
+                    rb_ch_dif = string.IsNullOrWhiteSpace(valor.rb_ch_dif) ? "N" : valor.rb_ch_dif,
+                    rb_fecha_valor = (valor.rb_fecha_valor == default ? DateTime.Today : valor.rb_fecha_valor).ToString("yyyy-MM-dd"),
+                    rb_importe = valor.rb_importe,
+                    rb_rec = valor.rb_rec,
+                    rb_aux = valor.rb_aux,
+                    rb_estado = string.IsNullOrWhiteSpace(valor.rb_estado) ? "A" : valor.rb_estado,
+                    id_externo = valor.id_externo ?? string.Empty
+                })
+                .ToList();
+
+            return JsonConvert.SerializeObject(valoresSp);
+        }
+        private static string ObtenerComprobanteConfirmacion(string? resultadoId)
+        {
+            if (string.IsNullOrWhiteSpace(resultadoId))
+            {
+                return string.Empty;
+            }
+
+            try
+            {
+                var comprobantes = JsonConvert.DeserializeObject<List<CambioValoresComprobanteResultado>>(resultadoId);
+                return comprobantes?.FirstOrDefault()?.rb_compte?.Trim() ?? string.Empty;
+            }
+            catch
+            {
+                return string.Empty;
+            }
+        }
+
+        private static string ConstruirMensajeExito(string tipo, decimal total, string? mensajeSp, string? comprobante)
+        {
+            var comprobanteTexto = string.IsNullOrWhiteSpace(comprobante)
+                ? string.Empty
+                : $" Comprobante: {comprobante.Trim()}.";
+
+            if (!string.IsNullOrWhiteSpace(mensajeSp) && !string.Equals(mensajeSp.Trim(), "OK", StringComparison.OrdinalIgnoreCase))
+            {
+                return $"{mensajeSp.Trim()}{comprobanteTexto}";
+            }
+
+            var descripcion = string.Equals(tipo, "IV", StringComparison.OrdinalIgnoreCase)
+                ? "Ingreso de valores confirmado correctamente."
+                : "Cambio de valores confirmado correctamente.";
+
+            return $"{descripcion}{comprobanteTexto} Total operado: $ {total:N2}.";
+        }
+
+        private sealed class CambioValoresComprobanteResultado
+        {
+            public string rb_compte { get; set; } = string.Empty;
         }
 
         private bool TryObtenerClienteRegistrado(out string ctaId, out string mensaje)
@@ -326,3 +598,6 @@ namespace gc.caja.Areas.Facturacion.Controllers
         }
     }
 }
+
+
+
