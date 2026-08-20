@@ -37,7 +37,7 @@
                             class="@clase" onclick="selectReg(this,'tbGridRpProv')" ondblclick="SeleccionarPeriodo(this,'tbGridRpProv')">
                             <td class="@Model.ObtenerClase(item.Rp_compte)">@Model.FormatearDato(item.Rp_compte,FormatDato.Ninguno)</td>
                             <td class="@Model.ObtenerClase(item.Cuenta)">@Model.FormatearDato(item.Cuenta, FormatDato.Ninguno)</td>
-                            <td class="@Model.ObtenerClase(item.Rp_fecha)">@Model.FormatearDato(item.Rp_fecha, FormatDato.Fecha)</td>
+                            <td class="@Model.ObtenerClase(item.Rp_fecha)">@Model.FormatearDato(item.Rp_fecha, FormatDato.FechaCompleta)</td>
                             @{
                                 string cmpte = $"({item.Tco_id_rp}) {item.Cm_compte_rp}";
                                 string cctacte = $"({item.Tco_id}) {item.Cm_compte}";

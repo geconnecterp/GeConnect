@@ -46,6 +46,21 @@ function InicializaPantallaEtiqueta() {
 }
 
 function InicializaEnventosEtiqueta() {
+    $("#divFiltro")
+        .off("show.bs.collapse.etiqueta")
+        .on("show.bs.collapse.etiqueta", function () {
+            // Volver a filtros inicia un nuevo contexto de consulta: la grilla
+            // anterior no debe continuar habilitando la impresión.
+            $("#btnImprimir").prop("disabled", true);
+            $("#divDetalle").collapse("hide");
+
+            _impresionPendiente = null;
+            _reporteSolicitado = false;
+            _reporteGenerado = false;
+            _cierreGestorCancelado = false;
+            _cierreGestorPorReporte = false;
+        });
+
     $("#btnImprimir").on("click", function () {
         imprimirEtiquetas();
     });    
@@ -760,6 +775,10 @@ function buscarEtiquetas(btn) {
         Adm_id: null,
         Usu_id: null
     };
+
+    // La impresión sólo vuelve a habilitarse cuando la nueva consulta
+    // finaliza y contiene etiquetas.
+    $("#btnImprimir").prop("disabled", true);
 
     _etiquetaLoading = true;
     const $btn = $(btn);

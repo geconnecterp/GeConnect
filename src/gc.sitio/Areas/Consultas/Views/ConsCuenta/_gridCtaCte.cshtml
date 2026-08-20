@@ -31,9 +31,9 @@
                             @{
                                 string concepto = $"{item.Tco_desc} {item.Cm_compte} {item.Cc_concepto}";
                             }
-                            <td class="@Model.ObtenerClase(item.Cc_fecha)">@Model.FormatearDato(item.Cc_fecha,FormatDato.Fecha)</td>
+                            <td class="@Model.ObtenerClase(item.Cc_fecha)">@Model.FormatearDato(item.Cc_fecha,FormatDato.FechaCompleta)</td>
                             <td class="@Model.ObtenerClase(item.Dia_movi)">@Model.FormatearDato(item.Dia_movi,FormatDato.Ninguno)</td>                            
-                            <td class="@Model.ObtenerClase(item.Cc_concepto)">@Model.FormatearDato(concepto, FormatDato.Ninguno)</td>
+                            <td class="@Model.ObtenerClase(item.Cc_concepto) cons-concepto" title="@concepto">@Model.FormatearDato(concepto, FormatDato.Ninguno)</td>
                             <td class="@Model.ObtenerClase(item.Cc_debe)">@Model.FormatearDato(item.Cc_debe, FormatDato.Monto)</td>
                             <td class="@Model.ObtenerClase(item.Cc_haber)">@Model.FormatearDato(item.Cc_haber, FormatDato.Monto)</td>
                             <td class="@Model.ObtenerClase(item.Cc_saldo)">@Model.FormatearDato(item.Cc_saldo, FormatDato.Monto)</td>

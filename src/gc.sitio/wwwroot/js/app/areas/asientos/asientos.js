@@ -28,6 +28,8 @@ function inicializarSeleccionAsientos() {
     // Deshabilitar botón inicialmente
     $("#btnPasarConta").prop("disabled", true);
 
+    actualizarEstadoImpresion();
+
     // Actualizar contador
     $("#selected-count").text("0");
 }
@@ -40,9 +42,11 @@ function buscarAsientos(pag) {
     AbrirWaiting();
     //desactivamos los botones de acción
     activarBotones2(false);
+    $("#btnImprimir").prop("disabled", true);
 
     // Obtenemos los valores de los campos del filtro
     var data1 = {
+        EsTemporal: true,
         Eje_nro: $("#Eje_nro").val(), // Ejercicio
         Movi: $("#Movi").is(":checked").toString(), // bit Movimiento
         Movi_like: $("#Movi_like").val(), // Nro Movimiento
@@ -80,6 +84,7 @@ function buscarAsientos(pag) {
     PostGenHtml(data, buscarAsientosUrl, function (obj) {
         $("#divGrilla").html(obj);
         $("#divFiltro").collapse("hide")
+        actualizarEstadoImpresion();
 
         // Agregar un pequeño retraso para asegurar que la grilla ya está cargada
         setTimeout(inicializarSeleccionAsientos, 100);
@@ -102,6 +107,7 @@ function buscarAsientos(pag) {
         });
         CerrarWaiting();
     }, function (obj) {
+        $("#btnImprimir").prop("disabled", true);
         ControlaMensajeError(obj.message);
         CerrarWaiting();
     });
@@ -162,6 +168,8 @@ $(function () {
     // Eliminar todos los manejadores previos para evitar duplicación
     $(document).off("click", "#tbGridAsiento tbody tr");
     $(document).off("dblclick", "#tbGridAsiento tbody tr");
+
+    configurarValoresInicialesTemporal();
 
 
 
@@ -758,6 +766,7 @@ function activarControles(act) {
 
     // Añadir/eliminar líneas y botones operativos
     if (act) {
+        alternarColumnaSeleccion(false);
         // Si estamos activando los controles, añadimos botones de edición
         if ($("#btnAddLinea").length === 0) {
             // Si es nuevo o modificación, permitir editar líneas del asiento
@@ -794,6 +803,7 @@ function activarControles(act) {
         configurarCamposEditables();
         $("#btnImprimir").prop("disabled", true);
     } else {
+        alternarColumnaSeleccion(true);
         // Si desactivamos, quitamos los controles de edición
         $("#tbAsientoDetalle thead th:last-child").remove();
         $("#tbAsientoDetalle tbody tr td:last-child").remove();
@@ -805,7 +815,7 @@ function activarControles(act) {
 
         // Ocultar botones de búsqueda de cuenta
         $("#tbAsientoDetalle tbody .btn-buscar-cuenta").hide();
-        $("#btnImprimir").prop("disabled", false);
+        actualizarEstadoImpresion();
     }
 
     // Control de botones de acción del footer
@@ -1503,8 +1513,7 @@ function InicializaVistaAsientos(e) {
         removerSeleccion();
         activarGrilla(Grids.GridAsiento);
 
-        // CORRECCIÓN: Asegurar que el botón de imprimir esté habilitado
-        $("#btnImprimir").prop("disabled", false);
+        actualizarEstadoImpresion();
 
         CerrarWaiting();
         return; // Importante: salir de la función para evitar recursión
@@ -1526,14 +1535,14 @@ function InicializaVistaAsientos(e) {
     accionBotones(AbmAction.CANCEL); // Usar tercer parámetro para mantener el botón cancelar
     removerSeleccion();
     activarGrilla(Grids.GridAsiento);
-    // CORRECCIÓN: Asegurar que el botón de imprimir esté habilitado
-    $("#btnImprimir").prop("disabled", false);
+    actualizarEstadoImpresion();
     //resguardo los parametros para el reporte #9 = i-1
     // Obtenemos los valores de los campos del filtro
     let i = 9;
     let admId = administracion;
     if (arrRepoParams[i - 1] === undefined) {
         var data1 = {
+            EsTemporal: true,
             Eje_nro: $("#Eje_nro").val(), // Ejercicio
             Movi: $("#Movi").is(":checked").toString(), // bit Movimiento
             Movi_like: $("#Movi_like").val(), // Nro Movimiento
@@ -1578,6 +1587,82 @@ function limpiarSeleccionAsientos() {
 
     // Actualizar contador de seleccionados
     $("#selected-count").text("0");
+    alternarColumnaSeleccion(true);
+}
+
+/**
+ * Inicializa los filtros particulares de Asientos Temporales.
+ * El rango depende de la vigencia del ejercicio seleccionado.
+ */
+function configurarValoresInicialesTemporal() {
+    if (typeof asientoTemporal === "undefined" || !asientoTemporal) {
+        return;
+    }
+
+    $("#Rango").prop("checked", true);
+    $("input[name='Desde'], input[name='Hasta']").prop("disabled", false);
+
+    if (typeof usuarioActualAsiento !== "undefined" && usuarioActualAsiento) {
+        const $usuario = $("#Usu_like");
+        if ($usuario.find(`option[value='${usuarioActualAsiento}']`).length === 0) {
+            $usuario.append(new Option(usuarioActualAsiento, usuarioActualAsiento));
+        }
+        $("#Usu").prop("checked", true);
+        $usuario.val(usuarioActualAsiento).prop("disabled", false);
+    }
+
+    configurarRangoFechasTemporal();
+    $("#Eje_nro").off("change.rangoTemporal").on("change.rangoTemporal", configurarRangoFechasTemporal);
+    $("#btnImprimir").prop("disabled", true);
+}
+
+function configurarRangoFechasTemporal() {
+    if (!Array.isArray(rangosEjerciciosAsiento)) {
+        return;
+    }
+
+    const ejercicio = rangosEjerciciosAsiento.find(x => String(x.eje_nro) === String($("#Eje_nro").val()));
+    if (!ejercicio) {
+        return;
+    }
+
+    const hoy = new Date();
+    const hoyTexto = fechaLocalISO(hoy);
+    let desde = ejercicio.desde;
+    let hasta = ejercicio.hasta;
+
+    if (hoyTexto >= ejercicio.desde && hoyTexto <= ejercicio.hasta) {
+        const inicioMes = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
+        desde = fechaLocalISO(inicioMes);
+        hasta = hoyTexto;
+
+        if (desde < ejercicio.desde) {
+            desde = ejercicio.desde;
+        }
+        if (hasta > ejercicio.hasta) {
+            hasta = ejercicio.hasta;
+        }
+    }
+
+    $("#Rango").prop("checked", true);
+    $("input[name='Desde']").val(desde).prop("disabled", false);
+    $("input[name='Hasta']").val(hasta).prop("disabled", false);
+}
+
+function fechaLocalISO(fecha) {
+    const anio = fecha.getFullYear();
+    const mes = String(fecha.getMonth() + 1).padStart(2, "0");
+    const dia = String(fecha.getDate()).padStart(2, "0");
+    return `${anio}-${mes}-${dia}`;
+}
+
+function actualizarEstadoImpresion() {
+    const hayAsientos = $("#tbGridAsiento tbody tr[data-id]").length > 0;
+    $("#btnImprimir").prop("disabled", !hayAsientos);
+}
+
+function alternarColumnaSeleccion(mostrar) {
+    $("#tbGridAsiento .checkbox-column").toggleClass("d-none", !mostrar);
 }
 
 /**
@@ -1741,6 +1826,7 @@ function buscarAsiento(data) {
         $("#btnDetalle").prop("disabled", false);
         $("#divFiltro").collapse("hide");
         $("#divDetalle").collapse("show");
+        alternarColumnaSeleccion(false);
 
         //activar botones de acción
         activarBotones(true);//vamos a dejar el boton cancelar

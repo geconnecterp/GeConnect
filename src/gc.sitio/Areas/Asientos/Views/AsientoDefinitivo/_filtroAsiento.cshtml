@@ -47,7 +47,7 @@
         <div class="col-md-6 col-sm-12">
             <div class="input-group input-group-sm mb-1">
                 <div class="form-check form-check-inline form-switch">
-                    <input class="form-check-input" type="checkbox" id="Usu" @(esAsientoDefinitivo ? "checked disabled" : "") />
+                    <input class="form-check-input" type="checkbox" id="Usu" checked />
                     <label class="form-check-label" for="Usu">Usuario</label>
                 </div>
             </div>
@@ -57,7 +57,6 @@
                          new
                          {
                              @class = "form-control inputEditable",
-                             @disabled = esAsientoDefinitivo ? null : "disabled",
                              style = "background-color:rgb(251,255,195);font-weight:900;"
                          })
             </div>
@@ -67,7 +66,7 @@
         <div class="col-md-6 col-sm-12">
             <div class="input-group input-group-sm mb-1">
                 <div class="form-check form-check-inline form-switch">
-                    <input class="form-check-input" type="checkbox" id="Tipo" @(esAsientoDefinitivo ? "checked disabled" : "") />
+                    <input class="form-check-input" type="checkbox" id="Tipo" checked />
                     <label class="form-check-label" for="Tipo">Tipo de Asiento</label>
                 </div>
             </div>
@@ -77,7 +76,6 @@
                          new
                          {
                              @class = "form-control inputEditable",
-                             @disabled = esAsientoDefinitivo ? null : "disabled",
                              style = "background-color:rgb(251,255,195);font-weight:900;"
                          })
             </div>
@@ -88,7 +86,7 @@
         <div class="col-sm-12">
             <div class="input-group input-group-sm mb-1">
                 <div class="form-check form-check-inline form-switch">
-                    <input class="form-check-input" type="checkbox" id="Rango" />
+                    <input class="form-check-input" type="checkbox" id="Rango" checked />
                     <label class="form-check-label" for="Rango">Rango de Fechas</label>
                 </div>
             </div>
@@ -96,13 +94,13 @@
                 <div class="col-sm-6">
                     <div class="input-group input-group-sm">
                         <span class="input-group-text">Desde</span>
-                        <input type="date" name="Desde" class="form-control inputEditable" disabled style="background-color:rgb(251,255,195);font-weight:900;" />
+                        <input type="date" name="Desde" class="form-control inputEditable" style="background-color:rgb(251,255,195);font-weight:900;" />
                     </div>
                 </div>
                 <div class="col-sm-6">
                     <div class="input-group input-group-sm">
                         <span class="input-group-text">Hasta</span>
-                        <input type="date" name="Hasta" class="form-control inputEditable" disabled style="background-color:rgb(251,255,195);font-weight:900;" />
+                        <input type="date" name="Hasta" class="form-control inputEditable" style="background-color:rgb(251,255,195);font-weight:900;" />
                     </div>
                 </div>
             </div>

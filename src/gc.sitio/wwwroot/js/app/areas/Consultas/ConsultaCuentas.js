@@ -251,12 +251,13 @@ function inicializaPantallaConsulta() {
     $("#divpanel01").empty();
     $("#divPaginacion").empty();
     $("#divpanel02").empty();
-    $("#divCmpteTot").empty().html("<span class='text - danger'>SIN REGISTROS</span>");
-    $("#divCmpteDet").empty().html("<span class='text - danger'>SIN REGISTROS</span>");
-    $("#divOpProv").empty().html("<span class='text - danger'>SIN REGISTROS</span>");
-    $("#divOpProvDet").empty().html("<span class='text - danger'>SIN REGISTROS</span>");
-    $("#divRpProv").empty().html("<span class='text - danger'>SIN REGISTROS</span>");
-    $("#divRpProvDet").empty().html("<span class='text - danger'>SIN REGISTROS</span>");
+    const sinRegistros = "<div class='cons-cuenta-empty'><i class='bx bx-info-circle'></i> Sin registros</div>";
+    $("#divCmpteTot").empty().html(sinRegistros);
+    $("#divCmpteDet").empty().html(sinRegistros);
+    $("#divOpProv").empty().html(sinRegistros);
+    $("#divOpProvDet").empty().html(sinRegistros);
+    $("#divRpProv").empty().html(sinRegistros);
+    $("#divRpProvDet").empty().html(sinRegistros);
     $("#BtnLiTab01").trigger("click");
  
     // Llama al evento click de #chkRel01 solo si no está ya en ejecución
