@@ -1,4 +1,4 @@
-﻿// ════════════════════════════════════════════════════════════
+// ════════════════════════════════════════════════════════════
 // GESTOR DE MODAL DE CÁLCULO DE FACTURA
 // ════════════════════════════════════════════════════════════
 // VERSIÓN v6.0 - Integración completa con prodfact.js
@@ -250,7 +250,7 @@ function abrirModalCalculo(datosCalculo) {
                 },
                 false,
                 ["Aceptar"],
-                "warning",
+                "warn!",
                 null
             );
             return;
@@ -778,7 +778,7 @@ function ejecutarDiferirFactura() {
                 },
                 false,
                 ["Aceptar"],
-                "warning",
+                "warn!",
                 null
             );
         }
@@ -1202,7 +1202,7 @@ function ejecutarDiferirPago() {
                 },
                 false,
                 ["Aceptar"],
-                "warning",
+                "warn!",
                 null
             );
         }

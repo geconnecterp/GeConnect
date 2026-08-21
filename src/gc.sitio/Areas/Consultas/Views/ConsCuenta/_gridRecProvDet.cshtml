@@ -45,11 +45,11 @@
                             <td class="@Model.ObtenerClase(item.Oc_compte)">@Model.FormatearDato(item.Oc_compte, FormatDato.Ninguno)</td>
                             <td class="@Model.ObtenerClase(item.Rpd_unidad_pres)">@Model.FormatearDato(item.Rpd_unidad_pres, FormatDato.Monto)</td>
                             <td class="@Model.ObtenerClase(item.Rpd_bulto_compte)">@Model.FormatearDato(item.Rpd_bulto_compte, FormatDato.Monto)</td>
-                            <td class="@Model.ObtenerClase(item.Rpd_unidad_suelta_compte)">@Model.FormatearDato(item.Rpd_unidad_suelta_compte, FormatDato.Monto)</td>
-                            <td class="@Model.ObtenerClase(item.Rpd_cantidad_compte)">@Model.FormatearDato(item.Rpd_cantidad_compte, FormatDato.Monto)</td>
+                            <td class="@Model.ObtenerClase(item.Rpd_unidad_suelta_compte)">@FormatearDato(item.Rpd_unidad_suelta_compte, FormatDato.Monto, true)</td>
+                            <td class="@Model.ObtenerClase(item.Rpd_cantidad_compte)">@FormatearDato(item.Rpd_cantidad_compte, FormatDato.Monto, true)</td>
                             <td class="@Model.ObtenerClase(item.Rpd_bulto_recibidos)">@Model.FormatearDato(item.Rpd_bulto_recibidos, FormatDato.Monto)</td>
-                            <td class="@Model.ObtenerClase(item.Rpd_unidad_suelta)">@Model.FormatearDato(item.Rpd_unidad_suelta, FormatDato.Monto)</td>
-                            <td class="@Model.ObtenerClase(item.Rpd_Cantidad)">@Model.FormatearDato(item.Rpd_Cantidad, FormatDato.Monto)</td>
+                            <td class="@Model.ObtenerClase(item.Rpd_unidad_suelta)">@FormatearDato(item.Rpd_unidad_suelta, FormatDato.Monto, true)</td>
+                            <td class="@Model.ObtenerClase(item.Rpd_Cantidad)">@FormatearDato(item.Rpd_Cantidad, FormatDato.Monto, true)</td>
                         </tr>
                     }
 

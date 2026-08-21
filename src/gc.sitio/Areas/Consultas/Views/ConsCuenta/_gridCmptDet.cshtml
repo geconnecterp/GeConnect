@@ -61,9 +61,9 @@
                                 string cmpt = $"({item.Tco_id}) {item.Cm_compte}";
                             }
                             <td class="@Model.ObtenerClase('c')">@Model.FormatearDato(cmpt,FormatDato.Ninguno)</td>
-                            <td class="@Model.ObtenerClase(item.Cm_neto)">@Model.FormatearDato(item.Cm_neto, FormatDato.Monto)</td>
-                            <td class="@Model.ObtenerClase(item.Cm_iva)">@Model.FormatearDato(item.Cm_iva, FormatDato.Monto)</td>
-                            <td class="@Model.ObtenerClase(item.Cm_total)">@Model.FormatearDato(item.Cm_total, FormatDato.Monto)</td>
+                            <td class="@Model.ObtenerClase(item.Cm_neto)">@FormatearDato(item.Cm_neto, FormatDato.Monto, true)</td>
+                            <td class="@Model.ObtenerClase(item.Cm_iva)">@FormatearDato(item.Cm_iva, FormatDato.Monto, true)</td>
+                            <td class="@Model.ObtenerClase(item.Cm_total)">@FormatearDato(item.Cm_total, FormatDato.Monto, true)</td>
                             @if(provId.Equals('P')){
                                 <td class="@Model.ObtenerClase(item.Op_compte)">@Model.FormatearDato(item.Op_compte, FormatDato.Ninguno)</td>
                                 <td class="@Model.ObtenerClase('c')">@Model.FormatearDato(cmpt, FormatDato.Ninguno)</td>

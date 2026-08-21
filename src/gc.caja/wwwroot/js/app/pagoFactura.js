@@ -1,4 +1,4 @@
-﻿// GESTOR DE PAGO DE FACTURA
+// GESTOR DE PAGO DE FACTURA
 // ════════════════════════════════════════════════════════════
 // VERSIÓN v19.6 - CORRECCIÓN: Reemplazo de Swal por AbrirMensaje
 // ════════════════════════════════════════════════════════════
@@ -126,6 +126,147 @@ const MODAL_ANIMATION_TIMEOUT = 300;
  * Timeout para focus de inputs (milisegundos)
  */
 const INPUT_FOCUS_TIMEOUT = 300;
+// Configuracion local del teclado digital para modales de pago.
+const TECLADO_PAGO_CONFIG = Object.freeze({
+    preferredSide: 'left',
+    verticalAlign: 'bottom',
+    anchorSelector: null
+});
+
+function cerrarTecladoPago() {
+    if (typeof ocultarTecladoVirtual === 'function') {
+        ocultarTecladoVirtual();
+        return;
+    }
+
+    if (typeof cerrarTecladoDigital === 'function') {
+        cerrarTecladoDigital();
+        return;
+    }
+
+    $('#virtual-keyboard').hide();
+}
+
+function posicionarTecladoPago(inputSelector, opciones = {}) {
+    const config = Object.assign({}, TECLADO_PAGO_CONFIG, opciones);
+
+    if (typeof posicionarTecladoVirtual === 'function') {
+        posicionarTecladoVirtual(inputSelector, config.anchorSelector || null, config);
+    }
+
+    const teclado = document.getElementById('virtual-keyboard');
+
+    if (!teclado) {
+        return;
+    }
+
+    teclado.style.setProperty('display', 'flex', 'important');
+    teclado.style.setProperty('opacity', '1', 'important');
+    teclado.style.setProperty('position', 'fixed', 'important');
+    teclado.style.setProperty('transform', 'none', 'important');
+    teclado.style.setProperty('right', 'auto', 'important');
+    teclado.style.setProperty('bottom', 'auto', 'important');
+    teclado.style.setProperty('z-index', '5120', 'important');
+
+    const viewport = window.visualViewport || null;
+    const visibleTop = viewport ? viewport.offsetTop : 0;
+    const visibleLeft = viewport ? viewport.offsetLeft : 0;
+    const visibleWidth = viewport ? viewport.width : document.documentElement.clientWidth;
+    const visibleHeight = viewport ? viewport.height : document.documentElement.clientHeight;
+    const margen = 12;
+
+    const rect = teclado.getBoundingClientRect();
+    const ancho = rect.width || teclado.offsetWidth || 280;
+    const alto = rect.height || teclado.offsetHeight || 260;
+
+    const left = Math.max(visibleLeft + margen, visibleLeft + margen);
+    const top = Math.max(
+        visibleTop + margen,
+        visibleTop + visibleHeight - alto - margen
+    );
+
+    teclado.style.setProperty('left', `${Math.round(left)}px`, 'important');
+    teclado.style.setProperty('top', `${Math.round(top)}px`, 'important');
+
+    const maxLeft = visibleLeft + visibleWidth - ancho - margen;
+    if (left > maxLeft) {
+        teclado.style.setProperty('left', `${Math.max(visibleLeft + margen, maxLeft)}px`, 'important');
+    }
+
+    console.log(
+        `[Pago] Teclado ajustado a viewport visible: top=${Math.round(top)}px, left=${Math.round(left)}px, alto=${Math.round(alto)}px`
+    );
+}
+
+function enfocarInputPago(inputSelector, opciones = {}) {
+    const input = document.querySelector(inputSelector);
+
+    if (!input) {
+        console.warn(`[Pago] No se encontro el input ${inputSelector} para activar teclado.`);
+        return false;
+    }
+
+    const seleccionar = opciones.seleccionar === true;
+
+    setTimeout(() => {
+        if (document.activeElement === input) {
+            input.blur();
+        }
+
+        input.focus({ preventScroll: true });
+
+        // La libreria virtual-keyboard se activa escuchando focusin global.
+        // Lo disparamos explicitamente porque algunos modales enfocan el input
+        // antes de que el teclado haya quedado visible.
+        input.dispatchEvent(new FocusEvent('focusin', {
+            bubbles: true,
+            cancelable: false,
+            relatedTarget: null
+        }));
+
+        if (seleccionar && typeof input.select === 'function') {
+            input.select();
+        }
+
+        setTimeout(() => {
+            posicionarTecladoPago(inputSelector, opciones);
+        }, 80);
+    }, opciones.delay ?? INPUT_FOCUS_TIMEOUT);
+
+    return true;
+}
+
+function vincularEnterTecladoPago($elemento, namespace, accion) {
+    const evento = `keydown.${namespace} keypress.${namespace}`;
+
+    $elemento
+        .off(evento)
+        .on(evento, function (e) {
+            const esEnter = e.key === 'Enter' || e.which === 13 || e.keyCode === 13;
+
+            if (!esEnter) {
+                return;
+            }
+
+            const ahora = Date.now();
+            const ultimoEnter = $(this).data('ultimoEnterPago') || 0;
+
+            e.preventDefault();
+            e.stopPropagation();
+
+            if (ahora - ultimoEnter < 250) {
+                return false;
+            }
+
+            $(this).data('ultimoEnterPago', ahora);
+
+            setTimeout(() => {
+                accion.call(this, e);
+            }, 0);
+
+            return false;
+        });
+}
 
 // ═══════════════════════════════════════════════════════════════════
 // NOTAS DE CRÉDITO / CRÉDITOS DE CUENTA CORRIENTE
@@ -908,6 +1049,7 @@ function inicializarEventosPago() {
 
     // ❸ Evento de limpieza del modal de efectivo
     $('#modalDetalleEfectivo').off('hidden.bs.modal').on('hidden.bs.modal', function () {
+        cerrarTecladoPago();
         console.log('🧹 LIMPIEZA AUTOMÁTICA - MODAL EFECTIVO');
         const $input = $('#txtMontoEfectivo');
         $input.val('').removeClass('is-invalid is-valid');
@@ -923,6 +1065,8 @@ function inicializarEventosPago() {
  * MEJORA: Limpieza más exhaustiva y logs de debugging
  */
     $('#modalDetalleValeCompra').off('hidden.bs.modal').on('hidden.bs.modal', function () {
+        cerrarTecladoPago();
+
         console.log('═══════════════════════════════════════════════════');
         console.log('🧹 LIMPIEZA AUTOMÁTICA - MODAL VALE COMPRA v19.8');
         console.log('═══════════════════════════════════════════════════');
@@ -987,6 +1131,7 @@ function inicializarEventosPago() {
 
     // ❺ ✅ NUEVO v19.3: Evento de limpieza del modal de Transferencia
     $('#modalDetalleTransferencia').off('hidden.bs.modal').on('hidden.bs.modal', function () {
+        cerrarTecladoPago();
         console.log('🧹 LIMPIEZA AUTOMÁTICA - MODAL TRANSFERENCIA');
 
         const $form = $('#formDetalleTransferencia');
@@ -1010,6 +1155,7 @@ function inicializarEventosPago() {
  * CAMBIO: Eliminada lógica de backdrops personalizados (Bootstrap lo gestiona automáticamente)
  */
     $('#modalDetalleCuponEmpresa').off('hidden.bs.modal').on('hidden.bs.modal', function () {
+        cerrarTecladoPago();
         console.log('🧹 LIMPIEZA AUTOMÁTICA - MODAL CUPÓN EMPRESA v19.7');
 
         // ❶ Resetear formulario
@@ -1062,6 +1208,7 @@ function inicializarEventosPago() {
      * ELIMINADO: Ya no limpia campo de plaza
      */
     $('#modalDetalleCheque').off('hidden.bs.modal').on('hidden.bs.modal', function () {
+        cerrarTecladoPago();
         console.log('🧹 LIMPIEZA AUTOMÁTICA - MODAL CHEQUE');
 
         const $form = $('#formDetalleCheque');
@@ -3749,7 +3896,7 @@ function enviarPayloadAlServidor(
                 function () { $("#msjModal").modal("hide"); },
                 false,
                 ["Aceptar"],
-                "warning",
+                "warn!",
                 null
             );
         }
@@ -3800,7 +3947,7 @@ function mostrarAdvertenciaPV(mensajeAdvertencia, callback) {
         },
         false,
         ["Aceptar"],
-        "warning",
+        "warn!",
         null
     );
 }
@@ -4149,7 +4296,7 @@ function manejarSesionExpirada(mensaje) {
         },
         false,
         ["Aceptar"],
-        "warning",
+        "warn!",
         null
     );
 }
@@ -4308,31 +4455,10 @@ function cargarConceptosPago(totales) {
 }
 
 /**
- * Limpiar tabla de formas de pago
+ * Limpiar tabla de formas de pago.
+ * @param {boolean} limpiarNC - true para reiniciar estado NC en limpiezas globales.
  */
-function limpiarTablaFormasPago() {
-    const $tbody = $('#tbodyFormasPago');
-    $tbody.html(`
-        <tr id="rowSinFormasPago">
-            <td colspan="5" class="text-center py-5">
-                <i class='bx bx-info-circle bx-lg text-muted'></i>
-                <p class="text-muted mb-0 mt-3 fs-5">
-                    No hay formas de pago registradas.<br>
-                    <small>Presione <strong>AGREGAR</strong> para comenzar</small>
-                </p>
-            </td>
-        </tr>
-    `);
-
-    valoresPago = [];
-    $('#badgeCantidadPagos').text('0 valores');
-
-    limpiarEstadoNC();
-
-    console.log('✅ Tabla limpiada');
-}
-
-function limpiarTablaFormasPago() {
+function limpiarTablaFormasPago(limpiarNC = true) {
     const $tbody = $('#tbodyFormasPago');
 
     $tbody.html(`
@@ -4347,14 +4473,16 @@ function limpiarTablaFormasPago() {
         </tr>
     `);
 
-    valoresPago = [];
     $('#badgeCantidadPagos').text('0 valores');
 
-    limpiarEstadoNC();
-
-    console.log('✅ Tabla de pagos y estado NC limpiados.');
+    if (limpiarNC) {
+        valoresPago = [];
+        limpiarEstadoNC();
+        console.log('✅ Tabla de pagos y estado NC limpiados.');
+    } else {
+        console.log('✅ Tabla de pagos limpiada sin reiniciar estado NC.');
+    }
 }
-
 /**
  * Ocultar modal de cálculo de factura
  */
@@ -6666,7 +6794,7 @@ function abrirModalDetalleEfectivo(instrumento, tipoMedioPago) {
     $inputMonto.val(importeSugerido.toFixed(2));
 
     // Activar el teclado para este input
-    activarTecladoParaInput('#txtMontoEfectivo');
+    enfocarInputPago('#txtMontoEfectivo', { seleccionar: true });
 
     console.log(`   ✅ Valor inicial: ${importeSugerido.toFixed(2)}`);
     console.log('   ✅ Teclado digital listo para escribir');
@@ -6697,7 +6825,7 @@ function abrirModalDetalleEfectivo(instrumento, tipoMedioPago) {
 
     // ❾ Focus en el input con delay
     setTimeout(() => {
-        $inputMonto.trigger("focus").trigger("select");
+        enfocarInputPago('#txtMontoEfectivo', { seleccionar: true, delay: 0 });
 
         console.log('═══════════════════════════════════════════════════');
         console.log('✅ INPUT LISTO PARA TECLADO DIGITAL:');
@@ -6716,14 +6844,9 @@ function abrirModalDetalleEfectivo(instrumento, tipoMedioPago) {
         });
 
     // ⓫ Vincular evento Enter en el input
-    $inputMonto
-        .off('keypress.enter')
-        .on('keypress.enter', function (e) {
-            if (e.which === 13) { // Enter
-                e.preventDefault();
-                guardarDetalleEfectivo(instrumento, tipoMedioPago);
-            }
-        });
+    vincularEnterTecladoPago($inputMonto, 'enterEfectivo', function () {
+        guardarDetalleEfectivo(instrumento, tipoMedioPago);
+    });
 
     // ═══════════════════════════════════════════════════════════
     // ✅ NUEVO v23.1: VINCULACIÓN EXPLÍCITA DE BOTONES DE CIERRE
@@ -7232,6 +7355,7 @@ function mostrarErrorCampo(selector, mensaje) {
  * ✅ ACTUALIZADO v23.1: Cierra el modal y dispara evento de limpieza
  */
 function cerrarModalDetalleEfectivo() {
+    cerrarTecladoPago();
     console.log('═══════════════════════════════════════════════════');
     console.log('🔒 CERRAR MODAL DETALLE EFECTIVO v23.1');
     console.log('═══════════════════════════════════════════════════');
@@ -7339,21 +7463,36 @@ function eliminarValor(valorId) {
                 // Remover del array
                 valoresPago.splice(index, 1);
 
+                // Actualizar total del instrumento (restar)
+                actualizarTotalInstrumento(valor.ins_id, -valor.importe);
+
+                // Actualizar totales inmediatamente para liberar los botones.
+                actualizarTotalesPago();
+                console.log('[PAGO] Estado post eliminación inmediata:', {
+                    valoresPago: valoresPago.length,
+                    diferencia: conceptosPago.diferencia,
+                    agregarDisabled: $('#btnAgregarPago').prop('disabled'),
+                    finalizarDisabled: $('#btnFinalizarPago').prop('disabled')
+                });
+
                 // Remover fila del DOM con animación
                 $fila.fadeOut(300, function () {
                     $(this).remove();
 
                     // Si no quedan valores, mostrar mensaje
                     if (valoresPago.length === 0) {
-                        limpiarTablaFormasPago();
+                        limpiarTablaFormasPago(false);
                     }
+
+                    // Segunda pasada: asegura que la limpieza visual no deje botones viejos.
+                    actualizarTotalesPago();
+                    console.log('[PAGO] Estado post eliminación visual:', {
+                        valoresPago: valoresPago.length,
+                        diferencia: conceptosPago.diferencia,
+                        agregarDisabled: $('#btnAgregarPago').prop('disabled'),
+                        finalizarDisabled: $('#btnFinalizarPago').prop('disabled')
+                    });
                 });
-
-                // Actualizar totales
-                actualizarTotalesPago();
-
-                // Actualizar total del instrumento (restar)
-                actualizarTotalInstrumento(valor.ins_id, -valor.importe);
 
                 if (typeof toastr !== 'undefined') {
                     toastr.success('Valor eliminado correctamente');
@@ -7862,9 +8001,7 @@ function abrirModalDetalleValeCompra(instrumento, tipoMedioPago) {
     }
 
     // ⓰ Focus en el input
-    setTimeout(() => {
-        $inputMonto.trigger("focus").trigger("select");
-    }, INPUT_FOCUS_TIMEOUT);
+    enfocarInputPago('#txtMontoValeCompra', { seleccionar: true });
 
     // ⓱ Vincular eventos de guardar
     $('#btnGuardarDetalleValeCompra')
@@ -7874,13 +8011,18 @@ function abrirModalDetalleValeCompra(instrumento, tipoMedioPago) {
         });
 
     // ⓲ Vincular evento Enter
-    $inputMonto
-        .off('keypress.enterVale')
-        .on('keypress.enterVale', function (e) {
-            if (e.which === 13) {
-                e.preventDefault();
-                guardarDetalleValeCompra(instrumento, tipoMedioPago);
-            }
+    vincularEnterTecladoPago($inputMonto, 'enterVale', function () {
+        guardarDetalleValeCompra(instrumento, tipoMedioPago);
+    });
+
+    // ⓳ Vincular cierre manual: este modal se abre con jQuery, no con Bootstrap.show().
+    $modal
+        .find('[data-bs-dismiss="modal"], .btn-close')
+        .off('click.cerrarVale')
+        .on('click.cerrarVale', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            cerrarModalDetalleValeCompra();
         });
 
     console.log('═══════════════════════════════════════════════════');
@@ -8093,6 +8235,7 @@ function finalizarGuardadoValeCompra(monto, instrumento, tipoMedioPago) {
  * - Timeout de seguridad para backdrops persistentes
  */
 function cerrarModalDetalleValeCompra() {
+    cerrarTecladoPago();
     console.log('═══════════════════════════════════════════════════');
     console.log('🔒 CERRAR MODAL DETALLE VALE DE COMPRA v19.8');
     console.log('═══════════════════════════════════════════════════');
@@ -8433,9 +8576,7 @@ function abrirModalDetalleTransferencia(instrumento, tipoMedioPago) {
     }
 
     // ⓬ Focus en el primer campo
-    setTimeout(() => {
-        $('#txtNroTransferencia').trigger('focus');
-    }, INPUT_FOCUS_TIMEOUT);
+    enfocarInputPago('#txtNroTransferencia');
 
     // ⓭ Vincular eventos de guardar
     $('#btnGuardarDetalleTransferencia')
@@ -8445,35 +8586,20 @@ function abrirModalDetalleTransferencia(instrumento, tipoMedioPago) {
         });
 
     // ⓮ Vincular evento Enter
-    $inputMonto
-        .off('keypress.enterTransf')
-        .on('keypress.enterTransf', function (e) {
-            if (e.which === 13) {
-                e.preventDefault();
-                guardarDetalleTransferencia(instrumento, tipoMedioPago);
-            }
-        });
+    vincularEnterTecladoPago($inputMonto, 'enterTransf', function () {
+        guardarDetalleTransferencia(instrumento, tipoMedioPago);
+    });
 
     // ⓯ Navegación con Enter entre campos
-    $('#txtNroTransferencia')
-        .off('keypress.enterNavTransf')
-        .on('keypress.enterNavTransf', function (e) {
-            if (e.which === 13) {
-                e.preventDefault();
-                console.log('⏎ Enter en Nro Transferencia - Saltando a Fecha...');
-                $('#txtFechaTransferencia').trigger('focus');
-            }
-        });
+    vincularEnterTecladoPago($('#txtNroTransferencia'), 'enterNavTransfNro', function () {
+        console.log('Enter en Nro Transferencia - Saltando a Fecha...');
+        enfocarInputPago('#txtFechaTransferencia', { delay: 0 });
+    });
 
-    $('#txtFechaTransferencia')
-        .off('keypress.enterNavTransf')
-        .on('keypress.enterNavTransf', function (e) {
-            if (e.which === 13) {
-                e.preventDefault();
-                console.log('⏎ Enter en Fecha - Saltando a Monto...');
-                $('#txtMontoTransferencia').trigger('focus').trigger('select');
-            }
-        });
+    vincularEnterTecladoPago($('#txtFechaTransferencia'), 'enterNavTransfFecha', function () {
+        console.log('Enter en Fecha - Saltando a Monto...');
+        enfocarInputPago('#txtMontoTransferencia', { seleccionar: true, delay: 0 });
+    });
 
     console.log('═══════════════════════════════════════════════════');
     console.log('✅ INPUT LISTO PARA TECLADO DIGITAL:');
@@ -8683,6 +8809,7 @@ function finalizarGuardadoTransferencia(monto, nroTransferencia, fechaTransferen
 * ✅ NUEVO v19.3: Cierra el modal de detalle de transferencia
 */
 function cerrarModalDetalleTransferencia() {
+    cerrarTecladoPago();
     console.log('═══════════════════════════════════════════════════');
     console.log('🔒 CERRAR MODAL DETALLE TRANSFERENCIA v19.3');
     console.log('═══════════════════════════════════════════════════');
@@ -8934,9 +9061,7 @@ function abrirModalDetalleCuponEmpresa(instrumento, tipoMedioPago) {
     }
 
     // ⓯ Focus en Nro de Orden (ya que Titular es readonly)
-    setTimeout(() => {
-        $('#txtNroOrdenCupon').trigger('focus');
-    }, INPUT_FOCUS_TIMEOUT);
+    enfocarInputPago('#txtNroOrdenCupon');
 
     // ⓰ Vincular eventos de guardar
     $('#btnGuardarDetalleCupon')
@@ -8946,14 +9071,13 @@ function abrirModalDetalleCuponEmpresa(instrumento, tipoMedioPago) {
         });
 
     // ⓱ Vincular evento Enter en el último campo (monto)
-    $inputMonto
-        .off('keypress.enterCupon')
-        .on('keypress.enterCupon', function (e) {
-            if (e.which === 13) {
-                e.preventDefault();
-                guardarDetalleCuponEmpresa(instrumento, tipoMedioPago);
-            }
-        });
+    vincularEnterTecladoPago($inputMonto, 'enterCupon', function () {
+        guardarDetalleCuponEmpresa(instrumento, tipoMedioPago);
+    });
+
+    vincularEnterTecladoPago($('#txtNroOrdenCupon'), 'enterNavCuponNro', function () {
+        enfocarInputPago('#txtMontoCupon', { seleccionar: true, delay: 0 });
+    });
 
     console.log('═══════════════════════════════════════════════════');
     console.log('✅ INPUT LISTO PARA TECLADO DIGITAL:');
@@ -9207,7 +9331,7 @@ function validarYAsignarCuitCuponEmpresa(cuitCliente, esClienteRegistrado) {
         },
         false,
         ["Aceptar"],
-        "warning",
+        "warn!",
         null
     );
 
@@ -9236,7 +9360,8 @@ function guardarDetalleCuponEmpresa(instrumento, tipoMedioPago) {
 
     // ❶ Obtener valores del formulario
     const titular = $('#txtTitularCupon').val().trim(); // ← readonly (ya validado)
-    const nroOrden = $('#txtNroOrdenCupon').val().trim().toUpperCase();
+    const nroOrdenRaw = $("#txtNroOrdenCupon").val().trim();
+    const nroOrden = nroOrdenRaw.replace(/[^0-9]/g, '');
     const cuit = $('#txtCuitCupon').val().trim(); // ← readonly (ya validado)
 
     console.log('📋 Datos del formulario:');
@@ -9252,15 +9377,15 @@ function guardarDetalleCuponEmpresa(instrumento, tipoMedioPago) {
         return;
     }
 
-    if (!/^\d+$/.test(nroOrden)) {
-        console.warn('⚠️ Número de orden no es numérico');
-        mostrarErrorCampo('#txtNroOrdenCupon', 'El número de orden debe ser numérico');
+    if (nroOrdenRaw !== nroOrden) {
+        console.warn('⚠️ Número de orden contiene caracteres no numéricos');
+        mostrarErrorCampo('#txtNroOrdenCupon', 'El número de orden debe contener solo dígitos');
         return;
     }
 
-    if (nroOrden.length > 10) {
+    if (nroOrden.length > 5) {
         console.warn('⚠️ Número de orden demasiado largo');
-        mostrarErrorCampo('#txtNroOrdenCupon', 'El número de orden no puede tener más de 10 dígitos');
+        mostrarErrorCampo('#txtNroOrdenCupon', 'El número de orden no puede tener más de 5 dígitos');
         return;
     }
 
@@ -9398,6 +9523,7 @@ function finalizarGuardadoCuponEmpresa(monto, titular, nroOrden, cuit, instrumen
  * CAMBIO: Usa Bootstrap.Modal.hide() en lugar de manipulación manual
  */
 function cerrarModalDetalleCuponEmpresa() {
+    cerrarTecladoPago();
     console.log('═══════════════════════════════════════════════════');
     console.log('🔒 CERRAR MODAL DETALLE CUPÓN EMPRESA v19.7');
     console.log('═══════════════════════════════════════════════════');
@@ -9669,6 +9795,8 @@ function abrirModalDetalleCheque(instrumento, tipoMedioPago) {
         return;
     }
 
+    enfocarInputPago('#txtNroCheque');
+
     // ⓮ Vincular eventos de guardar
     $('#btnGuardarDetalleCheque')
         .off('click.guardarCheque')
@@ -9677,14 +9805,23 @@ function abrirModalDetalleCheque(instrumento, tipoMedioPago) {
         });
 
     // ⓯ Vincular evento Enter en el último campo
-    $inputMonto
-        .off('keypress.enterCheque')
-        .on('keypress.enterCheque', function (e) {
-            if (e.which === 13) {
-                e.preventDefault();
-                guardarDetalleCheque(instrumento, tipoMedioPago);
-            }
+    vincularEnterTecladoPago($inputMonto, 'enterCheque', function () {
+        guardarDetalleCheque(instrumento, tipoMedioPago);
+    });
+
+    vincularEnterTecladoPago($('#txtNroCheque'), 'enterNavChequeNro', function () {
+        $('#selectBancoCheque').trigger('focus');
+    });
+
+    $('#selectBancoCheque')
+        .off('change.navCheque')
+        .on('change.navCheque', function () {
+            enfocarInputPago('#txtFechaCheque', { delay: 0 });
         });
+
+    vincularEnterTecladoPago($('#txtFechaCheque'), 'enterNavChequeFecha', function () {
+        enfocarInputPago('#txtMontoCheque', { seleccionar: true, delay: 0 });
+    });
 
     console.log('═══════════════════════════════════════════════════');
     console.log('✅ INPUT LISTO PARA TECLADO DIGITAL:');
@@ -9978,6 +10115,7 @@ function finalizarGuardadoCheque(monto, bancoId, bancoTexto, nroCheque, plaza, f
  * ✅ NUEVO v20.0: Cierra el modal de detalle de cheque
  */
 function cerrarModalDetalleCheque() {
+    cerrarTecladoPago();
     console.log('═══════════════════════════════════════════════════');
     console.log('🔒 CERRAR MODAL DETALLE CHEQUE v20.0');
     console.log('═══════════════════════════════════════════════════');
@@ -10572,3 +10710,14 @@ function validarSeleccionNCParaFinalizar() {
 //     credito.seleccionado = true;
 //     credito.importeImputadoCentavos = Math.max(0, importeCentavos);
 // }
+
+
+
+
+
+
+
+
+
+
+

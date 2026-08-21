@@ -12,6 +12,7 @@ using iTextSharp.text;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Logging;
 using System.Runtime.CompilerServices;
+using System.Globalization;
 
 namespace gc.api.core.Servicios.Reportes
 {
@@ -201,7 +202,7 @@ namespace gc.api.core.Servicios.Reportes
 
             #endregion
 
-            return GeneraTXT(regs, _campos);
+            return GeneraTXT(regs, _campos, "en-US", "dd/MM/yyyy");
         }
 
         public string GenerarXls(ReporteSolicitudDto solicitud)
@@ -233,7 +234,7 @@ namespace gc.api.core.Servicios.Reportes
 
             #endregion
 
-            return GeneraFileXLS(regs, _titulos, _campos);
+            return GeneraFileXLS(regs, _titulos, _campos, formatoFecha: "dd/MM/yyyy");
         }
 
 
@@ -274,13 +275,14 @@ namespace gc.api.core.Servicios.Reportes
                 tabla.AddCell(CeldaTexto(item.P_id, fuente, colorFondo,false));
                 tabla.AddCell(CeldaTexto(item.P_desc, fuente, colorFondo));
                 tabla.AddCell(CeldaTexto(item.Oc_compte, fuente, colorFondo));
-                tabla.AddCell(CeldaTexto(item.Rpd_unidad_pres.ToString("N2"), fuente, colorFondo));
-                tabla.AddCell(CeldaTexto(item.Rpd_bulto_compte.ToString("N2"), fuente, colorFondo));
-                tabla.AddCell(CeldaTexto(item.Rpd_unidad_suelta_compte.ToString("N2"), fuente, colorFondo));
-                tabla.AddCell(CeldaTexto(item.Rpd_cantidad_compte.ToString("N2"), fuente, colorFondo));
-                tabla.AddCell(CeldaTexto(item.Rpd_bulto_recibidos.ToString("N2"), fuente, colorFondo));
-                tabla.AddCell(CeldaTexto(item.Rpd_unidad_suelta.ToString("N2"), fuente, colorFondo));
-                tabla.AddCell(CeldaTexto(item.Rpd_Cantidad.ToString("N2"), fuente, colorFondo));
+                var culturaNumerica = CultureInfo.GetCultureInfo("en-US");
+                tabla.AddCell(CeldaTexto(item.Rpd_unidad_pres.ToString("N2", culturaNumerica), fuente, colorFondo));
+                tabla.AddCell(CeldaTexto(item.Rpd_bulto_compte.ToString("N2", culturaNumerica), fuente, colorFondo));
+                tabla.AddCell(CeldaTexto(item.Rpd_unidad_suelta_compte.ToString("N2", culturaNumerica), fuente, colorFondo));
+                tabla.AddCell(CeldaTexto(item.Rpd_cantidad_compte.ToString("N2", culturaNumerica), fuente, colorFondo));
+                tabla.AddCell(CeldaTexto(item.Rpd_bulto_recibidos.ToString("N2", culturaNumerica), fuente, colorFondo));
+                tabla.AddCell(CeldaTexto(item.Rpd_unidad_suelta.ToString("N2", culturaNumerica), fuente, colorFondo));
+                tabla.AddCell(CeldaTexto(item.Rpd_Cantidad.ToString("N2", culturaNumerica), fuente, colorFondo));
             }
 
             pdf.Add(tabla);

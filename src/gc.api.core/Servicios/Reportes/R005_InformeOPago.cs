@@ -143,7 +143,7 @@ namespace gc.api.core.Servicios.Reportes
                     { "Importe", importe}
                     };
 
-                HelperPdf.GenerarListadoDesdeLista(pdf, regs, _campos, anchos, chico, false, true, totales);
+                HelperPdf.GenerarListadoDesdeLista(pdf, regs, _campos, anchos, chico, false, true, totales, culturaNumerica: "en-US");
 
                 #endregion
 
@@ -216,7 +216,7 @@ namespace gc.api.core.Servicios.Reportes
 
             #endregion
 
-            return GeneraTXT(regs, _campos);
+            return GeneraTXT(regs, _campos, "en-US", "dd/MM/yyyy");
         }
 
         public string GenerarXls(ReporteSolicitudDto solicitud)
@@ -243,7 +243,7 @@ namespace gc.api.core.Servicios.Reportes
 
             #endregion
 
-            return GeneraFileXLS(regs, _titulos, _campos,"O.Pago");
+            return GeneraFileXLS(regs, _titulos, _campos, "O.Pago", "dd/MM/yyyy");
         }
     }
 }

@@ -182,7 +182,7 @@ namespace gc.api.core.Servicios.Reportes
                 var totales = new Dictionary<string, decimal>{
                     { "Importe", cliente.Monto}};
 
-                HelperPdf.GenerarListadoDesdeLista(pdf, regs, _campos, anchos, chico, false, true, totales);
+                HelperPdf.GenerarListadoDesdeLista(pdf, regs, _campos, anchos, chico, false, true, totales, culturaNumerica: "en-US");
 
                 #endregion
 
@@ -227,7 +227,7 @@ namespace gc.api.core.Servicios.Reportes
 
             #endregion
 
-            return GeneraTXT(regs, _campos);
+            return GeneraTXT(regs, _campos, "en-US", "dd/MM/yyyy");
         }
 
 
@@ -254,7 +254,7 @@ namespace gc.api.core.Servicios.Reportes
 
             #endregion
 
-            return GeneraFileXLS(regs, _titulos, _campos);
+            return GeneraFileXLS(regs, _titulos, _campos, formatoFecha: "dd/MM/yyyy");
         }
 
 

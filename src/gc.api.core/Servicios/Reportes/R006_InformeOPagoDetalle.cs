@@ -144,7 +144,7 @@ namespace gc.api.core.Servicios.Reportes
 
                 //HelperPdf.GenerarListadoDesdeLista(pdf, regs, _campos, anchos, chico, false, true, totales);
                 var aTotalizar = new List<string> { "Importe" };
-                HelperPdf.GenerarListadoAgrupado(pdf, regs, _campos, _titulos, anchos, "Grupo", "GrDesc", chico, HelperPdf.FontSubtituloPredeterminado(),null,false,null);
+                HelperPdf.GenerarListadoAgrupado(pdf, regs, _campos, _titulos, anchos, "Grupo", "GrDesc", chico, HelperPdf.FontSubtituloPredeterminado(), null, false, null, "en-US");
                 #endregion
 
                 pdf.Close();
@@ -201,7 +201,7 @@ namespace gc.api.core.Servicios.Reportes
 
             #endregion
 
-            return GeneraTXT(regs, _campos);
+            return GeneraTXT(regs, _campos, "en-US", "dd/MM/yyyy");
         }
 
         public string GenerarXls(ReporteSolicitudDto solicitud)
@@ -227,7 +227,7 @@ namespace gc.api.core.Servicios.Reportes
 
             #endregion
 
-            return GeneraFileXLS(regs, _titulos, _campos);
+            return GeneraFileXLS(regs, _titulos, _campos, formatoFecha: "dd/MM/yyyy");
         }
     }
 }

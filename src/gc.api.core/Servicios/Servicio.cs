@@ -219,7 +219,7 @@
 		}
 
 		protected string GeneraFileXLS<S>(List<S> registros, List<string> _titulos, List<string> _campos,
-			 string nombreHoja = "Datos") where S : class
+			 string nombreHoja = "Datos", string formatoFecha = "dd/MM/yy") where S : class
 		{
 			using (var workbook = new XLWorkbook())
 			{
@@ -266,7 +266,7 @@
 						else if (valor is DateTime fecha)
 						{
 							cell.Value = fecha;
-							cell.Style.DateFormat.Format = "dd/MM/yy";
+							cell.Style.DateFormat.Format = formatoFecha;
 						}
 						else if (valor is int or long or short or byte)
 						{
@@ -305,14 +305,29 @@
 			}
 		}
 
-		protected string GeneraTXT<S>(List<S> registros, List<string> _campos)
+		protected string GeneraTXT<S>(List<S> registros, List<string> _campos,
+			string? culturaNombre = null, string? formatoFecha = null)
 		{
 			// Convertir los datos a TXT
 			var sb = new StringBuilder();
+			var cultura = culturaNombre == null ? CultureInfo.CurrentCulture : CultureInfo.GetCultureInfo(culturaNombre);
 
 			foreach (var item in registros)
 			{
-				sb.AppendLine(string.Join("\t|", item.GetType().GetProperties().Where(x => _campos.Contains(x.Name)).Select(p => p.GetValue(item, null))));
+				var valores = item.GetType().GetProperties()
+					.Where(x => _campos.Contains(x.Name))
+					.Select(p =>
+					{
+						var valor = p.GetValue(item, null);
+						if (valor == null) return string.Empty;
+						if (formatoFecha != null && valor is DateTime fecha)
+							return fecha.ToString(formatoFecha, cultura);
+						if (culturaNombre != null && valor is decimal or double or float)
+							return Convert.ToDecimal(valor).ToString("N2", cultura);
+						return valor.ToString() ?? string.Empty;
+					});
+
+				sb.AppendLine(string.Join("\t|", valores));
 			}
 
 			return ConvertirTXT2B64(sb);

@@ -59,7 +59,7 @@ namespace gc.api.core.Servicios.Reportes
                 {
                     Movimiento = string.IsNullOrEmpty(x.Dia_movi) ? "0000-00000000" : x.Dia_movi,
                     Fecha = x.Cc_fecha,
-                    Descripion = string.IsNullOrEmpty(x.Cm_compte) ? x.Cc_concepto : $"{x.Tco_desc}-{x.Cm_compte}",
+                    Descripion = $"{x.Tco_desc} {x.Cm_compte} {x.Cc_concepto}".Trim(),
                     Debe = x.Cc_debe,
                     Haber = x.Cc_haber,
                     Saldo = x.Cc_saldo
@@ -126,7 +126,7 @@ namespace gc.api.core.Servicios.Reportes
                 #region Carga del Listado
 
                 HelperPdf.GeneraCabeceraLista(pdf, _titulos, anchos, normalBold);
-                HelperPdf.GenerarListadoDesdeLista(pdf, regs, _campos, anchos, chico);
+                HelperPdf.GenerarListadoDesdeLista(pdf, regs, _campos, anchos, chico, culturaNumerica: "en-US");
 
                 #endregion
 
@@ -165,14 +165,14 @@ namespace gc.api.core.Servicios.Reportes
             {
                 Movimiento = string.IsNullOrEmpty(x.Dia_movi) ? "0000-00000000" : x.Dia_movi,
                 Fecha = x.Cc_fecha,
-                Descripion = string.IsNullOrEmpty(x.Cm_compte) ? x.Cc_concepto : $"{x.Tco_desc}-{x.Cm_compte}",
+                Descripion = $"{x.Tco_desc} {x.Cm_compte} {x.Cc_concepto}".Trim(),
                 Debe = x.Cc_debe,
                 Haber = x.Cc_haber,
                 Saldo = x.Cc_saldo
             }).ToList();
             #endregion
 
-            return GeneraTXT(regs, _campos);
+            return GeneraTXT(regs, _campos, "en-US", "dd/MM/yyyy");
         }
 
 
@@ -191,14 +191,14 @@ namespace gc.api.core.Servicios.Reportes
             {
                 Movimiento = string.IsNullOrEmpty(x.Dia_movi) ? "0000-00000000" : x.Dia_movi,
                 Fecha = x.Cc_fecha,
-                Descripion = string.IsNullOrEmpty(x.Cm_compte) ? x.Cc_concepto : $"{x.Tco_desc}-{x.Cm_compte}",
+                Descripion = $"{x.Tco_desc} {x.Cm_compte} {x.Cc_concepto}".Trim(),
                 Debe = x.Cc_debe,
                 Haber = x.Cc_haber,
                 Saldo = x.Cc_saldo
             }).ToList();
             #endregion
 
-            return GeneraFileXLS(regs, _titulos, _campos);
+            return GeneraFileXLS(regs, _titulos, _campos, formatoFecha: "dd/MM/yyyy");
         }
 
 
