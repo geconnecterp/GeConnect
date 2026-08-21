@@ -1736,6 +1736,19 @@ namespace gc.api.Controllers.Almacen
 			}
 		}
 
+		[HttpPost("obtener-info-boxes")]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<List<BoxInfoExtendedDto>>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		public IActionResult InformacionDeBoxesLista(InformacionDeBoxesListaRequest request)
+		{
+			if (request == null) return BadRequest("No se recepcionaron los datos");
+
+			List<BoxInfoExtendedDto> resp = _productosSv.InformacionDeBoxesLista(request);
+
+			var response = new ApiResponse<List<BoxInfoExtendedDto>>(resp);
+			return Ok(response);
+		}
+
 		private static PedidoInternoRequest MapToRequest(QueryFilters filtro)
 		{
 			return new PedidoInternoRequest

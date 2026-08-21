@@ -478,6 +478,7 @@ namespace gc.api.core.Constantes
 			public const string SP_BOX_INFO = "SPGECO_BOX_Info";
 			public const string SP_BOX_INFO_STK = "SPGECO_BOX_Info_Stk";
 			public const string SP_BOX_INFO_MOV_STK = "SPGECO_BOX_Info_Mov_Stk";
+			public const string SP_BOX_LISTA_X_NOMENCLATURA = "SPGECO_BOX_Lista_x_Nomenclatura";
 
 			#region Orden de Pago a Proveedores
 			public const string SP_OP_VALIDACIONES_PREV = "SPGECO_OP_Validaciones_Prev";

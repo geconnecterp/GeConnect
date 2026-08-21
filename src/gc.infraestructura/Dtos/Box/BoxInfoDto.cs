@@ -1,6 +1,6 @@
 ﻿namespace gc.infraestructura.Dtos.Box
 {
-    public class BoxInfoDto
+    public class BoxInfoDto : Dto
     {
         public string Box_id { get; set; } = string.Empty;  //
         public string Box_desc { get; set; } = string.Empty;
@@ -12,5 +12,10 @@
         public string Box_nivel { get; set; } = string.Empty;
         public string Box_rack { get; set; } = string.Empty;
         public string Box_zona { get; set; } = string.Empty;
+    }
+
+    public class BoxInfoExtendedDto: BoxInfoDto
+    {
+        public string Boxe_desc { get; set; } = string.Empty;
     }
 }

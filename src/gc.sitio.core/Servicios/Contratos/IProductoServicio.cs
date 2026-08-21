@@ -12,6 +12,7 @@ using gc.infraestructura.Dtos.Almacen.Rpr;
 using gc.infraestructura.Dtos.Almacen.Tr;
 using gc.infraestructura.Dtos.Almacen.Tr.Transferencia;
 using gc.infraestructura.Dtos.Almacen.Tr.Transferencia.Request;
+using gc.infraestructura.Dtos.Box;
 using gc.infraestructura.Dtos.CuentaComercial;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.General;
@@ -122,5 +123,6 @@ namespace gc.sitio.core.Servicios.Contratos
 		Task<List<TRConteosDto>> TRConteosDetalleDesdeTI(string ti, string token);
 		Task<List<TRRemitoDto>> TRRemitoDetalleDesdeTI(string re_compte, string token);
 		Task<(List<DevolucionProveedoresListaDto>, MetadataGrid)> DevolucionAProveedoresLista(CargarDevolucionesRequest filters, string token);
+		Task<List<BoxInfoExtendedDto>> InformacionDeBoxesLista(InformacionDeBoxesListaRequest request, string token);
 	}
 }

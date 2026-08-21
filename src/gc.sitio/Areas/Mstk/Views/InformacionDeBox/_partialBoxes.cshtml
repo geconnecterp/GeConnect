@@ -1,0 +1,103 @@
+﻿@model BoxesModel
+@{
+	var leyenda = Model.Leyenda;
+}
+<style>
+	.controls-fuente{
+		font-weight: 700 !important;
+		text-transform: uppercase !important;
+		font-size: smaller !important;
+	}
+</style>
+<div class="row">
+    <div class="col-6" id="divBoxes">
+		<div class="grid-golden">
+			<div class="grid-golden-header">
+				<div class="row align-items-md-center">
+					<div class="col-md-10 col-sm-6 d-flex align-items-center">
+						<h5 class="mb-0 flex-grow-1">
+							<i class="bx bx-package me-2"></i>
+							<strong>@leyenda</strong>
+						</h5>
+						<i class="bx bx-chevrons-down fs-4 ms-2"
+						   id="toggleFiltros"
+						   data-bs-toggle="collapse"
+						   data-bs-target="#filtrosCollapse"
+						   role="button"
+						   data-bs-placement="top"
+						   title="Haz click acá para conocer los filtros aplicados"
+						   style="
+							cursor:pointer;
+							transition: transform .25s ease, color .25s ease;
+							color:#666;
+							">
+						</i>
+					</div>
+
+					<div class="col-md-2 col-sm-6">
+						<div class="d-flex justify-content-sm-end"></div>
+					</div>
+				</div>
+			</div>
+			<div class="collapse" id="filtrosCollapse">
+				<div class="mt-2">
+					<span class="badge bg-secondary me-1">@Model.LeyendaDeposito</span>
+					<span class="badge bg-secondary me-1">@Model.LeyendaGondola</span>
+					<span class="badge bg-secondary me-1">@Model.LeyendaNivel</span>
+					<span class="badge bg-secondary me-1">@Model.LeyendaRack</span>
+					<span class="badge bg-secondary me-1">@Model.LeyendaZona</span>
+					<span class="badge bg-secondary me-1">@Model.LeyendaSoloLibres</span>
+				</div>
+			</div>
+			<div class="grid-golden-body">
+				@Html.Partial("_gridBoxLibres", Model.GrillaBoxes)
+			</div>
+        </div>
+    </div>
+
+    <div class="col-6" id="divStockAndMov" style="padding-left: 0px;">
+		<div class="container-fluid min-vh-100 d-flex flex-column">
+			<div class="d-flex align-items-center w-100 mt-2">
+				<ul class="nav nav-tabs nav-tabs-golden" role="tablist" id="tabsStockAndMov">
+					<li class="nav-item" role="presentation" id="tabStkBox">
+						<button type="button" class="nav-link active" role="tab" data-bs-toggle="tab" data-bs-target="#navs-top-stk" aria-controls="navs-top-stk" aria-selected="true" id="btnTabStkBox">
+							STK BOX
+						</button>
+					</li>
+					<li class="nav-item" role="presentation" id="tabMov">
+						<button type="button" class="nav-link" role="tab" data-bs-toggle="tab" data-bs-target="#navs-top-mov" aria-controls="navs-top-mov" aria-selected="false" tabindex="-1" id="btnTabMov">
+							MOV
+						</button>
+					</li>
+				</ul>
+			</div>
+			<div class="tab-content tab-content-compact">
+				<div class="tab-pane fade tab-content-golden show active" id="navs-top-stk" role="tabpanel">
+					<div id="divStkBox">
+					</div>
+				</div>
+				<div class="tab-pane fade tab-content-golden" id="navs-top-mov" role="tabpanel">
+					<div class="row">
+						<div class="col-lg-5 col-md-12 col-sm-12">
+							<span>Tipo</span>
+							@Html.DropDownListFor(m => m.TipoMovimientoSeleccionado, Model.ListaTipoMovimientos, "Seleccionar", new { @id = "listaTipoMovimientos", @class = "form-control inputEditable activable controls-fuente" })
+						</div>
+						<div class="col-lg-3 col-md-12 col-sm-12">
+							<span>Desde:</span>
+							<input type="date" class="form-control inputEditable controls-fuente" asp-for="FechaDesde" style="background-color:rgb(251,255,195);font-weight:900;" autofocus />
+						</div>
+						<div class="col-lg-3 col-md-12 col-sm-12">
+							<span>Hasta:</span>
+							<input type="date" class="form-control inputEditable controls-fuente" asp-for="FechaHasta" style="background-color:rgb(251,255,195);font-weight:900;" autofocus />
+						</div>
+						<div class="col-lg-1 col-md-12 col-sm-12 text-sm-end" style="padding-left: 0px;">
+							<button type="button" class="btn btn-sm btn-success mt-4" id="btnBuscarMov"><i class="bx bx-search-alt bx-sm"></i></button>
+						</div>
+					</div>
+					<div id="divMov">
+					</div>
+				</div>
+			</div>
+		</div>
+    </div>
+</div>

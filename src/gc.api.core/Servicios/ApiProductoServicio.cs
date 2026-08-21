@@ -1967,5 +1967,23 @@ namespace gc.api.core.Servicios
 
 			return ordenes;
 		}
+
+		public List<BoxInfoExtendedDto> InformacionDeBoxesLista(InformacionDeBoxesListaRequest req)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_BOX_LISTA_X_NOMENCLATURA;
+			var ps = new List<SqlParameter>
+			{
+				new("@depo_id", req.depo_id),
+				new("@box_gondola", req.box_gondola),
+				new("@box_nivel", req.box_nivel),
+				new("@box_rack", req.box_rack),
+				new("@box_zona", req.box_zona),
+				new("@boxe_id", req.boxe_id)
+			};
+
+			var info = _repository.EjecutarLstSpExt<BoxInfoExtendedDto>(sp, ps, true);
+
+			return info;
+		}
 	}
 }

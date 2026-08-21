@@ -1,0 +1,148 @@
+﻿@model InformacionDeBoxModel
+@{
+}
+<style>
+    .hidden {
+        display: none !important;
+    }
+
+    .input-compact {
+        padding: .15rem .25rem !important;
+        font-size: .80rem !important;
+        height: calc(1.6rem) !important;
+        line-height: 1.2 !important;
+        text-align: right;
+    }
+</style>
+<div class="card card-golden w-50" style="padding-left: 0px;padding-right: 0px;">
+    <div class="card-header mb-2">
+        <h5 class="mb-0" id="tituloLegend">Filtros </h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-sm-6">
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class="input-group input-group-sm">
+                            <div class="form-check form-check-inline form-switch mb-2">
+                                <input class="form-check-input" type="checkbox" name="EstadoActivo" id="chkDepositos" />
+                                <label class="form-check-label" for="chkDepositos" id="lbDepositos"></label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class="input-group input-group-sm">
+                            @Html.DropDownListFor(m => m.DepositoSeleccionado, Model.ListaDepositos, "Seleccionar", new { @id = "listaDepositos", @class = "form-control inputEditable activable" })
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row col-sm-12">
+            <div class="col-sm-6 mb-3 mt-3">
+                <div class="row">
+                    <div class="col-4 d-flex align-items-center">
+                        <div class="form-check form-check-inline form-switch mb-2">
+                            <input class="form-check-input" type="checkbox" id="chkGondola" />
+                            <label class="form-check-label" for="chkGondola" id="lbChkGondola">Góndola</label>
+                        </div>
+                    </div>
+
+                    <div class="col-4">
+                        <input type="text"
+                               class="form-control inputEditable input-compact"
+                               id="GondolaValue"
+                               name="GondolaValue"
+                               disabled
+                               title="Debe ingresar un valor con formato '000'"
+                               style="background-color:rgb(251,255,195);font-weight:900;" />
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 mb-3 mt-3">
+                <div class="row">
+                    <div class="col-4 d-flex align-items-center">
+                        <div class="form-check form-check-inline form-switch mb-2">
+                            <input class="form-check-input" type="checkbox" id="chkNivel" />
+                            <label class="form-check-label" for="chkNivel" id="lbChkNivel">Nivel</label>
+                        </div>
+                    </div>
+
+                    <div class="col-4">
+                        <input type="text"
+                               class="form-control inputEditable input-compact"
+                               id="NivelValue"
+                               name="NivelValue"
+                               disabled
+                               title="Debe ingresar un valor con formato '00'"
+                               style="background-color:rgb(251,255,195);font-weight:900;" />
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row col-sm-12">
+            <div class="col-sm-6 mb-3 mt-3">
+                <div class="row">
+                    <div class="col-4 d-flex align-items-center">
+                        <div class="form-check form-check-inline form-switch mb-2">
+                            <input class="form-check-input" type="checkbox" id="chkRack" />
+                            <label class="form-check-label" for="chkRack" id="lbChkRack">Rack</label>
+                        </div>
+                    </div>
+
+                    <div class="col-4">
+                        <input type="text"
+                               class="form-control inputEditable input-compact"
+                               id="RackValue"
+                               name="RackValue"
+                               disabled
+                               title="Debe ingresar un valor con formato '000'"
+                               style="background-color:rgb(251,255,195);font-weight:900;" />
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 mb-3 mt-3">
+                <div class="row">
+                    <div class="col-4 d-flex align-items-center">
+                        <div class="form-check form-check-inline form-switch mb-2">
+                            <input class="form-check-input" type="checkbox" id="chkZona" />
+                            <label class="form-check-label" for="chkZona" id="lbChkZona">Zona</label>
+                        </div>
+                    </div>
+
+                    <div class="col-4">
+                        <input type="text"
+                               class="form-control inputEditable input-compact"
+                               id="ZonaValue"
+                               name="ZonaValue"
+                               disabled
+                               title="Debe ingresar un valor con formato '0'"
+                               style="background-color:rgb(251,255,195);font-weight:900;" />
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row col-sm-12">
+            <div class="col-sm-6 mb-3 mt-3">
+                <div class="d-flex align-items-center">
+                    <div class="form-check form-check-inline form-switch mb-2">
+                        <input class="form-check-input" type="checkbox" name="EstadoActivo" id="chkSoloLibre" />
+                        <label class="form-check-label" for="chkSoloLibre" id="lbChkSoloLibre"></label>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 mb-3 mt-3">
+            </div>
+        </div>
+        <div class="filter-golden-footer">
+            <div class="row m-3">
+                <div class="d-flex justify-content-around">
+                    <button type="button" id="btnCancel" style="width:150px;" class="btn btn-lg btn-danger"><i class="bx bx-sm bx-x-circle"></i> Inicializa</button>
+                    <button type="button" id="btnBuscar" style="width:150px;" class="btn btn-lg btn-success"><i class="bx bx-sm bx-search"></i> Ver</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

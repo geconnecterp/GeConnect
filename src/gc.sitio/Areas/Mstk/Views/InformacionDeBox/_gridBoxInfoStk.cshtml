@@ -1,0 +1,34 @@
+﻿@model GridCoreSmart<BoxInfoStkDto>
+
+
+@{
+    var dataMod = new BoxInfoStkDto();
+    var alt = true;
+    string clase = string.Empty;
+    string sortDirInv = Model.SortDir.Equals("ASC") ? "DESC" : "ASC";
+}
+<div class="table-responsive table-wrapper text-nowrap">
+    <table class="table table-sm mb-0 table-hover table-wrapper-fixed-head">
+        <thead class="table-dark">
+            <tr class="header">
+                <th scope="col">ID</th>
+                <th class="text-sm-center" scope="col">DESC</th>
+                <th class="text-sm-center" scope="col">STK</th>
+                <th class="text-sm-center" scope="col">FV</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.ListaDatos)
+            {
+                if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+
+                <tr class="@clase">
+                    <td class="text-sm-center">@item.P_id</td>
+                    <td class="text-sm-start corta-linea">@item.P_desc</td>
+                    <td class="text-sm-end">@item.Ps_stk</td>
+                    <td class="text-sm-center">@item.Vto.ToShortDateString()</td>                   
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

@@ -138,5 +138,6 @@ namespace gc.api.core.Contratos.Servicios
 		List<PedidoInternoListaDto> PedidosInternosLista(PedidoInternoRequest req);
 		RespuestaDto CambiarEstadoPedidoInterno(PedidoInternoCambiarEstadoRequest request);
 		List<DevolucionProveedoresListaDto> DevolucionAProveedoresLista(CargarDevolucionesRequest req);
+		List<BoxInfoExtendedDto> InformacionDeBoxesLista(InformacionDeBoxesListaRequest req);
 	}
 }

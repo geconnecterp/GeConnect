@@ -1,6 +1,6 @@
 ﻿namespace gc.infraestructura.Dtos.Box
 {
-    public class BoxInfoStkDto
+    public class BoxInfoStkDto : Dto
     {
         public string P_id { get; set; }=string.Empty;//
         public string P_desc { get; set; }=string.Empty ;//

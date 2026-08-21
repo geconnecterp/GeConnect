@@ -16,6 +16,7 @@ using gc.infraestructura.Dtos.Almacen.Rpr;
 using gc.infraestructura.Dtos.Almacen.Tr;
 using gc.infraestructura.Dtos.Almacen.Tr.Transferencia;
 using gc.infraestructura.Dtos.Almacen.Tr.Transferencia.Request;
+using gc.infraestructura.Dtos.Box;
 using gc.infraestructura.Dtos.CuentaComercial;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.General;
@@ -44,6 +45,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 		private const string INFOPROD_StkBoxes = "/InfoProductoStkBoxes";
 		private const string INFOPROD_STKA = "/InfoProductoStkA";
 		private const string INFOPROD_MovStk = "/InfoProductoMovStk";
+		private const string INFO_BOXES = "/obtener-info-boxes";
 		private const string INFOPROD_LP = "/InfoProductoLP";
 		private const string INFOPROD_TM = "/ObtenerTiposMotivo";
 		private const string INFOPROD_IE_MES = "/InfoProdIExMes";
@@ -3155,6 +3157,35 @@ namespace gc.sitio.core.Servicios.Implementacion
 				throw new Exception("Algo no fue bien al intentar cargar las devoluciones de proveedores.");
 			}
 		}
-		
+		public async Task<List<BoxInfoExtendedDto>> InformacionDeBoxesLista(InformacionDeBoxesListaRequest request, string token)
+		{
+			ApiResponse<List<BoxInfoExtendedDto>> apiResponse;
+
+			HelperAPI helper = new();
+			HttpClient client = helper.InicializaCliente(request, token, out StringContent contentData);
+			HttpResponseMessage response;
+
+			var link = $"{_appSettings.RutaBase}{RutaAPI}{INFO_BOXES}";
+
+			response = await client.PostAsync(link, contentData);
+
+			if (response.StatusCode == HttpStatusCode.OK)
+			{
+				string stringData = await response.Content.ReadAsStringAsync();
+				if (string.IsNullOrEmpty(stringData))
+				{
+					_logger.LogWarning($"La API devolvió error.");
+					return new();
+				}
+				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<BoxInfoExtendedDto>>>(stringData) ?? throw new NegocioException("Hubo un problema al deserializar los datos");
+				return apiResponse.Data;
+			}
+			else
+			{
+				string stringData = await response.Content.ReadAsStringAsync();
+				_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+				return new();
+			}
+		}
 	}
 }
