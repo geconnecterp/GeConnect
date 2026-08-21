@@ -924,12 +924,13 @@ namespace gc.infraestructura.Helpers
 			BooleanDisplayFormat formatoBooleano = BooleanDisplayFormat.SiNo,
 			bool valorExitoEsTrue = true,
 			bool anioEnCuatroDigitos = true,
-			bool estableceColorCamposBooleanos = false)
+			bool estableceColorCamposBooleanos = false,
+			string culturaNumerica = "es-ES")
 		{
 			if (lista == null || lista.Count == 0 || campos == null || campos.Count == 0)
 				return;
 
-			var cultura = new CultureInfo("es-ES");
+			var cultura = new CultureInfo(culturaNumerica);
 			var propsDict = TypeDescriptor.GetProperties(typeof(T))
 										  .Cast<PropertyDescriptor>()
 										  .ToDictionary(p => p.Name, p => p, StringComparer.OrdinalIgnoreCase);
@@ -5243,11 +5244,12 @@ namespace gc.infraestructura.Helpers
 	 Font fuenteNegrita,
 	 Dictionary<string, decimal>? totalesPorCampo = null,
 	 bool autoCalcularTotales = true,
-	 List<string>? camposTotalizables = null)
+	 List<string>? camposTotalizables = null,
+	 string culturaNumerica = "es-ES")
 		{
 			if (lista == null || !lista.Any() || campos == null || campos.Count == 0) return;
 
-			var cultura = new CultureInfo("es-ES");
+			var cultura = new CultureInfo(culturaNumerica);
 			var propsDict = TypeDescriptor.GetProperties(typeof(T))
 										  .Cast<PropertyDescriptor>()
 										  .ToDictionary(p => p.Name, p => p, StringComparer.OrdinalIgnoreCase);
