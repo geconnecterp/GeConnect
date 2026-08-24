@@ -1,4 +1,4 @@
-﻿@*
+@*
     ═══════════════════════════════════════════════════════════════
     Modal de Detalle - Cupón/Orden de Empresa (Mutuales)
     ═══════════════════════════════════════════════════════════════
@@ -91,11 +91,13 @@
                                 <i class="bx bx-hash"></i>
                             </span>
                             <input type="text"
-                                   class="form-control text-uppercase jsteclado"
+                                   class="form-control text-uppercase jsteclado jsinteger"
                                    id="txtNroOrdenCupon"
                                    name="numeroOrden"
-                                   placeholder="Ej: 1234567890"
-                                   minlength="5"
+                                   inputmode="numeric"
+                                   pattern="[0-9]*"
+                                   placeholder="Ej: 12345"
+                                   maxlength="5"
                                    required
                                    autocomplete="off"
                                    autofocus>
@@ -177,3 +179,4 @@
         </div>
     </div>
 </div>
+

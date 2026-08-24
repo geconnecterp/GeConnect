@@ -219,7 +219,7 @@ namespace gc.api.core.Servicios.Reportes
             }).ToList();
             #endregion
 
-            return GeneraTXT(regs, _campos);
+            return GeneraTXT(regs, _campos, "en-US", "dd/MM/yyyy");
         }
 
         public string GenerarXls(ReporteSolicitudDto solicitud)
@@ -251,7 +251,7 @@ namespace gc.api.core.Servicios.Reportes
             }).ToList();
             #endregion
 
-            return GeneraFileXLS(regs, _titulos, _campos);
+            return GeneraFileXLS(regs, _titulos, _campos, formatoFecha: "dd/MM/yyyy");
         }
 
         public static void GenerarTablaRecepcionesProveedor(Document pdf, List<ConsRecepcionProveedorDto> datos,float[] anchos, Font fuente)

@@ -39,8 +39,8 @@
                             <td class="@Model.ObtenerClase('c')">@Model.FormatearDato(item.Cm_compte_cuota, FormatDato.Ninguno)</td>
                             <td class="@Model.ObtenerClase('c')">@Model.FormatearDato(item.Cv_estado, FormatDato.Ninguno)</td>
                             <td class="@Model.ObtenerClase(item.Cv_fecha_vto)">@Model.FormatearDato(item.Cv_fecha_vto, FormatDato.FechaCompleta)</td>
-                            <td class="@Model.ObtenerClase(item.Cv_importe_ori)">@Model.FormatearDato(item.Cv_importe_ori, FormatDato.Monto)</td>
-                            <td class="@Model.ObtenerClase(item.Cv_importe)">@Model.FormatearDato(item.Cv_importe, FormatDato.Monto)</td>
+                            <td class="@Model.ObtenerClase(item.Cv_importe_ori)">@FormatearDato(item.Cv_importe_ori, FormatDato.Monto, true)</td>
+                            <td class="@Model.ObtenerClase(item.Cv_importe)">@FormatearDato(item.Cv_importe, FormatDato.Monto, true)</td>
                         </tr>
                     }
                 </tbody>
