@@ -79,7 +79,7 @@ namespace gc.sitio.Areas.Mstk.Controllers.InformacionDeBox
 				model.LeyendaNivel = ConstruirLeyenda("Nivel", request.box_nivel);
 				model.LeyendaRack = ConstruirLeyenda("Rack", request.box_rack);
 				model.LeyendaZona = ConstruirLeyenda("Zona", request.box_zona);
-				model.LeyendaSoloLibres = ConstruirLeyenda("Solo Libres", request.boxe_id);
+				model.LeyendaSoloLibres = ConstruirLeyendaLibres("Solo Libres", request.boxe_id);
 				model.ListaTipoMovimientos = ComboTipoMovStk();
 				// Leyenda final
 				var partesLeyenda = new List<string>();
@@ -218,12 +218,24 @@ namespace gc.sitio.Areas.Mstk.Controllers.InformacionDeBox
 		}
 
 		#region METODOS PRIVADOS
+		private static string ConstruirLeyendaLibres(string titulo, string textos)
+		{
+			// Caso normal
+			if (!string.IsNullOrWhiteSpace(textos))
+			{
+				var txt = textos.Trim() == "%" ? "No" : "Si";
+				return $"{titulo}: {txt}";
+			}
+			return string.Empty;
+		}
 		private static string ConstruirLeyenda(string titulo, string textos)
 		{
 			// Caso normal
 			if (!string.IsNullOrWhiteSpace(textos))
-				return $"{titulo}: {textos}";
-
+			{
+				var txt = textos.Trim() == "%" ? "Todos" : textos.Trim();
+				return $"{titulo}: {txt}";
+			}
 			return string.Empty;
 		}
 		private void CargarDatosIniciales(InformacionDeBoxModel model)

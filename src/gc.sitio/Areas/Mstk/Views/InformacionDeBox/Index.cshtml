@@ -41,6 +41,8 @@
 @section scripts {
 	<script type="text/javascript">
 		var buscarInfoBoxesURL = "@Url.Action("BuscarInfoBoxes", "InformacionDeBox", new { area = "Mstk" })";
+		var obtenerBoxInfoStkURL = "@Url.Action("ObtenerBoxInfoStk", "InformacionDeBox", new { area = "Mstk" })";
+		var obtenerBoxInfoMovStkURL = "@Url.Action("ObtenerBoxInfoMovStk", "InformacionDeBox", new { area = "Mstk" })";
 
 		// Gestor de impresión
 		var repoApiUrl = '@Url.Action("ObtenerPdfDesdeAPI", "GestorImpresion", new { area = "ControlComun" })';

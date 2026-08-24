@@ -1,10 +1,16 @@
-﻿$(function () {
+﻿var boxIdSeleccionado = "";
+$(function () {
 	InicializarCamposEnFiltros(false);
 
+	$(document).off("click", "#btnImprimir");
 	$(document).on("click", "#btnImprimir", ControlaImprimirSelected);
+	$(document).off("click", "#btnCancel");
 	$(document).on("click", "#btnCancel", ControlaCancelar);
+	$(document).off("change", "#listaDepositos");
 	$(document).on("change", "#listaDepositos", ControlalistaDepositosSelected);
-
+	$(document).off("click", "#btnBuscarMov");
+	$(document).on("click", "#btnBuscarMov", ControlaBtnBuscarMov);
+	//
 	$("#btnFiltro").on("click", function () {
 		if ($("#divFiltros").hasClass("show")) {
 			$("#divFiltros").collapse("hide");
@@ -20,7 +26,72 @@
 		BuscarinfoBoxes();
 	});
 
+	$(document).off("click", "#tbGridBoxes tbody tr");
+	$(document).on("click", "#tbGridBoxes tbody tr", function (e) {
+
+		// Evitar que botones o links disparen la selección
+		if ($(e.target).is("button, a, .btn, i")) return;
+
+		const $row = $(this);
+
+		// Quitar selección previa
+		$("#tbGridBoxes tbody tr").removeClass("selected-row");
+
+		// Marcar fila seleccionada
+		$row.addClass("selected-row");
+
+		// Obtener el Box_id desde el data attribute
+		const boxId = $row.data("box-id");
+		boxIdSeleccionado = boxId;
+		// Aquí manejás lo que necesites
+		ManejarSeleccionBox(boxId);
+	});
+
 });
+
+function ControlaBtnBuscarMov() {
+	AbrirWaiting("Obteniendo información de movimientos de stock...");
+	console.log("Box seleccionado:", boxIdSeleccionado);
+	var sm = $("#listaTipoMovimientos").val();
+	if (!sm || sm == "") {
+		AbrirMensaje("ATENCIÓN", "Debe seleccionar un tipo de movimiento.", function () {
+			$("#msjModal").modal("hide");
+			$("#listaDepositos").trigger('focus');
+			return true;
+		}, false, ["Aceptar"], "error!", null);
+	}
+	else {
+		var desde = $("#FechaDesde").val();
+		var hasta = $("#FechaHasta").val();
+		var data = {
+			boxId: boxIdSeleccionado,
+			sm,
+			desde,
+			hasta
+		};
+		PostGenHtml(data, obtenerBoxInfoMovStkURL, function (obj) {
+			$("#divMov").html(obj);
+
+			CerrarWaiting();
+			return true
+		});
+	}
+}
+
+function ManejarSeleccionBox(boxId) {
+	AbrirWaiting("Obteniendo información del box...");
+	console.log("Box seleccionado:", boxId);
+	var data = {
+		boxId: boxId
+	};
+	PostGenHtml(data, obtenerBoxInfoStkURL, function (obj) {
+		$("#divStkBox").html(obj);
+
+		CerrarWaiting();
+		return true
+	});
+}
+
 
 function obtenerFiltrosDeBox() {
 

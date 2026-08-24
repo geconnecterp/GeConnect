@@ -1,4 +1,6 @@
-﻿@model GridCoreSmart<BoxInfoStkDto>
+﻿@using gc.infraestructura.Helpers
+@using static gc.infraestructura.Helpers.GridHelper
+@model GridCoreSmart<BoxInfoStkDto>
 
 
 @{
@@ -7,14 +9,59 @@
     string clase = string.Empty;
     string sortDirInv = Model.SortDir.Equals("ASC") ? "DESC" : "ASC";
 }
-<div class="table-responsive table-wrapper text-nowrap">
-    <table class="table table-sm mb-0 table-hover table-wrapper-fixed-head">
-        <thead class="table-dark">
+<style>
+    #containerInfoStk {
+        height: 600px; /* o el alto que necesites */
+        max-height: 600px;
+        overflow-y: auto;
+        position: relative;
+    }
+
+    .table-golden {
+        border-collapse: separate;
+        border-spacing: 0;
+        table-layout: fixed;
+    }
+
+        .table-golden thead {
+            position: sticky;
+            top: 0;
+            z-index: 1;
+            background: linear-gradient(to bottom, #b8860b, #daa520) !important;
+            color: #fff !important;
+        }
+
+            .table-golden thead th {
+                position: sticky;
+                top: 0;
+                z-index: 4;
+                background: linear-gradient(to bottom, #b8860b, #daa520);
+                color: #fff;
+                box-shadow: 0 1px 0 rgba(0,0,0,0.05), 0 2px 2px rgba(0,0,0,0.04);
+                background-clip: padding-box;
+            }
+
+            .table-golden thead,
+            .table-golden thead th {
+                /*background-color: #b8860b;  tu dorado */
+                /* color: #333; */
+            }
+
+    #tbGridInfoStk th,
+    #tbGridInfoStk td {
+        padding: 0.4rem 0.15rem !important;
+        line-height: 1.2 !important;
+        height: auto !important;
+    }
+</style>
+<div class="table-responsive table-wrapper text-nowrap" id="containerInfoStk">
+    <table class="table table-sm mb-0 table-golden table-wrapper-fixed-head" id="tbGridInfoStk">
+        <thead>
             <tr class="header">
-                <th scope="col">ID</th>
+                <th class="text-sm-center" scope="col" style="width:10%;">ID</th>
                 <th class="text-sm-center" scope="col">DESC</th>
                 <th class="text-sm-center" scope="col">STK</th>
-                <th class="text-sm-center" scope="col">FV</th>
+                <th class="text-sm-center" scope="col" style="width:10%;">FV</th>
             </tr>
         </thead>
         <tbody>
@@ -22,11 +69,11 @@
             {
                 if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
 
-                <tr class="@clase">
+                <tr class="@clase" onclick="selectReg(this, 'tbGridInfoStk')">
                     <td class="text-sm-center">@item.P_id</td>
                     <td class="text-sm-start corta-linea">@item.P_desc</td>
-                    <td class="text-sm-end">@item.Ps_stk</td>
-                    <td class="text-sm-center">@item.Vto.ToShortDateString()</td>                   
+                    <td class="text-sm-end">@GridHelper.FormatearDato(item.Ps_stk, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
+                    <td class="text-sm-center">@Model.FormatearDato(item.Vto, FormatDato.Fecha)</td>
                 </tr>
             }
         </tbody>

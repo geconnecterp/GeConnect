@@ -8,6 +8,43 @@
 		text-transform: uppercase !important;
 		font-size: smaller !important;
 	}
+
+	.input-compact {
+		padding: 1px 4px !important;
+		font-size: 0.75rem !important;
+		height: 26px !important;
+		line-height: 1 !important;
+		border-radius: 2px !important;
+		text-align: justify;
+	}
+
+	.btn-compact {
+		padding: 2px 6px !important;
+		font-size: 0.75rem !important;
+		height: 26px !important;
+		line-height: 1 !important;
+	}
+
+	.nav-tabs-golden .nav-link {
+		padding: 2px 10px !important;
+		font-size: 0.78rem !important;
+		height: 26px !important;
+		line-height: 1.1 !important;
+		border-radius: 3px !important;
+	}
+
+	.nav-tabs-golden {
+		margin-bottom: 4px !important;
+	}
+
+	.tab-content-compact {
+		padding-top: 4px !important;
+	}
+
+	#containerTabsBoxs{
+		padding-left: 5px;
+		padding-right: 5px;
+	}
 </style>
 <div class="row">
     <div class="col-6" id="divBoxes">
@@ -56,8 +93,8 @@
     </div>
 
     <div class="col-6" id="divStockAndMov" style="padding-left: 0px;">
-		<div class="container-fluid min-vh-100 d-flex flex-column">
-			<div class="d-flex align-items-center w-100 mt-2">
+		<div class="container-fluid min-vh-100 d-flex flex-column" id="containerTabsBoxs">
+			<div class="d-flex align-items-center w-100">
 				<ul class="nav nav-tabs nav-tabs-golden" role="tablist" id="tabsStockAndMov">
 					<li class="nav-item" role="presentation" id="tabStkBox">
 						<button type="button" class="nav-link active" role="tab" data-bs-toggle="tab" data-bs-target="#navs-top-stk" aria-controls="navs-top-stk" aria-selected="true" id="btnTabStkBox">
@@ -78,20 +115,20 @@
 				</div>
 				<div class="tab-pane fade tab-content-golden" id="navs-top-mov" role="tabpanel">
 					<div class="row">
-						<div class="col-lg-5 col-md-12 col-sm-12">
+						<div class="col-lg-7 col-md-12 col-sm-12">
 							<span>Tipo</span>
-							@Html.DropDownListFor(m => m.TipoMovimientoSeleccionado, Model.ListaTipoMovimientos, "Seleccionar", new { @id = "listaTipoMovimientos", @class = "form-control inputEditable activable controls-fuente" })
+							@Html.DropDownListFor(m => m.TipoMovimientoSeleccionado, Model.ListaTipoMovimientos, "Seleccionar", new { @id = "listaTipoMovimientos", @class = "form-control inputEditable activable controls-fuente input-compact" })
 						</div>
-						<div class="col-lg-3 col-md-12 col-sm-12">
+						<div class="col-lg-2 col-md-12 col-sm-12">
 							<span>Desde:</span>
-							<input type="date" class="form-control inputEditable controls-fuente" asp-for="FechaDesde" style="background-color:rgb(251,255,195);font-weight:900;" autofocus />
+							<input type="date" class="form-control inputEditable controls-fuente input-compact" asp-for="FechaDesde" style="background-color:rgb(251,255,195);font-weight:900;" autofocus />
 						</div>
-						<div class="col-lg-3 col-md-12 col-sm-12">
+						<div class="col-lg-2 col-md-12 col-sm-12">
 							<span>Hasta:</span>
-							<input type="date" class="form-control inputEditable controls-fuente" asp-for="FechaHasta" style="background-color:rgb(251,255,195);font-weight:900;" autofocus />
+							<input type="date" class="form-control inputEditable controls-fuente input-compact" asp-for="FechaHasta" style="background-color:rgb(251,255,195);font-weight:900;" autofocus />
 						</div>
 						<div class="col-lg-1 col-md-12 col-sm-12 text-sm-end" style="padding-left: 0px;">
-							<button type="button" class="btn btn-sm btn-success mt-4" id="btnBuscarMov"><i class="bx bx-search-alt bx-sm"></i></button>
+							<button type="button" class="btn btn-sm btn-success btn-compact mt-4" id="btnBuscarMov"><i class="bx bx-search-alt bx-sm"></i></button>
 						</div>
 					</div>
 					<div id="divMov">
