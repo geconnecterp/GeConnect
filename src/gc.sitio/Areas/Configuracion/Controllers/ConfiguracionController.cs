@@ -35,6 +35,20 @@ namespace gc.sitio.Areas.Configuracion.Controllers
             return View(model);
         }
 
+        [HttpGet]
+        public async Task<IActionResult> ClaveObligatoria()
+        {
+            if (!EsCambioObligatorio())
+                return RedirectToAction(nameof(Index));
+
+            ViewData["Titulo"] = "CAMBIO OBLIGATORIO DE CONTRASEÑA";
+            return View(new CambioClaveObligatoriaViewModel
+            {
+                Politica = await _servicio.ObtenerPoliticaClave(TokenCookie),
+                Motivo = User.FindFirst("cambio_clave_motivo")?.Value ?? "BLANQUEO"
+            });
+        }
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CambiarClave(CambioClaveViewModel model)
@@ -69,5 +83,42 @@ namespace gc.sitio.Areas.Configuracion.Controllers
                 redirect = Url.Action("Login", "Token", new { area = "Seguridad", cambioClave = "ok" })
             });
         }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CambiarClaveObligatoria(CambioClaveObligatoriaViewModel model)
+        {
+            if (!EsCambioObligatorio())
+                return Json(new { ok = false, warn = true, msg = "No existe un cambio obligatorio pendiente." });
+            if (string.IsNullOrWhiteSpace(model.ClaveNueva))
+                return Json(new { ok = false, warn = true, msg = "Debe ingresar la contraseña nueva.", focus = "ClaveNueva" });
+            if (!string.Equals(model.ClaveNueva, model.ConfirmacionClave, StringComparison.Ordinal))
+                return Json(new { ok = false, warn = true, msg = "La confirmación no coincide con la contraseña nueva.", focus = "ConfirmacionClave" });
+
+            var resultado = await _servicio.CambiarClaveForzada(new CambioClaveForzadaRequestDto
+            {
+                ClaveNueva = model.ClaveNueva
+            }, TokenCookie, HttpContext.Connection.RemoteIpAddress?.ToString());
+
+            if (resultado.resultado != 0)
+                return Json(new { ok = false, warn = resultado.resultado > 0, msg = resultado.resultado_msj, focus = resultado.resultado_setfocus });
+
+            var etiqueta = Etiqueta;
+            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            if (!string.IsNullOrWhiteSpace(etiqueta))
+                Response.Cookies.Delete(etiqueta, new CookieOptions { Path = "/" });
+            HttpContext.Session.Clear();
+
+            return Json(new
+            {
+                ok = true,
+                msg = "La contraseña definitiva se estableció correctamente. Ingrese nuevamente.",
+                redirect = Url.Action("Login", "Token", new { area = "Seguridad", cambioClave = "ok" })
+            });
+        }
+
+        private bool EsCambioObligatorio() => string.Equals(
+            User.FindFirst("cambio_clave_obligatorio")?.Value,
+            "true", StringComparison.OrdinalIgnoreCase);
     }
 }

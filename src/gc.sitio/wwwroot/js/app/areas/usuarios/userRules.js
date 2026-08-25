@@ -5,8 +5,14 @@
     $("#btnAbmModif").on("click", ejecutarModificacion);
     $("#btnAbmElimi").on("click", ejecutarBaja);
 
-    $("#btnAbmCancelar").on("click", InicializaPantallaUser);
+    $("#btnAbmCancelar").on("click", cancelarOperacionUsuario);
     $("#btnAbmAceptar").on("click", confirmarOperacionAbmUsuario);
+    $(document).on("click", "#btnBlanquearClave", function () {
+        confirmarOperacionSeguridadUsuario("BLANQUEAR");
+    });
+    $(document).on("click", "#btnDesbloquearUsuario", function () {
+        confirmarOperacionSeguridadUsuario("DESBLOQUEAR");
+    });
 
     // CORRECCIÓN: Cambiar de "mousedown" a "click" para mejor control
     $("#btnDetalle").on("click", function (e) {
@@ -35,22 +41,13 @@
         }
     });
 
-    $("#btnCancel").on("click", function () {
-        window.location.href = homeUser;
-    });
 });
 
 function ejecutarBaja() {
     switch (tabAbm) {
         case 1:
-        case 2:
             $("#divFiltro").collapse("hide");
             accionBotones(AbmAction.BAJA);
-            break;
-        case 3:
-            AbrirMensaje("ATENCIÓN!", "No puede realizar la Baja de ningún Límite de Stock de producto. Solo puede Modificarlo.", function () {
-                $("#msjModal").modal("hide");
-            }, false, ["ACEPTAR"], "warn!", null);
             break;
         default:
             return false;
@@ -93,6 +90,7 @@ function ejecutarAlta() {
                 $("#btnDetalle").prop("disabled", false);
                 $("#divFiltro").collapse("hide");
                 $("#divDetalle").collapse("show");
+                $("#divGrilla, #divPaginacion").hide();
 
                 accionBotones(AbmAction.ALTA);
                 activarControles(true);
@@ -136,7 +134,8 @@ function activarBotones(activar) {
         $("#btnAbmCancelar").hide();
     }
     else {
-        $("#btnAbmNuevo").prop("disabled", false);
+        var hayListaUsuarios = $("#tbGridUsers").length > 0;
+        $("#btnAbmNuevo").prop("disabled", !hayListaUsuarios);
         $("#btnAbmModif").prop("disabled", true);
         $("#btnAbmElimi").prop("disabled", true);
 
@@ -220,6 +219,7 @@ function accionBotones(btn) {
             }
         }
     }
+    actualizarAccionesSeguridadUsuario();
 }
 
 function activarControles(act) {
@@ -251,12 +251,6 @@ function activarControles(act) {
                 //Linea 06
                 $("#cta_denominacion").prop("disabled", act);
 
-                //Linea 07
-                if (accion == AbmAction.MODIFICACION) {
-                    $("#btnImpCard").prop("disabled", act);
-                }
-
-
                 //hacemos el foco
                 if (accion === AbmAction.ALTA) {
                     $("#usu_id").trigger("focus");
@@ -282,25 +276,28 @@ function activarControles(act) {
 function confirmarOperacionAbmUsuario() {
     AbrirWaiting("Completando proceso...");
     var data = {};
+    var operacionConfirmada = "";
     switch (tabAbm) {
         case 1:
             data = confirmarDatosTab01();
+            if (!data) {
+                CerrarWaiting();
+                return false;
+            }
             accion = data.accion;
+            operacionConfirmada = accion;
             break;
         case 2:
-            accion02 = AbmAction.SUBMIT;
+            operacionConfirmada = accion02;
             data = confirmarDatosJsTree("#divPerfiles");
-            accion = data.accion;
             break;
         case 3:
-            accion03 = AbmAction.SUBMIT;
+            operacionConfirmada = accion03;
             data = confirmarDatosJsTree("#divAdmins");
-            accion = data.accion;
             break;
         case 4:
-            accion04 = AbmAction.SUBMIT;
+            operacionConfirmada = accion04;
             data = confirmarDatosJsTree("#divDers");
-            accion = data.accion;
             break;
         default:
             return false;
@@ -343,110 +340,75 @@ function confirmarOperacionAbmUsuario() {
         }
         else {
             CerrarWaiting();
-
-            // Si es baja, redirigir
-            if (accion === 'B') {
-                AbrirMensaje("ATENCIÓN", obj.msg, function () {
-                    window.location.href = homeUser;
-                }, false, ["CONTINUAR"], "succ!", null);
-                return;
+            var tabConfirmado = tabAbm;
+            var logon = ($("#usu_id").val() || "").trim().toLowerCase();
+            if (operacionConfirmada === AbmAction.ALTA && obj.id) {
+                logon = String(obj.id).trim().toLowerCase();
             }
 
-            // Para alta o modificación
-            var esAltaOModif = (accion === 'A' || accion === 'M');
-            var logon = $("#usu_id").val();
-            var logonNN = $("#usu_apellidoynombre").val();
-            var grilla = "tbGridUsers";
-
             AbrirMensaje("ATENCIÓN", obj.msg, function () {
-                //todo fue bien, por lo que se deberia reinicializar la pantalla.
+                $("#msjModal").modal("hide");
 
-                switch (tabAbm) {
+                switch (tabConfirmado) {
                     case 1:
-                        grilla = Grids.GridUser;
-                        dataBak = "";
-                        InicializaPantallaUser(grilla);
-                        break;
-
-                    default:
-
-                }
-
-                switch (tabAbm) {
-                    case 1:
-                        if (accion !== AbmAction.BAJA) {
-                            //se dió de alta o se modificó, se realiza la presentación del producto
-                            if (accion === AbmAction.ALTA) {
-                                EntidadSelect = obj.id;
-                            }
-                            //data = { p_id: EntidadSelect };
-                            //buscarProductoServer(data);
-
-                            //inicializamos la acción.                           
-                        }
-                        else {
-                            //borramos el id del producto si se eliminó
-                            EntidadSelect = "";
-                            //VAMOS A EJECUTAR NUEVAMENTE EL BUSCAR
-                            //buscarUsers(pagina);
-                        }
-                        //InicializaFiltroAbmUsuario(EntidadSelect);
-                        $("#btnBuscar").trigger("click");
-                        $("#divpanel01").empty();
-                        accion = "";
+                        finalizarAbmUsuario(operacionConfirmada, logon);
                         break;
                     case 2:
-                        $("#BtnLiTab02").trigger("click");
-                        accionBotones(accion02);
+                        accion02 = "";
+                        finalizarRelacionUsuario("#divPerfiles", presentaPerfilesUsuario);
                         break;
                     case 3:
-                        $("#BtnLiTab03").trigger("click");
-                        accionBotones(accion03);
+                        accion03 = "";
+                        finalizarRelacionUsuario("#divAdmins", presentaAdministracionesUsuario);
                         break;
                     case 4:
-                        $("#BtnLiTab04").trigger("click");
-                        accionBotones(accion04);
+                        accion04 = "";
+                        finalizarRelacionUsuario("#divDers", presentaDerechosUsuario);
                         break;
-                    default:
                 }
-
-                buscarUsers(1, function () {
-                    var $fila = $("#" + grilla + " tbody tr").filter(function () {                       
-                        return $(this).find("td:first").text().trim() === logon;                        
-                    }).first();
-
-                    // Si se encuentra la fila, solo marcarla visualmente
-                    if ($fila.length > 0) {
-                        // Remover selección previa
-                        $("#" + grilla + " tbody tr").removeClass("selectedEdit-row");
-
-                        // Marcar la fila
-                        $fila.addClass("selected-row");
-
-                        // Posicionar en el tope si existe la función
-                        if (typeof posicionarRegOnTop === 'function') {
-                            posicionarRegOnTop($fila);
-                        }
-
-
-                        // Activar grilla y estado final
-                        activarGrilla(grilla);
-                        $("#btnDetalle").prop("disabled", false);
-                        activarBotones(true);
-                    }
-
-                    // Resetear acción
-                    accionBotones(AbmAction.CANCEL);
-                });
-
-
-                $("#msjModal").modal("hide");
-                //$("#msjModal").toggle();
-
-
             }, false, ["CONTINUAR"], "succ!", null);
         }
     });
+}
+
+function finalizarAbmUsuario(operacion, logon) {
+    accion = "";
+    dataBak = "";
+    InicializaPantallaUser(Grids.GridUser);
+
+    if (operacion !== AbmAction.BAJA && logon) {
+        $("#Id").val(logon);
+        $("#Id2").val(logon);
+    }
+
+    buscarUsers(1, function () {
+        if (operacion === AbmAction.BAJA || !logon) {
+            return;
+        }
+
+        var $fila = $("#" + Grids.GridUser + " tbody tr").filter(function () {
+            return $(this).find("td:first").text().trim().toLowerCase() === logon;
+        }).first();
+
+        if ($fila.length) {
+            $("#" + Grids.GridUser + " tbody tr").removeClass("selected-row selectedEdit-row");
+            $fila.addClass("selected-row");
+            regSelected = $fila;
+            usuSelect = logon;
+            EntidadSelect = logon;
+            posicionarRegOnTop($fila);
+        }
+    });
+}
+
+function finalizarRelacionUsuario(div, recargar) {
+    $("#btnAbmAceptar, #btnAbmCancelar").prop("disabled", true).hide();
+    $("#btnFiltro, #btnDetalle, #BtnLiTab01, #BtnLiTab02, #BtnLiTab03, #BtnLiTab04")
+        .prop("disabled", false)
+        .removeClass("text-danger");
+    activarBotones(true);
+    desactivarGrilla(Grids.GridUser);
+    recargar();
 }
 
 function InicializaFiltroAbmUsuario(id) {
@@ -479,28 +441,51 @@ function InicializaFiltroAbmUsuario(id) {
 
 function confirmarDatosTab01() {
     //linea 01
-    var usu_id = $("#usu_id").val();
+    var usu_id = ($("#usu_id").val() || "").trim().toLowerCase();
     var usu_bloqueado = false;
     if ($("#usu_bloqueado").is(":checked")) {
         usu_bloqueado = true;
     }
 
     //linea 02
-    var usu_apellidoynombre = $("#usu_apellidoynombre").val();
+    var usu_apellidoynombre = ($("#usu_apellidoynombre").val() || "").trim();
 
     //linea 03
     var tdoc_id = $("#tdoc_id option:selected").val();
-    var usu_documento = $("#usu_documento").val();
+    var usu_documento = ($("#usu_documento").val() || "").trim();
 
     //linea 04
-    var usu_email = $("#usu_email").val();
+    var usu_email = ($("#usu_email").val() || "").trim().toLowerCase();
 
     //Linea 05
-    var usu_celu = $("#usu_celu").val();
+    var usu_celu = ($("#usu_celu").val() || "").trim();
 
     //Linea 06
     var cta_id = $("#cta_id").val();
-    var cta_denominacion = $("#cta_denominacion").val();
+    var cta_denominacion = ($("#cta_denominacion").val() || "").trim();
+
+    if (!usu_id || usu_id.length > 10) {
+        mostrarValidacionUsuario("El Logon es obligatorio y admite hasta 10 caracteres.", "#usu_id");
+        return null;
+    }
+
+    if (accion !== AbmAction.BAJA && (!usu_apellidoynombre || usu_apellidoynombre.length > 50)) {
+        mostrarValidacionUsuario("Apellido y Nombre es obligatorio y admite hasta 50 caracteres.", "#usu_apellidoynombre");
+        return null;
+    }
+
+    if (usu_email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(usu_email)) {
+        mostrarValidacionUsuario("Ingrese un email válido.", "#usu_email");
+        return null;
+    }
+
+    if (cta_denominacion && !cta_id) {
+        mostrarValidacionUsuario("Seleccione el cliente desde la lista de búsqueda.", "#cta_denominacion");
+        return null;
+    }
+
+    $("#usu_id").val(usu_id);
+    $("#usu_email").val(usu_email);
 
 
 
@@ -520,11 +505,76 @@ function confirmarDatosTab01() {
     return data;
 }
 
+function mostrarValidacionUsuario(mensaje, selector) {
+    AbrirMensaje("ATENCIÓN", mensaje, function () {
+        $("#msjModal").modal("hide");
+        $(selector).trigger("focus");
+    }, false, ["CONTINUAR"], "warn!", null);
+}
+
+function actualizarAccionesSeguridadUsuario() {
+    const usuarioActual = (typeof usuarioAuth === "undefined" ? "" : String(usuarioAuth)).trim().toLowerCase();
+    const seleccionado = String(usuSelect || $("#usu_id").val() || "").trim().toLowerCase();
+    const operacionAbmActiva = accion !== "" || accion02 !== "" || accion03 !== "" || accion04 !== "";
+    const puedeOperar = seleccionado && seleccionado !== usuarioActual && !operacionAbmActiva;
+    const bloqueado = $("#usu_bloqueado").is(":checked");
+    // Durante un despliegue pueden convivir temporalmente una vista compilada anterior y
+    // los archivos estáticos nuevos. En ese caso las acciones deben fallar cerradas, sin
+    // interrumpir la carga de la ficha ni dejar abierto el indicador de espera.
+    const permiteBlanquear = typeof puedeBlanquearClave !== "undefined" && puedeBlanquearClave === true;
+    const permiteDesbloquear = typeof puedeDesbloquearUsuario !== "undefined" && puedeDesbloquearUsuario === true;
+
+    $("#btnBlanquearClave")
+        .prop("hidden", !permiteBlanquear)
+        .prop("disabled", !(puedeOperar && permiteBlanquear));
+    $("#btnDesbloquearUsuario")
+        .prop("hidden", !permiteDesbloquear)
+        .prop("disabled", !(puedeOperar && permiteDesbloquear && bloqueado));
+}
+
+function confirmarOperacionSeguridadUsuario(operacion) {
+    const usuario = String(usuSelect || $("#usu_id").val() || "").trim();
+    if (!usuario) {
+        ControlaMensajeWarning("Seleccione un usuario para realizar la operación.");
+        return;
+    }
+
+    const esBlanqueo = operacion === "BLANQUEAR";
+    const titulo = esBlanqueo ? "Blanquear contraseña" : "Desbloquear usuario";
+    const mensaje = esBlanqueo
+        ? `¿Confirma el blanqueo de la contraseña del usuario ${usuario}? Deberá definir una contraseña nueva en su próximo ingreso.`
+        : `¿Confirma el desbloqueo del usuario ${usuario}?`;
+
+    AbrirMensaje(titulo, mensaje, function (respuesta) {
+        $("#msjModal").modal("hide");
+        // El modal compartido devuelve "SI" para su botón principal,
+        // independientemente del texto visible configurado para ese botón.
+        if (respuesta !== "SI") return;
+
+        AbrirWaiting(esBlanqueo ? "Blanqueando contraseña..." : "Desbloqueando usuario...");
+        PostGen({ usuId: usuario }, esBlanqueo ? blanquearClaveUrl : desbloquearUsuarioUrl, function (obj) {
+            CerrarWaiting();
+            if (obj.error) { ControlaMensajeError(obj.msg); return; }
+            if (obj.warn) { ControlaMensajeWarning(obj.msg); return; }
+
+            ControlaMensajeSuccess(obj.msg);
+            if (!esBlanqueo) {
+                $("#usu_bloqueado").prop("checked", false);
+                const $fila = $("#tbGridUsers tbody tr").filter(function () {
+                    return $(this).find("td:first").text().trim().toLowerCase() === usuario.toLowerCase();
+                }).first();
+                $fila.find("td:nth-child(3)").text("NO");
+            }
+            actualizarAccionesSeguridadUsuario();
+        });
+    }, true, ["Aceptar", "Cancelar"], "question!", null);
+}
+
 function confirmarDatosJsTree(div) {
 
     var json = JSON.stringify($(div).jstree(true).get_json());
 
-    return { json };
+    return { json, usuId: usuSelect };
 }
 
 
