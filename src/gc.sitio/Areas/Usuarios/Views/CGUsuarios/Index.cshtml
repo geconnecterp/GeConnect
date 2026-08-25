@@ -41,7 +41,9 @@
 @section scripts {
     <script type="text/javascript">
         var buscarUrl = "@Url.Action("buscar", "cgusuarios", new { area = "usuarios" })";
-        var buscarMetadataURL = "@Url.Action("ObtenerDatosPaginacion", "cgusuarios", new { area = "usuarios" })";
+        var buscarMetadataURL = "@Url.Action("ObtenerDatosPaginacionUsuarios", "cgusuarios", new { area = "usuarios" })";
+        var inicializarModuloUrl = "@Url.Action("InicializarModulo", "cgusuarios", new { area = "usuarios" })";
+        var moduleInstanceId = "@ViewBag.ModuleInstanceId";
         var buscarUserUrl = "@Url.Action("BuscarUsuarioDatos", "cgusuarios", new { area = "usuarios" })";
         var nuevoUsuarioUrl = "@Url.Action("NuevoUsuario", "cgusuarios", new { area = "usuarios" })";
 
@@ -55,6 +57,10 @@
         var confirmarPerfsUserUrl = "@Url.Action("ConfirmarPerfsUser", "cgusuarios", new { area = "usuarios" })";
         var confirmarAdmsUserUrl = "@Url.Action("confirmarAdmsUser", "cgusuarios", new { area = "usuarios" })";
         var confirmarDersUserUrl = "@Url.Action("confirmarDersUser", "cgusuarios", new { area = "usuarios" })";
+        var blanquearClaveUrl = "@Url.Action("BlanquearClave", "cgusuarios", new { area = "usuarios" })";
+        var desbloquearUsuarioUrl = "@Url.Action("DesbloquearUsuario", "cgusuarios", new { area = "usuarios" })";
+        var puedeBlanquearClave = @Html.Raw(System.Text.Json.JsonSerializer.Serialize((bool)(ViewBag.PuedeBlanquearClave ?? false)));
+        var puedeDesbloquearUsuario = @Html.Raw(System.Text.Json.JsonSerializer.Serialize((bool)(ViewBag.PuedeDesbloquearUsuario ?? false)));
 
 
         // var buscarPerfilesUrl = "@Url.Action("buscarPerfiles", "menues", new { area = "usuarios" })";
@@ -73,10 +79,10 @@
     <script src="~/lib/jstree/jstree.min.js"></script>
     <script src="~/js/plugins/jquery.simplePagination.js"></script>
 
-    <script src="~/js/app/areas/abms/abmsettings.js"></script>
+    <script src="~/js/app/areas/abms/abmsettings.js" asp-append-version="true"></script>
 
-    <script src="~/js/app/areas/usuarios/userSettings.js"></script>
-    <script src="~/js/app/areas/usuarios/userMod.js"></script>
-    <script src="~/js/app/areas/usuarios/userRules.js"></script>
+    <script src="~/js/app/areas/usuarios/userSettings.js" asp-append-version="true"></script>
+    <script src="~/js/app/areas/usuarios/userMod.js" asp-append-version="true"></script>
+    <script src="~/js/app/areas/usuarios/userRules.js" asp-append-version="true"></script>
 
 }

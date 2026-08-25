@@ -8,6 +8,7 @@ using gc.infraestructura.Dtos.Financieros;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.Users;
 using gc.infraestructura.Dtos.Users.Request;
+using gc.infraestructura.Dtos.Seguridad;
 using gc.sitio.core.Servicios.Contratos.Users;
 using log4net.Filter;
 using Microsoft.Extensions.Logging;
@@ -28,6 +29,9 @@ namespace gc.sitio.core.Servicios.Implementacion.Users
         private const string OBTENER_DER_USUARIO = "/ObtenerDerechosDelUsuario";
 		private const string BUSCAR_USUARIOS_LISTA = "/BuscarUsuariosParaLista";
 		private const string OBTENER_USUARIOS_LISTA = "/BuscarUsuarioLista";
+        private const string OPERACIONES_SEGURIDAD = "/OperacionesSeguridadDisponibles";
+        private const string BLANQUEAR_CLAVE = "/BlanquearClave";
+        private const string DESBLOQUEAR_USUARIO = "/DesbloquearUsuario";
 
 		private readonly AppSettings _appSettings;
 
@@ -422,5 +426,54 @@ namespace gc.sitio.core.Servicios.Implementacion.Users
 				return new RespuestaGenerica<UserDto> { Ok = false, Mensaje = "Algo no fue bien al intentar obtener los derechos del Usuario." };
 			}
 		}
+
+        public async Task<OperacionesSeguridadUsuarioDto> ObtenerOperacionesSeguridad(string token)
+        {
+            using var client = new HelperAPI().InicializaCliente(token);
+            using var response = await client.GetAsync($"{_appSettings.RutaBase}{RutaAPI}{OPERACIONES_SEGURIDAD}");
+            if (!response.IsSuccessStatusCode)
+                return new OperacionesSeguridadUsuarioDto();
+
+            var body = await response.Content.ReadAsStringAsync();
+            return JsonConvert.DeserializeObject<ApiResponse<OperacionesSeguridadUsuarioDto>>(body)?.Data
+                ?? new OperacionesSeguridadUsuarioDto();
+        }
+
+        public Task<CambioClaveResultadoDto> BlanquearClave(string usuarioObjetivo, string token, string? ip) =>
+            EjecutarOperacionSeguridad(BLANQUEAR_CLAVE, usuarioObjetivo, token, ip);
+
+        public Task<CambioClaveResultadoDto> DesbloquearUsuario(string usuarioObjetivo, string token, string? ip) =>
+            EjecutarOperacionSeguridad(DESBLOQUEAR_USUARIO, usuarioObjetivo, token, ip);
+
+        private async Task<CambioClaveResultadoDto> EjecutarOperacionSeguridad(string ruta,
+            string usuarioObjetivo, string token, string? ip)
+        {
+            var request = new OperacionUsuarioSeguridadRequestDto { UsuarioObjetivo = usuarioObjetivo };
+            using var client = new HelperAPI().InicializaCliente(request, token, out StringContent content);
+            if (!string.IsNullOrWhiteSpace(ip))
+                client.DefaultRequestHeaders.TryAddWithoutValidation("X-ClientUsr", ip);
+
+            using var response = await client.PostAsync($"{_appSettings.RutaBase}{RutaAPI}{ruta}", content);
+            var body = await response.Content.ReadAsStringAsync();
+            if (!response.IsSuccessStatusCode)
+            {
+                return new CambioClaveResultadoDto
+                {
+                    resultado = response.StatusCode == HttpStatusCode.Forbidden ? (short)2 : (short)1,
+                    resultado_id = response.StatusCode == HttpStatusCode.Forbidden ? "SIN_DERECHO" : "SOLICITUD_INVALIDA",
+                    resultado_msj = response.StatusCode == HttpStatusCode.Forbidden
+                        ? "No posee el derecho requerido para realizar esta operación."
+                        : (string.IsNullOrWhiteSpace(body) ? "No se pudo procesar la operación." : body.Trim('"'))
+                };
+            }
+
+            return JsonConvert.DeserializeObject<ApiResponse<CambioClaveResultadoDto>>(body)?.Data
+                ?? new CambioClaveResultadoDto
+                {
+                    resultado = -1,
+                    resultado_id = "SIN_RESPUESTA",
+                    resultado_msj = "La API no devolvió una respuesta válida."
+                };
+        }
 	}
 }

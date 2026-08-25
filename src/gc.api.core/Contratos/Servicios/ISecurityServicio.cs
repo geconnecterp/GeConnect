@@ -15,5 +15,14 @@ namespace gc.api.core.Interfaces.Servicios
 
         CambioClaveResultadoDto CambiarClave(string usuId, string claveActual, string claveNueva,
             string? admId, string? ip, Guid operacionId);
+
+        EstadoSeguridadUsuarioDto ObtenerEstadoSeguridad(string usuId);
+        OperacionesSeguridadUsuarioDto ObtenerOperacionesSeguridad(string usuId);
+        CambioClaveResultadoDto BlanquearClave(string usuarioObjetivo, string usuarioEjecutor,
+            string claveTemporal, string? admId, string? ip, Guid operacionId);
+        CambioClaveResultadoDto CambiarClaveForzada(string usuId, string claveNueva,
+            string? admId, string? ip, Guid operacionId);
+        CambioClaveResultadoDto DesbloquearUsuario(string usuarioObjetivo, string usuarioEjecutor,
+            string? admId, string? ip, Guid operacionId);
     }
 }

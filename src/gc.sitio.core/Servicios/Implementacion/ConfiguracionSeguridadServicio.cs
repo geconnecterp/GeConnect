@@ -71,5 +71,37 @@ namespace gc.sitio.core.Servicios.Implementacion
                 resultado_msj = "La API no devolvió una respuesta válida."
             };
         }
+
+        public async Task<CambioClaveResultadoDto> CambiarClaveForzada(
+            CambioClaveForzadaRequestDto request, string token, string? ip)
+        {
+            var helper = new HelperAPI();
+            using var client = helper.InicializaCliente(request, token, out StringContent content);
+            if (!string.IsNullOrWhiteSpace(ip))
+                client.DefaultRequestHeaders.TryAddWithoutValidation("X-ClientUsr", ip);
+
+            using var response = await client.PostAsync(
+                $"{_appSettings.RutaBase}/api/apitoken/cambio-clave-forzada", content);
+            var body = await response.Content.ReadAsStringAsync();
+            if (!response.IsSuccessStatusCode)
+            {
+                return new CambioClaveResultadoDto
+                {
+                    resultado = 1,
+                    resultado_id = "SOLICITUD_INVALIDA",
+                    resultado_msj = string.IsNullOrWhiteSpace(body)
+                        ? "No se pudo procesar el cambio obligatorio."
+                        : body.Trim('"')
+                };
+            }
+
+            return JsonConvert.DeserializeObject<ApiResponse<CambioClaveResultadoDto>>(body)?.Data
+                ?? new CambioClaveResultadoDto
+                {
+                    resultado = -1,
+                    resultado_id = "SIN_RESPUESTA",
+                    resultado_msj = "La API no devolvió una respuesta válida."
+                };
+        }
     }
 }

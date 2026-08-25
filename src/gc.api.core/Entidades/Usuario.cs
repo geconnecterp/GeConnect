@@ -34,6 +34,12 @@ namespace gc.api.core.Entidades
         public string? Usu_celu { get; set; }
         public string? Usu_pin { get; set; }
         public string? Cta_id { get; set; }
+        public bool Usu_cambio_clave_obligatorio { get; set; }
+        public string? Usu_cambio_clave_motivo { get; set; }
+        public DateTime? Usu_cambio_clave_fecha { get; set; }
+        public DateTime? Usu_cambio_clave_vencimiento { get; set; }
+        public Guid? Usu_cambio_clave_operacion_id { get; set; }
+        public int Usu_version_credencial { get; set; }
 
         public virtual ICollection<UsuarioAdministracion> UsuarioAdministraciones { get; set; }
         //public virtual ICollection<usuarios_logon> Usuarios_Logons { get; set; }
