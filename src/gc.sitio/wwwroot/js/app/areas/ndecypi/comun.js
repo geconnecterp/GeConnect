@@ -925,6 +925,7 @@ function InicializaPantallaNC() {
 	$("#lbchk03").text("Con OC");
 	$("#lbchk04").text("Sin Stk");
 	$("#lbchk05").text("Con Stk a Vencer");
+	$("#lbchk06").text("Ofe./Pro");
 
 	$("#lbChkDesdeHasta").text("ID Producto");
 
@@ -1080,6 +1081,7 @@ function BuscarProductos(pag = 1) {
 	var Opt3 = $("#chk03")[0].checked
 	var Opt4 = $("#chk04")[0].checked
 	var Opt5 = $("#chk05")[0].checked
+	var Opt6 = $("#chk06")[0].checked
 
 	var buscaNew = true;
 	pagina = pag;
@@ -1087,7 +1089,7 @@ function BuscarProductos(pag = 1) {
 	var sort = null;
 	var sortDir = null
 	var data2 = { sort, sortDir, Pagina, buscaNew }
-	var data1 = { Tipo, Buscar, Id, Id2, Rel01, Rel02, Rel03, Opt1, Opt2, Opt3, Opt4, Opt5 };
+	var data1 = { Tipo, Buscar, Id, Id2, Rel01, Rel02, Rel03, Opt1, Opt2, Opt3, Opt4, Opt5, Opt6 };
 	var data = $.extend({}, data1, data2);
 	PostGenHtml(data, BuscarProductosOCPI2URL, function (obj) {
 		$("#divListaProducto").html(obj);
@@ -1148,7 +1150,7 @@ function recalcularFooterOC(Tipo) {
 		if (tr.querySelector("td[colspan]")) return;
 
 		// --- Total Costo (columna 14) ---
-		const tdCosto = tr.querySelector("td:nth-child(14)");
+		const tdCosto = tr.querySelector("td:nth-child(21)");
 		if (tdCosto) {
 			const raw = tdCosto.textContent.trim();
 
@@ -1160,7 +1162,7 @@ function recalcularFooterOC(Tipo) {
 		}
 
 
-		const tdPallet = tr.querySelector("td:nth-child(16)");
+		const tdPallet = tr.querySelector("td:nth-child(22)");
 		if (tdPallet) {
 			const raw = tdPallet.textContent.trim();
 			const normalizado = raw.replace(/,/g, "");

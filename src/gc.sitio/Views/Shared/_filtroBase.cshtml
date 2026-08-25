@@ -879,6 +879,17 @@
                             </div>
                         </div>
                     }
+                    @if (Model.Opt6 != null && Model.Modelo.Equals(ModeloFilter.NECESIDADES_COMPRA))
+                    {
+                        <div class=" col-sm-2">
+                            <div class="input-group input-group-sm">
+                                <div class="form-check form-check-inline form-switch mb-2">
+                                    <input class="form-check-input" type="checkbox" name="chk06" id="chk06" />
+                                    <label class="form-check-label" for="chk06" id="lbchk06"></label>
+                                </div>
+                            </div>
+                        </div>
+                    }
                 </div>
             </div>
         }

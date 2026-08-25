@@ -1,4 +1,5 @@
-﻿@model GridCoreSmart<InfoProdStkA>
+﻿@using gc.infraestructura.Helpers
+@model GridCoreSmart<InfoProdStkA>
 @{
 	var alt = true;
 	string clase = string.Empty;
@@ -8,15 +9,55 @@
 		background-color: #868ad3 !important;
 		color: #ffffff !important;
 	}
+
+	.bg-stk-verde {
+		background-color: #2e7d32 !important; /* verde oscuro */
+		color: #fff !important;
+	}
+
+	.bg-stk-azul {
+		background-color: #1565c0 !important; /* azul */
+		color: #fff !important;
+	}
+
+	.bg-stk-rojo {
+		background-color: #c62828 !important; /* rojo */
+		color: #fff !important;
+	}
+
+	#tbInfoProdStkA {
+		width: 100% !important;
+		table-layout: fixed !important;
+	}
+
+		#tbInfoProdStkA th,
+		#tbInfoProdStkA td {
+			white-space: nowrap;
+		}
+
+		#tbInfoProdStkA thead th {
+			white-space: normal !important;
+			line-height: 1.1; /* opcional: compacta las dos líneas */
+			text-align: center; /* mantiene estética */
+		}
+
+	.table-wrapper-200-full {
+		overflow-x: auto;
+		width: 100%;
+	}
 </style>
 <div class="table-responsive text-nowrap table-wrapper-200-full">
 	<table class="table table-sm mb-0 table-hover table-golden" id="tbInfoProdStkA">
 		<thead>
 			<tr class="header">
-				<th style="width:40%;" class="tiny-row align-center">Sucursal</th>
-				<th style="width:20%;" class="tiny-row align-center">Proy. Vtas. Mes</th>
-				<th style="width:20%;" class="tiny-row align-center">Proy. Vtas. Día</th>
-				<th style="width:10%;" class="tiny-row align-center">Stk</th>
+				<th style="width:20%;" class="tiny-row align-center">Sucursal</th>
+				<th style="width:8%;" class="tiny-row align-center">Stk</th>
+				<th style="width:8%;" class="tiny-row align-center" title="Ventas últimos 30 días">Vtas. u30</th>
+				<th style="width:8%;" class="tiny-row align-center" title="Nivel de Demanda 30 días">Vta/Stk u30</th>
+				<th style="width:8%;" class="tiny-row align-center" title="Proyección de Ventas 30 días">Proy. 30</th>
+				<th style="width:8%;" class="tiny-row align-center" title="Proyección de Ventas 60 días">Proy. 60</th>
+				<th style="width:8%;" class="tiny-row align-center" title="Proyección de Ventas 90 días">Proy. 90</th>
+				<th style="width:12%;" class="tiny-row align-center" title="Días de Stock">Días Stk.</th>
 			</tr>
 		</thead>
 		<tbody>
@@ -27,9 +68,50 @@
 					if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
 					<tr class="@clase" onclick="selectListaInfoProdStkA(this)">
 						<td class="align-left tiny-row">@item.Adm_nombre</td>
-						<td class="align-right tiny-row">@item.Proy_vtas</td>
-						<td class="align-right tiny-row">@item.Proy_vtas_dia</td>
-						<td class="align-right tiny-row">@item.ps_stk</td>
+						<td class="align-right tiny-row">@GridHelper.FormatearDato(item.ps_stk, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
+						<td class="align-right tiny-row">@GridHelper.FormatearDato(item.vta_30, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
+						@{
+							string demanda30;
+							if (item.vta_30_dias_con_stk == 0)
+							{
+								demanda30 = "SND";
+							}
+							else
+							{
+								var valor = Math.Round((decimal)item.vta_30_dias / (decimal)item.vta_30_dias_con_stk, 3);
+
+								if (valor < 0.001M) valor = 0.001M;
+								if (valor > 1M) valor = 1M;
+
+								demanda30 = valor.ToString("0.000");
+							}
+						}
+						<td class="align-right tiny-row">@demanda30</td>
+						<td class="align-right tiny-row">@GridHelper.FormatearDato(item.proy_vtas_30, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
+						<td class="align-right tiny-row">@GridHelper.FormatearDato(item.proy_vtas_60, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
+						<td class="align-right tiny-row">@GridHelper.FormatearDato(item.proy_vtas_90, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
+						@{
+							string claseStk;
+
+							var plazo = item.ctap_rp_plazo_entrega;
+							var dias = item.stk_dias;
+
+							if (dias >= plazo * 1.15M)
+							{
+								claseStk = "bg-stk-verde";
+							}
+							else if (dias >= plazo)
+							{
+								claseStk = "bg-stk-azul";
+							}
+							else
+							{
+								claseStk = "bg-stk-rojo";
+							}
+						}
+						<td class="align-center tiny-row @claseStk">
+							@dias
+						</td>
 					</tr>
 				}
 			}

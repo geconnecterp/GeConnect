@@ -77,7 +77,7 @@
 		position: relative;
 		text-align: center;
 		vertical-align: middle;
-		width: 25%;
+		width: 10%;
 	}
 
 		.th-descripcion .th-title {
@@ -111,12 +111,42 @@
 			border-top: 2px solid #999;
 			background-color: #e9ecef;
 		}
+
+	.cell-ellipsis {
+		white-space: nowrap !important;
+		overflow: hidden !important;
+		text-overflow: ellipsis !important;
+		display: flex; /* en vez de block */
+		align-items: center; /* centra verticalmente el texto */
+		width: 100%;
+	}
+
+	.bg-stk-verde {
+		background-color: #2e7d32 !important; /* verde oscuro */
+		color: #fff !important;
+	}
+
+	.bg-stk-azul {
+		background-color: #1565c0 !important; /* azul */
+		color: #fff !important;
+	}
+
+	.bg-stk-rojo {
+		background-color: #c62828 !important; /* rojo */
+		color: #fff !important;
+	}
+	.disc-icon {
+		position: absolute;
+		right: 2px;
+		top: 50%;
+		transform: translateY(-50%);
+	}
 </style>
 <div class="table-responsive table-wrapper-full-width" id="containerListaProducto">
 	<table class="table table-sm mb-0 table-hover table-golden" id="tbListaProducto">
 		<thead>
 			<tr class="header">
-				<th style="width:4%;" class="align-center tiny-row">Código</th>
+				<th style="width:3%;" class="align-center tiny-row">Código</th>
 				<th class="th-descripcion">
 					<span class="th-title">Descripción</span>
 					<button type="button"
@@ -126,24 +156,30 @@
 						<i class="bx bx-info-circle"></i>
 					</button>
 				</th>
-				<th style="width:6%;" class="align-center">Id. Barrado</th>
-				<th style="width:5%;" class="align-center tiny-row">Cod. Prov</th>
+				<th style="width:8%;" class="align-center">Id. Barrado</th>
+				<th style="width:3%;" class="align-center tiny-row">Cod. Prov</th>
 				@if (Model.Tipo == "PI")
 				{
-					<th style="width:5%;" class="align-center tiny-row" title="Días de Última Transferencia">Días Ult. Transf.</th>
-					<th style="width:5%;" class="align-center tiny-row" title="Pedido Interno Pendiente">PI Pend</th>
+					<th style="width:2%;" class="align-center tiny-row" title="Días de Última Transferencia">Días Ult. Transf.</th>
+					<th style="width:2%;" class="align-center tiny-row" title="Pedido Interno Pendiente">PI Pend</th>
 				}
 				else
 				{
-					<th style="width:5%;" class="align-center tiny-row">Días Ult. RP</th>
-					<th style="width:5%;" class="align-center tiny-row">OC Pend</th>
+					<th style="width:2%;" class="align-center tiny-row">Días Ult. RP</th>
+					<th style="width:2%;" class="align-center tiny-row">OC Pend</th>
 				}
-				<th style="width:5%;" class="align-center tiny-row">Stock Suc</th>
-				<th style="width:5%;" class="align-center tiny-row">Stock Tot</th>
+				<th style="width:2%;" class="align-center tiny-row">Stock Suc</th>
+				<th style="width:3%;" class="align-center tiny-row">Stock Tot</th>
+				<th style="width:3%;" class="align-center tiny-row" title="Ventas últimos 30 días">Vtas. u30</th>@**@
+				<th style="width:3%;" class="align-center tiny-row" title="Nivel de Demanda 30 días">Vta/Stk u30</th>
+				<th style="width:3%;" class="align-center tiny-row" title="Proyección de Ventas 30 días">Proy. 30</th>
+				<th style="width:3%;" class="align-center tiny-row" title="Proyección de Ventas 60 días">Proy. 60</th>
+				<th style="width:3%;" class="align-center tiny-row" title="Proyección de Ventas 90 días">Proy. 90</th>
+				<th style="width:3%;" class="align-center tiny-row" title="Días de Stock">Días Stk.</th>
 				<th style="width:0%; display:none;" class="align-center tiny-row">Stock a Facturar</th>
-				<th style="width:5%;" class="align-center tiny-row">Unidad Pres.</th>
-				<th style="width:4%;" class="align-center tiny-row">Unidad Pallet</th>
-				<th style="width:5%;" class="align-center tiny-row">Pedido Bultos</th> @* 10 *@
+				<th style="width:2%;" class="align-center tiny-row" title="Unidad de Presentación">Uni. Pres.</th>
+				<th style="width:3%;" class="align-center tiny-row" title="Unidades por Pallet">Uni. Pallet</th>
+				<th style="width:3%;" class="align-center tiny-row">Pedido Bultos</th>
 				<th style="width:5%;" class="align-center tiny-row">Pedido Cantidad</th>
 				<th style="width:7%;" class="align-center tiny-row">Precio Costo</th>
 				<th style="width:7%;" class="align-center tiny-row">Total Costo</th>
@@ -164,7 +200,7 @@
 					{
 						var leyenda = $"Prov: {item.cta_id} {item.cta_denominacion} Familia: {item.pg_id} {item.pg_desc}";
 						<tr class="table-secondary fw-bold">
-							<td colspan="15" class="text-center">
+							<td colspan="21" class="text-center">
 								<i class="bx bx-folder me-1"></i>
 								@leyenda
 							</td>
@@ -183,11 +219,22 @@
 						<td class="align-center tiny-row">@item.p_id</td>
 						@if (item.p_activo == "D")
 						{
-							<td class="align-left tiny-row">@item.p_desc<span style="float:right;" title="Producto discontínuo"><i class="bx bx-dislike"></i></span></td>
+							<td class="align-left tiny-row" style="position:relative;">
+								<span class="cell-ellipsis" title="@item.p_desc">
+									@item.p_desc
+								</span>
+								<span class="disc-icon" title="Producto discontinuo">
+									<i class="bx bx-dislike"></i>
+								</span>
+							</td>
 						}
 						else
 						{
-							<td class="align-left tiny-row">@item.p_desc</td>
+							<td class="align-left tiny-row">
+								<span class="cell-ellipsis" title="@item.p_desc">
+									@item.p_desc
+								</span>
+							</td>
 						}
 						<td class="align-center tiny-row">@item.p_id_barrado</td>
 						<td class="align-center tiny-row">@item.p_id_prov</td>
@@ -203,6 +250,49 @@
 						}
 						<td class="align-right tiny-row">@GridHelper.FormatearDato(item.stk_suc, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
 						<td class="align-right tiny-row">@GridHelper.FormatearDato(item.stk, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
+						<td class="align-right tiny-row">@GridHelper.FormatearDato(item.vta_30, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>@**@
+						@{
+							string demanda30;
+							if (item.vta_30_dias_con_stk == 0)
+							{
+								demanda30 = "SND";
+							}
+							else
+							{
+								var valor = Math.Round((decimal)item.vta_30_dias / (decimal)item.vta_30_dias_con_stk, 3);
+
+								if (valor < 0.001M) valor = 0.001M;
+								if (valor > 1M) valor = 1M;
+
+								demanda30 = valor.ToString("0.000");
+							}
+						}
+						<td class="align-right tiny-row">@demanda30</td>
+						<td class="align-right tiny-row">@GridHelper.FormatearDato(item.proy_vtas_30, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
+						<td class="align-right tiny-row">@GridHelper.FormatearDato(item.proy_vtas_60, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
+						<td class="align-right tiny-row">@GridHelper.FormatearDato(item.proy_vtas_90, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
+						@{
+							string claseStk;
+
+							var plazo = item.ctap_rp_plazo_entrega;
+							var dias = item.stk_dias;
+
+							if (dias >= plazo * 1.15M)
+							{
+								claseStk = "bg-stk-verde";
+							}
+							else if (dias >= plazo)
+							{
+								claseStk = "bg-stk-azul";
+							}
+							else
+							{
+								claseStk = "bg-stk-rojo";
+							}
+						}
+						<td class="align-center tiny-row @claseStk">
+							@dias
+						</td>
 						<td style="display:none;">@item.stk_suc_comprometido</td>
 						<td class="align-right tiny-row">@item.p_unidad_pres</td>
 						<td class="align-right tiny-row">@item.p_unidad_palet</td>
@@ -256,12 +346,10 @@
 		</tbody>
 		<tfoot>
 			<tr class="table-secondary fw-bold total-row">
-				<td colspan="12" class="text-end">Total:</td>
+				<td colspan="19" class="text-end">Total:</td>
 
 				<td class="align-right tiny-row" style="font-weight:bold;">
 					@GridHelper.FormatearDato(totalCosto, GridHelper.FormatDato.Monto, true)
-				</td>
-				<td class="align-right tiny-row" style="font-weight:bold;">
 				</td>
 				<td class="align-right tiny-row" style="font-weight:bold;">
 					@totalPallet

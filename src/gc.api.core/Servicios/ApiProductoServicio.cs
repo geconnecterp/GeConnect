@@ -1221,7 +1221,8 @@ namespace gc.api.core.Servicios
             ps.Add(new SqlParameter("@stk_avencer", request.Opt3));
             ps.Add(new SqlParameter("@pi", request.Opt4));
             ps.Add(new SqlParameter("@oc", request.Opt5));
-            ps.Add(new SqlParameter("@adm_id", request.Adm_id));
+			ps.Add(new SqlParameter("@ofe", request.Opt6));
+			ps.Add(new SqlParameter("@adm_id", request.Adm_id));
             ps.Add(new SqlParameter("@usu_id", request.Usu_id));
             ps.Add(new SqlParameter("@registros", request.Registros));
             ps.Add(new SqlParameter("@pagina", request.Pagina));

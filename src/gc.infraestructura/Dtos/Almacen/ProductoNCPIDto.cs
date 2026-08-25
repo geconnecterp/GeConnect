@@ -66,6 +66,14 @@ namespace gc.infraestructura.Dtos.Almacen
 		public DateTime? re_fecha { get; set; }
 		public int? re_dias { get; set; }
 		public bool PermiteDecimales => up_tipo == "P";
+		public int proy_vtas_30 { get; set; }
+		public int proy_vtas_60 { get; set; }
+		public int proy_vtas_90 { get; set; }
+		public int vta_30 { get; set; }
+		public int vta_30_dias { get; set; }
+		public int vta_30_dias_con_stk { get; set; }
+		public int stk_dias { get; set; }
+		public int ctap_rp_plazo_entrega { get; set; }
 	}
 
 	public class ProductoNCPISustitutoDto : ProductoNCPIDto

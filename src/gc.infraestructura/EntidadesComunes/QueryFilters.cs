@@ -63,14 +63,16 @@ namespace gc.infraestructura.Core.EntidadesComunes
 		public bool? Opt3 { get; set; }
 		public bool? Opt4 { get; set; }
 		public bool? Opt5 { get; set; }
+		public bool? Opt6 { get; set; }
 
-        public string StrOpt01 { get; set; } = string.Empty;
+		public string StrOpt01 { get; set; } = string.Empty;
         public string StrOpt02 { get; set; } = string.Empty;
         public string StrOpt03 { get; set; } = string.Empty;
         public string StrOpt04 { get; set; } = string.Empty;
         public string StrOpt05 { get; set; } = string.Empty;
+		public string StrOpt06 { get; set; } = string.Empty;
 
-        public List<string> ListNN { get; set; } = []; //para el nombre de archivos que pueden venir concatenados con ","
+		public List<string> ListNN { get; set; } = []; //para el nombre de archivos que pueden venir concatenados con ","
         public string? TituloLeyend { get; set; }=string.Empty;
 
 		public string? Date1 { get; set; }

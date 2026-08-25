@@ -40,7 +40,17 @@ namespace gc.infraestructura.Dtos.Productos
         public decimal Proy_vtas_dia { get; set; } = 0.000M;
         public DateTime? Proy_vtas_fecha { get; set; }
         public int orden { get; set; }
-    }
+		//Campos agregados
+		public int ctap_rp_plazo_entrega { get; set; }
+		public int proy_vtas_30 { get; set; }
+		public int proy_vtas_60 { get; set; }
+		public int proy_vtas_90 { get; set; }
+		public int vta_30 { get; set; }
+		public int vta_30_dias { get; set; }
+		public int vta_30_dias_con_stk { get; set; }
+		public int stk_dias { get; set; }
+		//Fin campos agregados
+	}
 
     public class InfoProdMovStk : Dto
     {
