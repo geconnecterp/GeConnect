@@ -6,6 +6,7 @@ using gc.infraestructura.Core.Exceptions;
 using gc.infraestructura.Core.Helpers;
 using gc.infraestructura.EntidadesComunes.Options;
 using gc.infraestructura.Dtos.Seguridad;
+using gc.infraestructura.Dtos.Users;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Options;
 
@@ -135,6 +136,88 @@ namespace gc.api.core.Servicios
                 resultado = -1,
                 resultado_id = "SIN_RESPUESTA",
                 resultado_msj = "No se obtuvo respuesta al intentar modificar la contraseña.",
+                OperacionId = operacionId
+            };
+        }
+
+        public EstadoSeguridadUsuarioDto ObtenerEstadoSeguridad(string usuId)
+        {
+            var respuesta = _repository.EjecutarLstSpExt<EstadoSeguridadUsuarioDto>(
+                "SPGECO_USU_Seguridad_Estado",
+                [new SqlParameter("@usu_id", usuId)], true);
+
+            return respuesta?.FirstOrDefault() ?? new EstadoSeguridadUsuarioDto();
+        }
+
+        public OperacionesSeguridadUsuarioDto ObtenerOperacionesSeguridad(string usuId)
+        {
+            var politica = ObtenerPoliticaClave();
+            var derechos = _repository.EjecutarLstSpExt<DerUserDto>(
+                ConstantesGC.StoredProcedures.SP_USU_DER,
+                [new SqlParameter("@usu_id", usuId)], true) ?? [];
+
+            bool Posee(string? codigo) => !string.IsNullOrWhiteSpace(codigo) && derechos.Any(x =>
+                x.asignado && string.Equals(x.der_codigo?.Trim(), codigo.Trim(), StringComparison.OrdinalIgnoreCase));
+
+            return new OperacionesSeguridadUsuarioDto
+            {
+                PuedeBlanquearClave = Posee(politica.DerechoBlanquearClave),
+                PuedeDesbloquearUsuario = Posee(politica.DerechoDesbloquearUsuario)
+            };
+        }
+
+        public CambioClaveResultadoDto BlanquearClave(string usuarioObjetivo, string usuarioEjecutor,
+            string claveTemporal, string? admId, string? ip, Guid operacionId)
+        {
+            return EjecutarOperacionUsuario("SPGECO_USU_Clave_Blanquear",
+            [
+                new("@usu_id_objetivo", usuarioObjetivo),
+                new("@usu_id_ejecutor", usuarioEjecutor),
+                new("@clave_temporal", claveTemporal),
+                new("@adm_id", (object?)admId ?? DBNull.Value),
+                new("@ip", (object?)ip ?? DBNull.Value),
+                new("@origen", "GC.SITIO"),
+                new("@operacion_id", operacionId)
+            ], operacionId);
+        }
+
+        public CambioClaveResultadoDto CambiarClaveForzada(string usuId, string claveNueva,
+            string? admId, string? ip, Guid operacionId)
+        {
+            return EjecutarOperacionUsuario("SPGECO_USU_Clave_Forzada_Cambiar",
+            [
+                new("@usu_id", usuId),
+                new("@clave_nueva", claveNueva),
+                new("@adm_id", (object?)admId ?? DBNull.Value),
+                new("@ip", (object?)ip ?? DBNull.Value),
+                new("@origen", "GC.SITIO"),
+                new("@operacion_id", operacionId)
+            ], operacionId);
+        }
+
+        public CambioClaveResultadoDto DesbloquearUsuario(string usuarioObjetivo, string usuarioEjecutor,
+            string? admId, string? ip, Guid operacionId)
+        {
+            return EjecutarOperacionUsuario("SPGECO_USU_Desbloquear",
+            [
+                new("@usu_id_objetivo", usuarioObjetivo),
+                new("@usu_id_ejecutor", usuarioEjecutor),
+                new("@adm_id", (object?)admId ?? DBNull.Value),
+                new("@ip", (object?)ip ?? DBNull.Value),
+                new("@origen", "GC.SITIO"),
+                new("@operacion_id", operacionId)
+            ], operacionId);
+        }
+
+        private CambioClaveResultadoDto EjecutarOperacionUsuario(string sp,
+            List<SqlParameter> parametros, Guid operacionId)
+        {
+            var respuesta = _repository.EjecutarLstSpExt<CambioClaveResultadoDto>(sp, parametros, true);
+            return respuesta?.FirstOrDefault() ?? new CambioClaveResultadoDto
+            {
+                resultado = -1,
+                resultado_id = "SIN_RESPUESTA",
+                resultado_msj = "No se obtuvo respuesta al procesar la operación de seguridad.",
                 OperacionId = operacionId
             };
         }

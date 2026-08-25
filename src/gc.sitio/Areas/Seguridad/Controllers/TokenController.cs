@@ -179,6 +179,13 @@ namespace gc.sitio.Areas.Seguridad.Controllers
 
                         #endregion
 
+                        var cambioClaveObligatorio = tokenS.Claims.FirstOrDefault(c => c.Type == "cambio_clave_obligatorio")?.Value;
+                        if (string.Equals(cambioClaveObligatorio, "true", StringComparison.OrdinalIgnoreCase))
+                        {
+                            TempData["warn"] = "Debe establecer una contraseña definitiva para continuar.";
+                            return RedirectToAction("ClaveObligatoria", "Configuracion", new { area = "Configuracion" });
+                        }
+
                         var claveExpirada = tokenS.Claims.FirstOrDefault(c => c.Type == "clave_expirada")?.Value;
                         if (string.Equals(claveExpirada, "true", StringComparison.OrdinalIgnoreCase))
                         {
@@ -198,6 +205,8 @@ namespace gc.sitio.Areas.Seguridad.Controllers
                     var respuesta = await response.Content.ReadAsStringAsync();
 
                     _logger?.LogError($"Error al autenticar: {respuesta}");
+                    if (response.StatusCode == HttpStatusCode.Forbidden && respuesta.Contains("CLAVE_TEMPORAL_VENCIDA"))
+                        throw new NegocioException("La contraseña temporal ha vencido. Solicite un nuevo blanqueo al administrador.");
                     throw new NegocioException("No se ha podido autenticar. El usuario o contraseña no son correctos.");
                 }
 

@@ -1,0 +1,93 @@
+@model gc.sitio.Models.Configuracion.CambioClaveObligatoriaViewModel
+@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Cambio obligatorio de contraseña - GECONet</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/css/bootstrap.css" />
+    <link rel="stylesheet" href="~/lib/boxicons/css/boxicons.min.css" />
+    <link rel="stylesheet" href="~/css/pages/configuracion-seguridad.css" asp-append-version="true" />
+</head>
+<body>
+    <main class="forced-password-page">
+        <section class="forced-password-shell config-card">
+            <div class="config-card-header">
+                <div class="config-icon"><i class="bx bx-shield-quarter"></i></div>
+                <div>
+                    <h1>Definí tu nueva contraseña</h1>
+                    <p>Por seguridad, debés reemplazar la contraseña temporal antes de continuar.</p>
+                </div>
+            </div>
+
+            <div class="forced-password-notice">
+                <i class="bx bx-info-circle me-1"></i>
+                Hasta completar este cambio no estarán disponibles el menú ni los demás módulos de GECONet.
+            </div>
+
+            <form id="formClaveObligatoria" method="post" autocomplete="off"
+                  action="@Url.Action("CambiarClaveObligatoria", "Configuracion", new { area = "Configuracion" })"
+                  data-validar-longitud="@Model.Politica.ValidarLongitud.ToString().ToLowerInvariant()"
+                  data-longitud-minima="@Model.Politica.LongitudMinima"
+                  data-longitud-maxima="@Model.Politica.LongitudMaxima"
+                  data-validar-complejidad="@Model.Politica.ValidarComplejidad.ToString().ToLowerInvariant()"
+                  data-mayuscula="@Model.Politica.RequiereMayuscula.ToString().ToLowerInvariant()"
+                  data-minuscula="@Model.Politica.RequiereMinuscula.ToString().ToLowerInvariant()"
+                  data-numero="@Model.Politica.RequiereNumero.ToString().ToLowerInvariant()"
+                  data-simbolo="@Model.Politica.RequiereSimbolo.ToString().ToLowerInvariant()">
+                @Html.AntiForgeryToken()
+                <div id="mensajeClaveObligatoria" class="alert d-none" role="alert"></div>
+
+                <div class="config-form-grid">
+                    <div class="config-fields">
+                        <div class="mb-3">
+                            <label for="ClaveNueva" class="form-label">Nueva contraseña</label>
+                            <div class="password-field">
+                                <input asp-for="ClaveNueva" type="password" class="form-control"
+                                       maxlength="@Model.Politica.LongitudMaxima" autocomplete="new-password" autofocus />
+                                <button type="button" class="password-toggle" data-target="ClaveNueva" aria-label="Mostrar contraseña"><i class="bx bx-show"></i></button>
+                            </div>
+                        </div>
+                        <div class="mb-2">
+                            <label for="ConfirmacionClave" class="form-label">Confirmar nueva contraseña</label>
+                            <div class="password-field">
+                                <input asp-for="ConfirmacionClave" type="password" class="form-control"
+                                       maxlength="@Model.Politica.LongitudMaxima" autocomplete="new-password" />
+                                <button type="button" class="password-toggle" data-target="ConfirmacionClave" aria-label="Mostrar contraseña"><i class="bx bx-show"></i></button>
+                            </div>
+                            <small id="coincidenciaClave" class="form-text"></small>
+                        </div>
+                    </div>
+
+                    <div class="policy-panel">
+                        <h2>Requisitos de seguridad</h2>
+                        <ul class="policy-list">
+                            @if (Model.Politica.ValidarLongitud) { <li data-rule="length"><i class="bx bx-circle"></i> Entre @Model.Politica.LongitudMinima y @Model.Politica.LongitudMaxima caracteres</li> }
+                            @if (Model.Politica.ValidarComplejidad && Model.Politica.RequiereMayuscula) { <li data-rule="upper"><i class="bx bx-circle"></i> Al menos una letra mayúscula</li> }
+                            @if (Model.Politica.ValidarComplejidad && Model.Politica.RequiereMinuscula) { <li data-rule="lower"><i class="bx bx-circle"></i> Al menos una letra minúscula</li> }
+                            @if (Model.Politica.ValidarComplejidad && Model.Politica.RequiereNumero) { <li data-rule="number"><i class="bx bx-circle"></i> Al menos un número</li> }
+                            @if (Model.Politica.ValidarComplejidad && Model.Politica.RequiereSimbolo) { <li data-rule="symbol"><i class="bx bx-circle"></i> Al menos un símbolo</li> }
+                            <li data-rule="match"><i class="bx bx-circle"></i> Ambas contraseñas deben coincidir</li>
+                        </ul>
+                        <div class="policy-expiry"><i class="bx bx-calendar-check"></i> Vigencia posterior: @Model.Politica.DiasVigencia días</div>
+                    </div>
+                </div>
+
+                <div class="config-actions">
+                    <button type="submit" id="btnGuardarClave" class="btn btn-golden config-action-btn">
+                        <i class="bx bx-check-circle"></i><span>Confirmar</span>
+                    </button>
+                    <a href="@Url.Action("Logout", "Token", new { area = "Seguridad" })" class="btn btn-outline-danger config-action-btn">
+                        <i class="bx bx-log-out"></i><span>Cerrar sesión</span>
+                    </a>
+                </div>
+            </form>
+        </section>
+    </main>
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/js/app/areas/configuracion/cambio-clave-obligatoria.js" asp-append-version="true"></script>
+</body>
+</html>

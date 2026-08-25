@@ -67,12 +67,34 @@ namespace gc.sitio.Models.Middleware
                 }
             }
 
+            // Una sesión originada por blanqueo sólo puede establecer la contraseña definitiva o cerrar sesión.
+            bool cambioClaveObligatorio = string.Equals(
+                context.User.Claims.FirstOrDefault(c => c.Type == "cambio_clave_obligatorio")?.Value,
+                "true", StringComparison.OrdinalIgnoreCase);
+            bool rutaClaveObligatoria = context.Request.Path.StartsWithSegments(
+                "/Configuracion/Configuracion/ClaveObligatoria", StringComparison.OrdinalIgnoreCase)
+                || context.Request.Path.StartsWithSegments(
+                    "/Configuracion/Configuracion/CambiarClaveObligatoria", StringComparison.OrdinalIgnoreCase);
+            bool rutaLogout = context.Request.Path.StartsWithSegments("/seguridad/Token/Logout", StringComparison.OrdinalIgnoreCase);
+            if (cambioClaveObligatorio && !rutaClaveObligatoria && !rutaLogout)
+            {
+                if (isAjaxRequest)
+                {
+                    context.Response.StatusCode = StatusCodes.Status403Forbidden;
+                    context.Response.ContentType = "application/json";
+                    await context.Response.WriteAsync("{\"error\":false,\"warn\":true,\"cambioClaveObligatorio\":true,\"msg\":\"Debe establecer una contraseña definitiva para continuar.\"}");
+                    return;
+                }
+
+                context.Response.Redirect($"{context.Request.PathBase}/Configuracion/Configuracion/ClaveObligatoria");
+                return;
+            }
+
             // Una sesión con contraseña vencida sólo puede acceder al cambio de clave o cerrar sesión.
             bool claveExpirada = string.Equals(
                 context.User.Claims.FirstOrDefault(c => c.Type == "clave_expirada")?.Value,
                 "true", StringComparison.OrdinalIgnoreCase);
             bool rutaCambioClave = context.Request.Path.StartsWithSegments("/Configuracion", StringComparison.OrdinalIgnoreCase);
-            bool rutaLogout = context.Request.Path.StartsWithSegments("/seguridad/Token/Logout", StringComparison.OrdinalIgnoreCase);
             if (claveExpirada && !rutaCambioClave && !rutaLogout)
             {
                 if (isAjaxRequest)

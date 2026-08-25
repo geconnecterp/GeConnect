@@ -6,6 +6,7 @@ using gc.api.core.Servicios;
 using gc.api.infra.Datos.Contratos.Security;
 using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Core.Exceptions;
+using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Options;
 using System.Text.Json;
 
@@ -31,14 +32,12 @@ namespace gc.api.infra.Datos.Implementacion.Security
             var patron = new { usuario, clave = password };
 
 
-            string sp = $"select {ConstantesGC.StoredFunctions.FX_PASSWORD_ENCRIPTA}('{JsonSerializer.Serialize(patron)}')";
-            var res =  AnalizaClave(hash, sp);
+            var res = AnalizaClave(hash, JsonSerializer.Serialize(patron));
 
             if (!res)
             {
                 //probamos si la clave es vieja y no con patron
-                sp = $"select {ConstantesGC.StoredFunctions.FX_PASSWORD_ENCRIPTA}('{password}')";
-                res = AnalizaClave(hash, sp);
+                res = AnalizaClave(hash, password);
                 return res;
             }
             return res;
@@ -60,9 +59,14 @@ namespace gc.api.infra.Datos.Implementacion.Security
             //}
         }
 
-        private bool AnalizaClave(string hash, string sp)
+        private bool AnalizaClave(string hash, string valor)
         {
-            var pass = _repository.InvokarSpScalar(sp, null, false, true, false);
+            string sql = $"select {ConstantesGC.StoredFunctions.FX_PASSWORD_ENCRIPTA}(@valor)";
+            var parametros = new List<SqlParameter>
+            {
+                new("@valor", valor)
+            };
+            var pass = _repository.InvokarSpScalar(sql, parametros, false, true, false);
 
             if (pass != null)
             {
@@ -99,8 +103,12 @@ namespace gc.api.infra.Datos.Implementacion.Security
 
             var patron= new {usuario=registroUserDto.User,clave=registroUserDto.Password};
 
-            string sp = $"select {ConstantesGC.StoredFunctions.FX_PASSWORD_ENCRIPTA}('{JsonSerializer.Serialize(patron)}')";
-            var pass = _repository.InvokarSpScalar(sp, null,false,true,false);
+            string sql = $"select {ConstantesGC.StoredFunctions.FX_PASSWORD_ENCRIPTA}(@valor)";
+            var parametros = new List<SqlParameter>
+            {
+                new("@valor", JsonSerializer.Serialize(patron))
+            };
+            var pass = _repository.InvokarSpScalar(sql, parametros, false, true, false);
             if(pass != null)
             {
                 return pass.ToString();

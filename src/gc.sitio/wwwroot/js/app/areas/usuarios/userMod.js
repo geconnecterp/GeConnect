@@ -9,9 +9,7 @@
 
     $("#btnDetalle").prop("disabled", true);
 
-    $("#btnCancel").on("click", function () {
-        window.location.href = homeUser;
-    });
+    $("#btnCancel").off("click.userInit").on("click.userInit", inicializarModuloUsuarios);
 
     $("#pagEstado").on("change", function () {
         var div = $("#divPaginacion");
@@ -58,8 +56,20 @@
                     $("input#cta_denominacion").removeClass("text-success").addClass("text-danger");
                 }
                 return true;
+            },
+            change: function (event, ui) {
+                if (!ui.item) {
+                    $("input#cta_id").val("");
+                    $(this).removeClass("text-success text-danger");
+                }
             }
         });
+    });
+
+    // El identificador de usuario se define manualmente en el alta y, por regla
+    // de negocio, debe conservarse siempre en minúsculas.
+    $(document).on("input", "#usu_id:not(:disabled)", function () {
+        this.value = this.value.toLowerCase();
     });
 
     $(".inputEditable").on("keypress", analizaEnterInput);
@@ -147,7 +157,7 @@ function selectUserRegDbl(x, gridId) {
 
 function presentaPerfilesUsuario() {
 
-    PostGen({}, presentarPerfilUrl, function (obj) {
+    PostGen({ usuId: usuSelect }, presentarPerfilUrl, function (obj) {
         if (obj.error === true) {
             CerrarWaiting();
             AbrirMensaje("ALGO NO SALIO BIEN!", obj.msg, function () {
@@ -159,7 +169,7 @@ function presentaPerfilesUsuario() {
 
             AbrirMensaje("ATENCIÓN", obj.msg, function () {
                 if (obj.auth === true) {
-                    windows.location.href = login;
+                    window.location.href = login;
                 }
                 else {
                     $("#msjModal").modal("hide");
@@ -177,6 +187,8 @@ function presentaPerfilesUsuario() {
                     "keep_selected_style": false
                 },
                 "plugins": ['checkbox']
+            }).one("ready.jstree", function () {
+                activarArbol("#divPerfiles", "#", false);
             });
 
             CerrarWaiting();
@@ -187,7 +199,7 @@ function presentaPerfilesUsuario() {
 
 function presentaAdministracionesUsuario() {
 
-    PostGen({}, presentarAdminsUrl, function (obj) {
+    PostGen({ usuId: usuSelect }, presentarAdminsUrl, function (obj) {
         if (obj.error === true) {
             CerrarWaiting();
             AbrirMensaje("ALGO NO SALIO BIEN!", obj.msg, function () {
@@ -199,7 +211,7 @@ function presentaAdministracionesUsuario() {
 
             AbrirMensaje("ATENCIÓN", obj.msg, function () {
                 if (obj.auth === true) {
-                    windows.location.href = login;
+                    window.location.href = login;
                 }
                 else {
                     $("#msjModal").modal("hide");
@@ -217,6 +229,8 @@ function presentaAdministracionesUsuario() {
                     "keep_selected_style": false
                 },
                 "plugins": ['checkbox']
+            }).one("ready.jstree", function () {
+                activarArbol("#divAdmins", "#", false);
             });
 
             CerrarWaiting();
@@ -227,7 +241,7 @@ function presentaAdministracionesUsuario() {
 
 function presentaDerechosUsuario() {
 
-    PostGen({}, presentarDerecsUrl, function (obj) {
+    PostGen({ usuId: usuSelect }, presentarDerecsUrl, function (obj) {
         if (obj.error === true) {
             CerrarWaiting();
             AbrirMensaje("ALGO NO SALIO BIEN!", obj.msg, function () {
@@ -239,7 +253,7 @@ function presentaDerechosUsuario() {
 
             AbrirMensaje("ATENCIÓN", obj.msg, function () {
                 if (obj.auth === true) {
-                    windows.location.href = login;
+                    window.location.href = login;
                 }
                 else {
                     $("#msjModal").modal("hide");
@@ -257,6 +271,8 @@ function presentaDerechosUsuario() {
                     "keep_selected_style": false
                 },
                 "plugins": ['checkbox']
+            }).one("ready.jstree", function () {
+                activarArbol("#divDers", "#", false);
             });
 
             CerrarWaiting();
@@ -266,59 +282,30 @@ function presentaDerechosUsuario() {
 }
 
 function InicializaPantallaUser(grilla) {
-    // Si grilla es undefined, asignar GridUser por defecto
     if (!grilla) {
         grilla = Grids.GridUser;
     }
 
-    // Si no es la grilla principal, manejar según el tab activo
-    if (grilla !== Grids.GridUser && tabAbm !== 1) {
-        switch (tabAbm) {
-            case 2:
-                activarArbol("#divPerfiles", "#", false, true);
-                activarBotones(true);
-                break;
-            case 3:
-                activarArbol("#divAdmins", "#", false, true);
-                activarBotones(true);
-                break;
-            case 4:
-                activarArbol("#divDers", "#", false, true);
-                activarBotones(true);
-                break;
-            default:
-                return false;
-        }
-    }
-    // Lógica para tab 1 (grilla principal)
     if ($("#divDetalle").is(":visible")) {
         $("#divDetalle").collapse("hide");
     }
 
-    // Limpiar el panel de detalles
     $("#divpanel01").empty();
-    //$("#divFiltro").collapse("show");
-    // Resetear variables de acción
-    //accion = "";
-    //accion02 = "";
-    //accion03 = "";
-    //accion04 = "";
+    $("#divGrilla, #divPaginacion").show();
+    accion = "";
+    accion02 = "";
+    accion03 = "";
+    accion04 = "";
 
-    // Limpiar selección de registro
     $("#tbGridUsers tbody tr").removeClass("selectedEdit-row");
     regSelected = null;
+    usuSelect = "";
 
-    // Reactivar la grilla
-
-
-
-    // Ejecutar acción de cancelación en botones
-    accionBotones(AbmAction.CANCEL);
-
-    // Reactivar botones principales
+    $("#btnAbmAceptar, #btnAbmCancelar").prop("disabled", true).hide();
+    $("#btnFiltro, #BtnLiTab01, #BtnLiTab02, #BtnLiTab03, #BtnLiTab04")
+        .prop("disabled", false)
+        .removeClass("text-danger");
     activarBotones(false);
-
-    // Deshabilitar el botón detalle ya que no hay selección
     $("#btnDetalle").prop("disabled", true);
 
     CerrarWaiting();
@@ -326,6 +313,60 @@ function InicializaPantallaUser(grilla) {
     setTimeout(function () {
         activarGrilla("tbGridUsers");
     }, 200);
+}
+
+function cancelarOperacionUsuario() {
+    CerrarWaiting();
+
+    $("#btnFiltro, #btnDetalle, #BtnLiTab01, #BtnLiTab02, #BtnLiTab03, #BtnLiTab04")
+        .prop("disabled", false)
+        .removeClass("text-danger");
+    $("#btnAbmAceptar, #btnAbmCancelar").prop("disabled", true).hide();
+
+    switch (tabAbm) {
+        case 1:
+            accion = "";
+            activarControles(false);
+            if (usuSelect) {
+                desactivarGrilla(Grids.GridUser);
+                buscarUserServer({ id: usuSelect });
+            } else {
+                InicializaPantallaUser(Grids.GridUser);
+            }
+            break;
+        case 2:
+            accion02 = "";
+            activarArbol("#divPerfiles", "#", false, true);
+            activarBotones(true);
+            desactivarGrilla(Grids.GridUser);
+            break;
+        case 3:
+            accion03 = "";
+            activarArbol("#divAdmins", "#", false, true);
+            activarBotones(true);
+            desactivarGrilla(Grids.GridUser);
+            break;
+        case 4:
+            accion04 = "";
+            activarArbol("#divDers", "#", false, true);
+            activarBotones(true);
+            desactivarGrilla(Grids.GridUser);
+            break;
+    }
+}
+
+function inicializarModuloUsuarios() {
+    AbrirWaiting("Inicializando Gestión de Usuarios...");
+    PostGen({ moduleInstanceId }, inicializarModuloUrl, function (obj) {
+        CerrarWaiting();
+        if (obj.error === true || obj.warn === true) {
+            AbrirMensaje("ATENCIÓN", obj.msg, function () {
+                $("#msjModal").modal("hide");
+            }, false, ["CONTINUAR"], obj.error === true ? "error!" : "warn!", null);
+            return;
+        }
+        window.location.href = homeUser;
+    });
 }
 
 // NUEVA FUNCIÓN: Simplificar la lógica de análisis del botón detalle
@@ -349,6 +390,7 @@ function buscarUsers(pagina,callback) {
     var data1 = {
         id, id2,
         buscar,
+        moduleInstanceId,
     };
 
     var buscaNew = JSON.stringify(dataBak) != JSON.stringify(data1)
@@ -372,8 +414,9 @@ function buscarUsers(pagina,callback) {
 
     PostGenHtml(data, buscarUrl, function (obj) {
         $("#divGrilla").html(obj);
+        activarBotones(false);
         $("#divFiltro").collapse("hide")
-        PostGen({}, buscarMetadataURL, function (obj) {
+        PostGen({ moduleInstanceId }, buscarMetadataURL, function (obj) {
             if (obj.error === true) {
                 AbrirMensaje("ATENCIÓN", obj.msg, function () {
                     $("#msjModal").modal("hide");
@@ -414,9 +457,11 @@ function buscarUserServer(data) {
         $("#btnDetalle").prop("disabled", false);
         $("#divFiltro").collapse("hide");
         $("#divDetalle").collapse("show");
+        $("#divGrilla, #divPaginacion").hide();
 
         //activar botones de acción
         activarBotones(true);
+        actualizarAccionesSeguridadUsuario();
 
         // Verificar si hay una acción activa antes de deshabilitar tabs
         var hayAccionActiva = (accion !== "" && accion !== AbmAction.CANCEL) ||
