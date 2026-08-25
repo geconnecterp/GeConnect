@@ -319,12 +319,19 @@ namespace gc.api.core.Servicios
 					new SqlParameter("@vta_ana_hasta",request.vta_ana_hasta),
 					new SqlParameter("@limite_max",request.limite_max),
 					new SqlParameter("@limite_min",request.limite_min),
-					new SqlParameter("@ultimo_ped",request.ultimo_ped),
+					
 					new SqlParameter("@depo_list",
 	                                            request.depo_list != null && request.depo_list.Any()
 		                                            ? string.Join(",", request.depo_list) + ","
 		                                            : ""),
 					new SqlParameter("@excluir_pend",request.excluir_pend),
+					new SqlParameter("@vta_proy",request.vta_proy),
+					new SqlParameter("@ultimo_ped",request.ultimo_ped),
+					new SqlParameter("@vta_ana",request.vta_ana),
+					new SqlParameter("@vta_30",request.vta_30),
+					new SqlParameter("@vta_excluye_pre",request.vta_excluir_pre),
+					new SqlParameter("@vta_excluye_porc_ofe",request.vta_excluir_porc_ofe),
+					new SqlParameter("@piso_pallet",request.piso_pallet),
 			};
 
 			List<ProductoNCPI_AutoDto> producto = _repository.EjecutarLstSpExt<ProductoNCPI_AutoDto>(sp, ps, true);

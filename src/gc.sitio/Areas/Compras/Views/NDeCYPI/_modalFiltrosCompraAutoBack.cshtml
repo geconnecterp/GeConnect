@@ -1,0 +1,146 @@
+﻿@model FiltroCompraAutoModel
+@{
+}
+<style>
+	.hidden {
+		display: none !important;
+	}
+
+</style>
+<div id="divInputsModal">
+	<div class="modal-header">
+		<h5 class="modal-title" id="modalCenterTitle">@Model.Titulo</h5>
+		<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+	</div>
+	<div class="modal-body">
+		@if (Model.MostrarExcluirOCPendientes)
+		{
+			<div class="row mt-1">
+				<div class="col-sm-12">
+					<div class="input-group input-group-sm">
+						<div class="form-check form-check-inline form-switch mb-2">
+							<input class="form-check-input" type="checkbox" name="EstadoActivo" id="chkSucursales" />
+							<label class="form-check-label" for="chkSucursales" id="lbSucursales"></label>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="row">
+				<div class="col-sm-6">
+					<div class="input-group input-group-sm">
+						@Html.DropDownListFor(m => m.SelectedValue, Model.ListaSucursales, "Seleccionar", new { @id = "listaSucursalesModal", disabled = "disabled", @class = "form-control inputEditable activable" })
+					</div>
+				</div>
+				<div class="col-sm-6">
+					@Html.ListBox("SucursalesListModal", null, new { @class = "form-control listbox-sm", @disabled = "disabled" })
+				</div>
+			</div>
+		}
+		<div class="row col-sm-4 mt-1">
+			<div class="input-group input-group-sm mt-2">
+				<label class="input-group-text" for="DiasAprov">Días de Aprovicionamiento: </label>
+				<input type="text" asp-for="DiasAprov" id="DiasAprov" class="form-control activable inputEditable" value="30" />
+			</div>
+		</div>
+		<div class="row mt-2">
+			<div class="col-sm-12">
+				<div class="row">
+					<div class="col-sm-4">
+						<label class="form-label mb-2 fw-bold" id="lbVentasDiarias">Considerar Ventas diarias entre:</label>
+					</div>
+					<div class="col-sm-2">
+						<div class="input-group input-group-sm">
+							<span class="input-group-text" id="lbIdDesde" hidden>Desde:</span>
+							<input type="date" class="form-control inputEditable" asp-for="VentaDiariaDesde" id="VentaDiariaDesde" name="VentaDiariaDesde" style="background-color:rgb(251,255,195);font-weight:900;" autofocus />
+						</div>
+					</div>
+					<div class="col-sm-2">
+						<div class="input-group input-group-sm">
+							<span class="input-group-text" id="lbIdHasta" hidden>Hasta:</span>
+							<input type="date" class="form-control inputEditable" asp-for="VentaDiariaHasta" id="VentaDiariaHasta" name="VentaDiariaHasta" style="background-color:rgb(251,255,195);font-weight:900;" autofocus />
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="row mt-2">
+			<div class="col-sm-12">
+				<div class="form-check form-switch mb-2">
+					<input class="form-check-input" asp-for="LimitarPedidoACompletar" />
+					<label class="form-check-label" asp-for="LimitarPedidoACompletar" id="lbLimitarPedidoACompletar">Limitar Pedido a completar Stock Máximo definido por Sucursal</label>
+				</div>
+			</div>
+		</div>
+		<div class="row mt-2">
+			<div class="col-sm-12">
+				<div class="form-check form-switch mb-2">
+					<input class="form-check-input" asp-for="LimitarPedidoParaCumplir" />
+					<label class="form-check-label" asp-for="LimitarPedidoParaCumplir" id="lbLimitarPedidoParaCumplir">Limitar Pedido para cumplir con Stock Mínimo definido por Sucursal</label>
+				</div>
+			</div>
+		</div>
+		<div class="row mt-2">
+			<div class="col-sm-12">
+				<div class="form-check form-switch mb-2">
+					<input class="form-check-input" asp-for="TomarUltimoPedido" />
+					<label class="form-check-label" asp-for="TomarUltimoPedido" id="lbTomarUltimoPedido">Tomar último Pedido ignorando Stock Mínimo y Stock Máximo</label>
+				</div>
+			</div>
+		</div>
+		@if (Model.MostrarExcluirOCPendientes)
+		{
+			<div class="row mt-2">
+				<div class="col-sm-12">
+					<div class="input-group input-group-sm">
+						<div class="form-check form-check-inline form-switch mb-2">
+							<input class="form-check-input" type="checkbox" name="EstadoActivo" id="chkDepositos" />
+							<label class="form-check-label" for="chkDepositos" id="lbDepositos"></label>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="row">
+				<div class="col-sm-6">
+					<div class="input-group input-group-sm">
+						@Html.DropDownListFor(m => m.SelectedValue, Model.ListaDepositos, "Seleccionar", new { @id = "listaDepositosModal", disabled = "disabled", @class = "form-control inputEditable activable" })
+					</div>
+				</div>
+				<div class="col-sm-6">
+					@Html.ListBox("DepositosListModal", null, new { @class = "form-control listbox-sm", @disabled = "disabled" })
+				</div>
+			</div>
+		}
+		@if (Model.MostrarExcluirOCPendientes)
+		{
+			<div class="row mt-1">
+				<div class="col-sm-12">
+					<div class="form-check form-switch mb-2">
+						<input class="form-check-input" asp-for="ExcluirOCPendientes" />
+						<label class="form-check-label" asp-for="ExcluirOCPendientes" id="lbExcluirOCPendientes">Excluir OC Pendientes</label>
+					</div>
+				</div>
+			</div>
+		}
+		else
+		{
+			<div class="row mt-1">
+				<div class="col-sm-12">
+					<div class="form-check form-switch mb-2">
+						<input class="form-check-input" asp-for="ExcluirPIPendientes" />
+						<label class="form-check-label" asp-for="ExcluirPIPendientes" id="lbExcluirPIPendientes">Excluir PI Pendientes</label>
+					</div>
+				</div>
+			</div>
+		}
+	</div>
+	<div class="modal-footer">
+		<div class="input-group input-group-sm">
+			<button type="button" class="btn btn-success btn-sm ms-1" id="btnCompraAutoBuscar" style="width: 100px;">
+				<i class="bx bx-badge-check"></i> Confirmar
+			</button>
+			<button type="button" class="btn btn-secondary btn-sm ms-1" id="btnSalir" data-bs-dismiss="modal" style="width: 100px;">
+				<i class="bx bx-log-out-circle"></i> Salir
+			</button>
+		</div>
+	</div>
+</div>

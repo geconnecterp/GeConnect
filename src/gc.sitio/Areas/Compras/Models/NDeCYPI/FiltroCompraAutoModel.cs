@@ -14,6 +14,7 @@ namespace gc.sitio.Areas.Compras.Models
 		public bool LimitarPedidoACompletar { get; set; }
 		public bool LimitarPedidoParaCumplir { get; set; }
 		public bool TomarUltimoPedido { get; set; }
+		public bool PedidoConPisoPalletCompleto { get; set; }
 		public bool ExcluirOCPendientes { get; set; }
 		public bool ExcluirPIPendientes { get; set; }
 		public bool MostrarExcluirOCPendientes { get; set; } = false;

@@ -523,16 +523,16 @@ function ControlaCompraAutoBuscar() {
 		let dias_prevision = $("#DiasAprov").inputmask('unmaskedvalue');
 		let vta_ana_desde = $("#VentaDiariaDesde").val();
 		let vta_ana_hasta = $("#VentaDiariaHasta").val();
-		let limite_max = $("#LimitarPedidoACompletar")[0].checked;
-		let limite_min = $("#LimitarPedidoParaCumplir")[0].checked;
-		let ultimo_ped = $("#TomarUltimoPedido")[0].checked;
+		let limite_max = estaChequeado("LimitarPedidoACompletar");
+		let limite_min = estaChequeado("LimitarPedidoParaCumplir");
+		let piso_pallet = estaChequeado("PedidoConPisoPalletCompleto");
 		if ($("#ExcluirOCPendientes").length > 0) {
-			var excluir_pend = $("#ExcluirOCPendientes")[0].checked;
+			var excluir_pend = estaChequeado("ExcluirOCPendientes");
 			var es_pedido_interno = true;
 			console.log("El checkbox ExcluirOCPendientes está renderizado");
 		} else {
 			var es_pedido_interno = false;
-			var excluir_pend = $("#ExcluirPIPendientes")[0].checked;
+			var excluir_pend = estaChequeado("ExcluirPIPendientes");
 			console.log("El checkbox ExcluirOCPendientes NO está en el DOM");
 		}
 		let adm_list = [];
@@ -541,7 +541,26 @@ function ControlaCompraAutoBuscar() {
 			$("#SucursalesListModal").children().each(function (i, item) { adm_list.push($(item).val()) });
 			$("#DepositosListModal").children().each(function (i, item) { depo_list.push($(item).val()) });
 		}
-		var data = { tipo, adm_list, dias_prevision, vta_ana_desde, vta_ana_hasta, limite_max, limite_min, ultimo_ped, depo_list, excluir_pend, es_pedido_interno };
+		var estadoRadios = obtenerEstadosRadios();
+		var data = {
+			tipo,
+			adm_list,
+			depo_list,
+			dias_prevision,
+			vta_proy: estadoRadios.PROY,
+			ultimo_ped: estadoRadios.ULTOC,
+			vta_30: estadoRadios.VTA30,
+			vta_ana: estadoRadios.VTAENTRE,
+			vta_ana_desde,
+			vta_ana_hasta,
+			vta_excluir_pre: estaChequeado("chkCotizaciones"),
+			vta_excluir_porc_ofe: $("#txtPorcPromos").inputmask('unmaskedvalue'),
+			limite_max,
+			limite_min,
+			piso_pallet,
+			excluir_pend,
+			es_pedido_interno
+		};
 		PostGen(data, confirmarCambiosPedidoAutoUrl, function (obj) {
 			CerrarWaiting();
 			if (obj.error === true) {
@@ -555,6 +574,19 @@ function ControlaCompraAutoBuscar() {
 			}
 		});
 	}
+}
+
+function estaChequeado(id) {
+	return $("#" + id).is(":checked");
+}
+
+function obtenerEstadosRadios() {
+	return {
+		VTA30: document.getElementById("optVta30").checked,
+		VTAENTRE: document.getElementById("optVtaEntre").checked,
+		PROY: document.getElementById("optProy").checked,
+		ULTOC: document.getElementById("optUltOC").checked
+	};
 }
 
 function obtenerTipoOrigen(origen) {
@@ -689,6 +721,131 @@ function AbrirlModalAuto(abrirComo) {
 }
 
 function inicializarCamposEnModal() {
+
+	// ============================
+	// 1) Seleccionar radio por defecto
+	// ============================
+	$("#optProy").prop("checked", true);
+
+	// ============================
+	// 2) Habilitar / deshabilitar controles según radio seleccionado
+	// ============================
+	$("#chkCotizaciones").prop("disabled", true);
+
+	$("#VentaDiariaDesde").prop("disabled", true);
+	$("#VentaDiariaHasta").prop("disabled", true);
+	$("#chkExcluirPromos").prop("disabled", true);
+	$("#txtPorcPromos").prop("disabled", true);
+	$("#PedidoConPisoPalletCompleto").prop('checked', true);
+	$("#ExcluirOCPendientes").prop('checked', true);
+
+	// ============================
+	// 3) Vaciar ListBox de Sucursales y Depósitos
+	// ============================
+	$("#SucursalesListModal").empty();
+	$("#DepositosListModal").empty();
+
+	// ============================
+	// 4) Setear fechas por defecto
+	// ============================
+	const hoy = new Date();
+	const hace7 = new Date();
+	hace7.setDate(hoy.getDate() - 7);
+
+	const fmt = (d) => d.toISOString().split("T")[0];
+
+	$("#VentaDiariaHasta").val(fmt(hoy));
+	$("#VentaDiariaDesde").val(fmt(hace7));
+
+	// ============================
+	// 5) Handler: Sucursales
+	// ============================
+	$("#chkSucursales").on("change", function () {
+		const activo = $(this).is(":checked");
+
+		$("#listaSucursalesModal").prop("disabled", !activo);
+		$("#SucursalesListModal").prop("disabled", !activo);
+
+		if (!activo) {
+			$("#listaSucursalesModal").val("");
+			$("#SucursalesListModal").empty();
+		}
+	});
+
+	// ============================
+	// 6) Handler: Depósitos
+	// ============================
+	$("#chkDepositos").on("change", function () {
+		const activo = $(this).is(":checked");
+
+		$("#listaDepositosModal").prop("disabled", !activo);
+		$("#DepositosListModal").prop("disabled", !activo);
+
+		if (!activo) {
+			$("#listaDepositosModal").val("");
+			$("#DepositosListModal").empty();
+		}
+	});
+
+	// ============================
+	// 7) Handlers de radios (igual que antes)
+	// ============================
+
+	$("#optVta30").on("change", function () {
+		if (this.checked) {
+			$("#chkCotizaciones").prop("disabled", false);
+
+			$("#VentaDiariaDesde").prop("disabled", true);
+			$("#VentaDiariaHasta").prop("disabled", true);
+			$("#chkExcluirPromos").prop("disabled", true);
+			$("#txtPorcPromos").prop("disabled", true);
+		}
+	});
+
+	$("#optVtaEntre").on("change", function () {
+		if (this.checked) {
+			$("#chkCotizaciones").prop("disabled", true);
+
+			$("#VentaDiariaDesde").prop("disabled", false);
+			$("#VentaDiariaHasta").prop("disabled", false);
+			$("#chkExcluirPromos").prop("disabled", false);
+			$("#txtPorcPromos").prop("disabled", false);
+
+		}
+	});
+
+	$("#optProy, #optUltOC").on("change", function () {
+		if (this.checked) {
+			$("#chkCotizaciones").prop("disabled", true);
+
+			$("#VentaDiariaDesde").prop("disabled", true);
+			$("#VentaDiariaHasta").prop("disabled", true);
+			$("#chkExcluirPromos").prop("disabled", true);
+			$("#txtPorcPromos").prop("disabled", true);
+		}
+	});
+
+	$("#SucursalesListModal").off("dblclick");
+	$("#SucursalesListModal").on("dblclick", 'option', function () {
+		$(this).remove();
+		//Si hay depositos, limpio la lista de depositos
+		var tieneItems = $("#DepositosListModal option").length > 0;
+		if (tieneItems) {
+			$("#DepositosListModal").empty();
+		}
+	})
+	$("#DepositosListModal").off("dblclick");
+	$("#DepositosListModal").on("dblclick", 'option', function () {
+		$(this).remove();
+	})
+	getMaskForIntegerMax1000("#DiasAprov");
+	getMaskForIntegerMax100("#txtPorcPromos");
+	$("#txtPorcPromos").val(10);
+}
+
+
+
+function inicializarCamposEnModal2() {
 	$("#lbSucursales").text("Sucursales");
 	$("#chkSucursales").prop('checked', true);
 	$("#chkSucursales").trigger("change");
@@ -797,6 +954,22 @@ function getMaskForIntegerMax1000(selector) {
 		unmaskAsNumber: true,
 		min: 0,
 		max: 1000
+	});
+}
+
+function getMaskForIntegerMax100(selector) {
+	$(selector).inputmask({
+		alias: 'numeric',
+		groupSeparator: '.',
+		digits: 0,
+		digitsOptional: false,
+		allowMinus: false,
+		prefix: '',
+		suffix: '',
+		rightAlign: true,
+		unmaskAsNumber: true,
+		min: 0,
+		max: 100
 	});
 }
 
@@ -1054,11 +1227,27 @@ const FuncionSobreBusquedaDeProductos = {
 	CONOC: 'CONOC'
 }
 
-const colBulto = 11;
-const colCantidad = 12;
-const colCosto = 13;
-const colCostoTotal = 14;
-const colPallet = 15;
+function obtenerIndiceColumna(nombreColumna) {
+	const ths = document.querySelectorAll("#tbListaProducto thead th");
+	for (let i = 0; i < ths.length; i++) {
+		if (ths[i].innerText.trim() === nombreColumna.trim()) {
+			return i;
+		}
+	}
+	return -1;
+}
+
+function obtenerIndicePorDataCol(nombreColumna) {
+	const th = document.querySelector(`#tbListaProducto thead th[data-col='${nombreColumna}']`);
+	return th ? th.cellIndex : -1;
+}
+
+var colBulto = 17;
+var colCantidad = 18;
+var colCosto = 19;
+var colCostoTotal = 20;
+var colPallet = 21;
+
 function BuscarProductos(pag = 1) {
 	viendeDesdeBusquedaDeProducto = true;
 	AbrirWaiting();
@@ -1189,15 +1378,15 @@ function recalcularFooterOC(Tipo) {
 
 	// 4) Actualizar celdas correctas
 	// Estructura real del footer:
-	// td[0] = "Total:" (colspan=12)
+	// td[0] = "Total:" (colspan=19)
 	// td[1] = Total Costo
-	// td[2] = vacío
-	// td[3] = Total Pallet
+	// td[2] = Total Pallet
+	// td[3] = vacío
 	// td[4] = oculto
 	// td[5] = oculto
 
 	if (tds[1]) tds[1].textContent = fmt(totalCosto);
-	if (tds[3]) tds[3].textContent = fmt(totalPallet);
+	if (tds[2]) tds[2].textContent = fmt(totalPallet);
 }
 
 
@@ -1405,6 +1594,13 @@ function ActualizarListaProductos(row, campoActual) {
 			}, false, ["Aceptar"], "info!", null);
 		} else {
 			CerrarWaiting();
+
+			colBulto = obtenerIndicePorDataCol("pedido-bultos");
+			colCantidad = obtenerIndicePorDataCol("pedido-cantidad");
+			colCosto = obtenerIndicePorDataCol("precio-costo");
+			colCostoTotal = obtenerIndicePorDataCol("total-costo");
+			colPallet = obtenerIndicePorDataCol("total-pallet");
+
 			tabla = myTable = document.querySelector('#tbListaProducto tbody');
 			let fila = tabla.querySelector(`tr[data-id='${pId}']`);
 
@@ -1428,37 +1624,49 @@ function ActualizarListaProductos(row, campoActual) {
 						color = "#6cc6f3"; // celeste pastel (Automático)
 					}
 
-					fila.cells[colCantidad].innerText = o.cantidad;
+					fila.cells[colCantidad].innerText = formatearMonto(o.cantidad, 0);
 					fila.cells[colCantidad].style.backgroundColor = color;
 
-					fila.cells[colCosto].innerText = (Math.round(o.pCosto * 100) / 100).toFixed(3);
+					fila.cells[colCosto].innerText = formatearMonto(o.pCosto, 2);
 					fila.cells[colCosto].style.backgroundColor = color;
 
-					fila.cells[colCostoTotal].innerText = (Math.round(o.pCostoTotal * 100) / 100).toFixed(3);
+					//fila.cells[colCostoTotal].innerText = (Math.round(o.pCostoTotal * 100) / 100).toFixed(2);
+					fila.cells[colCostoTotal].innerText = formatearMonto(o.pCostoTotal, 2);
 					fila.cells[colCostoTotal].style.backgroundColor = color;
 
-					fila.cells[colPallet].innerText = (Math.round(o.pallet * 100) / 100).toFixed(2);
+					fila.cells[colPallet].innerText = formatearMonto(o.pallet, 2);
 
 					fila.cells[colBulto].style.backgroundColor = color;
 				} else {
-					fila.cells[colCantidad].innerText = o.cantidad;
+					fila.cells[colCantidad].innerText = formatearMonto(o.cantidad, 0);
 					fila.cells[colCantidad].style.backgroundColor = "";
 
-					fila.cells[colCosto].innerText = (Math.round(o.pCosto * 100) / 100).toFixed(3);
+					fila.cells[colCosto].innerText = formatearMonto(o.pCosto, 2);
 					fila.cells[colCosto].style.backgroundColor = "";
 
-					fila.cells[colCostoTotal].innerText = (Math.round(o.pCostoTotal * 100) / 100).toFixed(3);
+					//fila.cells[colCostoTotal].innerText = (Math.round(o.pCostoTotal * 100) / 100).toFixed(2);
+					fila.cells[colCostoTotal].innerText = formatearMonto(o.pCostoTotal, 2);
 					fila.cells[colCostoTotal].style.backgroundColor = "";
 
-					fila.cells[colPallet].innerText = (Math.round(o.pallet * 100) / 100).toFixed(2);
+					fila.cells[colPallet].innerText = formatearMonto(o.pallet, 2);
 
 					fila.cells[colBulto].style.backgroundColor = "";
 				}
 			}
+			recalcularFooterOC(tipoDeOperacion);
 			return false;
 		}
 	});
 }
+
+function formatearMonto(valor, decimales = 2) {
+	if (isNaN(valor)) return "0.00";
+
+	return Number(valor)
+		.toFixed(decimales)
+		.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+}
+
 
 function destacarFilaSeleccionadaGridListaProductos(id) {
 	console.log(`🎯 Destacando fila para ID: ${id}`);
