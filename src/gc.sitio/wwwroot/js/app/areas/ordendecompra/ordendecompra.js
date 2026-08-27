@@ -662,16 +662,16 @@ function CargarResumenDeOc() {
 				$("#chkDejarOCActiva").on("click", function () {
 					ActualizarGrillaConceptos();
 				});
-				const dateControl2 = $('input[type="date"]');
-				var now = moment().format('yyyy-MM-DD');
-				var min = now;
-				var max = moment().add(4, 'months');
-				for (var i = 0; i < dateControl2.length; i++) {
-					if (dateControl2[i].id == "FechaEntrega") {
-						dateControl2[i].setAttribute('min', min);
-						dateControl2[i].setAttribute('max', max.format('yyyy-MM-DD'));
-					}
-				}
+				// const dateControl2 = $('input[type="date"]');
+				// var now = moment().format('yyyy-MM-DD');
+				// var min = now;
+				// var max = moment().add(4, 'months');
+				// for (var i = 0; i < dateControl2.length; i++) {
+				// 	if (dateControl2[i].id == "FechaEntrega") {
+				// 		dateControl2[i].setAttribute('min', min);
+				// 		dateControl2[i].setAttribute('max', max.format('yyyy-MM-DD'));
+				// 	}
+				// }
 			}
 		});
 	}
@@ -1821,7 +1821,8 @@ function configurarEventosEdicionOptimizado() {
 			activarSiguienteCampo(this);
 
 			// Aplicar cálculos según tipo
-			if (esSecuencia01 && fueModificado) ActualizarProductoEnOcDebounced(row, this);
+			//if (esSecuencia01 && fueModificado) ActualizarProductoEnOcDebounced(row, this);
+			if (esSecuencia01) ActualizarProductoEnOcDebounced(row, this);
 		}
 	});
 

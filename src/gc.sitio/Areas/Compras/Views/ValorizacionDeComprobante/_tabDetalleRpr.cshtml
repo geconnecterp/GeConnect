@@ -10,10 +10,14 @@
 		gap: 100px;
 	}
 
+	.input-numeric {
+		height: 25px !important;
+		max-height: 25px !important;
+	}
 </style>
 <div class="row" style="padding-top: 10px;">
 	<div id="divListaDetalleRpr">
-		<div class="table-responsive table-wrapper-400-full-width" id="containerListaDetalleRpr">
+		<div class="table-responsive table-wrapper-600-full-width" id="containerListaDetalleRpr">
 			<table class="table table-bordered table-hover table-golden" id="tbListaDetalleRpr">
 				<thead>
 					<tr class="header">
@@ -37,7 +41,7 @@
 						<th scope="col">D4</th>
 						<th scope="col">Dpa</th>
 						<th scope="col">Boni.</th>
-						<th scope="col" class="text-end">Costo</th>
+						<th scope="col" class="text-end" style="width: 80px;">Costo</th>
 						<th scope="col">Recibido</th>
 						<th scope="col" class="text-end" style="background: cornflowerblue;">P. Lista</th>@*Factura*@
 						<th scope="col" style="background: cornflowerblue;">D1</th>
@@ -46,7 +50,7 @@
 						<th scope="col" style="background: cornflowerblue;">D4</th>
 						<th scope="col" style="background: cornflowerblue;">Dpa</th>
 						<th scope="col" style="background: cornflowerblue;">Boni.</th>
-						<th scope="col" class="text-end" style="background: cornflowerblue;">Costo</th>
+						<th scope="col" class="text-end" style="background: cornflowerblue;width: 80px;">Costo</th>
 						<th scope="col" style="background: cornflowerblue;">AP</th>
 						<th scope="col" style="background: cornflowerblue;">Cant. Fact.</th>
 						<th scope="col">DC</th>@*Factura*@
@@ -62,7 +66,7 @@
 							var nombre = item.p_id + "_";
 							var nombre_check = nombre + "checkbox";
 							var nombre_check_nc_genera = nombre + "nc_genera";
-							<tr class="@clase" data-p-id="@item.p_id" onclick="selectListaDetalleRpr(this)" title="OC: @item.oc_compte // RP: @item.rp_compte" id="@item.p_id">
+							<tr class="@clase" data-p-id="@item.p_id" onclick="selectListaDetalleRpr(this)">
 								@*0*@
 								<td class="check-column">
 									<div class="check-producto-container">

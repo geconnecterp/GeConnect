@@ -5,6 +5,15 @@
 	var alt = true;
 	string clase = string.Empty;
 }
+@section styles {
+	<link rel="stylesheet" href="~/css/simplePagination.css" />
+	<link rel="stylesheet" href="~/lib/jstree/themes/default/style.min.css" />
+}
+<style>
+	.ancho-botones{
+		width: 125px;
+	}
+</style>
 <div class="card">
 	<div class="card-body">
 		<row>
@@ -22,10 +31,6 @@
 									</div>
 								</div>
 								<div class="col-3">
-									@* <div class="input-group">
-										<span class="input-group-text">Depósito: </span>
-										@Html.DropDownList("id", depositos, "Seleccionar...", new { @id = "listaDeposito", @class = "form-control" })
-									</div> *@
 								</div>
 							</div>
 						</div>
@@ -71,13 +76,16 @@
 									</div>
 								</div>
 								<div class="col-5">
-									<button type="button" class="btn btn-success btn-sm me-1" id="btnConfirmarRP" title="Confirmar RP">
+									<button type="button" class="btn btn-success btn-sm me-1 ancho-botones" id="btnConfirmarRP" title="Confirmar RP">
 										<i class="bx bx-badge-check"></i> Confirmar RP
 									</button>
-									<button type="button" class="btn btn-success btn-sm me-1" id="btnActualizar" title="Actualizar RP">
+									<button type="button" class="btn btn-info btn-sm me-1 ancho-botones" id="btnActualizar" title="Actualizar RP">
 										<i class="bx bx-check-double"></i> Actualizar RP
 									</button>
-									<button type="button" class="btn btn-secondary btn-sm me-1" id="btnRegresarAAutorizacionesRP" title="Volver">
+									<button type="button" class="btn btn-secondary btn-sm me-1 ancho-botones" id="btnImprimirUL" title="Imprimir UL">
+										<i class="bx bx-printer"></i> Imprimir UL
+									</button>
+									<button type="button" class="btn btn-secondary btn-sm me-1 ancho-botones" id="btnRegresarAAutorizacionesRP" title="Volver">
 										<i class="bx bx-chevron-left"></i> Volver
 									</button>
 								</div>
@@ -156,6 +164,9 @@
 
 </div>
 
+<!-- para el modal del geston de impresion -->
+<div id="modalGestorDocumental"></div>
+
 @section scripts {
 	<script type="text/javascript">
 		var volverAListaDeAutorizacionesUrl = "@Url.Action("RPRAutorizacionesLista", "compra", new { area = "Compras" })";
@@ -165,6 +176,17 @@
 		var buscarDetalleVerConteoSeleccionadoUrl = "@Url.Action("BuscarDetalleVerConteoSeleccionado", "compra", new { area = "Compras" })";
 		var confirmarRPRUrl = "@Url.Action("ConfirmarRPR", "compra", new { area = "Compras" })";
 		var buscarDetalleULxRPRUrl = "@Url.Action("BuscarDetalleULxRPR", "compra", new { area = "Compras" })";
+
+		// Gestor de impresión
+		var repoApiUrl = '@Url.Action("ObtenerPdfDesdeAPI", "GestorImpresion", new { area = "ControlComun" })';
+		var OrquestadorDeModulosUrl = "@Url.Action("OrquestadorDeModulos", "GestorImpresion", new { area = "ControlComun" })";
+		var presentarArchivosUrl = "@Url.Action("presentarArchivos", "GestorImpresion", new { area = "ControlComun" })";
+		var enviarEmailUrl = "@Url.Action("EnviarEmail", "GestorImpresion", new { area = "ControlComun" })";
+		var enviarWhatsAppUrl = "@Url.Action("EnviarWhatsApp", "GestorImpresion", new { area = "ControlComun" })";
+		var generadorArchivoUrl = "@Url.Action("GeneradorArchivo", "GestorImpresion", new { area = "ControlComun" })";
 	</script>
+	<script src="~/lib/jstree/jstree.min.js"></script>
+	<script src="~/js/app/areas/docmngr/docmanager.js" asp-append-version="true"></script>
+
 	<script src="~/js/app/areas/compras/rprVerAutorizacion.js"></script>
 }

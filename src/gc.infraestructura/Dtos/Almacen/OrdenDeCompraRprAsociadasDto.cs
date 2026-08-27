@@ -1,8 +1,8 @@
 ﻿
 namespace gc.infraestructura.Dtos.Almacen
 {
-    public class OrdenDeCompraRprAsociadasDto : Dto
-    {
+    public class OrdenDeCompraRprAsociadasDto : Dto, IProductoConUnidad
+	{
 		public string oc_compte { get; set; } = string.Empty;
 		public string cta_id { get; set; } = string.Empty;
 		public string p_id_prov { get; set; } = string.Empty;
@@ -35,7 +35,9 @@ namespace gc.infraestructura.Dtos.Almacen
 		public string? rp_compte { get; set; } = string.Empty;
 		public decimal? rpd_cantidad { get; set; } = 0.00M;
 		public decimal? rpd_cantidad_compte { get; set; } = 0.00M;
-		public string? up_tipo { get; set; } = string.Empty;
+		public string up_tipo { get; set; } = string.Empty;
+		public string up_id { get; set; } = string.Empty;
+		public bool PermiteDecimales => up_tipo == "P";
 		private decimal _dif_oc_rpr;
 
 		public decimal dif_oc_rpr

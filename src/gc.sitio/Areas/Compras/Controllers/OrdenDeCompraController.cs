@@ -556,12 +556,12 @@ namespace gc.sitio.Areas.Compras.Controllers
 					Oce_Id = 'P',
 					Json = jsonstring
 				}, TokenCookie).Result;
-
+				var item = resumen.FirstOrDefault();
 				var model = new ResumenOCModel
 				{
 					SucursalEntrega = ObtenerComboAdministraciones(_adminServicio.ObtenerAdministraciones("S", TokenCookie)),
 					AdmId = AdministracionId,
-					FechaEntrega = DateTime.Now,
+					FechaEntrega = DateTime.Now.AddDays(item?.ctap_rp_plazo_entrega ?? 0),
 					PagoAnticipado = false,
 					PagoPlazo = DateTime.Now.AddDays(1),
 					Obs = string.Empty,

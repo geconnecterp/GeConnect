@@ -11,15 +11,37 @@
 		});
 	}
 
+	$("#btnRegresarAAutorizacionesRP").off("click");
 	$("#btnRegresarAAutorizacionesRP").on("click", RegresarASelAuto); //Regregar a la pantalla de seleccion de autorizaciones.
+	$("#btnConfirmarRP").off("click");
 	$("#btnConfirmarRP").on("click", ConfirmarRP);
+	$("#btnActualizar").off("click");
 	$("#btnActualizar").on("click", ActualizarDatos);
+	$("#btnImprimirUL").off("click");
+	$("#btnImprimirUL").on("click", ControlaImprimirUL);
 	//btnActualizar
 	CargarDetalleDeConteos();
 	SeleccionarDeposito();
 	SelecccionarPrimerRegistro("tbVerComptesDeRP");
 
 });
+
+function ControlaImprimirUL() {
+	ReseteoDeReportes();
+	setTimeout(() => {
+		var tipo = "RPR";
+		var rpId = $("#Rp").val();
+		var data = { tipo, rpId };
+		cargarReporteEnArre(97, data, "IMPRESION DE ETIQUETAS UL", "", "");
+		invocacionGestorDoc({});
+	}, 500);
+	
+}
+
+function ReseteoDeReportes() {
+	console.log("Reseto de reportes");
+	ReporteResetArre();
+}
 
 function ActualizarDatos() {
 	CargarVerComptesDeRP();

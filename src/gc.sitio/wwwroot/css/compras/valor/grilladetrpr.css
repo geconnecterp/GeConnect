@@ -25,8 +25,8 @@ input[readonly]:not(.campo-readonly) {
 .input-ocd_dto1, .input-ocd_dto2, .input-ocd_dto3, .input-ocd_dto4, .input-ocd_dto_pa,
 .input-rpd_dto1, .input-rpd_dto2, .input-rpd_dto3, .input-rpd_dto4, .input-rpd_dto_pa {
     width: 100%; /* Usar todo el ancho disponible */
-    min-width: 40px; /* Mantenemos este valor mínimo */
-    max-width: 50px; /* REDUCIDO para dar más espacio a otros campos */
+    min-width: 35px; /* Mantenemos este valor mínimo */
+    max-width: 35px; /* REDUCIDO para dar más espacio a otros campos */
     font-size: 0.85rem;
     padding: 0.1rem 0.15rem !important;
 }
@@ -36,19 +36,21 @@ input[readonly]:not(.campo-readonly) {
     width: 100%;
     min-width: 50px;
     max-width: 60px; /* REDUCIDO ligeramente */
-    font-size: 0.85rem;
+    font-size: 0.75rem !important; /* igual que los otros inputs compactados */
     text-align: center;
-    font-family: monospace;
+    font-family: inherit !important; /* usa la misma fuente que el resto */
     padding: 0.1rem 0.15rem !important;
+    height: 20px !important; /* igual que los otros inputs */
+    line-height: 20px !important;
 }
 
 /* REDISEÑADO: Campos con 3 decimales - AMPLIADOS significativamente */
 .input-ocd_plista, .input-rpd_plista {
     width: 100%;
-    min-width: 85px; /* AUMENTADO para mejores proporciones */
-    max-width: 110px; /* AUMENTADO significativamente */
+    min-width: 90px; /* AUMENTADO para mejores proporciones */
+    max-width: 90px; /* AUMENTADO significativamente */
     font-size: 0.85rem;
-    font-family: monospace; /* Añadido para mejor alineación de decimales */
+    font-family: inherit !important; /* usa la misma fuente que el resto */
     letter-spacing: -0.2px; /* Ajustado específicamente */
     padding-right: 0.3rem !important; /* Más espacio a la derecha */
 }
@@ -76,9 +78,9 @@ input[readonly]:not(.campo-readonly) {
 /* NUEVO: Celdas específicas que contienen campos de 3 decimales */
 #tbListaDetalleRpr td:nth-child(4), /* ocd_plista */
 #tbListaDetalleRpr td:nth-child(13) { /* rpd_plista */
-    width: 110px !important; /* Ancho fijo más amplio */
-    min-width: 110px !important;
-    max-width: 110px !important;
+    width: 95px !important; /* Ancho fijo más amplio */
+    min-width: 95px !important;
+    max-width: 95px !important;
     padding: 0.1rem 0.15rem !important;
 }
 
@@ -132,9 +134,9 @@ input[readonly]:not(.campo-readonly) {
 /* NUEVO: Optimización para encabezados de tabla que contienen campos de 3 decimales */
 #tbListaDetalleRpr th:nth-child(4), /* ocd_plista */
 #tbListaDetalleRpr th:nth-child(13) { /* rpd_plista */
-    width: 110px !important;
-    min-width: 110px !important;
-    max-width: 110px !important;
+    width: 90px !important;
+    min-width: 90px !important;
+    max-width: 90px !important;
     text-align: center;
     font-size: 0.75rem;
     padding: 0.15rem !important;
@@ -161,18 +163,18 @@ input[readonly]:not(.campo-readonly) {
 #tbListaDetalleRpr td:nth-child(16),
 #tbListaDetalleRpr td:nth-child(17),
 #tbListaDetalleRpr td:nth-child(18) {
-    width: 45px !important;
-    min-width: 45px !important;
-    max-width: 45px !important;
+    width: 40px !important;
+    min-width: 40px !important;
+    max-width: 40px !important;
     padding: 0.1rem 0.05rem !important;
 }
 
 /* NUEVO: Optimización para bonificación */
 #tbListaDetalleRpr th:nth-child(10), /* Bonif */
 #tbListaDetalleRpr td:nth-child(19) {
-    width: 60px !important;
-    min-width: 60px !important;
-    max-width: 60px !important;
+    width: 70px !important;
+    min-width: 70px !important;
+    max-width: 70px !important;
     padding: 0.1rem 0.05rem !important;
 }
 
@@ -190,24 +192,24 @@ input[readonly]:not(.campo-readonly) {
     /* NUEVO: Ajuste específico para primera columna (checkbox) */
     #tbListaDetalleRpr th:first-child,
     #tbListaDetalleRpr td:first-child {
-        width: 30px !important;
-        max-width: 30px !important;
-        min-width: 30px !important;
+        width: 20px !important;
+        max-width: 20px !important;
+        min-width: 20px !important;
         padding: 0 !important;
         text-align: center;
     }
 
 /* NUEVO: Optimización de columnas código y descripción */
 #tbListaDetalleRpr td:nth-child(2) { /* Código */
-    max-width: 80px !important;
-    width: 80px !important;
+    max-width: 50px !important;
+    width: 50px !important;
     overflow: hidden;
     text-overflow: ellipsis;
 }
 
 #tbListaDetalleRpr td:nth-child(3) { /* Descripción */
-    width: 150px !important;
-    max-width: 150px !important;
+    width: 190px !important;
+    max-width: 190px !important;
     overflow: hidden;
     text-overflow: ellipsis;
 }
@@ -242,17 +244,17 @@ input[readonly]:not(.campo-readonly) {
 
     /* NUEVO: Ajustes de alto de filas para compactarlas */
     #tbListaDetalleRpr tr {
-        height: 2rem !important; /* Altura fija para todas las filas */
+        height: 1.8rem !important; /* Altura fija para todas las filas */
     }
 
     /* Igualar ancho mínimo entre columnas DC y DP */
-    #tbListaDetalleRpr th:nth-child(22), /* DC */
-    #tbListaDetalleRpr th:nth-child(23), /* DP */
-    #tbListaDetalleRpr td:nth-child(22),
-    #tbListaDetalleRpr td:nth-child(23) {
-        width: 50px !important;
-        min-width: 50px !important;
-        max-width: 50px !important;
+    #tbListaDetalleRpr th:nth-child(23), /* DC */
+    #tbListaDetalleRpr th:nth-child(24), /* DP */
+    #tbListaDetalleRpr td:nth-child(23),
+    #tbListaDetalleRpr td:nth-child(24) {
+        width: 25px !important;
+        min-width: 25px !important;
+        max-width: 25px !important;
         text-align: center;
         padding: 0.1rem 0.05rem !important;
     }
@@ -260,6 +262,56 @@ input[readonly]:not(.campo-readonly) {
 
     /* Encabezado agrupado "Valoriz." */
     #tbListaDetalleRpr th[colspan="2"][title="Valorización"] {
-        min-width: 100px !important;
+        min-width: 50px !important;
         text-align: center;
+    }
+
+    /* ============================================================
+   ANULAR ALTURA MÍNIMA DE BOOTSTRAP EN INPUTS DE LA TABLA
+   ============================================================ */
+    #tbListaDetalleRpr .form-control,
+    #tbListaDetalleRpr .form-control-sm {
+/*        min-height: 0 !important;
+        height: 1.2rem !important; */
+        padding-top: 0.05rem !important;
+        padding-bottom: 0.05rem !important;
+        padding-left: 0.15rem !important;
+        padding-right: 0.15rem !important;
+       /* line-height: 1 !important;*/
+    }
+
+    /* ============================================
+   REDUCCIÓN REAL DE ALTURA DE INPUTS
+   ============================================ */
+    #tbListaDetalleRpr input.form-control,
+    #tbListaDetalleRpr input.form-control-sm {
+        min-height: 0 !important;
+        height: 18px !important; /* altura compacta real */
+        padding: 0 4px !important; /* padding mínimo */
+        line-height: 18px !important; /* igual a la altura */
+        font-size: 0.65rem !important;
+        margin: 0 !important;
+    }
+
+    /* ============================================
+   REDUCCIÓN REAL DE ALTURA DE FILAS
+   ============================================ */
+    #tbListaDetalleRpr tr {
+        height: 22px !important; /* altura compacta real */
+    }
+
+
+    /* ============================================
+   AJUSTE FINO – un poquito más alto
+   ============================================ */
+    #tbListaDetalleRpr input.form-control,
+    #tbListaDetalleRpr input.form-control-sm {
+        height: 20px !important; /* antes 18px */
+        line-height: 20px !important;
+        padding: 0 5px !important; /* leve aumento */
+        
+    }
+
+    #tbListaDetalleRpr tr {
+        height: 24px !important; /* antes 22px */
     }

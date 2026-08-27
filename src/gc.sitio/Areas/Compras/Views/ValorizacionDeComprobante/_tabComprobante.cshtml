@@ -133,7 +133,9 @@
 						{
 							if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
 							var nombre = "chk" + item.cm_compte;
-							<tr class="@clase" onclick="selectListaValorizacion(this)">
+							<tr class="" 
+								data-tco-id="@item.tco_id"
+								onclick="selectListaValorizacion(this)">
 								<td class="@Model.GrillaValoracion.ObtenerClase(item.cm_compte_obs)">@Model.GrillaValoracion.FormatearDato(item.cm_compte_obs, FormatDato.Ninguno)</td>
 								<td class="@Model.GrillaValoracion.ObtenerClase(item.cm_no_gravado)">@GridHelper.FormatearDato(item.cm_no_gravado, FormatDato.Monto, true)</td>
 								<td class="@Model.GrillaValoracion.ObtenerClase(item.cm_exento)">@GridHelper.FormatearDato(item.cm_exento, FormatDato.Monto, true)</td>

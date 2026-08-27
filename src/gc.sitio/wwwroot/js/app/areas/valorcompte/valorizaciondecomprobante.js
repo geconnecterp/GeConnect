@@ -506,47 +506,6 @@ function ActualizarOrdenDeDescFinancEnBackEnd() {
 	}
 }
 
-// function ActualizarOrdenDeDescFinancEnBackEnd() {
-// 	var listaDesFinanc = [];
-// 	$("#tbListaDescFinanc").find('tr').each(function (i, el) {
-// 		var td = $(this).find('td');
-// 		var $tr = $(this);
-// 		if (td.length > 0 && td[0].innerText !== undefined) {
-// 			var cm_compte = td[7].innerText;
-// 			var dia_movi = td[8].innerText;
-// 			var dto_fijo_bool = $tr.find(".chkNetoFijo").is(":checked");
-// 			var dto_fijo = dto_fijo_bool; 
-// 			var dto_sobre_total_bool = $tr.find(".chkDtoTot").is(":checked");
-// 			var dto_sobre_total = dto_sobre_total_bool; 
-// 			var tco_id = td[9].innerText;
-// 			var dto = Number(td[4].innerText); 
-// 			var dto_importe = Number(td[5].innerText.replace(',', '')); 
-// 			var dtoc_id = td[10].innerText;
-// 			var dtoc_desc = td[3].innerText;
-// 			var item = td[0].innerText;
-// 			var dto_obs = td[11].innerText;
-// 			var item_data = { cm_compte, dia_movi, dto_fijo, dto_sobre_total, tco_id, dto, dto_importe, dtoc_id, dtoc_desc, item, dto_obs };
-// 			listaDesFinanc.push(item_data);
-// 		}
-// 	});
-// 	if (listaDesFinanc.length > 0) {
-// 		AbrirWaiting();
-// 		var data = { listaDesFinanc };
-// 		PostGen(data, actualizarOrdenDescFinancURL, function (obj) {
-// 			if (obj.error === true) {
-// 				AbrirMensaje("ATENCIÓN", obj.msg, function () {
-// 					$("#msjModal").modal("hide");
-// 					return true;
-// 				}, false, ["Aceptar"], "error!", null);
-// 			}
-// 			else {
-// 				ActualizarListaValorizaciones();
-// 				CerrarWaiting();
-// 			}
-// 		});
-// 	}
-// }
-
 function ActualizarListaValorizaciones() {
 	AbrirWaiting("");
 	var cm_compte = $("#cm_compte").val();
@@ -559,9 +518,23 @@ function ActualizarListaValorizaciones() {
 		$("#divListaValorizacion").html(obj);
 		AddEventListenerToGrid("tbListaValorizacion");
 		ValidarRespuestaDeObtencionDeValorizacion();
-
+		colorearFilasValorizacion();
 		$("#btnTabComprobantes").trigger("click");
 		CerrarWaiting("");
+	});
+}
+
+function colorearFilasValorizacion() {
+	const filas = document.querySelectorAll("#tbListaValorizacion tbody tr");
+
+	filas.forEach(fila => {
+		const tipo = fila.getAttribute("data-tco-id");
+
+		fila.classList.remove("fila-0DC", "fila-0DP", "fila-0DT");
+
+		if (tipo === "0DC") fila.classList.add("fila-0DC");
+		if (tipo === "0DP") fila.classList.add("fila-0DP");
+		if (tipo === "0DT") fila.classList.add("fila-0DT");
 	});
 }
 
@@ -638,6 +611,7 @@ function CargarDatosParaValorizar(cmCompteSelected) {
 			$("#btnDetalle").prop("disabled", false);
 			$("#divFiltro").collapse("hide")
 			AddEventListenerToGrid("tbListaValorizacion");
+			colorearFilasValorizacion();
 			AddEventListenerToGrid("tbListaDescFinanc");
 			MostrarDatosDeCuenta(true);
 			$("#chkSobreTotal").on("click", function () {
@@ -1999,7 +1973,7 @@ function ActualizarProductoEnDetalleRprSeccionPrecio(row, campoActual) {
 		var pId = row.data('p-id');
 		//var pId = pIdEnOcSeleccionado; 
 		var field = $(campoActual).data('field');
-		var val = $(campoActual).val();
+		var val = normalizarNumero($(campoActual).val());
 		var data = { pId, field, val };
 		PostGen(data, actualizarProdEnRprSeccionPrecioURL, function (obj) {
 			if (obj.error === true) {
@@ -2043,14 +2017,26 @@ function ActualizarProductoEnDetalleRprSeccionPrecio(row, campoActual) {
 	}
 }
 
-function ActualizarProductoEnDetalleRprSeccionFactura(field, val) {
+function normalizarNumero(valor) {
+	if (!valor) return "";
+
+	// Quitar separadores de miles (coma)
+	valor = valor.replace(/,/g, "");
+
+	// Trim por seguridad
+	valor = valor.trim();
+
+	return valor;
+}
+
+function ActualizarProductoEnDetalleRprSeccionFactura(row, campoActual) {
 	if (campoActual == undefined) {
 		return false;
 	}
 	else {
 		var pId = row.data('p-id');
 		var field = $(campoActual).data('field');
-		var val = $(campoActual).val();
+		var val = normalizarNumero($(campoActual).val());
 		var data = { pId, field, val };
 		PostGen(data, actualizarProdEnRprSeccionFacturaURL, function (obj) {
 			if (obj.error === true) {

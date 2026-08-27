@@ -101,6 +101,7 @@ namespace gc.infraestructura.Enumeraciones
 		R093_Reporte_Evo_Ventas_Periodos_Anteriores = 93,
         R094_Reporte_Var_Vtas_Y_Comp_Ult_Doce_M = 94,
 		R095_Reporte_Eval_De_Nivel_De_Servicio = 95,
-		R096_Consulta_Movimiento_De_Stock = 96
+		R096_Consulta_Movimiento_De_Stock = 96,
+        R097_Imprime_Etiquetas_UL
 	}
 }

@@ -105,6 +105,10 @@ namespace gc.sitio.Areas.Compras.Controllers
 			ConsultaOCModel model = new();
 			try
 			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+					return RedirectToAction("Login", "Token", new { area = "seguridad" });
+
 				request.Registros = _settings.NroRegistrosPagina;
 				var productos = _productoServicio.CargarOrdenDeCompraConsultaLista(request, TokenCookie).Result;
 				MetadataGeneral = productos.Item2 ?? new MetadataGrid();
@@ -141,6 +145,10 @@ namespace gc.sitio.Areas.Compras.Controllers
 			ConsultaOCDetalleModel model = new ConsultaOCDetalleModel();
 			try
 			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+					return RedirectToAction("Login", "Token", new { area = "seguridad" });
+
 				var detalle = _productoServicio.CargarDetalleDeOC(ocCompte, TokenCookie).Result;
 				model.GrillaDetalle = ObtenerGridCoreSmart<OrdenDeCompraDetalleDto>(detalle);
 				var detalleItem = detalle.First();
@@ -183,6 +191,10 @@ namespace gc.sitio.Areas.Compras.Controllers
 			GridCoreSmart<OrdenDeCompraRprAsociadasDto> grilla = new();
 			try
 			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+					return RedirectToAction("Login", "Token", new { area = "seguridad" });
+
 				var detalle = _productoServicio.CargarRprAsociadaDeOC(ocCompte, TokenCookie).Result;
 				grilla = ObtenerGridCoreSmart<OrdenDeCompraRprAsociadasDto>(detalle);
 				return PartialView("_grillaRprDeOC", grilla);

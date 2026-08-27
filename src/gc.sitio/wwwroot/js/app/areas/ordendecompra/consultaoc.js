@@ -495,7 +495,7 @@ function ActivarBotonesTabPrincipal(estado, id) {
 	$("#btnCerrarOC").prop("disabled", true);
 	$("#btnAnularOC").prop("disabled", true);
 	$("#btnModiAdm").prop("disabled", true);
-	$("#btnImprimir").prop("disabled", true);
+	//$("#btnImprimir").prop("disabled", true);
 	$("#btnServicioExt").prop("disabled", true);
 	$("#btnLevantarOC").prop("disabled", true);
 	$("#listaAdm").prop("disabled", true);

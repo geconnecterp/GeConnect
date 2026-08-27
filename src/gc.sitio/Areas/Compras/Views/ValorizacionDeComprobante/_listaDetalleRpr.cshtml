@@ -4,8 +4,13 @@
 	var alt = true;
 	string clase = string.Empty;
 }
-
-<div class="table-responsive table-wrapper-400-full-width" id="containerListaDetalleRpr">
+<style>
+	.input-numeric{
+		height: 25px !important;
+		max-height: 25px !important;
+	}
+</style>
+<div class="table-responsive table-wrapper-600-full-width" id="containerListaDetalleRpr">
 	<table class="table table-bordered table-hover table-golden" id="tbListaDetalleRpr">
 		<thead>
 			<tr class="header">
@@ -29,7 +34,7 @@
 				<th scope="col">D4</th>
 				<th scope="col">Dpa</th>
 				<th scope="col">Boni.</th>
-				<th scope="col" class="text-end">Costo</th>
+				<th scope="col" class="text-end" style="width: 80px;">Costo</th>
 				<th scope="col">Recibido</th>
 				<th scope="col" class="text-end" style="background: cornflowerblue;">P. Lista</th>@*Factura*@
 				<th scope="col" style="background: cornflowerblue;">D1</th>
@@ -38,7 +43,7 @@
 				<th scope="col" style="background: cornflowerblue;">D4</th>
 				<th scope="col" style="background: cornflowerblue;">Dpa</th>
 				<th scope="col" style="background: cornflowerblue;">Boni.</th>
-				<th scope="col" class="text-end" style="background: cornflowerblue;">Costo</th>
+				<th scope="col" class="text-end" style="background: cornflowerblue;width: 80px;">Costo</th>
 				<th scope="col" style="background: cornflowerblue;">AP</th>
 				<th scope="col" style="background: cornflowerblue;">Cant. Fact.</th>
 				<th scope="col">DC</th>@*Factura*@
@@ -54,14 +59,16 @@
 					var nombre = item.p_id + "_";
 					var nombre_check = nombre + "checkbox";
 					var nombre_check_nc_genera = nombre + "nc_genera";
-					<tr class="@clase" data-p-id="@item.p_id" onclick="selectListaDetalleRpr(this)" title="OC: @item.oc_compte // RP: @item.rp_compte" id="@item.p_id">
+					<tr class="@clase" data-p-id="@item.p_id" onclick="selectListaDetalleRpr(this)">
 						<td class="check-column">
 							<div class="check-producto-container">
 								<input type="checkbox" class="form-check-input check-producto" data-p-id="@item.p_id">
 							</div>
 						</td>
-						@*1*@ <td class="@Model.GrillaDetalleRpr.ObtenerClase(item.p_id)" style="padding-left: 0.5px; padding-right: 0.5px; text-align-last: center;">@Model.GrillaDetalleRpr.FormatearDato(item.p_id, FormatDato.Ninguno)</td>
-						@*2*@ <td class="@Model.GrillaDetalleRpr.ObtenerClase(item.p_desc)" title="@item.p_desc" style="padding-left: 0.5px;padding-right: 0.5px;text-align-last: left;">@Model.GrillaDetalleRpr.FormatearDato(item.p_desc, FormatDato.Ninguno)</td>
+						@*1*@
+						<td class="@Model.GrillaDetalleRpr.ObtenerClase(item.p_id)" style="padding-left: 0.5px; padding-right: 0.5px; text-align-last: center;" title="OC: @item.oc_compte // RP: @item.rp_compte" id="@item.p_id">@Model.GrillaDetalleRpr.FormatearDato(item.p_id, FormatDato.Ninguno)</td>
+						@*2*@
+						<td class="@Model.GrillaDetalleRpr.ObtenerClase(item.p_desc)" title="@item.p_desc" style="padding-left: 0.5px;padding-right: 0.5px;text-align-last: left;" id="@item.p_id">@Model.GrillaDetalleRpr.FormatearDato(item.p_desc, FormatDato.Ninguno)</td>
 						@*3*@ 
 						<td class="@Model.GrillaDetalleRpr.ObtenerClase(item.ocd_plista)">
 							<div class="input-container">

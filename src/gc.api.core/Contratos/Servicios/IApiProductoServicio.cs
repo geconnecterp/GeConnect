@@ -1,5 +1,6 @@
 using gc.api.core.Entidades;
 using gc.infraestructura.Core.EntidadesComunes;
+using gc.infraestructura.Dtos;
 using gc.infraestructura.Dtos.Almacen;
 using gc.infraestructura.Dtos.Almacen.AjusteDeStock;
 using gc.infraestructura.Dtos.Almacen.AjusteDeStock.Request;
@@ -55,7 +56,7 @@ namespace gc.api.core.Contratos.Servicios
         List<RespuestaDto> RPRConfirma(string rp, string adm_id);
         List<RPRxULDto> RPRxUL(string rp);
         List<RPRxULDetalleDto> RPRxULDetalle(string ulId);
-
+		List<ImprimirULDto> RPRULImprime(string tipo, string ul_id);
 
 		List<JsonDto> RPREObtenerDatosJsonDesdeRP(string rp);
 		List<RPRItemVerCompteDto> RPRObtenerDatosVerCompte(string rp);

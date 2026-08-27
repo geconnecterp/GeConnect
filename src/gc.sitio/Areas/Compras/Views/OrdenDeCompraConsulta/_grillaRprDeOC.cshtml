@@ -24,17 +24,17 @@
 		<table class="table table-bordered table-hover table-golden" id="tbListaRprAsociadaDeOC">
 			<thead>
 				<tr>
-					<th style="width:3%;" class="col-header-small align-center tiny-row">Código</th>
-					<th style="width:20%;" class="col-header-small align-center tiny-row">Descripción</th>
-					<th style="width:3%;" class="col-header-small align-center tiny-row">Cod. Prov.</th>
-					<th style="width:5%;" class="col-header-small align-center tiny-row">Pedido Bultos</th>
-					<th style="width:4%;" class="col-header-small align-center tiny-row">Unid. Pres.</th>
-					<th style="width:3%;" class="col-header-small align-center tiny-row">Boni</th>
-					<th style="width:5%;" class="col-header-small align-center tiny-row">Cant. total</th>
-					<th style="width:5%;" class="col-header-small align-center tiny-row">Precio Costo</th>
-					<th style="width:10%;" class="col-header-small align-center tiny-row">N° RPR</th>
-					<th style="width:5%;" class="col-header-small align-center tiny-row">Cant. RPR</th>
-					<th style="width:5%;" class="col-header-small align-center tiny-row">Dif. OC/RPR</th>
+					<th style="width:3%;" class="align-center">Código</th>
+					<th style="width:25%;" class="align-center">Descripción</th>
+					<th style="width:3%;" class="align-center">Cod. Prov.</th>
+					<th style="width:5%;" class="align-center">Pedido Bultos</th>
+					<th style="width:4%;" class="align-center">Unid. Pres.</th>
+					<th style="width:3%;" class="align-center">Boni</th>
+					<th style="width:5%;" class="align-center">Cant. total</th>
+					<th style="width:5%;" class="align-center">Precio Costo</th>
+					<th style="width:5%;" class="align-center">N° RPR</th>
+					<th style="width:5%;" class="align-center">Cant. RPR</th>
+					<th style="width:5%;" class="align-center">Dif. OC/RPR</th>
 				</tr>
 			</thead>
 			<tbody>
@@ -47,14 +47,14 @@
 							<td class="align-center tiny-row">@item.p_id</td>
 							<td class="align-left tiny-row">@item.p_desc</td>
 							<td class="align-center tiny-row">@item.p_id_prov</td>
-							<td class="align-center tiny-row">@item.ocd_bultos</td>
-							<td class="align-center tiny-row">@item.ocd_unidad_pres</td>
-							<td class="align-center tiny-row">@item.ocd_bonificacion</td>
-							<td class="align-center tiny-row">@item.ocd_cantidad</td>
-							<td class="align-right tiny-row">@GridHelper.FormatearPrecio(item.ocd_pcosto, TipoPrecio.Costo)</td>
-							<td class="align-right tiny-row">@item.rp_compte</td>
-							<td class="align-right tiny-row">@item.rpd_cantidad</td>
-							<td class="align-right tiny-row" style="font-weight:bold;">@item.dif_oc_rpr</td> @*Reemplazar por el valor correcto*@
+							<td class="align-right tiny-row">@item.ocd_bultos</td>
+							<td class="align-right tiny-row">@item.ocd_unidad_pres</td>
+							<td class="align-right tiny-row">@item.ocd_bonificacion</td>
+							<td class="align-right tiny-row">@GridHelper.FormatearDato(item.ocd_cantidad, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
+							<td class="align-right tiny-row">@GridHelper.FormatearDato(item.ocd_pcosto, GridHelper.FormatDato.Monto, true)</td>
+							<td class="align-center tiny-row">@item.rp_compte</td>
+							<td class="align-right tiny-row">@GridHelper.FormatearDato(item.rpd_cantidad, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
+							<td class="align-right tiny-row" style="font-weight:bold;">@GridHelper.FormatearDato(item.dif_oc_rpr, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
 						</tr>
 					}
 				}

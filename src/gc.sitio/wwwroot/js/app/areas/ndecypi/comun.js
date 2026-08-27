@@ -302,10 +302,7 @@ function ConfirmarPedidoInterno(productos) {
 				$("#tbListaProducto tbody").empty();
 				console.log("tbListaProducto > body > empty");
 				$("#msjModal").modal("hide");
-				//setTimeout(() => {
-				//	ImprimirPedidoInterno(obj.id);
-				//}, 1500);
-				//window.location.href = filtrosUrl;
+
 				ImprimirPedidoInterno(obj.id);
 				return true;
 			}, false, ["Aceptar"], "succ!", null);
@@ -320,11 +317,6 @@ function ImprimirPedidoInterno(id) {
 		cargarReporteEnArre(65, data, "PEDIDO INTERNO", "", "");
 		invocacionGestorDoc({});
 	}, 500);
-//	var datos = {};
-//	PostGenHtml(datos, filtrosUrl, function (obj) {
-		
-//		return true
-//	});
 }
 
 function ReseteoDeReportes() {

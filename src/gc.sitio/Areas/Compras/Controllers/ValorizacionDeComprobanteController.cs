@@ -1075,11 +1075,17 @@ namespace gc.sitio.Areas.Compras.Controllers
 				return boni;
 			}
 			var res = den - num; //En la bonificacion viene NNN/MMM donde sería "cada NNN, lleva MMM", siendo MMM mayor a NNN. La diferencia es el valor adicional que se suma al pedido.
-			var multiplo = cant / num;
-			if (multiplo > 1)
+			if (num != 0)
 			{
-				boni = (res * (int)multiplo);
+				var multiplo = cant / num;
+				if (multiplo > 1)
+				{
+					boni = (res * (int)multiplo);
+				}
 			}
+			else
+				boni = 1;
+			
 
 			return boni;
 		}
@@ -1109,6 +1115,8 @@ namespace gc.sitio.Areas.Compras.Controllers
 			//	return boni;
 			//}
 			//return Decimal.Divide(den, num);
+			if (den == 0)
+				return 1;
 			return Decimal.Divide(num, den);
 		}
 

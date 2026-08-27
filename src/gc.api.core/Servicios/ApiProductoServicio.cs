@@ -7,6 +7,7 @@ using gc.api.core.Interfaces.Datos;
 using gc.infraestructura.Core.EntidadesComunes;
 using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Core.Exceptions;
+using gc.infraestructura.Dtos;
 using gc.infraestructura.Dtos.Almacen;
 using gc.infraestructura.Dtos.Almacen.AjusteDeStock;
 using gc.infraestructura.Dtos.Almacen.AjusteDeStock.Request;
@@ -619,7 +620,20 @@ namespace gc.api.core.Servicios
             return rpr_ul;
         }
 
-        public List<JsonDto> RPREObtenerDatosJsonDesdeRP(string rp)
+		public List<ImprimirULDto> RPRULImprime(string tipo, string ul_id)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_INFO_UL_Imprime;
+			var ps = new List<SqlParameter>()
+			{
+				new("@tipo", tipo),
+				new("@id", ul_id),
+			};
+			List<ImprimirULDto> rpr_ul = _repository.EjecutarLstSpExt<ImprimirULDto>(sp, ps, true);
+
+			return rpr_ul;
+		}
+
+		public List<JsonDto> RPREObtenerDatosJsonDesdeRP(string rp)
         {
             var sp = Constantes.ConstantesGC.StoredProcedures.SP_RPR_DATOS_JSON;
             var ps = new List<SqlParameter>()
