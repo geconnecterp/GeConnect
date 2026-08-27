@@ -52,6 +52,9 @@ namespace gc.sitio.core.Servicios.Contratos
         List<ReporteEvoVtasPerAnterioresDto> RepEvoVtasPerAnteriores(ReporteEvoVtasPerAnterioresRequest request, string token);
 		List<ReporteVarVtasYCompUltDoceMDto> RepoVarVtasYCompUltDoceM(ReporteVarVtasYCompUltDoceMRequest request, string token);
 		List<ReporteEvalDeNivelDeServicioDto> RepoEvalDeNivelDeServicio(ReporteEvalDeNivelDeServicioRequest request, string token);
+        List<DetalleDeComprobanteCabDto> BuscarDetalleDeComprobanteCab(DetalleDeComprobanteRequest request, string token);
+        List<DetalleDeComprobanteIvaDto> BuscarDetalleDeComprobanteIva(DetalleDeComprobanteRequest request, string token);
+        List<DetalleDeComprobantePerDto> BuscarDetalleDeComprobantePer(DetalleDeComprobanteRequest request, string token);
 	}
 }
 

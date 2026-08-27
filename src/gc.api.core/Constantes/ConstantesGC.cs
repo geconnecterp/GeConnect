@@ -790,6 +790,10 @@ namespace gc.api.core.Constantes
 
 			public const string SP_RE_VALIDA = "SPGECO_RE_Valida";
 			public const string SP_RE_CONFIRMAR = "SPGECO_RE_Confirmar";
+
+			public const string SP_COMPTE_REPO_CAB = "SPGECO_Compte_REPO_Cab";
+			public const string SP_COMPTE_REPO_IVA = "SPGECO_Compte_REPO_IVA";
+			public const string SP_COMPTE_REPO_PER = "SPGECO_Compte_REPO_Per";
 		}
 
         public static class StoredFunctions

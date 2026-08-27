@@ -209,11 +209,18 @@ function verificaEstado(e) {
 
 		if (prod.up_id === "07") {  //unidades enteras
 			// $("#box").mask("000.000.000.000,00", { reverse: true });
-			$("#txtUnidEnComprobanteRP").mask("000.000.000.000,00", { reverse: true });
-			$("#txtUnidEnComprobanteRP").val(0).prop("disabled", false);
+			$("#txtUnidEnComprobanteRP").prop("disabled", false);
+			$("#txtUnidEnComprobanteRP").mask("000,000,000,000", { reverse: true });
+			$("#txtBtoEnComprobanteRP").prop("disabled", false);
+			$("#txtUPEnComprobanteRP").prop("disabled", false);
+			$("#txtUPEnComprobanteRP").trigger('focus');
 		}
 		else { //unidades decimales
-			$("#txtUnidEnComprobanteRP").val(0).prop("disabled", true);
+			$("#txtBtoEnComprobanteRP").prop("disabled", true);
+			$("#txtUPEnComprobanteRP").prop("disabled", true);
+			$("#txtUnidEnComprobanteRP").prop("disabled", false);
+			$("#txtUnidEnComprobanteRP").mask("000,000,000,000.00", { reverse: true });
+			$("#txtUnidEnComprobanteRP").trigger('focus');
 		}
 		$("#Busqueda").val("");
 		if (prod.p_con_vto !== "N") {

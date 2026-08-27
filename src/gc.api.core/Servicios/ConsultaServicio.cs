@@ -1323,5 +1323,44 @@ namespace gc.api.core.Servicios
 
 			return lstProductos;
 		}
+
+		public List<DetalleDeComprobanteCabDto> BuscarDetalleDeComprobanteCab(DetalleDeComprobanteRequest filtros)
+		{
+			var sp = ConstantesGC.StoredProcedures.SP_COMPTE_REPO_CAB;
+			var ps = new List<SqlParameter>
+			{
+				new SqlParameter("@tco_id", filtros.tco_id),
+				new SqlParameter("@cm_compte", filtros.cm_compte),
+				new SqlParameter("@dia_movi", filtros.dia_movi)
+			};
+			List<DetalleDeComprobanteCabDto> res = _repository.EjecutarLstSpExt<DetalleDeComprobanteCabDto>(sp, ps, true);
+			return res;
+		}
+
+		public List<DetalleDeComprobanteIvaDto> BuscarDetalleDeComprobanteIva(DetalleDeComprobanteRequest filtros)
+		{
+			var sp = ConstantesGC.StoredProcedures.SP_COMPTE_REPO_IVA;
+			var ps = new List<SqlParameter>
+			{
+				new SqlParameter("@tco_id", filtros.tco_id),
+				new SqlParameter("@cm_compte", filtros.cm_compte),
+				new SqlParameter("@dia_movi", filtros.dia_movi)
+			};
+			List<DetalleDeComprobanteIvaDto> res = _repository.EjecutarLstSpExt<DetalleDeComprobanteIvaDto>(sp, ps, true);
+			return res;
+		}
+
+		public List<DetalleDeComprobantePerDto> BuscarDetalleDeComprobantePer(DetalleDeComprobanteRequest filtros)
+		{
+			var sp = ConstantesGC.StoredProcedures.SP_COMPTE_REPO_PER;
+			var ps = new List<SqlParameter>
+			{
+				new SqlParameter("@tco_id", filtros.tco_id),
+				new SqlParameter("@cm_compte", filtros.cm_compte),
+				new SqlParameter("@dia_movi", filtros.dia_movi)
+			};
+			List<DetalleDeComprobantePerDto> res = _repository.EjecutarLstSpExt<DetalleDeComprobantePerDto>(sp, ps, true);
+			return res;
+		}
 	}
 }

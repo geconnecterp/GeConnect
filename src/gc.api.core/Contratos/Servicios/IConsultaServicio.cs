@@ -50,5 +50,9 @@ namespace gc.api.core.Contratos.Servicios
 		List<ReporteEvoVtasPerAnterioresDto> RepEvoVtasPerAnteriores(ReporteEvoVtasPerAnterioresRequest filtros);
 		List<ReporteVarVtasYCompUltDoceMDto> RepoVarVtasYCompUltDoceM(ReporteVarVtasYCompUltDoceMRequest filtros);
 		List<ReporteEvalDeNivelDeServicioDto> RepoEvalDeNivelDeServicio(ReporteEvalDeNivelDeServicioRequest filtros);
+
+        List<DetalleDeComprobanteCabDto> BuscarDetalleDeComprobanteCab(DetalleDeComprobanteRequest filtros);
+        List<DetalleDeComprobanteIvaDto> BuscarDetalleDeComprobanteIva(DetalleDeComprobanteRequest filtros);
+		List<DetalleDeComprobantePerDto> BuscarDetalleDeComprobantePer(DetalleDeComprobanteRequest filtros);
 	}
 }

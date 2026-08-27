@@ -33,7 +33,17 @@
 	#Busqueda {
 		width: 90px !important;
 	}
+	.fieldUno{
+		padding-left: 1px !important;
+		padding-right: 1px !important;
+		width: 6% !important;
+		max-width: 6% !important;
+	}
 
+	.fieldDos {
+		padding-left: 1px !important;
+		padding-right: 1px !important;
+	}
 </style>
 <div class="container-fluid min-vh-100 d-flex flex-column">
 	@Html.Hidden("cta_id", Model.cta_id)
@@ -86,15 +96,15 @@
 									</div>
 									<div class="col-8" style="padding-right: 0px;padding-left: 0px;width: 64%;">
 										<div class="input-group input-group-sm">
-											<span class="input-group-text">ID: </span>
-											<input type="text" id="txtIdProdEnComprobanteRP" class="form-control form-control-sm" style="width:7%;" readonly />
+											@* <span class="input-group-text">ID: </span> *@
+											<input type="text" id="txtIdProdEnComprobanteRP" class="form-control form-control-sm" style="width:4%;" readonly />
 											<input type="text" id="txtProDescripcion" class="form-control form-control-sm" style="width: 35%;height: 32px;" readonly />
 											<span class="input-group-text lbl-ancho">UP: </span>
-											<input type="text" id="txtUPEnComprobanteRP" class="form-control form-control-sm activable inputEditable text-end" />
+											<input type="text" id="txtUPEnComprobanteRP" class="form-control form-control-sm activable inputEditable text-end fieldUno" />
 											<span class="input-group-text lbl-ancho">Bto: </span>
-											<input type="number" id="txtBtoEnComprobanteRP" class="form-control form-control-sm activable inputEditable text-end" min="0" />
+											<input type="number" id="txtBtoEnComprobanteRP" class="form-control form-control-sm activable inputEditable text-end fieldUno" min="0" />
 											<span class="input-group-text lbl-ancho">Unid: </span>
-											<input type="text" id="txtUnidEnComprobanteRP" class="form-control form-control-sm activable inputEditable text-end" />
+											<input type="text" id="txtUnidEnComprobanteRP" class="form-control form-control-sm activable inputEditable text-end fieldDos" />
 											<input type="text" id="txtUP_ID" style="display:none;" />
 											<input type="text" id="txtBARRADO_ID" style="display:none;" />
 										</div>

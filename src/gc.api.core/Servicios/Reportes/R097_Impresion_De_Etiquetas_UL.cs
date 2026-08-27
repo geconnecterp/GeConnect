@@ -5,6 +5,7 @@ using gc.api.core.Contratos.Servicios.Reportes;
 using gc.api.core.Entidades;
 using gc.api.core.Interfaces.Datos;
 using gc.infraestructura.Core.Exceptions;
+using gc.infraestructura.Core.Helpers;
 using gc.infraestructura.Dtos;
 using gc.infraestructura.Dtos.Consultas;
 using gc.infraestructura.Dtos.Gen;
@@ -175,29 +176,29 @@ namespace gc.api.core.Servicios.Reportes
 				});
 
 				// ============================
-				// BARCODE CODE39
+				// BARCODE CODE39 (desde Base64)
 				// ============================
-				Barcode39 barcode = new Barcode39();
-				barcode.Code = "*" + item.ul_id + "*";   // obligatorio para scanner
-				barcode.StartStopText = false;
-				barcode.GenerateChecksum = false;
 
-				// Crear imagen del barcode
-				Image barcodeImage = barcode.CreateImageWithBarcode(cb, BaseColor.Black, BaseColor.Black);
+				// Generar imagen con texto usando tu función auxiliar
+				string base64 = HelperGen.GeneraIdEnCodeBar3of9WithText(item.ul_id);
+				byte[] bytes = Convert.FromBase64String(base64);
+				Image barcodeImage = Image.GetInstance(bytes);
 
-				// Ajustar tamaño (proporción ideal para etiquetas A4)
-				barcodeImage.ScaleToFit(160f, 40f);   // ancho máx 160px, alto máx 40px
+				// Ajustar tamaño
+				barcodeImage.ScaleToFit(260f, 70f);
 
-				// Centrar y agregar padding
 				PdfPCell celdaBarcode = new PdfPCell(barcodeImage)
 				{
 					Border = Rectangle.NO_BORDER,
 					HorizontalAlignment = Element.ALIGN_CENTER,
-					PaddingTop = 6,
-					PaddingBottom = 6
+					PaddingLeft = 0,
+					PaddingRight = 0,
+					PaddingTop = 4,
+					PaddingBottom = 4
 				};
 
 				etiqueta.AddCell(celdaBarcode);
+
 
 
 				etiqueta.AddCell(new PdfPCell(new Phrase("Fecha impresión: " +
@@ -209,7 +210,7 @@ namespace gc.api.core.Servicios.Reportes
 
 				PdfPCell celdaEtiqueta = new PdfPCell(etiqueta)
 				{
-					Padding = 10,
+					Padding = 4,
 					Border = Rectangle.BOX,
 					BorderWidth = 0.5f
 				};

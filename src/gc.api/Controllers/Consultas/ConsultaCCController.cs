@@ -693,5 +693,47 @@ namespace gc.api.Controllers.Consultas
 
 			return Ok(response);
 		}
+
+		[HttpPost]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<DetalleDeComprobanteCabDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult BuscarDetalleDeComprobanteCab(DetalleDeComprobanteRequest request)
+		{
+			ApiResponse<List<DetalleDeComprobanteCabDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
+			var res = _consSv.BuscarDetalleDeComprobanteCab(request);
+			response = new ApiResponse<List<DetalleDeComprobanteCabDto>>(res);
+
+			return Ok(response);
+		}
+
+		[HttpPost]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<DetalleDeComprobanteIvaDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult BuscarDetalleDeComprobanteIvaCab(DetalleDeComprobanteRequest request)
+		{
+			ApiResponse<List<DetalleDeComprobanteIvaDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
+			var res = _consSv.BuscarDetalleDeComprobanteIva(request);
+			response = new ApiResponse<List<DetalleDeComprobanteIvaDto>>(res);
+
+			return Ok(response);
+		}
+
+		[HttpPost]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<DetalleDeComprobantePerDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult BuscarDetalleDeComprobantePer(DetalleDeComprobanteRequest request)
+		{
+			ApiResponse<List<DetalleDeComprobantePerDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
+			var res = _consSv.BuscarDetalleDeComprobantePer(request);
+			response = new ApiResponse<List<DetalleDeComprobantePerDto>>(res);
+
+			return Ok(response);
+		}
 	}
 }
