@@ -152,11 +152,32 @@ namespace gc.sitio.Areas.Productos.Controllers
                     })
                     .ToList();
 
-                // El perfil persistido tiene prioridad. El mapeo automático completa
-                // solamente las columnas que el perfil no pudo resolver.
-                AplicarPerfilGuardado(analisis);
-                AplicarMapeoAutomaticoInteligente(analisis);
-                ResolverConflictosMapeo(analisis);
+                // El perfil se consulta para el proveedor activo en el momento del
+                // análisis. No se toma desde una clave de sesión compartida, evitando
+                // cruces cuando el usuario trabaja con más de una pestaña.
+                var respuestaPerfil = await _impServicio.ObtenerPerfilDeProveedor(
+                    ProveedorSeleccionado.Cta_Id, TokenCookie);
+                if (!respuestaPerfil.Ok)
+                {
+                    return Json(new
+                    {
+                        error = true,
+                        mensaje = "No se pudo consultar el formato guardado del proveedor. No se aplicará un mapeo automático para evitar reemplazar su configuración."
+                    });
+                }
+
+                var perfilGuardado = respuestaPerfil.ListaEntidad ?? [];
+
+                // Si el proveedor tiene un perfil persistido, ese perfil es la fuente
+                // autoritativa: una columna ausente significa expresamente "Sin mapear".
+                // El mapeo automático solo se utiliza para proveedores sin perfil.
+                var perfilAplicado = AplicarPerfilGuardado(
+                    analisis, perfilGuardado, ProveedorSeleccionado.Cta_Id, out var mapeosRecuperados);
+                if (!perfilAplicado)
+                {
+                    AplicarMapeoAutomaticoInteligente(analisis);
+                    ResolverConflictosMapeo(analisis);
+                }
 
                 //RESGUARDAMOS EL ANALISIS
                 AnalisisFile = analisis;
@@ -165,6 +186,11 @@ namespace gc.sitio.Areas.Productos.Controllers
                 {
                     error = false,
                     analisis,
+                    perfilGuardado = perfilAplicado,
+                    mapeosRecuperados,
+                    mensajeMapeo = perfilAplicado
+                        ? $"Se recuperaron {mapeosRecuperados} asignaciones del formato guardado. Las restantes columnas permanecen sin mapear."
+                        : "El proveedor no posee un formato guardado. Se aplicó el mapeo automático inicial.",
                     mensaje = "Análisis de estructura completado"
                 });
             }
@@ -270,15 +296,19 @@ namespace gc.sitio.Areas.Productos.Controllers
 
                     _logger?.LogInformation($"✅ Importación procesada: {resultado.ListaEntidad.Count} registros");
                     var first = resultado.ListaEntidad.First();
+                    var registrosConfirmables = resultado.ListaEntidad.Count(r => r.registro_estado == 0);
+                    var registrosConError = resultado.ListaEntidad.Count(r => r.registro_estado == -1);
                     return Json(new
                     {
                         error = false,
-                        mensaje = "Importación procesada exitosamente",
+                        mensaje = "Carga preliminar procesada",
                         datos = new
                         {
                             registrosProcesados = resultado.ListaEntidad.Count,
-                            registrosConError = resultado.ListaEntidad.Count(r => r.registro_estado == -1),
+                            registrosConError,
                             registrosExitosos = resultado.ListaEntidad.Count(r => r.registro_estado != -1),
+                            registrosConfirmables,
+                            puedeConfirmar = registrosConfirmables > 0 && first.resultado == 0 && first.idfile != Guid.Empty,
                             archivo = archivo.FileName,
                             proveedor = proveedorId,
                             fechaProceso = datosImportacion.FechaProceso.ToString("yyyy-MM-dd HH:mm:ss"),
@@ -322,6 +352,21 @@ namespace gc.sitio.Areas.Productos.Controllers
                     return Json(new { error = true, mensaje = "ID de proveedor requerido" });
                 }
 
+                if (!proveedorId.Equals(ProveedorSeleccionado.Cta_Id, StringComparison.OrdinalIgnoreCase))
+                {
+                    return Json(new { error = true, mensaje = "El proveedor a confirmar no coincide con el proveedor seleccionado." });
+                }
+
+                var analisis = AnalisisFile;
+                if (analisis.IdFile == Guid.Empty)
+                {
+                    return Json(new
+                    {
+                        error = true,
+                        mensaje = "No existe una carga preliminar válida para confirmar. Procese nuevamente el archivo."
+                    });
+                }
+
                 _logger?.LogInformation($"Confirmando importación para proveedor: {proveedorId}, archivo: {archivoOriginal}");
 
                 // ✅ Llamar al servicio para confirmar la importación
@@ -332,7 +377,7 @@ namespace gc.sitio.Areas.Productos.Controllers
                     Administracion = AdministracionId ?? "0000",
                     Json = JsonConvert.SerializeObject(new { archivo = archivoOriginal }),
                     Abm = 'C', // C = Confirmar,
-                    IdFile = AnalisisFile.IdFile,
+                    IdFile = analisis.IdFile,
                     SoloPLista = soloPLista,
                     Nuevos = nuevo,
                     DatosLogisticos = datosLogisticos,
@@ -1118,12 +1163,23 @@ namespace gc.sitio.Areas.Productos.Controllers
         //}
 
         // ✅ SIMPLIFICAR: Mapeo automático optimizado
-        private void AplicarPerfilGuardado(AnalisisExcelDto analisis)
+        private bool AplicarPerfilGuardado(AnalisisExcelDto analisis, List<MapeoColumnaDto> perfil,
+            string proveedorActual, out int mapeosRecuperados)
         {
-            var perfil = PerfilProveedorGuardado;
+            mapeosRecuperados = 0;
             if (perfil.Count == 0 || analisis.Columnas.Count == 0)
             {
-                return;
+                return false;
+            }
+
+            proveedorActual = proveedorActual?.Trim() ?? string.Empty;
+            if (string.IsNullOrWhiteSpace(proveedorActual) || perfil.Any(p =>
+                    !string.Equals(p.cta_id?.Trim(), proveedorActual, StringComparison.OrdinalIgnoreCase)))
+            {
+                _logger?.LogWarning(
+                    "El perfil guardado en sesión no corresponde al proveedor activo {ProveedorId}. No será aplicado.",
+                    proveedorActual);
+                return false;
             }
 
             var camposDisponibles = analisis.CamposDisponibles
@@ -1153,7 +1209,14 @@ namespace gc.sitio.Areas.Productos.Controllers
                 columna.DescripcionMapeado = campo.Dato;
                 columna.ConfianzaMapeo = 100;
                 columna.MapeadoAutomatico = false;
+                mapeosRecuperados++;
             }
+
+            _logger?.LogInformation(
+                "Perfil guardado aplicado para {ProveedorId}: {Recuperados} de {Guardados} mapeos recuperados. Las columnas restantes quedan sin mapear.",
+                proveedorActual, mapeosRecuperados, perfil.Count);
+
+            return true;
         }
 
         private void AplicarMapeoAutomaticoInteligente(AnalisisExcelDto analisis)
@@ -2001,8 +2064,6 @@ namespace gc.sitio.Areas.Productos.Controllers
             {
                 throw new NegocioException("No se pudieron obtener los campos disponibles para la importación.");
             }
-
-            await ObtenerPerfilDeProveedor(_impServicio, ProveedorSeleccionado.Cta_Id);
 
         }
     }

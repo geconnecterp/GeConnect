@@ -25,17 +25,28 @@
                 @Model.MensajePerfil
             </div>
         }
-        <!-- ✅ AGREGAR: Botón confirmar si no hay errores -->
         @if (Model.PuedeConfirmar)
         {
-            <div class="alert alert-success mb-3 mx-3 mt-3">
+            <div class="alert @(Model.TieneErrores ? "alert-warning" : "alert-success") mb-3 mx-3 mt-3">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
-                        <i class="fas fa-check-circle me-2"></i>
-                        <strong>¡Importación exitosa!</strong>
-                        Todos los registros se procesaron correctamente.
+                        <i class="bx @(Model.TieneErrores ? "bx-error-circle" : "bx-check-circle") me-2"></i>
+                        @if (Model.TieneErrores)
+                        {
+                            <strong>Carga preliminar completada con registros rechazados.</strong>
+                            <div class="small mt-1">
+                                Hay <strong>@Model.RegistrosConfirmables registros válidos</strong> disponibles para confirmar.
+                                Los <strong>@Model.RegistrosConError registros con error</strong> fueron rechazados y no serán incluidos.
+                            </div>
+                        }
+                        else
+                        {
+                            <strong>Carga preliminar completada.</strong>
+                            <div class="small mt-1">
+                                Los <strong>@Model.RegistrosConfirmables registros válidos</strong> están listos para confirmar.
+                            </div>
+                        }
                     </div>
-                    <!-- ✅ AGREGAR: Sección de checkboxes y botón -->
                     <div class="d-flex align-items-center gap-3">
                         <!-- ✅ Checkboxes de configuración -->
                         <div class="d-flex flex-wrap gap-2 align-items-center">
@@ -77,11 +88,27 @@
                         <!-- ✅ Botón de confirmación -->
                         <button type="button"
                                 class="btn btn-success btn-sm"
-                                onclick="confirmarImportacion('@Model.ProveedorId', '@Model.ArchivoOriginal')"
+                                onclick="confirmarImportacion('@Model.ProveedorId', '@Model.ArchivoOriginal', @Model.RegistrosConfirmables, @Model.RegistrosConError)"
                                 id="btnConfirmarImportacion">
                             <i class="bx bx-check me-1"></i>CONFIRMAR IMPORTACIÓN
                         </button>
                     </div>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="alert alert-danger mb-3 mx-3 mt-3">
+                <div class="d-flex justify-content-between align-items-center gap-3">
+                    <div>
+                        <i class="bx bx-x-circle me-2"></i>
+                        <strong>La carga preliminar no puede confirmarse.</strong>
+                        <div class="small mt-1">@Model.MotivoNoConfirmacion</div>
+                    </div>
+                    <button type="button" class="btn btn-success btn-sm" disabled
+                            title="@Model.MotivoNoConfirmacion">
+                        <i class="bx bx-check me-1"></i>CONFIRMAR IMPORTACIÓN
+                    </button>
                 </div>
             </div>
         }
@@ -277,7 +304,7 @@
         }
 
         // ✅ OPTIMIZAR: Función de confirmación integrada con checkboxes
-        window.confirmarImportacion = function(proveedorId, archivoOriginal) {
+        window.confirmarImportacion = function(proveedorId, archivoOriginal, registrosValidos, registrosRechazados) {
             // Validación de parámetros
             if (!proveedorId || !archivoOriginal) {
                 showUploadError('Faltan datos para confirmar la importación');
@@ -295,11 +322,21 @@
             mensajeConfig += `<li>Incluir Inactivos: <strong>${configuracion.inactivos ? 'SÍ' : 'NO'}</strong></li>`;
             mensajeConfig += '</ul></div>';
 
+            const mensajeAlcance = registrosRechazados > 0
+                ? `<div class="alert alert-warning py-2 mt-2 mb-0">
+                       Hay <strong>${registrosValidos} registros válidos</strong> disponibles para confirmar según la configuración seleccionada.
+                       Los <strong>${registrosRechazados} registros rechazados</strong> no serán incluidos.
+                   </div>`
+                : `<div class="alert alert-success py-2 mt-2 mb-0">
+                       Hay <strong>${registrosValidos} registros válidos</strong> disponibles para confirmar según la configuración seleccionada.
+                   </div>`;
+
             // Confirmación usando el patrón del proyecto
             if (typeof AbrirMensaje === 'function') {
                 AbrirMensaje("CONFIRMACIÓN",
                     "¿Está seguro de que desea confirmar esta importación?" +
                     "<br><small class='text-muted'>Esta acción no se puede deshacer.</small>" +
+                    mensajeAlcance +
                     mensajeConfig,
                     function (respuesta) {
                         $("#msjModal").modal("hide");
@@ -326,6 +363,7 @@
             }
 
             // Estado de carga
+            $btn.data('original-html', $btn.html());
             $btn.prop('disabled', true)
                 .html('<i class="bx bx-loader-alt bx-spin me-1"></i>Confirmando...');
 
@@ -388,7 +426,7 @@
             }
 
             $btn.prop('disabled', false)
-                .html('<i class="bx bx-check me-1"></i>CONFIRMAR IMPORTACIÓN');
+                .html($btn.data('original-html') || '<i class="bx bx-check me-1"></i>CONFIRMAR IMPORTACIÓN');
         }
 
         function manejarExitoConfirmacion(response, $btn) {

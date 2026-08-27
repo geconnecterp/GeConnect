@@ -21,9 +21,20 @@ namespace gc.sitio.Areas.Productos.Models
 
         public bool TieneErrores => RegistrosConError > 0;
         public bool EsProcesadoCompleto => TotalRegistros > 0 && RegistrosConError == 0;
-
-        //public bool PuedeConfirmar => RegistrosConError == 0 && TotalRegistros > 0;
-        public bool PuedeConfirmar => TotalRegistros > 0 && RegistrosConError == 0 && FirstReg.resultado == 0;
+        public int RegistrosConfirmables => Resultados.Count(r => r.registro_estado == 0);
+        public bool TieneArchivoTemporal => FirstReg.idfile != Guid.Empty;
+        public bool PuedeConfirmar => RegistrosConfirmables > 0 &&
+                                       TieneArchivoTemporal &&
+                                       FirstReg.resultado == 0;
+        public string MotivoNoConfirmacion => RegistrosConfirmables == 0
+            ? "No existen registros válidos para confirmar. Corrija el archivo o el mapeo y vuelva a procesarlo."
+            : !TieneArchivoTemporal
+                ? "No se generó la carga temporal necesaria para confirmar la importación."
+                : FirstReg.resultado != 0
+                    ? string.IsNullOrWhiteSpace(FirstReg.resultado_msj)
+                        ? "El proceso preliminar informó una condición que impide confirmar la importación."
+                        : FirstReg.resultado_msj
+                    : string.Empty;
         public string Mensaje_proc => FirstReg.registro_msj;
     }
 }

@@ -139,8 +139,13 @@ function setupUploadControl(uploadId) {
         }
     });
 
-    // ✅ CORREGIDO: Click en zona de drop - Usar trigger() en lugar de click()
-    $dropZone.on('click', function () {
+    // Abrir el selector solo al pulsar la zona libre. El click generado por el
+    // label/input también burbujea hasta el drop zone y no debe relanzarse.
+    $dropZone.on('click', function (e) {
+        if ($(e.target).closest('input, label, button').length > 0) {
+            return;
+        }
+
         $fileInput.trigger('click');
     });
 
@@ -451,7 +456,11 @@ function procesarImportacion() {
                     AbrirMensaje("ERROR", response.mensaje,
                         () => $("#msjModal").modal("hide"), false, ["Aceptar"], "error!", null);
                 } else {
-                    mostrarAnalisisColumnas(response.analisis);
+                    mostrarAnalisisColumnas(response.analisis, {
+                        perfilGuardado: response.perfilGuardado === true,
+                        mapeosRecuperados: response.mapeosRecuperados || 0,
+                        mensaje: response.mensajeMapeo || ''
+                    });
                 }
             }, 1000);
         },
@@ -465,7 +474,7 @@ function procesarImportacion() {
 }
 
 // ✅ MANTENER: Función de mostrar análisis (ACTIVA)
-function mostrarAnalisisColumnas(analisis) {
+function mostrarAnalisisColumnas(analisis, contextoMapeo = {}) {
     const htmlAnalisis = `
         <div class="row mt-3">
             <div class="col-12">
@@ -479,6 +488,12 @@ function mostrarAnalisisColumnas(analisis) {
                     </div>
                 </div>
 
+                ${contextoMapeo.mensaje ? `
+                    <div class="alert ${contextoMapeo.perfilGuardado ? 'alert-secondary' : 'alert-light'} border py-2 px-3 mb-2 small">
+                        <i class="bx ${contextoMapeo.perfilGuardado ? 'bx-save' : 'bx-magic-wand'} me-1"></i>
+                        ${contextoMapeo.mensaje}
+                    </div>` : ''}
+
                 <!-- Tabla de análisis de columnas -->
                 <div class="card shadow-sm">
                     <div class="card-header bg-primary text-white d-flex flex-wrap justify-content-between align-items-center gap-2 py-2">
@@ -487,7 +502,7 @@ function mostrarAnalisisColumnas(analisis) {
                             Columnas detectadas y mapeo
                         </h6>
                         <div class="d-flex flex-wrap gap-2">
-                            <button type="button" id="btnRemapearTodo" class="btn btn-sm btn-outline-light" onclick="autoMapearTodas()">
+                            <button type="button" id="btnRemapearTodo" class="btn btn-sm btn-outline-light" onclick="autoMapearTodas()" hidden>
                                 <i class="bx bx-magic-wand me-1"></i>Remapear
                             </button>
                             <button type="button" id="btnValidarMapeo" class="btn btn-sm btn-warning" onclick="validarMapeo()">
@@ -1171,6 +1186,7 @@ function analizarEstadoImportacion(datos) {
     const total = datos.registrosProcesados || 0;
     const exitosos = datos.registrosExitosos || 0;
     const errores = datos.registrosConError || 0;
+    const confirmables = datos.registrosConfirmables || 0;
 
     const porcentajeExito = total > 0 ? Math.round((exitosos / total) * 100) : 0;
 
@@ -1178,6 +1194,8 @@ function analizarEstadoImportacion(datos) {
         total: total,
         exitosos: exitosos,
         errores: errores,
+        confirmables: confirmables,
+        puedeConfirmar: datos.puedeConfirmar === true,
         porcentajeExito: porcentajeExito,
         esExitoso: errores === 0 && exitosos > 0,           // Solo éxitos
         tieneMixto: errores > 0 && exitosos > 0,            // Mixto: éxitos y errores
@@ -1196,8 +1214,8 @@ function mostrarResultadosExitosos(response, estado) {
             <div class="d-flex align-items-center">
                 <i class="bx bx-check-circle bx-lg text-success me-3"></i>
                 <div class="flex-grow-1">
-                    <h5 class="alert-heading mb-2">¡Importación Completada Exitosamente!</h5>
-                    <p class="mb-2">Todos los ${estado.exitosos} registros fueron procesados correctamente.</p>
+                    <h5 class="alert-heading mb-2">Carga Preliminar Completada</h5>
+                    <p class="mb-2">Se validaron ${estado.confirmables} registros. Confirme la carga para continuar con el proceso de precios.</p>
                     
                     <div class="row text-center mt-3">
                         <div class="col-md-4">
@@ -1234,12 +1252,12 @@ function mostrarResultadosMixtos(response, estado) {
             <div class="d-flex align-items-center">
                 <i class="bx bx-error-circle bx-lg text-warning me-3"></i>
                 <div class="flex-grow-1">
-                    <h5 class="alert-heading mb-2">Importación Completada con Advertencias</h5>
-                    <h5 class="alert-heading mb-2">${estado.mensajeProc}</h5>
+                    <h5 class="alert-heading mb-2">Carga Preliminar Completada con Registros Rechazados</h5>
                     
                     <p class="mb-2">
-                        Se procesaron ${estado.exitosos} registros exitosamente, pero ${estado.errores} 
-                        registros presentaron errores que requieren revisión.
+                        ${estado.puedeConfirmar
+                            ? `Puede confirmar ${estado.confirmables} registros válidos. Los ${estado.errores} registros con error fueron rechazados y no serán incluidos.`
+                            : `Se rechazaron ${estado.errores} registros y no existen registros válidos disponibles para confirmar.`}
                     </p>
                     
                     <div class="row text-center mt-3">
@@ -1281,8 +1299,7 @@ function mostrarResultadosConErrores(response, estado) {
             <div class="d-flex align-items-center">
                 <i class="bx bx-x-circle bx-lg text-danger me-3"></i>
                 <div class="flex-grow-1">
-                    <h5 class="alert-heading mb-2">Importación Completada con Errores</h5>
-                    <h5 class="alert-heading mb-2">${estado.mensajeProc}</h5>
+                    <h5 class="alert-heading mb-2">Carga Preliminar sin Registros Confirmables</h5>
                     <p class="mb-2">
                         ${estado.soloErrores ?
             `Todos los ${estado.errores} registros presentaron errores y no pudieron ser procesados.` :
