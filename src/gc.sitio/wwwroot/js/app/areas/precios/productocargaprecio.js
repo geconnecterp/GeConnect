@@ -841,7 +841,7 @@ function calcularPrecioVentaSincronoRapido(row) {
         row.find('input[name="tp_in"]').val(response.pvta.p_in || 0);
 
         // ✅ ACTUALIZAR: Ratio de forma rápida
-        actualizarRatioRapido(row, pvta);
+        actualizarRatio(row, pvta);
 
         console.log(`✅ Precio calculado rápidamente: neto=${pneto}, venta=${pvta}`);
 
@@ -860,41 +860,6 @@ function calcularPrecioVentaSincronoRapido(row) {
     } catch (error) {
         console.error(`💥 Error calculando precio rápido para ${productId}:`, error.message);
         return false;
-    }
-}
-
-// ✅ NUEVA: Actualización rápida de ratio sin efectos visuales
-function actualizarRatioRapido(row, pvta) {
-    const precioVentaOriginal = parseFloat(row.find('.input-tp_pvta').data('original-value') || '0');
-    const precioVentaNuevo = parseFloat(pvta);
-
-    const celdaRatio = row.find('.tdRe');
-    if (celdaRatio.length === 0) return;
-
-    // ✅ CALCULAR: Ratio de forma eficiente
-    let ratio = 0.00;
-    if (precioVentaOriginal > 0) {
-        ratio = precioVentaNuevo / precioVentaOriginal;
-    } else if (precioVentaNuevo > 0) {
-        ratio = 999.99;
-    }
-
-    // Truncar a 2 decimales (sin redondear)
-    let ratioTruncado = Math.floor(ratio * 100) / 100;
-    // Mostrar en vista con 2 decimales como texto
-    let ratioTexto = ratioTruncado.toFixed(2);
-
-    // ✅ ACTUALIZAR: Sin animaciones costosas
-    celdaRatio.text(ratioTexto);
-
-    // ✅ APLICAR: Estilo de forma eficiente
-    const ratioNum = ratio;
-    if (ratioNum > 1) {
-        celdaRatio.css({ 'color': 'blue', 'font-weight': 'bold' });
-    } else if (ratioNum < 1) {
-        celdaRatio.css({ 'color': 'red', 'font-weight': 'bold' });
-    } else {
-        celdaRatio.css({ 'color': '', 'font-weight': 'normal' });
     }
 }
 
@@ -1701,31 +1666,26 @@ function actualizarRatio(row, pvta) {
     const celdaRatio = row.find('.tdRe');
     if (celdaRatio.length === 0) return;
 
-    // Calcular ratio
-    let ratio = 0.00;
-
-    if (precioVentaOriginal > 0) {
-        ratio = precioVentaNuevo / precioVentaOriginal;
-    } else if (precioVentaNuevo > 0) {
-        ratio = 999.99;
+    // Aplicar la misma regla utilizada al reconstruir las grillas desde Razor:
+    // relación sobre los precios de venta y truncamiento a dos decimales.
+    let ratioTruncado = 0.00;
+    if (Number.isFinite(precioVentaOriginal) && precioVentaOriginal > 0 && Number.isFinite(precioVentaNuevo)) {
+        const ratio = precioVentaNuevo / precioVentaOriginal;
+        ratioTruncado = Math.trunc((ratio * 100) + 1e-9) / 100;
     }
 
-    // Truncar a 2 decimales (sin redondear)
-    let ratioTruncado = Math.floor(ratio * 100) / 100;
-    // Mostrar en vista con 2 decimales como texto
-    let ratioTexto = ratioTruncado.toFixed(2);
+    const ratioTexto = ratioTruncado.toFixed(2);
 
     // Actualizar celda
     celdaRatio.text(ratioTexto);
 
     // Aplicar estilo
-    const ratioNum = ratio;
-    if (ratioNum > 1) {
+    if (precioVentaOriginal > 0 && precioVentaNuevo > precioVentaOriginal) {
         celdaRatio.css({
             'color': 'blue',
             'font-weight': 'bold'
         });
-    } else if (ratioNum < 1) {
+    } else if (precioVentaOriginal > 0 && precioVentaNuevo < precioVentaOriginal) {
         celdaRatio.css({
             'color': 'red',
             'font-weight': 'bold'

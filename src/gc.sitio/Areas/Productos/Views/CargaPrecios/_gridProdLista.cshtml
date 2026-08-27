@@ -1,4 +1,5 @@
 ﻿@using static gc.infraestructura.Helpers.GridHelper
+@using gc.sitio.Helpers
 @model GridCoreSmart<ProductoDetalleDto>
 @{
     var alt = true;
@@ -110,7 +111,7 @@
                                 </td>
                                 @{
                                     bool modificadoBandera = item.p_pvta != item.tp_pvta;
-                                    if (item.p_pvta > 0) { re = Math.Round(item.tp_pvta / item.p_pvta, 2); }
+                                    re = RelacionPrecioHelper.Calcular(item.tp_pvta, item.p_pvta);
                                 }
                                 <td class="@Model.ObtenerClase(item.tp_pvta)">
                                     <div class="input-container">
@@ -129,7 +130,7 @@
                                 </td>
                                 
                                 <td class="@Model.ObtenerClase(item.p_pvta)"
-                                    style="@(re > 0 && re != 1 ? "color: #198754; font-weight: bold;" : "color: black; font-weight: normal;")">
+                                    style="@RelacionPrecioHelper.ObtenerEstilo(item.tp_pvta, item.p_pvta)">
                                     @re.ToString("N2", System.Globalization.CultureInfo.GetCultureInfo("en-US"))
                                 </td>
                             </tr>
