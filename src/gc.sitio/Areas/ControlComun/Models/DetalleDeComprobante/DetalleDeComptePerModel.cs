@@ -1,6 +1,5 @@
-﻿using System.Text.Json.Serialization;
-
-namespace gc.sitio.Areas.ControlComun.Models.DetalleDeComprobante
+﻿
+namespace gc.sitio.Areas.ControlComun.Models
 {
 	public class DetalleDeComptePerModel
 	{

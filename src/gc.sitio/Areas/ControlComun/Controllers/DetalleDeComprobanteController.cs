@@ -1,13 +1,11 @@
-﻿using AutoMapper;
-using gc.api.core.Entidades;
+﻿using gc.api.core.Entidades;
 using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Core.Exceptions;
 using gc.infraestructura.Dtos;
 using gc.infraestructura.Dtos.Gen;
-using gc.sitio.Areas.ControlComun.Models.DetalleDeComprobante;
+using gc.sitio.Areas.ControlComun.Models;
 using gc.sitio.Controllers;
 using gc.sitio.core.Servicios.Contratos;
-using Humanizer;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 
@@ -18,13 +16,11 @@ namespace gc.sitio.Areas.ControlComun.Controllers
 	{
 		private readonly AppSettings _setting;
 		private readonly IConsultasServicio _consultasServicio;
-		private readonly IMapper _mapper;
 		public DetalleDeComprobanteController(IOptions<AppSettings> options, IHttpContextAccessor contexto, ILogger<DetalleDeComprobanteController> logger,
-											  IConsultasServicio consultasServicio, IMapper mapper) : base(options, contexto, logger)
+											  IConsultasServicio consultasServicio) : base(options, contexto, logger)
 		{
 			_setting = options.Value;
 			_consultasServicio = consultasServicio;
-			_mapper = mapper;
 		}
 
 		public IActionResult Index()
@@ -54,18 +50,15 @@ namespace gc.sitio.Areas.ControlComun.Controllers
 				}
 				var cabModel = new DetalleDeCompteCabModel();
 				MapperCab(cab.FirstOrDefault(), cabModel);
-				var iva = _consultasServicio.BuscarDetalleDeComprobanteIva(request, TokenCookie);
-				var ivalModel = new DetalleDeCompteIvaModel();
-				MapperIva(iva.FirstOrDefault(), ivalModel);
-				var per = _consultasServicio.BuscarDetalleDeComprobantePer(request, TokenCookie);
-				var perModel = new DetalleDeComptePerModel();
-				MapperPer(per.FirstOrDefault(), perModel);
+				var listaiva = _consultasServicio.BuscarDetalleDeComprobanteIva(request, TokenCookie);
+				var listaper = _consultasServicio.BuscarDetalleDeComprobantePer(request, TokenCookie);
 
+				FormatearDatos(cabModel);
 				model.Cab = cabModel;
-				model.Iva = ivalModel;
-				model.Per = perModel;
+				model.ListIva = ObtenerGridCoreSmart<DetalleDeComprobanteIvaDto>(listaiva);
+				model.ListaPer = ObtenerGridCoreSmart<DetalleDeComprobantePerDto>(listaper);
 
-				return View("~/areas/ControlComun/views/SeleccionDeValores/_index.cshtml", model);
+				return View("~/areas/ControlComun/views/DetalleDeComprobante/Index.cshtml", model);
 			}
 			catch (NegocioException ex)
 			{
@@ -87,47 +80,50 @@ namespace gc.sitio.Areas.ControlComun.Controllers
 			}
 		}
 
+		#region Metodos Privados
+
+
 		private void MapperCab(DetalleDeComprobanteCabDto dto, DetalleDeCompteCabModel model)
 		{
 			if (dto == null)
 				return;
 
-			_mapper.Map(dto, model);
+			model.adm_id = dto.adm_id;
+			model.afip_desc = dto.afip_desc;
+			model.tco_desc = dto.tco_desc;
+			model.tco_letra = dto.tco_letra;
+			model.cm_cae = dto.cm_cae;
+			model.cm_cuit = dto.cm_cuit;
+			model.cm_nombre = dto.cm_nombre;
+			model.cm_total = dto.cm_total;
+			model.afip_id = dto.afip_id;
+			model.cm_domicilio = dto.cm_domicilio;
+			model.cm_exento = dto.cm_exento;
+			model.cm_fecha = dto.cm_fecha;
+			model.cm_gravado = dto.cm_gravado;
+			model.cm_cae_vto = dto.cm_cae_vto;
+			model.cm_ii	= dto.cm_ii;
+			model.cm_iva = dto.cm_iva;
+			model.cm_libro_iva = dto.cm_libro_iva;
+			model.cm_percepciones = dto.cm_percepciones;
+			model.usu_id = dto.usu_id;
+			model.tco_id = dto.tco_id;
+			model.mon_codigo = dto.mon_codigo;
+			model.dia_movi = dto.dia_movi;
+			model.cta_id = dto.cta_id;
+			model.cm_compte = dto.cm_compte;
 		}
 
-		private void MapperPer(DetalleDeComprobantePerDto dto, DetalleDeComptePerModel model)
+		private static void FormatearDatos(DetalleDeCompteCabModel model)
 		{
-			if (dto == null)
-				return;
-
-			_mapper.Map(dto, model);
+			if (!string.IsNullOrWhiteSpace(model.cm_cuit) && model.cm_cuit.Length == 11)
+				model.cm_cuit = $"{model.cm_cuit.Substring(0, 2)}-{model.cm_cuit.Substring(2, 8)}-{model.cm_cuit.Substring(10, 1)}";
+			if (string.IsNullOrWhiteSpace(model.cm_libro_iva) || model.cm_libro_iva.Length == 6)
+				model.cm_libro_iva = $"{model.cm_libro_iva.Substring(0, 4)}-{model.cm_libro_iva.Substring(4, 2)}";
 		}
 
-		private void MapperIva(DetalleDeComprobanteIvaDto dto, DetalleDeCompteIvaModel model)
-		{
-			if (dto == null)
-				return;
+		#endregion
 
-			_mapper.Map(dto, model);
-		}
-	}
-	public class ComprobantesProfile : Profile
-	{
-		public ComprobantesProfile()
-		{
-			CreateMap<DetalleDeCompteCabModel, DetalleDeComprobanteCabDto>();
-			CreateMap<DetalleDeComprobanteCabDto, DetalleDeCompteCabModel>();
 
-			// PER
-			CreateMap<DetalleDeComptePerModel, DetalleDeComprobantePerDto>()
-				.ForMember(dest => dest.@base, opt => opt.MapFrom(src => src.@base));
-
-			CreateMap<DetalleDeComprobantePerDto, DetalleDeComptePerModel>()
-				.ForMember(dest => dest.@base, opt => opt.MapFrom(src => src.@base));
-
-			// IVA
-			CreateMap<DetalleDeCompteIvaModel, DetalleDeComprobanteIvaDto>();
-			CreateMap<DetalleDeComprobanteIvaDto, DetalleDeCompteIvaModel>();
-		}
 	}
 }

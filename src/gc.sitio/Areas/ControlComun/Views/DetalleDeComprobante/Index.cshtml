@@ -1,5 +1,96 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
+﻿@model DetalleDeCompteModel
+@using static gc.infraestructura.Helpers.GridHelper
 @{
+	var alt = true;
+	string clase = string.Empty;
+	var compte = $"Comprobante N°: {Model.Cab.cm_compte}";
+
 }
+<style>
+	#divComponenteDetalleComprobante {
+		position: fixed;
+		top: 60px;
+		left: calc(100% - 40%); /* aparece a la derecha */
+		width: 30%;
+		max-height: 80%;
+		overflow-y: auto;
+		background: #fff;
+		border: 1px solid #ccc;
+		box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+		z-index: 1050;
+		padding: 0.25rem;
+		box-sizing: border-box;
+		overflow-x: hidden;
+		height: 40%;
+	}
+
+	.popup-header-bar {
+		width: 100%;
+		background: #e0e0e0;
+		padding: 4px 8px;
+		font-size: 0.75rem;
+		font-weight: 600;
+		cursor: move;
+		border-bottom: 1px solid #ccc;
+		user-select: none;
+	}
+
+	.popup-close-btn {
+		background: transparent;
+		border: none;
+		font-size: 1rem;
+		font-weight: bold;
+		color: #444;
+		cursor: pointer;
+		padding: 0 4px;
+		line-height: 1;
+	}
+
+		.popup-close-btn:hover {
+			color: #000;
+			background: #d0d0d0;
+			border-radius: 3px;
+		}
+</style>
+<div id="divComponenteDetalleComprobante">
+	<div class="d-grid border">
+		<div id="divInfoHeaderDetalleCompte" class="popup-header-bar d-flex justify-content-between align-items-center">
+			<span><b>@compte</b></span>
+			<button id="btnCerrarDivDetalleCompte" class="popup-close-btn">×</button>
+		</div>
+		<div class="row px-2 py-1">
+			<div class="col-md-6">
+				<strong>Tipo Compte.:</strong>
+				<span>@Model.Cab.tco_desc</span>
+			</div>
+			<div class="col-md-6">
+				<strong>N° Compte.:</strong>
+				<span>@Model.Cab.cm_compte</span>
+			</div>
+
+			<div class="col-md-6 mt-1">
+				<strong>Fecha:</strong>
+				<span>@Model.Cab.cm_fecha.ToString("dd/MM/yyyy")</span>
+			</div>
+			<div class="col-md-6 mt-1">
+				<strong>CUIT:</strong>
+				<span>@Model.Cab.cm_cuit</span>
+			</div>
+
+			<div class="col-md-6 mt-1">
+				<strong>Libro IVA (mes-año):</strong>
+				<span>Model.Cab.cm_libro_iva</span>
+			</div>
+
+			<div class="col-md-6 mt-1">
+				<strong>Razón Social:</strong>
+				<span>@Model.Cab.cm_nombre</span>
+			</div>
+
+			<div class="col-md-12 mt-1">
+				<strong>Domicilio:</strong>
+				<span>@Model.Cab.cm_domicilio</span>
+			</div>
+		</div>
+	</div>
+</div>

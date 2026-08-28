@@ -90,6 +90,7 @@ $(function () {
 		$("input#Rel04").val("");
 		$("#Rel04Item").val("");
 	});
+	//$("#btnBuscar").on("click"
 	$("#btnBuscar").on("click", function () {
 		if (ctaIdSelected == "") {
 			AbrirMensaje("ATENCIÓN", "Debe seleccionar una cuenta.", function () {
@@ -105,6 +106,7 @@ $(function () {
 		}
 	});
 
+	//$(document).on("click", "#btnAbmCancelar"
 	$(document).on("click", "#btnAbmCancelar", function () {
 		const filas = window.obtenerFilasGrillaOCModificadas();
 		if (filas.length !== 0) {
@@ -137,6 +139,7 @@ $(function () {
 			$("#divDetalle").collapse("hide");
 		}
 	});
+
 	funcCallBack = BuscarProductos;
 	InicializaPantalla();
 	$("#Rel01").focus();
@@ -900,7 +903,7 @@ function limpiarNumero(valor) {
 function InicializaPantalla() {
 	var tb = $("#tbListaProducto tbody tr");
 	if (tb.length === 0) {
-		$("#divFiltro").collapse("show")
+		//$("#divFiltro").collapse("show")
 	}
 
 	$("#lbRel01").text("Proveedor");
@@ -929,8 +932,8 @@ function InicializaPantalla() {
 	MostrarDatosDeCuenta(false);
 	$("#btnAbmAceptar").prop("disabled", true);
 	CerrarWaiting();
-	if (vieneDesdeModuloExterno)
-		AbrirWaiting("Cargando datos desde módulo externo");
+	//if (vieneDesdeModuloExterno)
+	//	AbrirWaiting("Cargando datos desde módulo externo");
 	return true;
 }
 
@@ -1361,41 +1364,6 @@ function MostrarDatosDeCuenta(mostrar) {
 		$("#divProveedorSeleccionado").collapse("hide");
 	}
 }
-
-// $("#Rel01").autocomplete({
-// 	source: function (request, response) {
-
-// 		data = { prefix: request.term }; Rel01
-
-// 		$.ajax({
-// 			url: autoComRel01Url,
-// 			type: "POST",
-// 			dataType: "json",
-// 			data: data,
-// 			success: function (obj) {
-// 				response($.map(obj, function (item) {
-// 					var texto = item.descripcion;
-// 					return { label: texto, value: item.descripcion, id: item.id, prov: item.provId };
-// 				}));
-// 			}
-// 		})
-// 	},
-// 	minLength: 3,
-// 	select: function (event, ui) {
-// 		ctaIdSelected = ui.item.id;
-// 		ctaDescSelected = ui.item.value;
-// 		$("#Rel01List").empty();
-// 		$("#Rel01Item").val(ui.item.id);
-// 		var opc = "<option value=" + ui.item.id + ">" + ui.item.value + "</option>"
-// 		$("#Rel01List").append(opc);
-// 		$("#chkRel03").prop("disabled", false);
-
-// 		CargarFamiliaLista(ui.item.id);
-// 		CargarOCLista(ui.item.id);
-
-// 		return true;
-// 	}
-// });
 
 $("#Rel01").autocomplete({
 	source: function (request, response) {

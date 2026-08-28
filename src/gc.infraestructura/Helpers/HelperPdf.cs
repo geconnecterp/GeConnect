@@ -2068,7 +2068,7 @@ namespace gc.infraestructura.Helpers
 			{
 				PdfPCell celda = new PdfPCell(new Phrase(col, fuenteEtiqueta));
 				celda.HorizontalAlignment = Element.ALIGN_CENTER;
-				celda.BackgroundColor = new BaseColor(240, 200, 0);
+				celda.BackgroundColor = BaseColor.LightGray;
 				celda.Padding = 4;
 				tabla.AddCell(celda);
 			}

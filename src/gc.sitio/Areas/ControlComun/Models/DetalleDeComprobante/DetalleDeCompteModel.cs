@@ -1,9 +1,13 @@
-﻿namespace gc.sitio.Areas.ControlComun.Models.DetalleDeComprobante
+﻿using gc.infraestructura.Dtos;
+using gc.infraestructura.Dtos.Gen;
+
+namespace gc.sitio.Areas.ControlComun.Models
 {
 	public class DetalleDeCompteModel
 	{
 		public DetalleDeCompteCabModel Cab { get; set; } = new();
-		public DetalleDeCompteIvaModel Iva { get; set; } = new();
-		public DetalleDeComptePerModel Per { get; set; } = new();
+		public GridCoreSmart<DetalleDeComprobanteIvaDto> ListIva { get; set; } = new();
+		public GridCoreSmart<DetalleDeComprobantePerDto> ListaPer { get; set; } = new();
+
 	}
 }

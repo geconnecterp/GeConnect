@@ -1209,6 +1209,56 @@ function AceptarDesdeDetalleRpr() {
 	}
 }
 
+function esValido(valor) {
+	return valor !== null &&
+		valor !== undefined &&
+		valor !== "" &&
+		!(typeof valor === "string" && valor.trim() === "");
+}
+
+function dblClickListaValorizacion(row) {
+	const $row = $(row);
+
+	const tcoId = $row.data("tco-id");
+	const cmCompte = $row.data("cm-compte");
+	const diaMovi = $row.data("dia-movi");
+
+	// Validación estricta
+	if (!esValido(tcoId) || !esValido(cmCompte) || !esValido(diaMovi)) {
+		console.error("Error: datos inválidos en la fila seleccionada.", {
+			tcoId, cmCompte, diaMovi
+		});
+		return;
+	}
+
+	// Si todo está OK, procesamos
+	procesarDobleClickValorizacion(tcoId, cmCompte, diaMovi);
+}
+
+function procesarDobleClickValorizacion(tcoId, cmCompte, diaMovi) {
+	const el = document.getElementById("divComponenteDetalleComprobante");
+
+	$(document).trigger("comprobanteSeleccionadoParaVisualizar", {
+		tco_id: tcoId,
+		cm_compte: cmCompte,
+		dia_movi: diaMovi
+	});
+
+	//if (!el || el.style.display === "none") {
+	//	return;
+	//}
+	//else {
+	//	/* ######	INICIO Componente de info detalle de comprobante ###### */
+	//	// disparar evento custom con datos del compte
+	//	$(document).trigger("comprobanteSeleccionadoParaVisualizar", {
+	//		tco_id: tcoId,
+	//		cm_compte: cmCompte,
+	//		dia_movi: diaMovi
+	//	});
+	//	/* ######	FIN Componente de info adicional de producto ###### */
+	//}
+}
+
 function GuardarValorizacion() {
 	AbrirMensaje("ATENCIÓN", "¿Desea guardar la valorización? ", function (e) {
 		$("#msjModal").modal("hide");

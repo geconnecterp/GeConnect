@@ -84,6 +84,8 @@
 	</div>
 </div>
 
+<div id="divInfoDetalleDeComprobante" class="collapse"></div>
+
 @section scripts {
 	<script type="text/javascript">
 		//funcionalidad busqueda avanzada
@@ -120,6 +122,11 @@
 		var obtenerDatosModalAgregarProductoUrl = "@Url.Action("ObtenerDatosModalAgregarProducto", "valorizaciondecomprobante", new { area = "Compras" })";
 		var agregarProductoParaValorizarUrl = "@Url.Action("AgregarProductoParaValorizar", "valorizaciondecomprobante", new { area = "Compras" })";
 
+
+		/*URL para componente de Detalle de Comprobante*/
+		var abrirComponenteDetalleDeComprobanteUrl = "@Url.Action("AbrirComponente", "detalledecomprobante", new { area = "ControlComun" })";
+		/**/
+
 		var busquedaProdBaseUrl = "@Url.Action("BusquedaBase", "producto", new { area = "ControlComun" })";
 		var busquedaAvanzadaUrl = "@Url.Action("BusquedaAvanzada", "producto", new { area = "ControlComun" })";
 	</script>
@@ -128,4 +135,5 @@
 	<script src="~/js/app/controlcomun/rpr.js" type="text/javascript"></script>
 	<script src="~/js/app/controlcomun/infoRpr.js" type="text/javascript"></script>
 	<script src="~/js/app/areas/valorcompte/valorizaciondecomprobante.js"></script>
+	<script src="~/js/app/controlcomun/detalledecomprobante.js" type="text/javascript"></script>
 }

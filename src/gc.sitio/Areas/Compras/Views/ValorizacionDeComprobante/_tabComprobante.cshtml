@@ -135,7 +135,10 @@
 							var nombre = "chk" + item.cm_compte;
 							<tr class="" 
 								data-tco-id="@item.tco_id"
-								onclick="selectListaValorizacion(this)">
+								data-cm-compte="@item.cm_compte"
+								data-dia-movi="@item.dia_movi"
+								onclick="selectListaValorizacion(this)"
+								ondblclick="dblClickListaValorizacion(this)">
 								<td class="@Model.GrillaValoracion.ObtenerClase(item.cm_compte_obs)">@Model.GrillaValoracion.FormatearDato(item.cm_compte_obs, FormatDato.Ninguno)</td>
 								<td class="@Model.GrillaValoracion.ObtenerClase(item.cm_no_gravado)">@GridHelper.FormatearDato(item.cm_no_gravado, FormatDato.Monto, true)</td>
 								<td class="@Model.GrillaValoracion.ObtenerClase(item.cm_exento)">@GridHelper.FormatearDato(item.cm_exento, FormatDato.Monto, true)</td>
