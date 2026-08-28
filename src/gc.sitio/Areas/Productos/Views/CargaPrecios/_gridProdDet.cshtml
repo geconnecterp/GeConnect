@@ -1,4 +1,5 @@
 ﻿@using static gc.infraestructura.Helpers.GridHelper
+@using gc.sitio.Helpers
 @model GridCoreSmart<ProductoDetalleDto>
 @{
     var alt = true;
@@ -12,12 +13,6 @@
 }
 
 @functions {
-    public string GeneraStyle(decimal ratioNum)
-    {
-        return ratioNum > 0 && ratioNum != 1
-            ? "color: #198754; font-weight: bold;"
-            : "color: black; font-weight: normal;";
-    }
     // public int GetColspan(PrecioListaDetalleDto reg)
     // {
     //     if (reg == null) return 0;
@@ -113,10 +108,7 @@
                                 familiaAnterior = familiaActual;
                                 alt = true; // Reiniciar alternancia de colores después de cada familia
                             }
-                            decimal re = 0M;
-                            if (item.p_pvta > 0) { re = Math.Round(item.tp_pvta / item.p_pvta, 2); 
-                                
-                            }
+                            decimal re = RelacionPrecioHelper.Calcular(item.tp_pvta, item.p_pvta);
                             if (alt) { clase = "alt"; alt = false; } else { clase = ""; alt = true; }
 
                             // Verificar si estamos en modo de carga temporal
@@ -266,7 +258,7 @@
                                     </div>
                                 </td>
                                 
-                                <td class="@Model.ObtenerClase(item.p_pvta) tdRe" style="@GeneraStyle(re)">@re.ToString("N2", System.Globalization.CultureInfo.GetCultureInfo("en-US"))</td>
+                                <td class="@Model.ObtenerClase(item.p_pvta) tdRe" style="@RelacionPrecioHelper.ObtenerEstilo(item.tp_pvta, item.p_pvta)">@re.ToString("N2", System.Globalization.CultureInfo.GetCultureInfo("en-US"))</td>
                             </tr>
                         }
                     }
