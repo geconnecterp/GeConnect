@@ -32,7 +32,7 @@ namespace gc.sitio.Areas.Productos.Controllers
             _cuentaServicio = cuenta;
             _rubroServicio = rubro;
         }
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
             try
             {
@@ -46,17 +46,28 @@ namespace gc.sitio.Areas.Productos.Controllers
                 ViewData["Titulo"] = "Alta de Oferta (sin activar)";
 
                 CargarDatosIniciales(true,_cuentaServicio,_rubroServicio);
+
+                var tiposOferta = await _ofertaServicio.BuscarTiposOferta(TokenCookie);
+                ViewBag.TiposOferta = tiposOferta.Ok && !tiposOferta.EsError
+                    ? tiposOferta.ListaEntidad ?? []
+                    : new List<TipoOfertaDto>();
+
+                if (ViewBag.TiposOferta.Count == 0)
+                    TempData["error"] = tiposOferta.Mensaje ?? "No se encontraron tipos de oferta disponibles.";
+
                 return View();
             }
             catch (NegocioException ex)
             {
                 _logger?.LogError(ex, "Error al cargar de los datos iniciales del módulo.");
+                ViewBag.TiposOferta = new List<TipoOfertaDto>();
                 TempData["error"] = ex.Message;
                 return View();
             }
             catch (Exception ex)
             {
                 _logger?.LogError(ex, "Error al cargar de los datos iniciales del módulo.");
+                ViewBag.TiposOferta = new List<TipoOfertaDto>();
                 TempData["error"] = "Hubo un problema al cargar la vista del BSS. Si el problema persiste, contacte al administrador.";
                 return View();
             }
@@ -479,6 +490,12 @@ namespace gc.sitio.Areas.Productos.Controllers
         /// </summary>
         private (bool EsValido, string MensajeError) ValidarRequestConfirmacion(ConfirmacionOfertaRequestDto request)
         {
+            if (request == null)
+                return (false, "No se recibieron los datos de la oferta");
+
+            if (string.IsNullOrWhiteSpace(request.TipoOfertaId) || request.TipoOfertaId.Trim().Length != 1)
+                return (false, "Debe seleccionar un tipo de oferta válido");
+
             // ✅ VALIDACIÓN: Precio
             if (request.Precio <= 0)
                 return (false, "El precio debe ser mayor a cero");
@@ -536,7 +553,8 @@ namespace gc.sitio.Areas.Productos.Controllers
                     Precio = request.Precio,
                     Desde = request.FechaDesde,
                     Hasta = request.FechaHasta,
-                    TopeVta = request.TopeVenta
+                    TopeVta = request.TopeVenta,
+                    OftId = request.TipoOfertaId.Trim()
                 };
                 var jsonOferta = JsonConvert.SerializeObject(parametrosOferta);
                 

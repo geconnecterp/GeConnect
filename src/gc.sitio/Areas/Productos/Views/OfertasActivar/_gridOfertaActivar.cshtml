@@ -43,6 +43,7 @@
                         </th>
                         <th class="text-center th-compact" scope="col">CÓDIGO</th>
                         <th class="text-left th-compact" scope="col">DESCRIPCIÓN</th>
+                        <th class="text-left th-compact" scope="col">TIPO DE OFERTA</th>
                         <th class="text-end th-compact" scope="col">COSTO</th>
                         <th class="text-end th-compact" scope="col">P. VENTA</th>
                         <th class="text-end th-compact" scope="col">OFERTA</th>
@@ -59,6 +60,13 @@
                             clase = alt ? string.Empty : "table-row-alt";
                             
                             var (vigenciaCss, vigenciaIcon, vigenciaMsg) = GetVigenciaInfo(item.po_fecha_desde, item.po_fecha_hasta);
+                            var tipoOfertaId = item.oft_id?.Trim() ?? string.Empty;
+                            var tipoOfertaDesc = string.IsNullOrWhiteSpace(item.oft_desc) || item.oft_desc.Trim() == "0"
+                                ? "Sin tipificar"
+                                : item.oft_desc.Trim();
+                            var tipoOfertaTitulo = string.IsNullOrWhiteSpace(tipoOfertaId) || tipoOfertaId == "0"
+                                ? tipoOfertaDesc
+                                : $"{tipoOfertaDesc} ({tipoOfertaId})";
 
                             <tr class="@clase" data-producto-id="@item.p_id">
                                 <td class="text-center">
@@ -76,6 +84,9 @@
                                 </td>
                                 <td class="@Model.ObtenerClase(item.p_desc)" title="@item.p_desc">
                                     @Model.FormatearDato(item.p_desc, FormatDato.Ninguno)
+                                </td>
+                                <td class="@Model.ObtenerClase(tipoOfertaDesc)" title="@tipoOfertaTitulo">
+                                    @Model.FormatearDato(tipoOfertaDesc, FormatDato.Ninguno)
                                 </td>
                                 <td class="text-end">
                                     @item.p_pcosto.ToString("N3", culturaImportes)

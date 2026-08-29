@@ -59,13 +59,20 @@
         .ofertas-sin-activar-productos #tbGridOfertasSinActivar { width: 100%; table-layout: auto; }
         .ofertas-sin-activar-productos #tbGridOfertasSinActivar th:nth-child(1) { width: 42px; }
         .ofertas-sin-activar-productos #tbGridOfertasSinActivar th:nth-child(2) { width: 82px; }
-        .ofertas-sin-activar-productos #tbGridOfertasSinActivar th:nth-child(4),
         .ofertas-sin-activar-productos #tbGridOfertasSinActivar th:nth-child(5),
-        .ofertas-sin-activar-productos #tbGridOfertasSinActivar th:nth-child(6) { width: 105px; }
-        .ofertas-sin-activar-productos #tbGridOfertasSinActivar th:nth-child(7) { width: 205px; }
+        .ofertas-sin-activar-productos #tbGridOfertasSinActivar th:nth-child(6),
+        .ofertas-sin-activar-productos #tbGridOfertasSinActivar th:nth-child(7) { width: 105px; }
+        .ofertas-sin-activar-productos #tbGridOfertasSinActivar th:nth-child(8) { width: 205px; }
         .ofertas-sin-activar-productos #tbGridOfertasSinActivar td:nth-child(3) {
             min-width: 190px;
             white-space: normal;
+        }
+        .ofertas-sin-activar-productos #tbGridOfertasSinActivar th:nth-child(4) { width: 145px; }
+        .ofertas-sin-activar-productos #tbGridOfertasSinActivar td:nth-child(4) {
+            max-width: 145px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
         .ofertas-sin-activar-options .filter-golden-header { padding: .4rem .65rem; }
         .ofertas-sin-activar-options .filter-golden-body {
@@ -84,7 +91,7 @@
         }
         @@media (max-width: 991.98px) {
             .ofertas-sin-activar-layout { row-gap: .75rem; }
-            .ofertas-sin-activar-productos #tbGridOfertasSinActivar { min-width: 850px; }
+            .ofertas-sin-activar-productos #tbGridOfertasSinActivar { min-width: 995px; }
         }
     </style>
 }

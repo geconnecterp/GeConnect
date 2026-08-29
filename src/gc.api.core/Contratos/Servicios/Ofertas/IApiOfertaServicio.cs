@@ -8,6 +8,7 @@ namespace gc.api.core.Contratos.Servicios.Ofertas
     {
         string ConocerEstadoOferta(string p_id,string admId,string lp_id);
         List<CanalDto> BuscarCanales();
+        List<TipoOfertaDto> BuscarTiposOferta();
         RespuestaDto ConfirmacionAltaOferta(AbmPlusGenDto req, ParamOferta param);
         List<OfertaEstadoDto> ObtenerEstadoOfertaProducto(string p_id);
         List<OfertaDto> ObtenerOfertas(string admId, string lp_id, bool sinActivar = true);

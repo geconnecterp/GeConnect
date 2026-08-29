@@ -48,6 +48,14 @@ namespace gc.api.Controllers.Ofertas
             return Ok(new ApiResponse<List<CanalDto>>(resultado));
         }
 
+        [HttpGet("buscar-tipos-oferta")]
+        [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<List<TipoOfertaDto>>))]
+        public ActionResult<List<TipoOfertaDto>> BuscarTiposOferta()
+        {
+            var resultado = _ofertaSv.BuscarTiposOferta();
+            return Ok(new ApiResponse<List<TipoOfertaDto>>(resultado));
+        }
+
         [HttpPost("confirmacion-alta-oferta")]
         [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<RespuestaDto>))]
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
@@ -63,12 +71,20 @@ namespace gc.api.Controllers.Ofertas
             ParamOferta? param = JsonConvert.DeserializeObject<ParamOferta>(req.Json3);
             var hoy = DateTime.Today;
             if (param == null || param.Precio <= 0 ||
+                string.IsNullOrWhiteSpace(param.OftId) || param.OftId.Trim().Length != 1 ||
                 param.Desde == default || param.Hasta == default ||
                 param.TopeVta < 0 || param.Hasta < param.Desde ||
                 param.Desde < hoy || param.Hasta > param.Desde.AddDays(30 - 1))
             {
                 return BadRequest("Alguno de los parametros para la confirmacion del alta de la oferta ha faltado o es incorrecto. Verifique");
             }
+
+            param.OftId = param.OftId.Trim();
+            var tipoOfertaExiste = _ofertaSv.BuscarTiposOferta()
+                .Any(t => string.Equals(t.oft_id?.Trim(), param.OftId, StringComparison.OrdinalIgnoreCase));
+            if (!tipoOfertaExiste)
+                return BadRequest("El tipo de oferta seleccionado no existe o ya no se encuentra disponible.");
+
             var resultado = _ofertaSv.ConfirmacionAltaOferta(req, param);
             return Ok(new ApiResponse<RespuestaDto>(resultado));
         }

@@ -1159,8 +1159,7 @@ $("#Rel03").autocomplete({
 			data: data,
 			success: function (obj) {
 				response($.map(obj, function (item) {
-					var texto = item.descripcion;
-					return { label: texto, value: item.descripcion, id: item.id, prov: item.provId };
+					return normalizarProveedorAutocomplete(item);
 				}));
 			}
 		})
@@ -1173,6 +1172,8 @@ $("#Rel03").autocomplete({
 		return true;
 	}
 });
+
+aplicarRenderProveedorAutocomplete($("#Rel03"));
 
 function QuitarParentesis(str) {
 	return str

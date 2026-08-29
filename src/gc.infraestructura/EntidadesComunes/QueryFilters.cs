@@ -34,6 +34,7 @@ namespace gc.infraestructura.Core.EntidadesComunes
         public List<ComboGenDto>? Rel03 { get; set; }
         public List<ComboGenDto>? Rel04 { get; set; }
         public List<ComboGenDto>? Rel05 { get; set; }
+        public List<string> OfertaList { get; set; } = [];
 
         public DateTime? FechaD { get; set; }
         public DateTime? FechaH { get; set; }

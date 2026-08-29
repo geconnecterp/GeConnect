@@ -9,6 +9,10 @@ var comboIdGuardado = null;
 var comboSeleccionadoId = null;
 var comboSeleccionadoEstado = null;
 var detalleCargaVersion = 0;
+var busquedaComboVersion = 0;
+var sustitutosCargaVersion = 0;
+var busquedaComboXhr = null;
+var sustitutosDesactivadosPendientes = [];
 var edicionEstructuraPermitida = false;
 
 /**
@@ -78,6 +82,49 @@ function analizaEstadoCombo() {
 }
 
 /**
+ * Cierra la consulta de un combo/promoción y restablece la grilla principal.
+ * Replica el comportamiento de btnDetalle del ABM de Productos.
+ */
+function limpiarContextoComboSeleccionado(conservarGrilla = true) {
+    if (modoNuevoCombo || modoModificacionCombo) return false;
+
+    // Invalida respuestas asíncronas que pudieran quedar pendientes.
+    detalleCargaVersion += 1;
+    sustitutosCargaVersion += 1;
+
+    comboSeleccionadoId = null;
+    comboSeleccionadoEstado = null;
+    edicionEstructuraPermitida = false;
+
+    restaurarCamposFormulario();
+    $("#divTools").hide();
+    $("#divCanales").empty();
+    $("#divComboProducto, #divComboSustituto").hide().empty();
+    $("#colComboProducto, #colComboSustituto").show();
+    $("#divPromoCombo").css("max-height", "500px");
+
+    // Al cerrar un detalle se conserva la consulta. Al iniciar otra búsqueda
+    // se elimina la grilla anterior para no mezclar filtros con resultados viejos.
+    if (!conservarGrilla) {
+        $("#divDetalle").empty();
+    }
+    $("#divDetalle").collapse("show");
+    activarGrilla("tbGridPromoCombo");
+    $("#tbGridPromoCombo tbody tr").removeClass("selected-row selectedEdit-row");
+
+    $("#btnDetalle").prop("disabled", true);
+    $("#btnAbmModif").prop("disabled", true);
+    $("#btnAbmNuevo").prop("disabled", $("#Estado").val() !== "N");
+    actualizarContadorSeleccionados();
+
+    return true;
+}
+
+function cerrarDetalleComboSeleccionado() {
+    return limpiarContextoComboSeleccionado(true);
+}
+
+/**
  * Inicializa los eventos para los elementos del formulario
  */
 function inicializarEventos() {
@@ -88,6 +135,28 @@ function inicializarEventos() {
     // Configurar el evento click para el botón Cancelar/Inicializar
     $("#btnAbmCancelar").on("click", function (e) {
         cancelarOperacion(e);
+    });
+
+    // Abrir los filtros invalida cualquier detalle visible. De esta manera los
+    // criterios nunca conviven con datos pertenecientes a una selección previa.
+    $("#btnFiltro").off("click.promoComboContexto").on("click.promoComboContexto", function () {
+        if (!modoNuevoCombo && !modoModificacionCombo) {
+            limpiarContextoComboSeleccionado(true);
+        }
+    });
+
+    // btnDetalle funciona como cancelación de la consulta abierta. En este
+    // módulo #divDetalle contiene la grilla, por eso se retira el toggle
+    // genérico de Bootstrap para que la grilla permanezca visible.
+    $("#btnDetalle")
+        .removeAttr("data-bs-toggle data-bs-target")
+        .attr("aria-expanded", "false");
+    $("#btnDetalle").off("click.promoCombo").on("click.promoCombo", function (e) {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+
+        if ($(this).prop("disabled")) return false;
+        return cerrarDetalleComboSeleccionado();
     });
 
     // Configurar el evento click para el botón Buscar/Filtrar
@@ -117,14 +186,17 @@ function inicializarEventos() {
     });
 
     $(document).on("click", "#btnCambiarEstadoCombo", function () {
-        var estadoActual = $("#cmb_estado").val();
-        var nuevoEstado = estadoActual === 'N' ? 'A' : (estadoActual === 'A' ? 'H' : null);
+        var estadoActual = obtenerEstadoComboSeleccionado();
+        $("#cmb_estado").val(estadoActual);
+        var nuevoEstado = estadoActual === 'N' ? 'A' : (estadoActual === 'A' ? 'H' : (estadoActual === 'H' ? 'A' : null));
         if (!nuevoEstado) return;
 
         var tipo = $("#cmb_tipo").val() === 'C' || $("#cmb_tipo").val() === 'D' ? 'combo' : 'promoción';
-        var accion = nuevoEstado === 'A' ? 'activar' : 'pasar a Histórico';
+        var esReactivacion = estadoActual === 'H' && nuevoEstado === 'A';
+        var accion = esReactivacion ? 'reactivar' : (nuevoEstado === 'A' ? 'activar' : 'pasar a Histórico');
+        var titulo = esReactivacion ? 'REACTIVAR' : (nuevoEstado === 'A' ? 'ACTIVAR' : 'PASAR A HISTÓRICO');
         AbrirMensaje(
-            nuevoEstado === 'A' ? "ACTIVAR" : "PASAR A HISTÓRICO",
+            titulo,
             `¿Está seguro que desea ${accion} ${tipo} "${$("#cmb_desc").val().trim()}"?`,
             function (resp) {
                 if (resp === "SI") cambiarEstadoComboExistente(tipo, nuevoEstado);
@@ -132,8 +204,42 @@ function inicializarEventos() {
                 return true;
             },
             true,
-            [nuevoEstado === 'A' ? "Activar" : "Pasar a Histórico", "Cancelar"],
+            [esReactivacion ? "Reactivar" : (nuevoEstado === 'A' ? "Activar" : "Pasar a Histórico"), "Cancelar"],
             "info!",
+            null
+        );
+    });
+
+    $(document).on("click", ".btn-desactivar-producto, .btn-desactivar-sustituto", function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        if (!modoModificacionCombo || obtenerEstadoComboSeleccionado() !== 'A') {
+            ControlaMensajeWarning("Debe presionar Modificar antes de desactivar un producto o sustituto");
+            return;
+        }
+
+        var $boton = $(this);
+        var $fila = $boton.closest("tr");
+        var esProducto = $boton.hasClass("btn-desactivar-producto");
+        var elemento = esProducto ? "producto" : "sustituto";
+        var elementoId = String($fila.data("producto-id") || "");
+        var elementoDesc = $fila.find("td:eq(1)").clone().children().remove().end().text().trim();
+
+        AbrirMensaje(
+            `DESACTIVAR ${elemento.toUpperCase()}`,
+            `¿Está seguro que desea desactivar el ${elemento} "${elementoDesc}" (${elementoId})?<br><br>` +
+            "El cambio quedará pendiente hasta que presione Confirmar.",
+            function (resp) {
+                if (resp === "SI") {
+                    marcarElementoParaDesactivar($fila, esProducto);
+                }
+                $("#msjModal").modal("hide");
+                return true;
+            },
+            true,
+            ["Desactivar", "Cancelar"],
+            "warn!",
             null
         );
     });
@@ -153,6 +259,7 @@ function inicializarEventos() {
 
         $("#btnAbmNuevo").prop("disabled", true);
         $("#btnAbmModif").prop("disabled", true);
+        $("#btnDetalle").prop("disabled", true);
 
         // Verifico si el divFiltro esta SHOW. Si eso es así lo oculto.
         if ($("#divFiltro").is(":visible")) {
@@ -180,7 +287,8 @@ function inicializarEventos() {
             return;
         }
 
-        var estadoActual = $("#cmb_estado").val();
+        var estadoActual = obtenerEstadoComboSeleccionado();
+        $("#cmb_estado").val(estadoActual);
         if (estadoActual === 'H') {
             ControlaMensajeWarning("Los registros históricos son de solo consulta");
             return;
@@ -196,15 +304,17 @@ function inicializarEventos() {
         var admiteSustitutos = tipoActual !== 'Q' && tipoActual !== 'D';
         $("#btnAgregarCProducto").prop("disabled", !edicionEstructuraPermitida);
         $("#btnAgregarSustituto").prop("disabled", !edicionEstructuraPermitida || !admiteSustitutos);
-        $(".btn-eliminar-producto, .btn-eliminar-sustituto").toggle(edicionEstructuraPermitida);
 
         // Activar modo modificación
         modoModificacionCombo = true;
+        sustitutosDesactivadosPendientes = [];
+        configurarAccionesProductosYSustitutos();
 
         // Activar/desactivar botones apropiados
         ActivarBtnAC(true);
         $("#btnAbmNuevo").prop("disabled", true);
         $("#btnAbmModif").prop("disabled", true);
+        $("#btnDetalle").prop("disabled", true);
         desactivarGrilla("tbGridPromoCombo");
 
         $("#cmb_desc").prop("readonly", !edicionEstructuraPermitida);
@@ -242,7 +352,7 @@ function inicializarEventos() {
             return;
         }
         if (!edicionEstructuraPermitida) {
-            ControlaMensajeWarning("En estado Activo solo puede modificarse la vigencia");
+            ControlaMensajeWarning("En estado Activo solo puede modificarse la vigencia o desactivarse productos/sustitutos existentes");
             return;
         }
 
@@ -634,6 +744,15 @@ function buscarCombos(pag = 1) {
         return;
     }
 
+    var versionBusqueda = ++busquedaComboVersion;
+    if (busquedaComboXhr && busquedaComboXhr.readyState !== 4) {
+        busquedaComboXhr.abort();
+    }
+
+    // El contexto anterior se invalida antes de iniciar la comunicación. Así,
+    // incluso ante una demora o error, nunca queda un detalle ajeno a la grilla.
+    limpiarContextoComboSeleccionado(false);
+
     // Mostrar mensaje de espera
     AbrirWaiting("Buscando promos y combos...");
 
@@ -648,11 +767,12 @@ function buscarCombos(pag = 1) {
     pagina = pag;
 
     // Realizar la búsqueda
-    $.ajax({
+    busquedaComboXhr = $.ajax({
         url: presentarPromosYCombosUrl,
         type: "POST",
         data: filtros,
         success: function (html) {
+            if (versionBusqueda !== busquedaComboVersion) return;
             CerrarWaiting();
             realizaAlgunaBusqueda = true;
             // Ocultar el panel de filtros y mostrar el de resultados
@@ -668,12 +788,14 @@ function buscarCombos(pag = 1) {
             comboSeleccionadoId = null;
             comboSeleccionadoEstado = null;
             $("#divTools").hide();
-            $("#btnDetalle").prop("disabled", false);
+            // Se habilita recién al abrir el detalle de un registro.
+            $("#btnDetalle").prop("disabled", true);
             $("#btnAbmNuevo").prop("disabled", $("#Estado").val() !== 'N');
             $("#btnAbmModif").prop("disabled", true);
 
             //armado de la paginacion
             PostGen({}, buscarMetadataURL, function (obj) {
+                if (versionBusqueda !== busquedaComboVersion) return;
                 if (obj.error === true) {
                     AbrirMensaje("ATENCIÓN", obj.msg, function () {
                         $("#msjModal").modal("hide");
@@ -690,9 +812,15 @@ function buscarCombos(pag = 1) {
             });
         },
         error: function (xhr, status, error) {
+            if (status === "abort" || versionBusqueda !== busquedaComboVersion) return;
             CerrarWaiting();
             console.error("Error en la búsqueda: ", error);
             ControlaMensajeError("Error al buscar promos y combos: " + error);
+        },
+        complete: function () {
+            if (versionBusqueda === busquedaComboVersion) {
+                busquedaComboXhr = null;
+            }
         }
     });
 }
@@ -701,21 +829,9 @@ function buscarCombos(pag = 1) {
  * Configura los eventos de paginación en la tabla de resultados
  */
 function configurarEventosPaginacion() {
-    // Configurar eventos de paginación
-    $(".pagination .page-link").off("click").on("click", function (e) {
-        e.preventDefault();
-        var pagina = $(this).data("page") || 1;
-
-        // Reconstruir los filtros
-        var filtros = {
-            Tipo: $("#chkTipo").prop("checked") ? $("#Tipo").val() : null,
-            Estado: $("#chkEstado").prop("checked") ? $("#Estado").val() : null,
-            Pagina: pagina,
-            Registros: 10
-        };
-
-        cargarPagina(filtros, pagina);
-    });
+    // La paginación común invoca funcCallBack. Se evita mantener un segundo
+    // controlador paralelo (el anterior llamaba a cargarPagina, inexistente).
+    funcCallBack = buscarCombos;
 }
 
 /**
@@ -738,7 +854,9 @@ function configurarEventosSeleccion(e) {
             $("#tbGridPromoCombo tbody tr").removeClass("selected-row selectedEdit-row");
             $this.addClass("selected-row");
             comboSeleccionadoId = String($this.data("combo-id") || $this.find("td:first").text().trim());
-            comboSeleccionadoEstado = String($this.find("[data-estado-id]").data("estado-id") || '');
+            comboSeleccionadoEstado = normalizarEstadoCombo(
+                $this.find("[data-estado-id]").attr("data-estado-id")
+            );
             $("#btnAbmModif").prop("disabled", true);
             actualizarContadorSeleccionados();
         }
@@ -746,7 +864,10 @@ function configurarEventosSeleccion(e) {
 
     $(document).on("dblclick", "#tbGridPromoCombo tbody tr", function (e) {
         if ($(e.target).is("button, a, .btn, i")) return;
-        $(this).trigger("click").addClass("selectedEdit-row");
+        var $fila = $(this);
+        $fila.trigger("click").addClass("selectedEdit-row");
+        desactivarGrilla("tbGridPromoCombo");
+        posicionarRegOnTop($fila, "#divPromoCombo");
         abrirDetalleCombo(comboSeleccionadoId, comboSeleccionadoEstado);
     });
 
@@ -818,29 +939,52 @@ function accionesIniciales(callback) {
 
 function abrirDetalleCombo(comboId, estado) {
     if (!comboId) return;
+
+    var $filaSeleccionada = $("#tbGridPromoCombo tbody tr.selected-row").filter(function () {
+        var filaId = $(this).data("combo-id") || $(this).attr("data-combo-id") || $(this).find("td:first").text().trim();
+        return String(filaId) === String(comboId);
+    }).first();
+
+    if ($filaSeleccionada.length === 0) {
+        limpiarContextoComboSeleccionado(true);
+        return;
+    }
+
     detalleCargaVersion += 1;
     var version = detalleCargaVersion;
     comboSeleccionadoId = String(comboId);
-    comboSeleccionadoEstado = String(estado || '');
+    comboSeleccionadoEstado = normalizarEstadoCombo(estado);
+
+    // El SP de datos no siempre devuelve cmb_estado. La fila principal sí lo
+    // contiene, por lo que se sincroniza antes de iniciar las cargas asíncronas.
+    $("#cmb_estado").val(comboSeleccionadoEstado);
+    configurarPresentacionEstado(comboSeleccionadoEstado);
 
     $("#divPromoCombo").css("max-height", "210px");
     $("#divTools").show();
+    $("#btnDetalle").prop("disabled", false);
     $("#btnAbmNuevo").prop("disabled", true);
     $("#btnAbmModif").prop("disabled", comboSeleccionadoEstado === 'H');
-    cargarDatosCombo(comboId, version);
     cargarCanalesCombo(comboId, version);
-    cargarProductosCombo(comboId, version);
+    cargarDatosCombo(comboId, version, function () {
+        cargarProductosCombo(comboId, version);
+    });
 }
 
 function esCargaComboVigente(comboId, version) {
-    return String(comboSeleccionadoId) === String(comboId) && version === detalleCargaVersion;
+    if (String(comboSeleccionadoId) !== String(comboId) || version !== detalleCargaVersion) return false;
+
+    return $("#tbGridPromoCombo tbody tr.selected-row").filter(function () {
+        var filaId = $(this).data("combo-id") || $(this).attr("data-combo-id") || $(this).find("td:first").text().trim();
+        return String(filaId) === String(comboId);
+    }).length === 1;
 }
 
 function configurarPresentacionEstado(estado, permitirTransicion = true) {
     var configuracion = {
         N: { texto: 'Sin Activar', clase: 'bg-warning text-dark', accion: 'Activar' },
         A: { texto: 'Activo', clase: 'bg-success', accion: 'Pasar a Histórico' },
-        H: { texto: 'Histórico', clase: 'bg-secondary', accion: null }
+        H: { texto: 'Histórico', clase: 'bg-secondary', accion: 'Reactivar' }
     }[estado] || { texto: 'Sin selección', clase: 'bg-secondary', accion: null };
 
     $("#lblEstadoCombo").val(configuracion.texto);
@@ -855,6 +999,20 @@ function configurarPresentacionEstado(estado, permitirTransicion = true) {
     } else {
         $boton.hide();
     }
+}
+
+function normalizarEstadoCombo(estado, respaldo = '') {
+    var valor = String(estado || '').trim().toUpperCase();
+    if (['N', 'A', 'H'].includes(valor)) return valor;
+
+    var valorRespaldo = String(respaldo || '').trim().toUpperCase();
+    return ['N', 'A', 'H'].includes(valorRespaldo) ? valorRespaldo : '';
+}
+
+function obtenerEstadoComboSeleccionado() {
+    var estadoFila = $("#tbGridPromoCombo tbody tr.selected-row [data-estado-id]")
+        .attr("data-estado-id");
+    return normalizarEstadoCombo(estadoFila, comboSeleccionadoEstado);
 }
 
 function cargarFamiliasParaBusquedaAvanzadaCombos(proveedorId) {
@@ -1096,20 +1254,20 @@ function limpiarGridsProductos(modoEdicion = modoNuevoCombo) {
 
     // Crear HTML para un grid vacío de productos
     var htmlProductosVacio = `
-    <div class="card h-100">
-        <div class="card-header py-1 d-flex justify-content-between align-items-center">
+    <div class="grid-golden h-100">
+        <div class="grid-golden-header promo-subgrid-header">
             <h6 class="mb-0">Productos</h6>
             ${modoEdicion ? `
             <div class="d-flex align-items-center">
                 ${htmlPreajusteDropdown}
                 ${htmlImporteUnico}
-                <button type="button" class="btn btn-sm btn-outline-primary" id="btnAgregarCProducto" title="Agregar Producto">
-                    <i class="bx bx-plus" style="font-size: 24px;"></i>
+                <button type="button" class="btn btn-sm btn-outline-light promo-subgrid-action" id="btnAgregarCProducto" title="Agregar Producto">
+                    <i class="bx bx-plus"></i>
                 </button>
             </div>
             ` : ''}
         </div>
-        <div class="card-body p-1">
+        <div class="grid-golden-body p-1">
             <div class="table-responsive" style="max-height: 250px;">
                 <table class="table table-sm table-hover mb-0 table-golden" id="tbGridProductos">
                     <thead class="sticky-top table-golden-header-compact">
@@ -1136,16 +1294,16 @@ function limpiarGridsProductos(modoEdicion = modoNuevoCombo) {
 
     // Crear HTML para un grid vacío de sustitutos (sin cambios)
     var htmlSustitutosVacio = `
-    <div class="card h-100">
-        <div class="card-header py-1 d-flex justify-content-between align-items-center">
+    <div class="grid-golden h-100">
+        <div class="grid-golden-header promo-subgrid-header">
             <h6 class="mb-0">Sustitutos</h6>
             ${modoEdicion ? `
-            <button type="button" class="btn btn-sm btn-outline-primary" id="btnAgregarSustituto" title="Agregar Sustituto">
-                <i class="bx bx-plus" style="font-size: 24px;"></i>
+            <button type="button" class="btn btn-sm btn-outline-light promo-subgrid-action" id="btnAgregarSustituto" title="Agregar Sustituto">
+                <i class="bx bx-plus"></i>
             </button>
             ` : ''}
         </div>
-        <div class="card-body p-1">
+        <div class="grid-golden-body p-1">
             <div class="table-responsive" style="max-height: 250px;">
                 <table class="table table-sm table-hover mb-0 table-golden" id="tbGridSustitutos">
                     <thead class="sticky-top table-golden-header-compact">
@@ -1284,6 +1442,7 @@ function cancelarOperacion(e, traerCombos = true) {
     modoNuevoCombo = false;
     modoModificacionCombo = false;
     edicionEstructuraPermitida = false;
+    sustitutosDesactivadosPendientes = [];
 
     // Restaurar estado de los campos
     restaurarCamposFormulario();
@@ -1312,7 +1471,9 @@ function cancelarOperacion(e, traerCombos = true) {
     if (traerCombos && eraModificacion && idSeleccionado) {
         $("#tbGridPromoCombo tbody tr").removeClass("selectedEdit-row");
         var $fila = $(`#tbGridPromoCombo tbody tr[data-combo-id="${idSeleccionado}"]`);
-        $fila.addClass("selected-row");
+        $fila.addClass("selected-row selectedEdit-row");
+        desactivarGrilla("tbGridPromoCombo");
+        posicionarRegOnTop($fila, "#divPromoCombo");
         abrirDetalleCombo(idSeleccionado, estadoSeleccionado);
     } else {
         $("#divComboDatos").hide();
@@ -1362,6 +1523,7 @@ function cargarCanalesCombo(comboId, version) {
         },
         error: function (xhr, status, error) {
             CerrarWaiting();
+            if (!esCargaComboVigente(comboId, version)) return;
             console.error("Error al cargar canales: ", error);
             ControlaMensajeError("Error al cargar canales: " + error);
         }
@@ -1371,7 +1533,7 @@ function cargarCanalesCombo(comboId, version) {
 /**
  * Carga los datos del combo seleccionado y los muestra en el formulario
  */
-function cargarDatosCombo(comboId, version) {
+function cargarDatosCombo(comboId, version, alCompletar) {
     // 🔧 OPTIMIZACIÓN: Validación temprana
     if (!comboId || comboId === '') {
         console.error("ComboId no válido:", comboId);
@@ -1411,12 +1573,18 @@ function cargarDatosCombo(comboId, version) {
                     $("#cmb_tipo").val(datos.cmb_tipo).prop("disabled", true);
                     console.log("🔒 Campo cmb_tipo bloqueado para combo existente");
 
-                    $("#cmb_estado").val(datos.cmb_estado);
-                    configurarPresentacionEstado(datos.cmb_estado);
+                    var estadoDetalle = normalizarEstadoCombo(datos.cmb_estado, comboSeleccionadoEstado);
+                    comboSeleccionadoEstado = estadoDetalle;
+                    $("#cmb_estado").val(estadoDetalle);
+                    configurarPresentacionEstado(estadoDetalle);
 
                     // Actualizar fechas
                     $("#cmb_desde").val(formatearFecha(datos.cmb_desde)).prop("readonly", true);
                     $("#cmb_hasta").val(formatearFecha(datos.cmb_hasta)).prop("readonly", true);
+
+                    if (typeof alCompletar === "function" && esCargaComboVigente(comboId, version)) {
+                        alCompletar();
+                    }
                 }
             } else {
                 var mensaje = response?.mensaje || "Error desconocido al obtener datos del combo";
@@ -1426,6 +1594,7 @@ function cargarDatosCombo(comboId, version) {
         },
         error: function (xhr, status, error) {
             CerrarWaiting();
+            if (!esCargaComboVigente(comboId, version)) return;
 
             // 🔧 OPTIMIZACIÓN: Mejor manejo de errores
             var mensajeError = "Error al cargar datos del combo";
@@ -2172,6 +2341,21 @@ function guardarSustitutosEnSesion() {
  * @param {string} productoId - ID del producto
  * @returns {boolean} - false si se cancela la operación por edición activa
  */
+function esCargaSustitutosVigente(comboId, productoId, versionSustitutos, versionDetalle, eraNuevo) {
+    if (versionSustitutos !== sustitutosCargaVersion) return false;
+
+    var productoSeleccionado = $("#tbGridProductos tbody tr.selected-row").data("producto-id") ||
+        $("#tbGridProductos tbody tr.selected-row td:first").text().trim();
+    if (String(productoSeleccionado || "") !== String(productoId || "")) return false;
+
+    if (eraNuevo) return modoNuevoCombo;
+
+    return !modoNuevoCombo &&
+        versionDetalle === detalleCargaVersion &&
+        String(comboSeleccionadoId || "") === String(comboId || "") &&
+        esCargaComboVigente(comboId, versionDetalle);
+}
+
 function cargarProductosSustitutos(comboId, productoId) {
     // Verificación inmediata y estricta de edición activa
     if (hayEdicionActiva()) {
@@ -2179,8 +2363,12 @@ function cargarProductosSustitutos(comboId, productoId) {
         return false;
     }
 
-    // Determinar qué URL usar según el modo
-    var url = modoNuevoCombo && typeof retornarProductosSustitutosUrl !== 'undefined'
+    var versionSustitutos = ++sustitutosCargaVersion;
+    var versionDetalle = detalleCargaVersion;
+    var eraNuevo = modoNuevoCombo;
+
+    // Determinar qué URL usar según el modo capturado al iniciar la petición.
+    var url = eraNuevo && typeof retornarProductosSustitutosUrl !== 'undefined'
         ? retornarProductosSustitutosUrl
         : obtenerProductosSustitutosUrl;
 
@@ -2195,7 +2383,7 @@ function cargarProductosSustitutos(comboId, productoId) {
     var productoDesc = $("#tbGridProductos tbody tr.selected-row td:nth-child(2)").text().trim();
 
     // Configurar datos según la URL que estamos usando
-    var datos = modoNuevoCombo ? { p_id: productoId } : { comboId: comboId, productoId: productoId };
+    var datos = eraNuevo ? { p_id: productoId } : { comboId: comboId, productoId: productoId };
 
     $.ajax({
         url: url,
@@ -2203,8 +2391,9 @@ function cargarProductosSustitutos(comboId, productoId) {
         data: datos,
         success: function (response) {
             CerrarWaiting();
+            if (!esCargaSustitutosVigente(comboId, productoId, versionSustitutos, versionDetalle, eraNuevo)) return;
 
-            if (modoNuevoCombo) {
+            if (eraNuevo) {
                 // Para modo nuevo combo, procesamos respuesta JSON de RetornarProductosSustitutos
                 if (response && response.ok) {
                     // Actualizar el mapa de sustitutos con los datos recibidos
@@ -2233,16 +2422,22 @@ function cargarProductosSustitutos(comboId, productoId) {
                     // Si no hay filas después de cargar, mostrar mensaje "No hay sustitutos"
                     $("#tbGridSustitutos tbody").html(`
                         <tr>
-                            <td colspan="${modoNuevoCombo ? 5 : 4}" class="text-center text-muted py-2">
+                            <td colspan="${eraNuevo ? 5 : 4}" class="text-center text-muted py-2">
                                 <i class="bx bx-info-circle me-1"></i>No hay sustitutos disponibles
                             </td>
                         </tr>
                     `);
-                } else {
-                    // Ocultar columna de acción si no estamos en modo nuevo combo
-                    if (!modoNuevoCombo) {
-                        $("#tbGridSustitutos th:last-child, #tbGridSustitutos td:last-child").hide();
-                    }
+                }
+                if (!eraNuevo) {
+                    configurarAccionesProductosYSustitutos();
+                    sustitutosDesactivadosPendientes
+                        .filter(x => String(x.p_id) === String(productoId))
+                        .forEach(function (pendiente) {
+                            var $filaPendiente = $("#tbGridSustitutos tbody tr").filter(function () {
+                                return String($(this).data("producto-id") || "") === String(pendiente.p_id_sustituto);
+                            }).first();
+                            if ($filaPendiente.length) marcarElementoParaDesactivar($filaPendiente, false, false, false);
+                        });
                 }
 
                 // Verificar si hay sustitutos después de cargar el HTML
@@ -2258,6 +2453,7 @@ function cargarProductosSustitutos(comboId, productoId) {
         },
         error: function (xhr, status, error) {
             CerrarWaiting();
+            if (!esCargaSustitutosVigente(comboId, productoId, versionSustitutos, versionDetalle, eraNuevo)) return;
             console.error("Error al cargar productos sustitutos:", error);
             ControlaMensajeError("Error al cargar productos sustitutos: " + error);
         }
@@ -2370,10 +2566,7 @@ function cargarProductosCombo(comboId, version) {
                     const tipoCombo = $("#cmb_tipo").val() || 'C';
                     actualizarVisibilidadSegunTipo(tipoCombo);
 
-                    // Si la columna de acción existe, ocultarla
-                    if ($("#tbGridProductos th").length > 5) {
-                        $("#tbGridProductos th:last-child, #tbGridProductos td:last-child").hide();
-                    }
+                    configurarAccionesProductosYSustitutos();
                 } else {
                     // En modo edición, inicializar los campos editables
                     inicializarCamposEditablesProductos();
@@ -2395,10 +2588,85 @@ function cargarProductosCombo(comboId, version) {
         },
         error: function (xhr, status, error) {
             CerrarWaiting();
+            if (!esCargaComboVigente(comboId, version)) return;
             console.error("Error al cargar productos:", error);
             ControlaMensajeError("Error al cargar productos: " + error);
         }
     });
+}
+
+function configurarAccionesProductosYSustitutos() {
+    var estado = obtenerEstadoComboSeleccionado();
+    var mostrarAcciones = modoModificacionCombo && (estado === 'N' || estado === 'A');
+
+    $("#tbGridProductos th:last-child, #tbGridProductos td:last-child").toggle(mostrarAcciones);
+    $("#tbGridSustitutos th:last-child, #tbGridSustitutos td:last-child").toggle(mostrarAcciones);
+
+    if (!mostrarAcciones) return;
+
+    if (estado === 'N') {
+        $(".btn-eliminar-producto, .btn-eliminar-sustituto").show();
+        return;
+    }
+
+    $("#tbGridProductos .btn-eliminar-producto")
+        .removeClass("btn-eliminar-producto")
+        .addClass("btn-desactivar-producto")
+        .attr("title", "Desactivar producto")
+        .html('<i class="bx bx-block"></i>')
+        .show();
+    $("#tbGridSustitutos .btn-eliminar-sustituto")
+        .removeClass("btn-eliminar-sustituto")
+        .addClass("btn-desactivar-sustituto")
+        .attr("title", "Desactivar sustituto")
+        .html('<i class="bx bx-block"></i>')
+        .show();
+}
+
+function marcarElementoParaDesactivar($fila, esProducto, registrar = true, informar = true) {
+    if (String($fila.attr("data-producto-estado") || "").toUpperCase() === 'D') return;
+
+    var productoId = String($fila.data("producto-id") || "");
+    if (!esProducto && registrar) {
+        var productoPadreId = String($fila.data("producto-padre-id") || "");
+        if (!productoPadreId) {
+            ControlaMensajeWarning("No se pudo identificar el producto principal del sustituto");
+            return;
+        }
+
+        sustitutosDesactivadosPendientes = sustitutosDesactivadosPendientes.filter(x =>
+            !(String(x.p_id) === productoPadreId && String(x.p_id_sustituto) === productoId));
+        sustitutosDesactivadosPendientes.push({
+            cmb_id: String($fila.data("combo-id") || $("#cmb_id").val()),
+            p_id: productoPadreId,
+            p_id_sustituto: productoId,
+            p_desc: $fila.find("td:eq(1)").clone().children().remove().end().text().trim(),
+            p_pcosto: parseFloat($fila.find("td:eq(2)").text().replace(/[^\d.-]/g, '')) || 0,
+            activo: 'D'
+        });
+    }
+
+    $fila
+        .attr("data-producto-estado", "D")
+        .data("producto-estado", "D")
+        .addClass("table-warning");
+    $fila.find("input, select, button").prop("disabled", true);
+
+    var $descripcion = $fila.find("td:eq(1)");
+    if (!$descripcion.find(".badge").length) {
+        $descripcion.append('<span class="badge bg-warning text-dark ms-1">Desactivación pendiente</span>');
+    }
+
+    $fila.find(".btn-desactivar-producto, .btn-desactivar-sustituto")
+        .removeClass("btn-outline-danger btn-desactivar-producto btn-desactivar-sustituto")
+        .addClass("btn-outline-warning")
+        .attr("title", esProducto ? "Producto pendiente de desactivar" : "Sustituto pendiente de desactivar")
+        .html('<i class="bx bx-block"></i>')
+        .prop("disabled", true);
+
+    if (informar) {
+        ControlaMensajeInfo(`${esProducto ? "Producto" : "Sustituto"} marcado para desactivar. Presione Confirmar para guardar el cambio.`);
+    }
 }
 
 /**
@@ -2463,7 +2731,10 @@ function confirmarCombo() {
     var request = {
         Datos: datos,
         Canales: canales,
-        Productos: productos
+        Productos: productos,
+        Sustitutos: modoModificacionCombo && obtenerEstadoComboSeleccionado() === 'A'
+            ? sustitutosDesactivadosPendientes
+            : null
     };
 
     // 5. Confirmar con el usuario
@@ -2475,6 +2746,9 @@ function confirmarCombo() {
         `¿Está seguro que desea ${accionDesc} este ${tipoDesc}?<br><br>` +
         `<strong>Descripción:</strong> ${datos.cmb_desc}<br>` +
         `<strong>Productos:</strong> ${productos.length}<br>` +
+        (sustitutosDesactivadosPendientes.length
+            ? `<strong>Sustitutos a desactivar:</strong> ${sustitutosDesactivadosPendientes.length}<br>`
+            : "") +
         `<strong>Canales:</strong> ${canales.length}`,
         function (resp) {
             if (resp === "SI") {
@@ -2524,7 +2798,8 @@ function recopilarDatosCombo() {
         cmb_id: $("#cmb_id").val() || '',
         cmb_desc: descripcion,
         cmb_tipo: $("#cmb_tipo").val() || 'C',
-        cmb_estado: $("#cmb_estado").val() || 'N',
+        cmb_estado: obtenerEstadoComboSeleccionado() || 'N',
+        cmb_estado_anterior: obtenerEstadoComboSeleccionado() || 'N',
         cmb_desde: fechaDesde,
         cmb_hasta: fechaHasta,
         pasa_activar: false,
@@ -2599,7 +2874,7 @@ function recopilarProductosCombo() {
                 dto_porc: esImporteUnico ? 0 : descuento,
                 dto_imp: esImporteUnico ? descuento : 0,
                 up_id: upId,
-                activo: 'A'
+                activo: String($fila.data("producto-estado") || 'A')
             };
 
             productos.push(producto);
@@ -2665,6 +2940,11 @@ function enviarConfirmacionCombo(request, tipoDesc) {
                     : `${tipoDesc.charAt(0).toUpperCase() + tipoDesc.slice(1)} modificado correctamente`;
 
                 ControlaMensajeSuccess(response.msg || mensajeExito);
+
+                if (modoModificacionCombo) {
+                    $("#tbGridProductos th:last-child, #tbGridProductos td:last-child, " +
+                        "#tbGridSustitutos th:last-child, #tbGridSustitutos td:last-child").hide();
+                }
 
                 // Limpiar datos temporales
                 productosSustitutosMap = {};
@@ -2782,6 +3062,12 @@ function refrescarYSeleccionarCombo(comboId) {
     var pagActual = parseInt(window.pagina, 10);
     if (!Number.isFinite(pagActual) || pagActual < 1) pagActual = 1;
 
+    var versionBusqueda = ++busquedaComboVersion;
+    if (busquedaComboXhr && busquedaComboXhr.readyState !== 4) {
+        busquedaComboXhr.abort();
+    }
+    limpiarContextoComboSeleccionado(false);
+
     // Mostrar mensaje de espera
     AbrirWaiting("Actualizando listado...");
 
@@ -2791,11 +3077,12 @@ function refrescarYSeleccionarCombo(comboId) {
         Pagina: pagActual
     };
 
-    $.ajax({
+    busquedaComboXhr = $.ajax({
         url: presentarPromosYCombosUrl,
         type: "POST",
         data: filtros,
         success: function (html) {
+            if (versionBusqueda !== busquedaComboVersion) return;
             CerrarWaiting();
             realizaAlgunaBusqueda = true;
 
@@ -2810,6 +3097,7 @@ function refrescarYSeleccionarCombo(comboId) {
 
             // Actualizar paginación
             PostGen({}, buscarMetadataURL, function (obj) {
+                if (versionBusqueda !== busquedaComboVersion) return;
                 if (!obj.error) {
                     totalRegs = obj.metadata.totalCount;
                     pags = obj.metadata.totalPages;
@@ -2819,14 +3107,21 @@ function refrescarYSeleccionarCombo(comboId) {
 
                 // ✅ CLAVE: Seleccionar después de que todo esté cargado
                 setTimeout(function () {
+                    if (versionBusqueda !== busquedaComboVersion) return;
                     seleccionarYPosicionarCombo(comboId);
                 }, 200);
             });
         },
         error: function (xhr, status, error) {
+            if (status === "abort" || versionBusqueda !== busquedaComboVersion) return;
             CerrarWaiting();
             console.error("Error al refrescar grid:", error);
             ControlaMensajeError("Error al actualizar el listado: " + error);
+        },
+        complete: function () {
+            if (versionBusqueda === busquedaComboVersion) {
+                busquedaComboXhr = null;
+            }
         }
     });
 }
@@ -2849,7 +3144,7 @@ function seleccionarYPosicionarCombo(comboId) {
         var filaId = $(this).data("combo-id") ||
             $(this).attr("data-combo-id") ||
             $(this).find("td:first").text().trim();
-        return filaId === comboId;
+        return String(filaId || "") === String(comboId || "");
     }).first();
 
     if ($fila.length > 0) {
@@ -2860,6 +3155,16 @@ function seleccionarYPosicionarCombo(comboId) {
 
         // Marcar la fila como seleccionada
         $fila.addClass("selected-row");
+
+        // La selección visual y el contexto interno deben apuntar siempre al
+        // mismo registro. El detalle se habilita únicamente con doble clic.
+        comboSeleccionadoId = String($fila.data("combo-id") || $fila.attr("data-combo-id") || comboId);
+        comboSeleccionadoEstado = normalizarEstadoCombo(
+            $fila.find("[data-estado-id]").attr("data-estado-id")
+        );
+        restaurarCamposFormulario();
+        $("#divTools").hide();
+        $("#btnDetalle, #btnAbmModif").prop("disabled", true);
 
         // Actualizar contador
         actualizarContadorSeleccionados();
@@ -2898,8 +3203,9 @@ function cambiarEstadoComboExistente(tipoDesc, nuevoEstado) {
     }
 
     // 1. Mostrar indicador de progreso
-    var estadoAnterior = $("#cmb_estado").val();
-    var accionGerundio = nuevoEstado === 'A' ? 'Activando' : 'Pasando a Histórico';
+    var estadoAnterior = obtenerEstadoComboSeleccionado();
+    var esReactivacion = estadoAnterior === 'H' && nuevoEstado === 'A';
+    var accionGerundio = esReactivacion ? 'Reactivando' : (nuevoEstado === 'A' ? 'Activando' : 'Pasando a Histórico');
     AbrirWaiting(`${accionGerundio} ${tipoDesc}...`);
 
     // 2. Recopilar datos existentes
@@ -2908,6 +3214,7 @@ function cambiarEstadoComboExistente(tipoDesc, nuevoEstado) {
         cmb_desc: $("#cmb_desc").val().trim(),
         cmb_tipo: $("#cmb_tipo").val() || 'C',
         cmb_estado: nuevoEstado,
+        cmb_estado_anterior: estadoAnterior,
         cmb_desde: $("#cmb_desde").val(),
         cmb_hasta: $("#cmb_hasta").val(),
         pasa_activar: nuevoEstado === 'A',
@@ -2947,7 +3254,7 @@ function cambiarEstadoComboExistente(tipoDesc, nuevoEstado) {
                 dto_porc: parseFloat(fila.find(".input-descuento").val().replace(/,/g, '')) || 0,
                 dto_imp: parseFloat(fila.data("dto-imp")) || 0,
                 up_id: String(fila.data("up-id") || ''),
-                activo: 'A'
+                activo: String(fila.data("producto-estado") || 'A')
             };
             productos.push(producto);
         }
@@ -2971,7 +3278,7 @@ function cambiarEstadoComboExistente(tipoDesc, nuevoEstado) {
 
             if (response && response.ok && !response.error) {
                 // Éxito
-                var accionCompletada = nuevoEstado === 'A' ? 'activado' : 'pasado a Histórico';
+                var accionCompletada = esReactivacion ? 'reactivado' : (nuevoEstado === 'A' ? 'activado' : 'pasado a Histórico');
                 ControlaMensajeSuccess(response.msg || `${tipoDesc.charAt(0).toUpperCase() + tipoDesc.slice(1)} ${accionCompletada} correctamente`);
                 $("#cmb_estado").val(nuevoEstado);
                 configurarPresentacionEstado(nuevoEstado);
@@ -2980,7 +3287,7 @@ function cambiarEstadoComboExistente(tipoDesc, nuevoEstado) {
                 refrescarGridPromoCombo();
             } else {
                 // Error o advertencia
-                var mensaje = response.msg || `Error al activar ${tipoDesc}`;
+                var mensaje = response.msg || response.mensaje || `No se pudo cambiar el estado de ${tipoDesc}`;
                 if (response.warn) {
                     ControlaMensajeWarning(mensaje);
                     $("#cmb_estado").val(estadoAnterior);

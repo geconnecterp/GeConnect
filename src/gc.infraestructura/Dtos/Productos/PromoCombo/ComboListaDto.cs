@@ -16,6 +16,7 @@ namespace gc.infraestructura.Dtos.Productos.PromoCombo
         public char cmb_tipo { get; set; }
         public string cmb_tipo_desc { get; set; } = string.Empty;
         public char cmb_estado { get; set; }
+        public char cmb_estado_anterior { get; set; }
         public string cmb_estados_desc { get; set; } = string.Empty;
         public DateTime cmb_desde { get; set; }
         public DateTime cmb_hasta { get; set; }
@@ -29,6 +30,7 @@ namespace gc.infraestructura.Dtos.Productos.PromoCombo
         public ComboDatosDto Datos { get; set; } = new();
         public List<ComboCanalDto> Canales { get; set; } = [];
         public List<ComboProductoDto> Productos { get; set; } = [];
+        public List<ComboSustitutoDto>? Sustitutos { get; set; }
     }
 
     public class ComboRepoDto

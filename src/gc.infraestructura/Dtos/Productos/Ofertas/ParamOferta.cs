@@ -8,6 +8,14 @@ namespace gc.infraestructura.Dtos.Productos.Ofertas
         public DateTime Desde { get; set; }
         public DateTime Hasta { get; set; }
         public int TopeVta { get; set; }
+        public string OftId { get; set; } = string.Empty;
+    }
+
+    public class TipoOfertaDto
+    {
+        public string oft_id { get; set; } = string.Empty;
+        public string oft_desc { get; set; } = string.Empty;
+        public string oft_lista { get; set; } = string.Empty;
     }
 
     /// <summary>
@@ -22,6 +30,7 @@ namespace gc.infraestructura.Dtos.Productos.Ofertas
         public DateTime FechaDesde { get; set; } 
         public DateTime FechaHasta { get; set; } 
         public int TopeVenta { get; set; }
+        public string TipoOfertaId { get; set; } = string.Empty;
     }
 
     /// <summary>

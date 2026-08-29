@@ -2,9 +2,9 @@
 @model gc.infraestructura.Dtos.Gen.GridCoreSmart<ComboSustitutoDto>
 
 <div class="grid-golden h-100">
-    <div class="grid-golden-header py-1 d-flex justify-content-between align-items-center">
+    <div class="grid-golden-header promo-subgrid-header">
         <h6 class="mb-0">Sustitutos</h6>
-        <button type="button" class="btn btn-sm btn-outline-primary" id="btnAgregarSustituto" title="Agregar Sustituto" disabled>
+        <button type="button" class="btn btn-sm btn-outline-light promo-subgrid-action" id="btnAgregarSustituto" title="Agregar Sustituto" disabled>
             <i class="bx bx-plus"></i>
         </button>
     </div>
@@ -25,12 +25,18 @@
                     {
                         foreach (var item in Model.ListaDatos)
                         {
-                            <tr data-producto-id="@item.p_id_sustituto" data-combo-id="@item.cmb_id">
+                            <tr class="@(item.activo == 'D' ? "table-secondary text-muted" : "")"
+                                data-producto-id="@item.p_id_sustituto" data-producto-padre-id="@item.p_id"
+                                data-combo-id="@item.cmb_id" data-producto-estado="@item.activo">
                                 <td class="text-center">
                                     @item.p_id_sustituto
                                 </td>
                                 <td class="promo-descripcion" title="@item.p_desc">
                                     @item.p_desc
+                                    @if (item.activo == 'D')
+                                    {
+                                        <span class="badge bg-secondary ms-1">Desactivado</span>
+                                    }
                                 </td>
                                 <td class="text-end">
                                     @item.p_pcosto.ToString("N3", System.Globalization.CultureInfo.GetCultureInfo("en-US"))
@@ -41,10 +47,19 @@
                                     </span>
                                 </td> *@
                                 <td class="text-center promo-accion">
-                                    <button type="button" class="btn btn-sm btn-outline-danger btn-eliminar-sustituto" 
-                                            title="Eliminar sustituto" data-producto-id="@item.p_id_sustituto">
-                                        <i class="bx bx-trash"></i>
-                                    </button>
+                                    @if (item.activo == 'D')
+                                    {
+                                        <button type="button" class="btn btn-sm btn-outline-secondary" title="Sustituto desactivado" disabled>
+                                            <i class="bx bx-block"></i>
+                                        </button>
+                                    }
+                                    else
+                                    {
+                                        <button type="button" class="btn btn-sm btn-outline-danger btn-eliminar-sustituto"
+                                                title="Eliminar sustituto" data-producto-id="@item.p_id_sustituto">
+                                            <i class="bx bx-trash"></i>
+                                        </button>
+                                    }
                                 </td>
                             </tr>
                         }

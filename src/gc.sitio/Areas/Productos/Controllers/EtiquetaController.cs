@@ -3,6 +3,7 @@ using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Core.Exceptions;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.Productos.Etiqueta;
+using gc.infraestructura.Dtos.Productos.Ofertas;
 using gc.infraestructura.EntidadesComunes.Options;
 using gc.infraestructura.Enumeraciones;
 using gc.infraestructura.Helpers;
@@ -26,14 +27,15 @@ namespace gc.sitio.Areas.Productos.Controllers
         private readonly AppSettings _configuracion;
 
         private readonly IEtiquetaServicio _etSv;
+        private readonly IOfertaServicio _ofertaServicio;
         private readonly ICuentaServicio _cuentaServicio;
         private readonly IRubroServicio _rubroServicio;
 
         public EtiquetaController(IOptions<AppSettings> options, IHttpContextAccessor contexo,
            ILogger<EtiquetaController> logger, IOptions<DocsManager> docsManager,
-           IDocManagerServicio docManagerServicio, IEtiquetaServicio etiquetaServicio,
-           ICuentaServicio cuentaServicio,
-            IRubroServicio rubroServicio) : base(options, contexo, logger)
+            IDocManagerServicio docManagerServicio, IEtiquetaServicio etiquetaServicio,
+            ICuentaServicio cuentaServicio,
+             IRubroServicio rubroServicio, IOfertaServicio ofertaServicio) : base(options, contexo, logger)
         {
             _configuracion = options.Value;
 
@@ -44,9 +46,10 @@ namespace gc.sitio.Areas.Productos.Controllers
             _etSv = etiquetaServicio;
             _cuentaServicio = cuentaServicio;
             _rubroServicio = rubroServicio;
+            _ofertaServicio = ofertaServicio;
         }
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
             string msg = "Error de negocios al cargar la vista de ETIQUETAS";
             try
@@ -71,7 +74,7 @@ namespace gc.sitio.Areas.Productos.Controllers
                 ArchivosCargadosModulo = _docMSv.GeneraArbolArchivos(_modulo);
 
                 #endregion
-                InicializaVista();
+                await InicializaVista();
             }
             catch (NegocioException ex)
             {
@@ -114,6 +117,10 @@ namespace gc.sitio.Areas.Productos.Controllers
 
                 filters.Adm_id = AdministracionId;
                 filters.Usu_id = UserName;
+                if (filters.Opt2 != true)
+                {
+                    filters.OfertaList = [];
+                }
 
                 // Obtención optimizada (el servicio debe invocar el API). Ordenar en servidor si es posible.
                 var resp = await _etSv.ObtenerDetalleEtiquetas(filters,TokenCookie);
@@ -156,17 +163,18 @@ namespace gc.sitio.Areas.Productos.Controllers
             var texto = prefix?.Trim() ?? string.Empty;
             if (texto.Length < 3)
             {
-                return Json(Array.Empty<ComboGenDto>());
+                return Json(Array.Empty<ProveedorAutocompleteDto>());
             }
 
             var proveedores = ProveedoresLista
                 .Where(x => !string.IsNullOrWhiteSpace(x.Cta_Lista) &&
                             x.Cta_Lista.Contains(texto, StringComparison.OrdinalIgnoreCase))
                 .Take(20)
-                .Select(x => new ComboGenDto
+                .Select(x => new ProveedorAutocompleteDto
                 {
                     Id = x.Cta_Id,
-                    Descripcion = x.Cta_Lista
+                    Descripcion = $"{x.Cta_Lista}#{x.Tipo_Desc}",
+                    TipoDesc = x.Tipo_Desc
                 })
                 .ToList();
 
@@ -183,7 +191,7 @@ namespace gc.sitio.Areas.Productos.Controllers
             return Ok(new { ok = true });
         }
 
-        private void InicializaVista(bool actualizar = false)
+        private async Task InicializaVista(bool actualizar = false)
         {
             if (ProveedoresLista.Count == 0 || actualizar)
             {
@@ -232,6 +240,14 @@ namespace gc.sitio.Areas.Productos.Controllers
 
             var listCargaPrevia = new List<ComboGenDto>();
             ViewBag.CargaPrevia = ComboCargasPrevias();
+
+            var tiposOferta = await _ofertaServicio.BuscarTiposOferta(TokenCookie);
+            if (!tiposOferta.Ok || tiposOferta.EsError)
+            {
+                throw new NegocioException(tiposOferta.Mensaje ?? "No se pudieron obtener los tipos de oferta.");
+            }
+
+            ViewBag.TiposOfertaFiltro = tiposOferta.ListaEntidad ?? new List<TipoOfertaDto>();
         }
 
         [HttpPost]

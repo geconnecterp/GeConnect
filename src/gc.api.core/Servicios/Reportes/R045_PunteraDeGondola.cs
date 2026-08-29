@@ -58,13 +58,17 @@ namespace gc.api.core.Servicios.Reportes
 
                 #endregion
                 #region instanciamos el pdf
-                pdf = HelperPdf.GenerarInstanciaAndInit(ref writer, out ms, HojaSize.A4, false,20f,100f,15f,15f);
+                // Una puntera ocupa exactamente media hoja A4 (formato A5 apaisado).
+                pdf = HelperPdf.GenerarInstanciaAndInit(ref writer, out ms, HojaSize.A5, false,
+                                                        14f, 14f, 10f, 10f);
 
                 // Definir fuentes para diferentes secciones
-                var fuenteDescripcion = HelperPdf.DefineFontWithStyle("Arial", 48, Font.BOLD, 0, 0, 0);
-                var fuentePrecioSimbolo = HelperPdf.DefineFontWithStyle("Arial Black", 140, Font.BOLD, 0, 0, 0);
-                var fuentePrecioDecimal = HelperPdf.DefineFontWithStyle("Arial Black", 80, Font.BOLD, 0, 0, 0);
-                var fuenteInferior = HelperPdf.DefineFontWithStyle("Arial", 10, Font.NORMAL, 0, 0, 0);
+                var fuenteLeyenda = HelperPdf.DefineFontWithStyle("Arial", 45, Font.BOLD, 0, 0, 0);
+                var fuenteDescripcion = HelperPdf.DefineFontWithStyle("Arial", 25, Font.BOLD, 0, 0, 0);
+                var fuentePrecioSimbolo = HelperPdf.DefineFontWithStyle("Arial Black", 82, Font.BOLD, 0, 0, 0);
+                var fuentePrecioDecimal = HelperPdf.DefineFontWithStyle("Arial Black", 47, Font.BOLD, 0, 0, 0);
+                var fuenteOferta = HelperPdf.DefineFontWithStyle("Arial", 14, Font.BOLD, 0, 0, 0);
+                var fuenteInferior = HelperPdf.DefineFontWithStyle("Arial", 8, Font.NORMAL, 0, 0, 0);
 
                 pdf.Open();
 
@@ -79,11 +83,20 @@ namespace gc.api.core.Servicios.Reportes
                         pdf.NewPage();
                     }
 
-                    // ===== SECCIÓN SUPERIOR: DESCRIPCIÓN DEL PRODUCTO =====
+                    // ===== SECCIÓN SUPERIOR: LEYENDA DE VENTA / OFERTA =====
+                    GenerarSeccionLeyenda(pdf, ObtenerLeyendaVenta(etiqueta), fuenteLeyenda);
+
+                    // ===== DESCRIPCIÓN DEL PRODUCTO =====
                     GenerarSeccionDescripcion(pdf, etiqueta.p_desc, fuenteDescripcion);
 
                     // ===== SECCIÓN CENTRAL: PRECIO =====
                     GenerarSeccionPrecio(pdf, etiqueta.p_pvta, fuentePrecioSimbolo, fuentePrecioDecimal);
+
+                    // ===== INFORMACIÓN DE LA OFERTA =====
+                    if (EsOfertaConPrecioAnterior(etiqueta))
+                    {
+                        GenerarSeccionOferta(pdf, etiqueta.p_pvta_real, etiqueta.vigencia, fuenteOferta);
+                    }
 
                     // ===== SECCIÓN INFERIOR: CÓDIGOS Y ADMINISTRACIÓN =====
                     GenerarSeccionInferior(pdf, etiqueta.p_id, etiqueta.p_id_barrado,
@@ -111,21 +124,38 @@ namespace gc.api.core.Servicios.Reportes
         }
 
         /// <summary>
+        /// Genera la leyenda comercial destacada (Oferta o tipo de oferta).
+        /// </summary>
+        private static void GenerarSeccionLeyenda(Document pdf, string leyenda, Font fuente)
+        {
+            var tabla = HelperPdf.GeneraTabla(1, [100f], 100, 0, 0);
+            var parrafo = HelperPdf.GeneraParrafo(leyenda?.Trim() ?? string.Empty, fuente,
+                                                  Element.ALIGN_CENTER, 0, 0);
+            var celda = HelperPdf.GeneraCelda(parrafo, false, BaseColor.White,
+                                              Element.ALIGN_CENTER);
+            celda.Border = Rectangle.NO_BORDER;
+            celda.VerticalAlignment = Element.ALIGN_MIDDLE;
+            celda.MinimumHeight = 58f;
+            tabla.AddCell(celda);
+            pdf.Add(tabla);
+        }
+
+        /// <summary>
         /// Genera la sección superior con la descripción del producto
         /// </summary>
         private void GenerarSeccionDescripcion(Document pdf, string descripcion, Font fuente)
         {
             // Crear tabla de 1 columna para centrar el texto
-            PdfPTable tabla = HelperPdf.GeneraTabla(1, [100f], 100,250, 0);
+            PdfPTable tabla = HelperPdf.GeneraTabla(1, [100f], 100, 0, 0);
 
             var parrafo = HelperPdf.GeneraParrafo(descripcion, fuente,
-                                                  Element.ALIGN_RIGHT, 0, 0);
+                                                  Element.ALIGN_CENTER, 0, 0);
 
             var celda = HelperPdf.GeneraCelda(parrafo, false, BaseColor.White,
-                                              Element.ALIGN_RIGHT);
+                                              Element.ALIGN_CENTER);
             celda.Border = Rectangle.NO_BORDER;
-            celda.VerticalAlignment = Element.ALIGN_BOTTOM;
-            celda.MinimumHeight = 325f;
+            celda.VerticalAlignment = Element.ALIGN_MIDDLE;
+            celda.MinimumHeight = 82f;
 
             tabla.AddCell(celda);
             pdf.Add(tabla);
@@ -138,11 +168,12 @@ namespace gc.api.core.Servicios.Reportes
                                            Font fuenteSimbolo, Font fuenteDecimal)
         {
             // Separar parte entera y decimal
-            int parteEntera = (int)Math.Floor(precio);
-            int parteDecimal = (int)((precio - parteEntera) * 100);
+            var precioRedondeado = Math.Round(precio, 2, MidpointRounding.AwayFromZero);
+            int parteEntera = (int)Math.Truncate(precioRedondeado);
+            int parteDecimal = (int)Math.Abs((precioRedondeado - parteEntera) * 100);
 
             // Crear tabla de 1 fila para el precio
-            PdfPTable tablaPrecio = HelperPdf.GeneraTabla(1, [ 100f ], 100, 0, 25);
+            PdfPTable tablaPrecio = HelperPdf.GeneraTabla(1, [ 100f ], 100, 0, 0);
 
             // Crear frase combinando símbolo $, precio y decimales
             Phrase frasePrecio =
@@ -155,13 +186,71 @@ namespace gc.api.core.Servicios.Reportes
             var celdaPrecio = new PdfPCell(frasePrecio)
             {
                 Border = Rectangle.NO_BORDER,
-                HorizontalAlignment = Element.ALIGN_RIGHT,
-                VerticalAlignment = Element.ALIGN_BOTTOM,
-                MinimumHeight = 150f
+                HorizontalAlignment = Element.ALIGN_CENTER,
+                VerticalAlignment = Element.ALIGN_MIDDLE,
+                MinimumHeight = 112f
             };
 
             tablaPrecio.AddCell(celdaPrecio);
             pdf.Add(tablaPrecio);
+        }
+
+        private static bool EsOferta(EtiquetaDto etiqueta)
+        {
+            return char.ToUpperInvariant(etiqueta.es_oferta) == 'S'
+                   || string.Equals(etiqueta.oferta?.Trim(), "S",
+                                    StringComparison.OrdinalIgnoreCase);
+        }
+
+        private static string ObtenerLeyendaVenta(EtiquetaDto etiqueta)
+        {
+            // El SP histórico expone p_pvta_leyenda. Se admite también el nuevo
+            // nombre p_vta_leyenda para mantener compatibilidad entre versiones.
+            var leyenda = !string.IsNullOrWhiteSpace(etiqueta.p_vta_leyenda)
+                ? etiqueta.p_vta_leyenda
+                : etiqueta.p_pvta_leyenda;
+
+            if (!EsOferta(etiqueta))
+            {
+                return leyenda?.Trim().ToUpperInvariant() ?? string.Empty;
+            }
+
+            if (string.IsNullOrWhiteSpace(leyenda))
+            {
+                return "OFERTA";
+            }
+
+            var leyendaNormalizada = leyenda.Trim().ToUpperInvariant();
+            return leyendaNormalizada.StartsWith("OFERTA", StringComparison.Ordinal)
+                ? leyendaNormalizada
+                : $"OFERTA {leyendaNormalizada}";
+        }
+
+        private static bool EsOfertaConPrecioAnterior(EtiquetaDto etiqueta)
+        {
+            return EsOferta(etiqueta) && etiqueta.p_pvta_real > etiqueta.p_pvta;
+        }
+
+        /// <summary>
+        /// Informa el precio habitual y la vigencia cuando el precio impreso es una oferta.
+        /// </summary>
+        private static void GenerarSeccionOferta(Document pdf, decimal precioReal,
+                                                 DateTime? vigencia, Font fuente)
+        {
+            var textoVigencia = vigencia.HasValue
+                ? $"Vigente hasta: {vigencia.Value:dd/MM/yy}"
+                : "Hasta agotar disponibilidad";
+            var texto = $"Precio sin Oferta: $ {precioReal:N2} - {textoVigencia}";
+
+            var tabla = HelperPdf.GeneraTabla(1, [100f], 100, 0, 0);
+            var parrafo = HelperPdf.GeneraParrafo(texto, fuente, Element.ALIGN_CENTER, 0, 0);
+            var celda = HelperPdf.GeneraCelda(parrafo, false, BaseColor.White,
+                                              Element.ALIGN_CENTER);
+            celda.Border = Rectangle.NO_BORDER;
+            celda.VerticalAlignment = Element.ALIGN_MIDDLE;
+            celda.MinimumHeight = 36f;
+            tabla.AddCell(celda);
+            pdf.Add(tabla);
         }
 
         /// <summary>
@@ -172,7 +261,7 @@ namespace gc.api.core.Servicios.Reportes
         {
             // Crear tabla con 2 columnas: izquierda para códigos, derecha para admin
             PdfPTable tablaInferior = HelperPdf.GeneraTabla(2, [ 50f, 50f ],
-                                                             100, 40, 0);
+                                                             100, 4, 0);
 
             // ===== COLUMNA IZQUIERDA: CÓDIGOS =====
             var parrafoIzq = HelperPdf.GeneraParrafo(
@@ -186,7 +275,7 @@ namespace gc.api.core.Servicios.Reportes
                                                  Element.ALIGN_LEFT);
             celdaIzq.Border = Rectangle.NO_BORDER;
             celdaIzq.VerticalAlignment = Element.ALIGN_BOTTOM;
-            celdaIzq.PaddingLeft = 20f;
+            celdaIzq.PaddingLeft = 5f;
 
             // ===== COLUMNA DERECHA: ADMINISTRACIÓN =====
             var parrafoDer = HelperPdf.GeneraParrafo(
@@ -200,7 +289,7 @@ namespace gc.api.core.Servicios.Reportes
                                                  Element.ALIGN_RIGHT);
             celdaDer.Border = Rectangle.NO_BORDER;
             celdaDer.VerticalAlignment = Element.ALIGN_BOTTOM;
-            celdaDer.PaddingRight = 20f;
+            celdaDer.PaddingRight = 5f;
 
             tablaInferior.AddCell(celdaIzq);
             tablaInferior.AddCell(celdaDer);

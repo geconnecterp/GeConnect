@@ -892,6 +892,12 @@ function obtenerInformacionOfertaDefinida() {
         var fechaDesde = $("#txtFechaDesde").val();
         var fechaHasta = $("#txtFechaHasta").val();
         var topeVenta = parseInt($("#txtTopeVenta").val().replace(/[^\d]/g, '') || "0");
+        var tipoOfertaId = ($("#cmbTipoOferta").val() || "").trim();
+        var tipoOfertaDescripcion = $("#cmbTipoOferta option:selected").text().trim();
+
+        if (!tipoOfertaId) {
+            return { valido: false, error: "Debe seleccionar un tipo de oferta" };
+        }
         
         if (isNaN(precioOferta) || precioOferta <= 0) {
             return { valido: false, error: "El precio de la oferta debe ser mayor a cero" };
@@ -933,6 +939,8 @@ function obtenerInformacionOfertaDefinida() {
         return {
             valido: true,
             precio: precioOferta,
+            tipoOfertaId: tipoOfertaId,
+            tipoOfertaDescripcion: tipoOfertaDescripcion,
             topeVenta: topeVenta,
             fechaDesde: fechaDesde,
             fechaHasta: fechaHasta,
@@ -992,6 +1000,7 @@ function generarMensajeConfirmacionOferta(totalProductos, canalesInfo, ofertaInf
     mensaje += '<div class="text-start"><strong>📋 Detalles de la Oferta:</strong><br>';
     mensaje += `<small>`;
 
+    mensaje += `🏷️ <strong>Tipo:</strong> ${ofertaInfo.tipoOfertaDescripcion}<br>`;
     mensaje += `💰 <strong>Precio oferta:</strong> $${formatearPrecioArgentino(ofertaInfo.precio)}<br>`;
     mensaje += `📅 <strong>Período:</strong> ${formatearFecha(ofertaInfo.fechaDesde)} al ${formatearFecha(ofertaInfo.fechaHasta)} <em>(${ofertaInfo.dias} día${ofertaInfo.dias > 1 ? 's' : ''})</em><br>`;
 
@@ -1077,6 +1086,7 @@ function procesarGuardadoTodasLasOfertas(totalProductos, canalesInfo, ofertaInfo
         canales: canalesInfo.canales,
         canalIndividual: canalesInfo.individual,
         modoSeleccion: canalesInfo.modo,
+        tipoOfertaId: ofertaInfo.tipoOfertaId,
         precio: precioNumerico,
         fechaDesde: ofertaInfo.fechaDesde,
         fechaHasta: ofertaInfo.fechaHasta,
@@ -1127,6 +1137,7 @@ function generarMensajeExitoGuardado(totalProductos, canalesInfo, ofertaInfo) {
     mensaje += `📺 <strong>Canales:</strong> ${totalCanales} canal${totalCanales > 1 ? 'es' : ''}<br>`;
     
     mensaje += `📅 <strong>Período:</strong> ${formatearFecha(ofertaInfo.fechaDesde)} al ${formatearFecha(ofertaInfo.fechaHasta)}<br>`;
+    mensaje += `🏷️ <strong>Tipo:</strong> ${ofertaInfo.tipoOfertaDescripcion}<br>`;
     
     mensaje += `💰 <strong>Precio oferta:</strong> $${formatearPrecioArgentino(ofertaInfo.precio)}<br>`;
 
