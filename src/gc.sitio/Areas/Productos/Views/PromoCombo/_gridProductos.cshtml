@@ -4,9 +4,9 @@
     BusquedaProducto busquedaProducto = new();
 }
 <div class="grid-golden h-100">
-    <div class="grid-golden-header py-1 d-flex justify-content-between align-items-center">
+    <div class="grid-golden-header promo-subgrid-header">
         <h6 class="mb-0">Productos</h6>
-        <button type="button" class="btn btn-sm btn-outline-primary" id="btnAgregarCProducto" title="Agregar Producto" disabled>
+        <button type="button" class="btn btn-sm btn-outline-light promo-subgrid-action" id="btnAgregarCProducto" title="Agregar Producto" disabled>
             <i class="bx bx-plus"></i>
         </button>
         @* <partial name="~/areas/ControlComun/views/producto/_ctrBuscarProductoV02.cshtml" model="@busquedaProducto" /> *@
@@ -30,12 +30,17 @@
                     {
                         foreach (var item in Model.ListaDatos)
                         {
-                            <tr data-producto-id="@item.p_id" data-combo-id="@item.cmb_id" data-up-id="@item.up_id">
+                            <tr class="@(item.activo == 'D' ? "table-secondary text-muted" : "")"
+                                data-producto-id="@item.p_id" data-combo-id="@item.cmb_id" data-up-id="@item.up_id" data-producto-estado="@item.activo">
                                 <td class="text-center">
                                     @item.p_id
                                 </td>
                                 <td class="promo-descripcion" title="@item.p_desc">
                                     @item.p_desc
+                                    @if (item.activo == 'D')
+                                    {
+                                        <span class="badge bg-secondary ms-1">Desactivado</span>
+                                    }
                                 </td>
                                 <td class="text-end">
                                     @item.p_pcosto.ToString("N3", System.Globalization.CultureInfo.GetCultureInfo("en-US"))
@@ -46,6 +51,7 @@
                                                value="@(item.cantidad.ToString("0.##", System.Globalization.CultureInfo.GetCultureInfo("en-US")))"
                                                data-producto-id="@item.p_id"
                                                data-original-value="@item.cantidad"
+                                               disabled="@(item.activo == 'D' ? "disabled" : null)"
                                                readonly />
                                     </div>
                                 </td>
@@ -55,6 +61,7 @@
                                                value="@(item.dto_porc.ToString("N5", System.Globalization.CultureInfo.GetCultureInfo("en-US")))"
                                                data-producto-id="@item.p_id"
                                                data-original-value="@item.dto_porc"
+                                               disabled="@(item.activo == 'D' ? "disabled" : null)"
                                                readonly />
                                     </div>
                                 </td>
@@ -64,10 +71,19 @@
                                     </span>
                                 </td> *@
                                 <td class="text-center promo-accion">
-                                    <button type="button" class="btn btn-sm btn-outline-danger btn-eliminar-producto" 
-                                            title="Eliminar producto" data-producto-id="@item.p_id">
-                                        <i class="bx bx-trash"></i>
-                                    </button>
+                                    @if (item.activo == 'D')
+                                    {
+                                        <button type="button" class="btn btn-sm btn-outline-secondary" title="Producto desactivado" disabled>
+                                            <i class="bx bx-block"></i>
+                                        </button>
+                                    }
+                                    else
+                                    {
+                                        <button type="button" class="btn btn-sm btn-outline-danger btn-eliminar-producto"
+                                                title="Eliminar producto" data-producto-id="@item.p_id">
+                                            <i class="bx bx-trash"></i>
+                                        </button>
+                                    }
                                 </td>
                             </tr>
                         }

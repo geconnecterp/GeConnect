@@ -457,6 +457,44 @@ function CargarAutoActual() {
     });
 }
 
+function normalizarProveedorAutocomplete(item) {
+    const descripcion = String(item.descripcion || "");
+    const separador = descripcion.indexOf("#");
+    const descripcionPrincipal = (separador >= 0 ? descripcion.substring(0, separador) : descripcion).trim();
+    const tipoDescLegacy = separador >= 0 ? descripcion.substring(separador + 1).trim() : "";
+
+    return {
+        label: descripcionPrincipal,
+        value: descripcionPrincipal,
+        id: item.id,
+        tipoDesc: String(item.tipoDesc || item.tipo_desc || tipoDescLegacy || "").trim()
+    };
+}
+
+function aplicarRenderProveedorAutocomplete($input) {
+    const autocomplete = $input.autocomplete("instance");
+    if (!autocomplete) {
+        return;
+    }
+
+    autocomplete._renderItem = function (ul, item) {
+        const $contenido = $("<div>");
+        $("<span>")
+            .addClass("autocomplete-proveedor-principal")
+            .text(item.label || "")
+            .appendTo($contenido);
+
+        if (item.tipoDesc) {
+            $("<span>")
+                .addClass("autocomplete-proveedor-tipo")
+                .text(item.tipoDesc)
+                .appendTo($contenido);
+        }
+
+        return $("<li>").append($contenido).appendTo(ul);
+    };
+}
+
 //codigo generico para autocomplete 01
 $("#Rel01").autocomplete({
     source: function (request, response) {
@@ -468,8 +506,7 @@ $("#Rel01").autocomplete({
             data: data,
             success: function (obj) {
                 response($.map(obj, function (item) {
-                    var texto = item.descripcion;
-                    return { label: texto, value: item.descripcion, id: item.id };
+                    return normalizarProveedorAutocomplete(item);
                 }));
             }
         })
@@ -482,6 +519,8 @@ $("#Rel01").autocomplete({
         return true;
     }
 });
+
+aplicarRenderProveedorAutocomplete($("#Rel01"));
 
 //codigo generico para autocomplete 02
 $("#Rel02").autocomplete({

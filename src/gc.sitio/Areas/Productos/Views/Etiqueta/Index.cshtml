@@ -33,6 +33,38 @@
             line-height: 1;
         }
 
+        .etiqueta-filter-responsive .etiqueta-label-control {
+            min-width: 92px;
+        }
+
+        .etiqueta-filter-responsive .etiqueta-control-golden {
+            border-color: #daa520;
+            background-color: #fbffc3;
+        }
+
+        .etiqueta-filter-responsive .etiqueta-tipos-oferta {
+            min-height: 66px;
+            background-color: #fffdf5;
+        }
+
+        .etiqueta-filter-responsive .etiqueta-tipos-oferta:disabled {
+            border-color: #d9dde3;
+            background-color: #eef0f3;
+        }
+
+        .etiqueta-filter-responsive .etiqueta-opciones-simples {
+            padding-top: 1.65rem;
+        }
+
+        .etiqueta-filter-responsive .etiqueta-tipo-oferta-switch {
+            margin-top: .35rem;
+        }
+
+        .etiqueta-filter-responsive .form-text {
+            margin-top: .15rem;
+            font-size: .72rem;
+        }
+
         /* En pantallas angostas cada grupo comparte homogéneamente el ancho
            disponible. En móviles pequeños Bootstrap los apila normalmente. */
         @@media (min-width: 576px) and (max-width: 991.98px) {
@@ -48,6 +80,16 @@
             .etiqueta-filter-responsive input,
             .etiqueta-filter-responsive .form-control {
                 min-width: 0;
+            }
+
+            .etiqueta-filter-responsive .etiqueta-opciones-simples {
+                padding-top: 0;
+            }
+        }
+
+        @@media (max-width: 575.98px) {
+            .etiqueta-filter-responsive .etiqueta-opciones-simples {
+                padding-top: 0;
             }
         }
     </style>

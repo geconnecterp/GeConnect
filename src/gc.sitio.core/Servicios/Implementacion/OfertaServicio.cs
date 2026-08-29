@@ -22,6 +22,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 
         private const string CONOCER_ESTADO_OFERTA = "/conocer-estado-oferta";
         private const string BUSCAR_CANALES = "/buscar-canales";
+        private const string BUSCAR_TIPOS_OFERTA = "/buscar-tipos-oferta";
         private const string ALTA_OFERTA = "/confirmacion-alta-oferta";
         private const string OBTENER_ESTADO_OFERTA_PRODUCTO = "/obtener-estado-oferta-producto";
         
@@ -270,6 +271,43 @@ namespace gc.sitio.core.Servicios.Implementacion
                 _logger.LogError($"{this.GetType().Name}-{MethodBase.GetCurrentMethod()?.Name} - {ex}");
 
                 return new RespuestaGenerica<CanalDto> { Ok = false, Mensaje = "Algo no fue bien al intentar obtener los canales" };
+            }
+        }
+
+        public async Task<RespuestaGenerica<TipoOfertaDto>> BuscarTiposOferta(string token)
+        {
+            try
+            {
+                HelperAPI helper = new();
+                HttpClient client = helper.InicializaCliente(token);
+                var link = $"{_appSettings.RutaBase}{RutaAPI}{BUSCAR_TIPOS_OFERTA}";
+                var response = await client.GetAsync(link);
+
+                if (response.StatusCode != HttpStatusCode.OK)
+                {
+                    var errorData = await response.Content.ReadAsStringAsync();
+                    _logger.LogWarning("Error API al obtener tipos de oferta ({StatusCode}): {ErrorData}", response.StatusCode, errorData);
+                    return new() { Ok = false, Mensaje = "No se pudieron obtener los tipos de oferta." };
+                }
+
+                var stringData = await response.Content.ReadAsStringAsync();
+                if (string.IsNullOrWhiteSpace(stringData))
+                    return new() { Ok = false, Mensaje = "No se recibió una respuesta válida al obtener los tipos de oferta." };
+
+                var apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<TipoOfertaDto>>>(stringData)
+                    ?? throw new NegocioException("Hubo un problema al deserializar los tipos de oferta");
+
+                return new()
+                {
+                    Ok = true,
+                    Mensaje = "OK",
+                    ListaEntidad = apiResponse.Data ?? []
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al obtener los tipos de oferta");
+                return new() { Ok = false, Mensaje = "No se pudieron obtener los tipos de oferta." };
             }
         }
 

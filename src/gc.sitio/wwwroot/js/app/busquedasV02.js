@@ -119,8 +119,18 @@ $(function () {
                             return;
                         }
                         response($.map(obj, function (item) {
-                            var texto = item.descripcion;
-                            return { label: texto, value: item.descripcion, id: item.id, prov: item.provId, tipo: "P" };
+                            if (typeof normalizarProveedorAutocomplete === "function") {
+                                return normalizarProveedorAutocomplete(item);
+                            }
+
+                            return {
+                                label: item.descripcion,
+                                value: item.descripcion,
+                                id: item.id,
+                                prov: item.provId,
+                                tipo: "P",
+                                tipoDesc: item.tipoDesc || item.tipo_desc || ""
+                            };
                         }));
                         //response($.map(data, function (item) {
                         //    return {
@@ -162,6 +172,10 @@ $(function () {
                 return false;
             }
         });
+
+        if (typeof aplicarRenderProveedorAutocomplete === "function") {
+            aplicarRenderProveedorAutocomplete($input);
+        }
         
         // Marcar como inicializado
         $input.data("autocomplete-initialized", true);
@@ -494,52 +508,15 @@ function inicializaBusquedaAvanzadaV02() {
 }
 
 // NUEVA: Función auxiliar para generar metadata y controles
-function generarSeccionMetadataYControles(cantidadProductos, metadata) {
+function generarSeccionMetadata(metadata) {
     return `
         <div class="d-flex justify-content-between align-items-center mt-3 px-2">
             <div class="text-muted small">
                 <i class="bx bx-package me-1"></i>
                 Total: ${metadata.totalCount} productos encontrados
             </div>
-            <div class="text-muted small text-center">
-                <span class="badge bg-golden-light" id="badgeSeleccionados">
-                    ${cantidadProductos} seleccionados
-                </span>
-            </div>
             <div class="text-muted small">
                 Página ${metadata.currentPage} de ${metadata.totalPages}
-            </div>
-        </div>
-        <div id="seccionSeleccionMultiple" class="row mt-3" style="display: none;">
-            <div class="col-12">
-                <div class="card border-primary">
-                    <div class="card-header bg-primary text-white">
-                        <h6 class="mb-0">
-                            <i class="bx bx-check-square me-2"></i>
-                            Productos Seleccionados
-                            <span class="badge bg-light text-primary ms-2" id="badgeSeleccionadosHeader">0 seleccionados</span>
-                        </h6>
-                    </div>
-                    <div class="card-body">
-                        <div class="row align-items-center">
-                            <div class="col-md-8">
-                                <p class="mb-0">
-                                    Has seleccionado <strong id="contadorSeleccionados">0</strong> productos para agregar.
-                                </p>
-                            </div>
-                            <div class="col-md-4 text-end">
-                                <button type="button" class="btn btn-success me-2" id="btnAgregarSeleccionados">
-                                    <i class="bx bx-plus-circle me-1"></i>
-                                    Agregar Seleccionados
-                                </button>
-                                <button type="button" class="btn btn-outline-secondary" id="btnLimpiarSeleccionBusqueda">
-                                    <i class="bx bx-x me-1"></i>
-                                    Limpiar
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
             </div>
         </div>
     `;
@@ -652,7 +629,7 @@ function generarGridDesdeProductoListaDto(productos, metadata) {
                 <tbody>${filas}</tbody>
             </table>
         </div>
-        ${generarSeccionMetadataYControles(productosSeleccionadosBusqueda.length, meta)}
+        ${generarSeccionMetadata(meta)}
     `;
 }
 

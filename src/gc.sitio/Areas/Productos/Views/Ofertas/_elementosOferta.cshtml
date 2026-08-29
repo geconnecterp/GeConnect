@@ -1,11 +1,15 @@
 ﻿<div class="filter-golden">
     <div class="filter-golden-body">
+        @{
+            var tiposOferta = ViewBag.TiposOferta as List<gc.infraestructura.Dtos.Productos.Ofertas.TipoOfertaDto>
+                ?? new List<gc.infraestructura.Dtos.Productos.Ofertas.TipoOfertaDto>();
+        }
         <div class="d-flex justify-content-sm-end">
-            <div class="row g-2 align-items-center">
+            <div class="row g-2 align-items-center oferta-parametros">
                 <!-- Campo Precio -->
                 <div class="col-auto">
                     <div class="input-group input-group-sm h-100">
-                        <span class="input-group-text">Precio:</span>
+                        <span class="input-group-text oferta-parametro-label">Precio:</span>
                         <input type="text"
                                class="form-control input-mask-2-decimals input-numeric-golden"
                                id="txtPrecioOferta"
@@ -18,7 +22,7 @@
                 <!-- Periodo Desde -->
                 <div class="col-auto">
                     <div class="input-group input-group-sm h-100">
-                        <span class="input-group-text">Desde:</span>
+                        <span class="input-group-text oferta-parametro-label">Desde:</span>
                         <input type="date"
                                class="form-control input-numeric-golden"
                                id="txtFechaDesde"
@@ -29,7 +33,7 @@
                 <!-- Periodo Hasta -->
                 <div class="col-auto">
                     <div class="input-group input-group-sm h-100">
-                        <span class="input-group-text">Hasta:</span>
+                        <span class="input-group-text oferta-parametro-label">Hasta:</span>
                         <input type="date"
                                class="form-control input-numeric-golden"
                                id="txtFechaHasta"
@@ -40,13 +44,29 @@
                 <!-- Tope de Venta -->
                 <div class="col-auto">
                     <div class="input-group input-group-sm h-100">
-                        <span class="input-group-text">Tope Vta:</span>
+                        <span class="input-group-text oferta-parametro-label">Tope Vta:</span>
                         <input type="text"
                                class="form-control input-mask-0-decimals input-numeric-golden"
                                id="txtTopeVenta"
                                placeholder="0"
                                data-inputmask="'alias': 'numeric', 'groupSeparator': ',', 'digits': 0" 
                                style="width:90px;" />
+                    </div>
+                </div>
+
+                <!-- Tipo de Oferta -->
+                <div class="col-auto">
+                    <div class="input-group input-group-sm h-100">
+                        <span class="input-group-text oferta-parametro-label">Tipo:</span>
+                        <select class="form-select oferta-select-golden" id="cmbTipoOferta"
+                                style="width:180px;"
+                                disabled="@(tiposOferta.Count == 0 ? "disabled" : null)">
+                            <option value="">SELECCIONAR...</option>
+                            @foreach (var tipo in tiposOferta)
+                            {
+                                <option value="@tipo.oft_id">@tipo.oft_lista</option>
+                            }
+                        </select>
                     </div>
                 </div>
             </div>

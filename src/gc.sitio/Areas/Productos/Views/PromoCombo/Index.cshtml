@@ -11,8 +11,41 @@
         #promoComboApp .promo-filtros .input-group-text { min-width: 74px; justify-content: center; }
         #promoComboApp .promo-filtros .form-select { min-width: 190px; }
         #promoComboApp .promo-grid-detalle { min-height: 320px; }
-        #promoComboApp .grid-golden-header { min-height: 34px; color: #212529; }
-        #promoComboApp .grid-golden-header h6 { color: #212529; font-weight: 700; }
+        #promoComboApp .promo-subgrid-header {
+            height: 40px;
+            min-height: 40px;
+            padding: .25rem .75rem !important;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            color: #fff;
+        }
+        #promoComboApp .promo-subgrid-header h6 {
+            color: #fff !important;
+            font-weight: 700;
+            text-shadow: 0 1px 1px rgba(0, 0, 0, .25);
+        }
+        #promoComboApp .promo-subgrid-header label { color: #fff; }
+        #promoComboApp .promo-subgrid-action {
+            width: 28px;
+            height: 28px;
+            padding: 0;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            border-color: rgba(255, 255, 255, .85);
+        }
+        #promoComboApp .promo-subgrid-action:hover {
+            color: #8b6914;
+            background-color: #fff;
+            border-color: #fff;
+        }
+        #promoComboApp .promo-subgrid-action:disabled {
+            color: #fff;
+            border-color: rgba(255, 255, 255, .55);
+            opacity: .55;
+        }
         #promoComboApp .table-golden th,
         #promoComboApp .table-golden td { padding: .3rem .4rem; vertical-align: middle; font-size: .82rem; }
         #promoComboApp .promo-descripcion { max-width: 260px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

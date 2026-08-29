@@ -1220,3 +1220,15 @@ body.confirmacion-en-proceso #wWaiting {
         font-size: 0.875rem;
     }
 }
+/* Autocompletado de proveedores: razón social/cuenta + clasificación secundaria */
+.autocomplete-proveedor-principal {
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.autocomplete-proveedor-tipo {
+    margin-left: 0.35rem;
+    color: #555;
+    font-size: 13px;
+    font-weight: 400;
+}

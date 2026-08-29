@@ -34,6 +34,7 @@ function InicializaPantallaEtiqueta() {
     $("#divFiltro").collapse("show");
     
     $("#chkTipoEtiq").prop("disabled", true);
+    $("#OfertaTipoList").prop("disabled", true).val([]);
     $("#chkCargaPrevia").prop("checked", false);
     $("#CargaPrevia").prop("disabled", true);
     $("#lbCargaPrevia").text("Carga Previa");
@@ -82,6 +83,15 @@ function InicializaEnventosEtiqueta() {
         $("#CargaPrevia").prop("disabled", !isChecked);
     });
 
+    $("#chkOferta").on("change", function () {
+        const filtrarOfertas = $(this).is(":checked");
+        $("#OfertaTipoList").prop("disabled", !filtrarOfertas);
+
+        if (!filtrarOfertas) {
+            $("#OfertaTipoList").val([]);
+        }
+    });
+
     $("#chkDesdeHasta").on("change", function () {
         const isChecked = $(this).is(":checked");
         $("#Date1, #Date2").prop("disabled", !isChecked);
@@ -127,13 +137,10 @@ function InicializaEnventosEtiqueta() {
                     data: { prefix: request.term },
                     success: function (obj) {
                         response($.map(obj, function (item) {
-                            return {
-                                label: item.descripcion,
-                                value: item.descripcion,
-                                id: item.id,
-                                nombre: item.nombre || item.descripcion,
-                                domicilio: item.domicilio || ""
-                            };
+                            const proveedor = normalizarProveedorAutocomplete(item);
+                            proveedor.nombre = item.nombre || proveedor.label;
+                            proveedor.domicilio = item.domicilio || "";
+                            return proveedor;
                         }));
                     },
                     error: function () {
@@ -161,6 +168,8 @@ function InicializaEnventosEtiqueta() {
                 return false;
             }
     });
+
+    aplicarRenderProveedorAutocomplete($("#Rel011"));
 
     $(document).on("change", "select#Rel011List", function () {
         verificarYDesactivarControles();
@@ -719,6 +728,7 @@ function buscarEtiquetas(btn) {
     const tipoVal = $("#chkTipoEtiq").is(":checked") ? $("#TipoEtiqueta").val() : "";
     const sinImp = $("#chkSinImprimir").is(":checked");
     const oferta = $("#chkOferta").is(":checked");
+    const tiposOferta = oferta ? ($("#OfertaTipoList").val() || []) : [];
 
     let cargaPrevBit = false;
     let cargaPrevVal = "";
@@ -757,6 +767,7 @@ function buscarEtiquetas(btn) {
         Tipo: tipoVal || null,
         Opt1: sinImp,
         Opt2: oferta,
+        OfertaList: tiposOferta,
         Opt3: cargaPrevBit,
         StrOpt03: cargaPrevVal || null,
         FechaD: fecD && fecD.trim() !== "" ? fecD : null,

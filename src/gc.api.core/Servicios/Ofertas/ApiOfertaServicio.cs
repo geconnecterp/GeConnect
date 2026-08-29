@@ -27,6 +27,12 @@ namespace gc.api.core.Servicios.Ofertas
             return canales;
         }
 
+        public List<TipoOfertaDto> BuscarTiposOferta()
+        {
+            var sp = ConstantesGC.StoredProcedures.SP_PROD_TIPOS_OFERTAS;
+            return _repository.EjecutarLstSpExt<TipoOfertaDto>(sp, new List<SqlParameter>());
+        }
+
         public string ConocerEstadoOferta(string p_id, string admId, string lp_id)
         {
             var fx = $"select {ConstantesGC.StoredFunctions.FX_PROD_OFERTA}('{p_id}','{admId}','{lp_id}')";
@@ -44,6 +50,7 @@ namespace gc.api.core.Servicios.Ofertas
                 new SqlParameter("@desde", param.Desde),
                 new SqlParameter("@hasta", param.Hasta),
                 new SqlParameter("@tope", param.TopeVta),
+                new SqlParameter("@oft_id", param.OftId),
                 new SqlParameter("@json_p", req.Json),
                 new SqlParameter("@json_a", req.Json2),
                 new SqlParameter("@usu_id", req.Usuario),
