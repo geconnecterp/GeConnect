@@ -2964,7 +2964,14 @@ namespace gc.sitio.Controllers
         public JsonResult BuscarCuentas(string prefix)
         {
             var cta = CuentasLista.Where(x => x.Cta_Denominacion.ToUpperInvariant().Contains(prefix.ToUpperInvariant()));
-            var cuentas = cta.Select(x => new ComboGenDto { Id = x.Cta_Id, Descripcion = $"{x.Cta_Denominacion} ({x.Cta_Id}) {x.Tipo_Desc}" });
+            var cuentas = cta.Select(x => new
+            {
+                Id = x.Cta_Id,
+                // Se conserva el texto histórico para no alterar consumidores existentes.
+                Descripcion = $"{x.Cta_Denominacion} ({x.Cta_Id}) {x.Tipo_Desc}",
+                TipoDesc = x.Tipo_Desc,
+                Tipo = x.Tipo
+            });
             return Json(cuentas);
         }
 

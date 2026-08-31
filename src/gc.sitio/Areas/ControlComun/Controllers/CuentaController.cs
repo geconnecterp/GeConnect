@@ -75,7 +75,14 @@ namespace gc.pocket.site.Areas.ControlComun.Controllers
                     {
                         cta.Cta_Denominacion = cta.Cta_Denominacion.QuitarEspaciosBlancosExtra();
                     }
-                    var lista = cuentas.Select(x => new { Id = x.Cta_Id, Descripcion = x.Cta_Denominacion, ProvId = x.Prov_Id, x.Tipo });
+                    var lista = cuentas.Select(x => new
+                    {
+                        Id = x.Cta_Id,
+                        Descripcion = x.Cta_Denominacion,
+                        ProvId = x.Prov_Id,
+                        x.Tipo,
+                        TipoDesc = x.Tipo_Desc
+                    });
                     return Json(lista );
                 }
                 else

@@ -157,11 +157,11 @@ namespace gc.sitio.Areas.Productos.Controllers
                 return redirectResult;
             #region Carga de Combo Estado y Tipo
             ViewBag.Pret_Id = ComboPresupuestoTipo();
-            ViewBag.Pree_Id = ComboPresupuestoEstado();
+            ViewBag.Pree_Id = ComboPresupuestoEstado("P");
             #endregion
             var hoy = DateTime.Now;
 
-            PresupuestoDto presup = new() { pre_vigencia_desde= hoy,pre_vigencia_hasta=hoy.AddDays(30),
+            PresupuestoDto presup = new() { pree_id='P', pre_vigencia_desde= hoy,pre_vigencia_hasta=hoy.AddDays(30),
             adm_id=AdministracionId,adm_nombre=AdministracionName};
 
             return PartialView("_presupuestoDatos", presup);

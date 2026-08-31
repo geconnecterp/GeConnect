@@ -342,7 +342,13 @@ namespace gc.sitio.Areas.Usuarios.Controllers
                 var lista = await _ctaSv.ObtenerListaClientes(search, TokenCookie);
                 if (lista.Ok)
                 {
-                    var listaCli = lista.ListaEntidad.Select(x => new { x.Cta_Id, x.Cta_Denominacion, x.Ctac_habilitada });
+                    var listaCli = lista.ListaEntidad.Select(x => new
+                    {
+                        x.Cta_Id,
+                        x.Cta_Denominacion,
+                        x.Ctac_habilitada,
+                        x.Tipo_Desc
+                    });
                     return Json(listaCli);
                 }
                 else

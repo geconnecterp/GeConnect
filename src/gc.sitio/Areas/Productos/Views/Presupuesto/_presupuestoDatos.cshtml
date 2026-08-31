@@ -1,21 +1,21 @@
 ﻿@model PresupuestoDto
 
-<div id="divPresupuestoDatos" class="card mb-2">
+<div id="divPresupuestoDatos" class="card mb-0">
     <div class="card-header py-1">
         <h6 class="mb-0">Datos del Presupuesto</h6>
     </div>
     <div class="card-body p-2">
         <div class="row g-2">
-            <div class="row">
+            <div class="row g-2 mx-0 px-0">
                 <!-- ID -->
-                <div class="col-md-2">
+                <div class="col-xl-1 col-md-2 col-sm-4">
                     <label for="pre_id" class="form-label form-label-sm mb-1">ID</label>
                     <input type="text" class="form-control form-control-sm" id="pre_id" name="pre_id"
                            value="@Model?.pre_id" readonly />
                 </div>
                 <!-- Estado (oculto pree_id) -->
                 @* <input type="hidden" id="pree_id" name="pree_id" value="@Model?.pree_id" /> *@
-                <div class="col-md-2">
+                <div class="col-xl-2 col-md-2 col-sm-4">
                     <label for="pree_desc" class="form-label form-label-sm mb-1">Estado</label>
                     @Html.DropDownList("pree_id", null, "Sel..", new { @class = "form-control form-control-sm", disabled = "disabled" })
                     @*  <input type="text" class="form-control form-control-sm" id="pree_desc" name="pree_desc"
@@ -23,7 +23,7 @@
                 </div>
                 <!-- Tipo (oculto pret_id) -->
                 @* <input type="hidden" id="pret_id" name="pret_id" value="@Model?.pret_id" /> *@
-                <div class="col-md-2">
+                <div class="col-xl-2 col-md-2 col-sm-4">
                     <label for="pret_desc" class="form-label form-label-sm mb-1">Tipo</label>
                     @Html.DropDownList("pret_id", null, "Sel..", new { @class = "form-control form-control-sm", disabled = "disabled" })
                     @*  <input type="text" class="form-control form-control-sm" id="pret_desc" name="pret_desc"
@@ -44,62 +44,62 @@
                 <input type="date" class="form-control form-control-sm" id="pre_fecha" name="pre_fecha" 
                        value="@Model?.pre_fecha.ToString("yyyy-MM-dd")" readonly />
             </div> *@
-            <div class="row">
+            <div class="row g-2 mx-0 px-0">
                 <!-- Cliente (oculto cta_id) -->
                 <input type="hidden" id="cta_id" name="cta_id" value="@Model?.cta_id" />
-                <div class="col-md-3">
+                <div class="col-xl-4 col-md-6">
                     <label for="cta_denominacion" class="form-label form-label-sm mb-1">Cliente</label>
                     <input type="text" class="form-control form-control-sm" id="cta_denominacion" name="cta_denominacion"
                            value="@Model?.cta_denominacion" readonly />
                 </div>
 
                 <!-- Nombre -->
-                <div class="col-md-3">
+                <div class="col-xl-3 col-md-6">
                     <label for="pre_nombre" class="form-label form-label-sm mb-1">Nombre</label>
                     <input type="text" class="form-control form-control-sm" id="pre_nombre" name="pre_nombre"
                            value="@Model?.pre_nombre" readonly />
                 </div>
 
                 <!-- Domicilio -->
-                <div class="col-md-3">
+                <div class="col-xl-5 col-md-12">
                     <label for="pre_domicilio" class="form-label form-label-sm mb-1">Domicilio</label>
                     <input type="text" class="form-control form-control-sm" id="pre_domicilio" name="pre_domicilio"
                            value="@Model?.pre_domicilio" readonly />
                 </div>
             </div>
-            <div class="row">
+            <div class="row g-2 mx-0 px-0">
 
                 <!-- Vigencia Desde -->
-                <div class="col-md-3">
+                <div class="col-xl-2 col-md-3 col-sm-6">
                     <label for="pre_vigencia_desde" class="form-label form-label-sm mb-1">Vigencia Desde</label>
                     <input type="date" class="form-control form-control-sm" id="pre_vigencia_desde" name="pre_vigencia_desde"
                            value="@Model?.pre_vigencia_desde.ToString("yyyy-MM-dd")" readonly />
                 </div>
 
                 <!-- Vigencia Hasta -->
-                <div class="col-md-3">
+                <div class="col-xl-2 col-md-3 col-sm-6">
                     <label for="pre_vigencia_hasta" class="form-label form-label-sm mb-1">Vigencia Hasta</label>
                     <input type="date" class="form-control form-control-sm" id="pre_vigencia_hasta" name="pre_vigencia_hasta"
                            value="@Model?.pre_vigencia_hasta.ToString("yyyy-MM-dd")" readonly />
                 </div>
 
             </div>
-            <div class="row">
+            <div class="row g-2 mx-0 px-0">
                 <!-- Observaciones Pago -->
                 <div class="col-md-6">
                     <label for="pre_obs_pago" class="form-label form-label-sm mb-1">Observaciones Pago</label>
                     <textarea class="form-control form-control-sm" id="pre_obs_pago" name="pre_obs_pago"
-                              rows="2" readonly>@Model?.pre_obs_pago</textarea>
+                              rows="1" readonly>@Model?.pre_obs_pago</textarea>
                 </div>
 
                 <!-- Observaciones Entrega -->
                 <div class="col-md-6">
                     <label for="pre_obs_entrega" class="form-label form-label-sm mb-1">Observaciones Entrega</label>
                     <textarea class="form-control form-control-sm" id="pre_obs_entrega" name="pre_obs_entrega"
-                              rows="2" readonly>@Model?.pre_obs_entrega</textarea>
+                              rows="1" readonly>@Model?.pre_obs_entrega</textarea>
                 </div>
             </div>
-            <div class="row">
+            <div class="row g-2 mx-0 px-0">
                 @* 
             <!-- Usuario (oculto usu_id) -->
             <input type="hidden" id="usu_id" name="usu_id" value="@Model?.usu_id" />

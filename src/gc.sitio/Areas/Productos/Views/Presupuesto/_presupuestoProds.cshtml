@@ -8,26 +8,37 @@
     
 }
 
-<div class="grid-golden h-100">
-    <div class="grid-golden-header py-1 d-flex align-items-center">
+<div class="grid-golden h-100 presupuesto-productos-grid">
+    <div class="grid-golden-header py-1 d-flex align-items-center gap-2">
         <h6 class="mb-0">Productos del Presupuesto</h6>
 
         <!-- Centro (métricas globales) -->
-        <div class="flex-grow-1 text-center">
-            <span class="fw-bold me-2">Valor de Utilidad Total:</span>
+        <div class="flex-grow-1 text-center presupuesto-metricas">
+            <span class="fw-bold me-2">Utilidad Total:</span>
             <span id="spUtilidadTotal" class="text-danger me-4">-</span>
 
             <span class="fw-bold me-2">Margen Total:</span>
             <span id="spMargenTotal" class="text-danger">-</span>
         </div>
 
-        <button type="button" class="btn btn-sm btn-golden" id="btnAgregarCProducto" title="Agregar Producto" disabled>
+        <button type="button" class="btn btn-sm btn-presupuesto-agregar" id="btnAgregarCProducto" title="Agregar Producto" disabled>
             <i class="bx bx-plus"></i>
         </button>
     </div>
     <div class="grid-golden-body p-1">
         <div class="table-responsive" style="max-height: 400px;">
             <table class="table table-sm table-hover mb-0 table-golden" id="tbGridPresupuestoProds">
+                <colgroup>
+                    <col class="col-item" />
+                    <col class="col-codigo" />
+                    <col class="col-descripcion" />
+                    <col class="col-costo" />
+                    <col class="col-cantidad" />
+                    <col class="col-margen" />
+                    <col class="col-venta" />
+                    <col class="col-total" />
+                    <col class="col-acciones" />
+                </colgroup>
                 <thead class="sticky-top table-golden-header-compact">
                     <tr class="header">
                         <th class="text-center th-compact">#</th>
@@ -64,8 +75,8 @@
                                 data-lp-prevision-pin="@item.lp_prevision_pin">
                                 <td class="text-center">@pre_item</td>
                                 <td class="text-center">@item.p_id</td>
-                                <td>@item.p_des</td>
-                                <td class="text-end">@item.pre_pcosto.ToString("N3", System.Globalization.CultureInfo.GetCultureInfo("en-US"))</td>
+                                <td class="presupuesto-descripcion" title="@item.p_des">@item.p_des</td>
+                                <td class="text-end presupuesto-celda-numerica">@item.pre_pcosto.ToString("N3", System.Globalization.CultureInfo.GetCultureInfo("en-US"))</td>
                                 <td class="text-end">
                                     <div class="input-container">
                                         <input type="text" 
@@ -98,7 +109,7 @@
                                                title="Doble click para editar" />
                                     </div>
                                 </td>
-                                <td class="text-end td-total" data-value="@totalCalc.ToString(System.Globalization.CultureInfo.InvariantCulture)">@totalCalc.ToString("N2", culturaNumero)</td>
+                                <td class="text-end td-total presupuesto-celda-numerica" data-value="@totalCalc.ToString(System.Globalization.CultureInfo.InvariantCulture)">@totalCalc.ToString("N2", culturaNumero)</td>
                                 <td class="text-center">
                                     <button type="button" 
                                             class="btn btn-sm btn-danger btn-eliminar-producto" 

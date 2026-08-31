@@ -675,12 +675,18 @@ namespace gc.sitio.Areas.Ventas.Controllers
 		}
 
 		[HttpPost]
-		public JsonResult BuscarClientes(string prefix)
-		{
-			var top = ClientesLista.Where(x => x.Cta_Denominacion.ToUpperInvariant().Contains(prefix.ToUpperInvariant()));
-			var tipos = top.Select(x => new ComboGenDto { Id = x.Cta_Id, Descripcion = $"{x.Cta_Denominacion} ({x.Cta_Id})" });
-			return Json(tipos);
-		}
+        public JsonResult BuscarClientes(string prefix)
+        {
+            var top = ClientesLista.Where(x => x.Cta_Denominacion.ToUpperInvariant().Contains(prefix.ToUpperInvariant()));
+            var tipos = top.Select(x => new
+            {
+                Id = x.Cta_Id,
+                Descripcion = $"{x.Cta_Denominacion} ({x.Cta_Id})",
+                TipoDesc = x.Tipo_Desc,
+                Tipo = x.Tipo
+            });
+            return Json(tipos);
+        }
 
 		[HttpPost]
 		public JsonResult ActualizarItemConceptoValorEnDetalleRend(ConceptoValorDesdeCorreccionVtaPVDto detalle, string caja_nro_proceso, int caja_nro_cierre, int caja_nro_rend, string tcf_id, string ins_id, string ins_detalle, int rend_item)

@@ -2,6 +2,8 @@
 var modoModificacionPresup = false;
 var costosModificacionPresupConfirmados = false;
 var presupuestoIdPendienteSeleccion = null;
+var presupuestoSeleccionadoId = null;
+var presupuestoDetalleVersion = 0;
 
 // ✅ AGREGAR: Variable global para controlar edición
 var campoEnEdicionPresup = null;
@@ -10,15 +12,11 @@ let procesandoCampo = false;
 // ✅ NUEVA: Variable para guardar estado original del presupuesto
 let _presupOriginal = null;
 
-// Helpers de formato (ajusta la moneda si no es ARS)
-const fmtCurrency = (v) =>
-    new Intl.NumberFormat('en-US', { style: 'currency', currency: 'ARS', maximumFractionDigits: 2 }).format(v ?? 0);
-
-const fmtPercent = (v) => {
-    // v puede venir como 0.354 o 35.4 -> normalizamos a fracción
-    const frac = (Math.abs(v) > 1) ? (v / 100) : v;
-    return new Intl.NumberFormat('en-US', { style: 'percent', minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(frac ?? 0);
-};
+// Formato financiero explícito: evita la leyenda técnica "ARS" y conserva centavos.
+const fmtNumberPresup = (v) =>
+    new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(Number(v) || 0);
+const fmtCurrency = (v) => `$ ${fmtNumberPresup(v)}`;
+const fmtPercent = (v) => `${fmtNumberPresup(v)}%`;
 
 
 $(function () {
@@ -32,8 +30,10 @@ function InicializaPantallaPresupuesto() {
         $("#divDetalle").collapse("hide");
     }
     $("#divFiltro").collapse("show");
-    // ✅ Activar botón de nuevo presupuesto
-    $("#btnAbmNuevo, #btnAbmModif, #btnAbmElimi, #btnImprimir").prop("disabled", true);
+    // El alta es independiente de que la consulta actual tenga resultados.
+    $("#btnAbmNuevo").prop("disabled", false);
+    $("#btnAbmModif, #btnAbmElimi, #btnImprimir").prop("disabled", true);
+    $("#btnDetalle").prop("disabled", true);
     $("#btnAbmAceptar, #btnAbmCancelar").prop("disabled", true).hide();
     costosModificacionPresupConfirmados = false;
 
@@ -130,8 +130,7 @@ function cancelarOperacion(e) {
 
     } else {
         // Si no hay selección, solo habilitar Nuevo
-        const hayLista = $("#tbGridPresupuesto tbody tr[data-pre-id]").length > 0;
-        $("#btnAbmNuevo").prop("disabled", !hayLista);
+        $("#btnAbmNuevo").prop("disabled", false);
         $("#btnAbmModif, #btnAbmElimi, #btnImprimir").prop("disabled", true);
         let data = {};
         cargarReporteEnArre(indexPrint, data, "Presupuesto/Cotización");
@@ -143,8 +142,15 @@ function cancelarOperacion(e) {
     // ✅ PASO 6: Deshabilitar botón de agregar productos
     $("#btnAgregarCProducto").prop("disabled", true);
 
-    // ✅ PASO 7: Limpiar clases de edición en el grid (mantener selección)
-    $("#tbGridPresupuesto tbody tr").removeClass("selectedEdit-row");
+    // ✅ PASO 7: Volver al contexto navegable sin una selección residual.
+    presupuestoDetalleVersion += 1;
+    presupuestoSeleccionadoId = null;
+    $("#tbGridPresupuesto tbody tr").removeClass("selected-row selectedEdit-row");
+    activarGrilla("tbGridPresupuesto");
+    $("#btnDetalle").prop("disabled", true);
+    $("#btnAbmNuevo").prop("disabled", false);
+    $("#btnAbmModif, #btnAbmElimi, #btnImprimir").prop("disabled", true);
+    cargarReporteEnArre(indexPrint, {}, "Presupuesto/Cotización");
 
     console.log('✅ Operación cancelada - Vista reinicializada');
 
@@ -160,8 +166,22 @@ function cancelarOperacion(e) {
 function InicializaEventosPresupuesto() {
     //evento del boton imprimir
     $(document).on("click", "#btnImprimir", imprimirPresupuesto);
-    cargarReporteEnArre(indexPrint, {}, "Presupuesto/Cotilación");
+    cargarReporteEnArre(indexPrint, {}, "Presupuesto/Cotización");
     $("#btnImprimir").prop("disabled", true);
+
+    // En Cotizaciones #divDetalle contiene la grilla principal. Se reemplaza
+    // el collapse genérico por el cierre controlado del detalle inferior.
+    $("#btnDetalle")
+        .removeAttr("data-bs-toggle data-bs-target")
+        .attr("aria-expanded", "false")
+        .off("click.presupuestoDetalle")
+        .on("click.presupuestoDetalle", function (e) {
+            e.preventDefault();
+            e.stopImmediatePropagation();
+
+            if ($(this).prop("disabled")) return false;
+            return cerrarDetallePresupuestoSeleccionado();
+        });
 
 
 
@@ -411,6 +431,7 @@ function InicializaEventosPresupuesto() {
 
         modoNuevoPresup = true;
         modoModificacionPresup = false;
+        $("#btnDetalle").prop("disabled", true);
 
         if (typeof nuevoPresupuestoUrl === 'undefined') {
             console.error('nuevoPresupuestoUrl no está definido.');
@@ -420,10 +441,10 @@ function InicializaEventosPresupuesto() {
         PostGenHtml({}, nuevoPresupuestoUrl, function (html) {
             $('#divPresDatos').html(html).show();
 
-            $('#divPresupuestoDatos').find('input:not([type=hidden]), textarea, select').each(function () {
-                const $el = $(this);
-                $el.prop('readonly', false).prop('disabled', false).removeClass('campo-readonly');
-            });
+            // El estado, identificadores y datos administrativos son gobernados
+            // por el proceso; sólo se habilitan los campos propios del alta.
+            habilitarCamposFormularioPresup(true);
+            $('#pree_id').val('P').prop('disabled', true).addClass('campo-readonly');
 
             const $first = $('#divPresupuestoDatos').find('input:not([type=hidden]), textarea, select').filter(':visible').first();
             if ($first && $first.length) {
@@ -437,7 +458,6 @@ function InicializaEventosPresupuesto() {
             $('#btnAbmModif, #btnAbmNuevo, #btnAbmElimi').prop('disabled', true);
 
             $("#pret_id").prop("disabled", false);
-            $("#pree_id").prop("disabled", false);
 
             
             setTimeout(() => {
@@ -463,6 +483,7 @@ function InicializaEventosPresupuesto() {
         modoNuevoPresup = false;
         modoModificacionPresup = true;
         costosModificacionPresupConfirmados = false;
+        $("#btnDetalle").prop("disabled", true);
 
         _presupOriginal = capturarEstadoFormularioPresup();
         habilitarCamposFormularioPresup(true);
@@ -564,13 +585,7 @@ function InicializaEventosPresupuesto() {
                     data: { prefix: request.term },
                     success: function (obj) {
                         response($.map(obj, function (item) {
-                            return {
-                                label: item.descripcion,
-                                value: item.descripcion,
-                                id: item.id,
-                                nombre: item.nombre || item.descripcion,
-                                domicilio: item.domicilio || ""
-                            };
+                            return normalizarClienteAutocomplete(item);
                         }));
                     },
                     error: function () {
@@ -597,6 +612,7 @@ function InicializaEventosPresupuesto() {
                 return false;
             }
         });
+        aplicarRenderClienteAutocomplete($(this));
     });
 
     // Autocomplete para cta_denominacion
@@ -612,9 +628,7 @@ function InicializaEventosPresupuesto() {
                     data: data,
                     success: function (obj) {
                         response($.map(obj, function (item) {
-                            var texto = item.descripcion;
-                            var etiqueta = item.id ? `(${item.id}) ${texto}` : texto;
-                            return { label: etiqueta, value: item.descripcion, id: item.id, nombre: item.nombre, domicilio: item.domicilio };
+                            return normalizarClienteAutocomplete(item);
                         }));
                     }
                 })
@@ -628,6 +642,7 @@ function InicializaEventosPresupuesto() {
                 return true;
             }
         });
+        aplicarRenderClienteAutocomplete($(this));
     });
 } // ✅ CIERRE DE InicializaEventosPresupuesto
 
@@ -1218,6 +1233,62 @@ function actualizarTotalGeneralPresup() {
 
 let _presuLoading = false;
 
+function esCargaDetallePresupuestoVigente(preId, version) {
+    if (version !== presupuestoDetalleVersion) return false;
+    if (String(presupuestoSeleccionadoId || "") !== String(preId || "")) return false;
+
+    return $("#tbGridPresupuesto tbody tr.selectedEdit-row").filter(function () {
+        return String($(this).data("pre-id") || "") === String(preId || "");
+    }).length === 1;
+}
+
+/**
+ * Cierra la consulta abierta y restablece el contexto navegable del ABM.
+ * Alta y modificación se abandonan exclusivamente con el botón Cancelar.
+ */
+function cerrarDetallePresupuestoSeleccionado() {
+    if (modoNuevoPresup || modoModificacionPresup) return false;
+
+    // Toda respuesta iniciada antes del cierre queda invalidada.
+    presupuestoDetalleVersion += 1;
+    presupuestoSeleccionadoId = null;
+
+    $("#divPresDatos, #divPresProds").empty().hide();
+    $("#tbGridPresupuesto tbody tr").removeClass("selected-row selectedEdit-row");
+    $("#divPresupuesto").removeClass("table-wrapper-100").addClass("table-wrapper-300");
+    activarGrilla("tbGridPresupuesto");
+
+    $("#btnDetalle").prop("disabled", true);
+    $("#btnAbmNuevo").prop("disabled", false);
+    $("#btnAbmModif, #btnAbmElimi, #btnImprimir").prop("disabled", true);
+    $("#btnAbmAceptar, #btnAbmCancelar").prop("disabled", true).hide();
+    $("#btnAgregarCProducto").prop("disabled", true);
+
+    cargarReporteEnArre(indexPrint, {}, "Presupuesto/Cotización");
+    return true;
+}
+
+function limpiarContextoConsultaPresupuesto() {
+    presupuestoDetalleVersion += 1;
+    presupuestoSeleccionadoId = null;
+    modoNuevoPresup = false;
+    modoModificacionPresup = false;
+    campoEnEdicionPresup = null;
+    _presupOriginal = null;
+
+    $("#divPresDatos, #divPresProds").empty().hide();
+    $("#tbGridPresupuesto tbody tr").removeClass("selected-row selectedEdit-row");
+    $("#divPresupuesto").removeClass("table-wrapper-100").addClass("table-wrapper-300");
+    activarGrilla("tbGridPresupuesto");
+
+    $("#btnDetalle").prop("disabled", true);
+    $("#btnAbmNuevo").prop("disabled", false);
+    $("#btnAbmModif, #btnAbmElimi, #btnImprimir").prop("disabled", true);
+    $("#btnAbmAceptar, #btnAbmCancelar").prop("disabled", true).hide();
+    $("#btnAgregarCProducto").prop("disabled", true);
+    cargarReporteEnArre(indexPrint, {}, "Presupuesto/Cotización");
+}
+
 async function buscarPresupuestos(btn, pag = 1) {
     if (_presuLoading) return;
     _presuLoading = true;
@@ -1227,6 +1298,8 @@ async function buscarPresupuestos(btn, pag = 1) {
     setBtnLoading($btn, true);
 
     try {
+        // Nunca conservar un presupuesto anterior durante una nueva consulta.
+        limpiarContextoConsultaPresupuesto();
         const filtros = buildQueryFilters(pag);
         const url = buscarPresupuestosUrl;
 
@@ -1235,8 +1308,7 @@ async function buscarPresupuestos(btn, pag = 1) {
             $("#divFiltro").collapse("hide");
 
             configurarEventosSeleccionPres();
-            const hayPresupuestos = $("#tbGridPresupuesto tbody tr[data-pre-id]").length > 0;
-            $("#btnAbmNuevo").prop("disabled", !hayPresupuestos);
+            $("#btnAbmNuevo").prop("disabled", false);
             $("#btnAbmModif, #btnAbmElimi, #btnImprimir").prop("disabled", true);
 
             if (presupuestoIdPendienteSeleccion) {
@@ -1273,52 +1345,59 @@ async function buscarPresupuestos(btn, pag = 1) {
 }
 
 function configurarEventosSeleccionPres() {
-    $(document).off("click", "#tbGridPresupuesto tbody tr");
+    $(document).off("click dblclick", "#tbGridPresupuesto tbody tr");
+
+    // Un clic sólo selecciona. El doble clic abre y bloquea el contexto,
+    // siguiendo el patrón del ABM de Productos y Promos/Combos.
     $(document).on("click", "#tbGridPresupuesto tbody tr", function (e) {
-        if (!$(e.target).is("button, a, .btn, i")) {
-            var $this = $(this);
-            var fueSeleccionado = $this.hasClass("selected-row");
+        if ($(e.target).is("button, a, .btn, i")) return;
 
-            $("#tbGridPresupuesto tbody tr").removeClass("selected-row");
+        const $fila = $(this);
+        const preId = $fila.data("pre-id");
+        if (!preId) return;
 
-            if (!fueSeleccionado) {
-                $this.addClass("selected-row");
-                let preId = $this.data("pre-id");
-               
-                if (preId) {
-                    $("#btnImprimir").prop("disabled", false);
-                    let data = { pre_id: preId };
-                    cargarReporteEnArre(indexPrint, data, "Presupuesto/Cotización");
-                    cargarPresupuestoDatos(preId);
-                    cargarProductosPresupuesto(preId);
-                }
-            } else {
-                $("#btnAbmModif, #btnAbmElimi, #btnImprimir").prop("disabled", true);
-                $("#divPresDatos, #divPresProds").empty().hide();
-                $("#divPresupuesto").removeClass("table-wrapper-100").addClass("table-wrapper-300");
-            }
-            if (fueSeleccionado) return;
+        $("#tbGridPresupuesto tbody tr").removeClass("selected-row selectedEdit-row");
+        $fila.addClass("selected-row");
+        presupuestoSeleccionadoId = String(preId);
 
-            //achico el tamaño del grid
-            const $grid = $("#divPresupuesto");
-            var gridAchicado = $grid.hasClass("table-wrapper-100");
-            if (!gridAchicado) {
-                $grid.removeClass("table-wrapper-300").addClass("table-wrapper-100")
-            }
-            setTimeout(() => {
-                ///posiciona el select en la parte visual del grid al achicarlo
-                posicionarRegOnTop($this, ".table-wrapper-100");
-            }, 200);
-
-        }
+        $("#btnDetalle, #btnAbmModif, #btnAbmElimi").prop("disabled", true);
+        $("#btnImprimir").prop("disabled", false);
+        cargarReporteEnArre(indexPrint, { pre_id: preId }, "Presupuesto/Cotización");
     });
+
+    $(document).on("dblclick", "#tbGridPresupuesto tbody tr", function (e) {
+        if ($(e.target).is("button, a, .btn, i")) return;
+
+        const $fila = $(this);
+        const preId = $fila.data("pre-id");
+        if (!preId) return;
+
+        $fila.trigger("click").addClass("selectedEdit-row");
+        abrirDetallePresupuesto(preId, $fila);
+    });
+
     //configurando los eventos para el boton que elimina el registro.
     configurarEventosEliminacionProducto();
 }
 
-function cargarPresupuestoDatos(preId) {
+function abrirDetallePresupuesto(preId, $fila) {
+    presupuestoDetalleVersion += 1;
+    const version = presupuestoDetalleVersion;
+    presupuestoSeleccionadoId = String(preId);
+
+    desactivarGrilla("tbGridPresupuesto");
+    $("#divPresupuesto").removeClass("table-wrapper-300").addClass("table-wrapper-100");
+    posicionarRegOnTop($fila, ".table-wrapper-100");
+
+    $("#btnDetalle").prop("disabled", false);
+    cargarPresupuestoDatos(preId, version);
+    cargarProductosPresupuesto(preId, false, version);
+}
+
+function cargarPresupuestoDatos(preId, version) {
     const url = obtenerPresupuestoDatoUrl;
     PostGenHtml({ pre_id: preId }, url, function (html) {
+        if (!esCargaDetallePresupuestoVigente(preId, version)) return;
         $("#divPresDatos").html(html).show();
 
         // ✅ DETERMINAR PERMISOS DE EDICIÓN BASÁNDOSE EN EL ESTADO DEL PRESUPUESTO
@@ -1356,7 +1435,7 @@ function cargarPresupuestoDatos(preId) {
     });
 }
 
-function cargarProductosPresupuesto(preId, isUpdate = false) {
+function cargarProductosPresupuesto(preId, isUpdate = false, version = presupuestoDetalleVersion) {
     let url = "";
     if (isUpdate) {
         //trae los productos con los costos actualizados
@@ -1368,11 +1447,13 @@ function cargarProductosPresupuesto(preId, isUpdate = false) {
     }
 
     PostGenHtml({ pre_id: preId }, url, function (html) {
+        if (!esCargaDetallePresupuestoVigente(preId, version)) return;
         $("#divPresProds").empty().html(html).show();
         // Forzar estado readonly acorde al modo
         aplicarReadonlyCamposPresup();
 
         setTimeout(() => {
+            if (!esCargaDetallePresupuestoVigente(preId, version)) return;
             finalizarInicializacion();
             calcularUtilidadMargen();
 
@@ -1634,26 +1715,36 @@ function actualizaCostosProductos($filas) {
 
 function crearGridPresupVacioHtml() {
     return `
-    <div class="card h-100">
-        <div class="card-header py-1 d-flex justify-content-between align-items-center">
+    <div class="grid-golden h-100 presupuesto-productos-grid">
+        <div class="grid-golden-header py-1 d-flex align-items-center gap-2">
             <h6 class="mb-0">Productos del Presupuesto</h6>
-             <!-- Centro (métricas globales) -->
-            <div class="flex-grow-1 text-center">
-                <span class="fw-bold me-2">Valor de Utilidad Total:</span>
+            <div class="flex-grow-1 text-center presupuesto-metricas">
+                <span class="fw-bold me-2">Utilidad Total:</span>
                 <span id="spUtilidadTotal" class="text-danger me-4">-</span>
 
                 <span class="fw-bold me-2">Margen Total:</span>
                 <span id="spMargenTotal" class="text-danger">-</span>
             </div>
 
-            <button type="button" class="btn btn-sm btn-golden" id="btnAgregarCProducto" title="Agregar Producto" disabled>
+            <button type="button" class="btn btn-sm btn-presupuesto-agregar" id="btnAgregarCProducto" title="Agregar Producto" disabled>
                 <i class="bx bx-plus"></i>
             </button>
         </div>
-        <div class="card-body p-1">
+        <div class="grid-golden-body p-1">
             <div class="table-responsive" style="max-height: 400px;">
                 <table class="table table-sm table-hover mb-0 table-golden" id="tbGridPresupuestoProds">
-                    <thead class="table-golden-header">
+                    <colgroup>
+                        <col class="col-item" />
+                        <col class="col-codigo" />
+                        <col class="col-descripcion" />
+                        <col class="col-costo" />
+                        <col class="col-cantidad" />
+                        <col class="col-margen" />
+                        <col class="col-venta" />
+                        <col class="col-total" />
+                        <col class="col-acciones" />
+                    </colgroup>
+                    <thead class="sticky-top table-golden-header-compact">
                         <tr class="header">
                             <th class="text-center">#</th>
                             <th class="text-center">Código</th>
@@ -1663,7 +1754,7 @@ function crearGridPresupVacioHtml() {
                             <th class="text-end">Mg %</th>
                             <th class="text-end">Venta</th>
                             <th class="text-end">Total</th>
-                            <th class="text-end">Accion</th>
+                            <th class="text-center">Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -1784,6 +1875,7 @@ function crearFilaProductoPresupuesto(producto, esAlternado, pre_item) {
 
     // ✅ FORMATEO
     const claseAlt = esAlternado ? 'alt' : '';
+    const totalFila = datosProducto.cantidad * datosProducto.p_pvta;
 
     // ✅ CONSTRUCCIÓN HTML CON TEMPLATE LITERALS (más legible y performante)
     return `
@@ -1800,8 +1892,8 @@ function crearFilaProductoPresupuesto(producto, esAlternado, pre_item) {
             data-lp-prevision-pin="${datosProducto.lp_prevision_pin.toFixed(3)}">
             <td class="text-center" data-pre_item="${pre_item}">${pre_item}</td>
             <td class="text-center">${datosProducto.p_id}</td>
-            <td>${escaparHTML(datosProducto.p_desc)}</td>
-            <td class="text-end">${datosProducto.p_pcosto.toFixed(3)}</td>
+            <td class="presupuesto-descripcion" title="${escaparHTML(datosProducto.p_desc)}">${escaparHTML(datosProducto.p_desc)}</td>
+            <td class="text-end presupuesto-celda-numerica">${datosProducto.p_pcosto.toFixed(3)}</td>
             <td class="text-end">
                 <div class="input-container">
                     <input type="text" 
@@ -1831,7 +1923,7 @@ function crearFilaProductoPresupuesto(producto, esAlternado, pre_item) {
                            title="Doble click para editar" />
                 </div>
             </td>
-            <td class="text-end td-total">${datosProducto.p_pvta.toFixed(2)}</td>
+            <td class="text-end td-total presupuesto-celda-numerica" data-value="${totalFila}">${totalFila.toFixed(2)}</td>
             <td class="text-center">
                 <button type="button" 
                         class="btn btn-sm btn-danger btn-eliminar-producto" 
@@ -1963,13 +2055,7 @@ function inicializarAutocompleteRel011() {
                 data: { prefix: request.term },
                 success: function (obj) {
                     response($.map(obj, function (item) {
-                        return {
-                            label: item.descripcion,
-                            value: item.descripcion,
-                            id: item.id,
-                            nombre: item.nombre || item.descripcion,
-                            domicilio: item.domicilio || ""
-                        };
+                        return normalizarClienteAutocomplete(item);
                     }));
                 },
                 error: function () {
@@ -1996,6 +2082,7 @@ function inicializarAutocompleteRel011() {
             return false;
         }
     });
+    aplicarRenderClienteAutocomplete($("#Rel011"));
 }
 
 function inicializarAutocompleteRel022() {

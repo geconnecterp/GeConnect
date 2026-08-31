@@ -191,8 +191,7 @@ $("#Rel01").autocomplete({
             data: data,
             success: function (obj) {
                 response($.map(obj, function (item) {
-                    var texto = item.descripcion;
-                    return { label: texto, value: item.descripcion, id: item.id, prov: item.provId };
+                    return normalizarClienteAutocomplete(item);
                 }));
             }
         })
@@ -209,6 +208,7 @@ $("#Rel01").autocomplete({
         return true;
     }
 });
+aplicarRenderClienteAutocomplete($("#Rel01"));
 
 
 
@@ -938,8 +938,7 @@ function InicializaEventosPedido() {
                         data: data,
                         success: function (obj) {
                             response($.map(obj, function (item) {
-                                var texto = item.descripcion;
-                                return { label: texto, value: item.descripcion, id: item.id, prov: item.provId };
+                                return normalizarClienteAutocomplete(item);
                             }));
                         }
                     })
@@ -949,6 +948,7 @@ function InicializaEventosPedido() {
                     $("#Rel01BItem").val(ui.item.id);
                 }
             });
+            aplicarRenderClienteAutocomplete($("#Rel01B"));
 
             setTimeout(() => {
                 //aplicarReadonlyCamposPresup();

@@ -40,8 +40,7 @@
                     data: data,
                     success: function (obj) {
                         response($.map(obj, function (item) {
-                            var texto = item.cta_Denominacion;
-                            return { label: texto, value: item.cta_Denominacion, id: item.cta_Id, habilitada: item.ctac_habilitada };
+                            return normalizarClienteAutocomplete(item);
                         }));
                     }
                 })
@@ -64,6 +63,7 @@
                 }
             }
         });
+        aplicarRenderClienteAutocomplete($(this));
     });
 
     // El identificador de usuario se define manualmente en el alta y, por regla
