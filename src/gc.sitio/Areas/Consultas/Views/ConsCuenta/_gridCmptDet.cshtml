@@ -55,7 +55,12 @@
                             ft_iva += item.Cm_iva;
                             ft_tot += item.Cm_total;
                         }
-                        <tr class="@clase" onclick="selectReg(this,'tbGridCmpteDet')">
+                        <tr class="@clase" 
+                            data-tco-id="@item.Tco_id"
+                            data-cm-compte="@item.Cm_compte"
+                            data-dia-movi="@item.Dia_movi"
+                            onclick="selectReg(this,'tbGridCmpteDet')"
+                            ondblclick="dblClickListaCmpteDet(this)">
                             <td class="@Model.ObtenerClase(item.Cm_fecha)">@Model.FormatearDato(item.Cm_fecha,FormatDato.FechaCompleta)</td>
                             @{
                                 string cmpt = $"({item.Tco_id}) {item.Cm_compte}";
