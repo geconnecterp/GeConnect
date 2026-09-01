@@ -17,6 +17,7 @@
 		public decimal cm_gravado { get; set; }
 		public decimal cm_no_gravado { get; set; }
 		public decimal cm_exento { get; set; }
+		public decimal cm_otro_ng { get; set; }
 		public decimal cm_ii { get; set; }
 		public decimal cm_iva { get; set; }
 		public decimal cm_percepciones { get; set; }

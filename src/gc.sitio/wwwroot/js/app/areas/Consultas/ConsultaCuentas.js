@@ -548,3 +548,41 @@ function SeleccionarPeriodo(x, grid) {
     //se llama el detalle de comprobantes de un mes especifico
 }
 
+function dblClickListaCmpteDet(row) {
+    const $row = $(row);
+
+    const tcoId = $row.data("tco-id");
+    const cmCompte = $row.data("cm-compte");
+    const diaMovi = $row.data("dia-movi");
+
+    // Validación estricta
+    if (!esValido(tcoId) || !esValido(cmCompte) || !esValido(diaMovi)) {
+        console.error("Error: datos inválidos en la fila seleccionada.", {
+            tcoId, cmCompte, diaMovi
+        });
+        return;
+    }
+
+    if (consTipo === "P") {
+        // Si todo está OK, procesamos
+        procesarDobleClickListaCmpteDet(tcoId, cmCompte, diaMovi);
+    }
+    
+}
+
+function procesarDobleClickListaCmpteDet(tcoId, cmCompte, diaMovi) {
+    const el = document.getElementById("divComponenteDetalleComprobante");
+
+    $(document).trigger("comprobanteSeleccionadoParaVisualizar", {
+        tco_id: tcoId,
+        cm_compte: cmCompte,
+        dia_movi: diaMovi
+    });
+}
+
+function esValido(valor) {
+    return valor !== null &&
+        valor !== undefined &&
+        valor !== "" &&
+        !(typeof valor === "string" && valor.trim() === "");
+}

@@ -313,6 +313,7 @@
 @* <div id="gestorDocumentalContainer"></div> *@
 <div id="modalGestorDocumental"></div>
 
+<div id="divInfoDetalleDeComprobante" class="collapse"></div>
 
 @section scripts {
     <script type="text/javascript">
@@ -344,6 +345,10 @@
         var enviarWhatsAppUrl = "@Url.Action("EnviarWhatsApp", "GestorImpresion", new { area = "ControlComun" })";
         var repoApiUrl = "@Url.Action("ObtenerPdfDesdeAPI", "GestorImpresion", new { area = "ControlComun" })";
         var initConsultaUrl = "@Url.Action("index", "ConsCuenta", new { area = "Consultas" })";
+
+        /*URL para componente de Detalle de Comprobante*/
+        var abrirComponenteDetalleDeComprobanteUrl = "@Url.Action("AbrirComponente", "detalledecomprobante", new { area = "ControlComun" })";
+        /**/
     </script>
     
     <script src="~/lib/jstree/jstree.min.js"></script>
@@ -352,4 +357,5 @@
     <script src="~/js/app/areas/docmngr/docmanager.js" asp-append-version="true"></script>
     <script src="~/js/app/areas/consultas/ConsultaCuentas.js" asp-append-version="true"></script>
     <script src="~/js/app/areas/consultas/ConsultaCuentaRules.js"></script>
+    <script src="~/js/app/controlcomun/detalledecomprobante.js" type="text/javascript"></script>
 }

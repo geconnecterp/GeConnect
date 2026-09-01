@@ -712,7 +712,7 @@ namespace gc.api.Controllers.Consultas
 		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<DetalleDeComprobanteIvaDto>))]
 		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
 		[Route("[action]")]
-		public IActionResult BuscarDetalleDeComprobanteIvaCab(DetalleDeComprobanteRequest request)
+		public IActionResult BuscarDetalleDeComprobanteIva(DetalleDeComprobanteRequest request)
 		{
 			ApiResponse<List<DetalleDeComprobanteIvaDto>> response;
 			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");

@@ -11,7 +11,7 @@ namespace gc.infraestructura.Dtos
 		public decimal @base { get; set; }
 		public decimal ali { get; set; }
 		public decimal percepcion { get; set; }
-		public string imp_desc { get; set; } = string.Empty;
+		public string imp_des { get; set; } = string.Empty;
 		public int orden { get; set; }
 	}
 }

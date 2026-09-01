@@ -1334,9 +1334,8 @@ function CancelarValorizacion() {
 	InicializarDatosEnSesion();
 	LimpiarDatosDelFiltroInicial();
 	InicializarPantallaDeFiltros();
-	$("#btnFiltro").trigger("click");
-	$("#btnDetalle").trigger("click");
 	$("#divDetalle").collapse("hide");
+	$("#divFiltro").collapse("show");
 }
 
 function InicializarDatosEnSesion() {

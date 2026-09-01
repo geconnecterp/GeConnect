@@ -1,4 +1,5 @@
-﻿@model DetalleDeCompteModel
+﻿@using gc.infraestructura.Helpers
+@model DetalleDeCompteModel
 @using static gc.infraestructura.Helpers.GridHelper
 @{
 	var alt = true;
@@ -11,7 +12,7 @@
 		position: fixed;
 		top: 60px;
 		left: calc(100% - 40%); /* aparece a la derecha */
-		width: 30%;
+		width: 55%;
 		max-height: 80%;
 		overflow-y: auto;
 		background: #fff;
@@ -21,7 +22,7 @@
 		padding: 0.25rem;
 		box-sizing: border-box;
 		overflow-x: hidden;
-		height: 40%;
+		height: 55%;
 	}
 
 	.popup-header-bar {
@@ -51,45 +52,180 @@
 			background: #d0d0d0;
 			border-radius: 3px;
 		}
+
+	#divInfoHeaderDetalleCompte {
+		color: #f2f0f0; /* texto blanco */
+		background: linear-gradient(135deg, #b8860b 0%, #daa520 100%);
+	}
+
+		#divInfoHeaderDetalleCompte .popup-close-btn {
+			color: #fff;
+		}
+
+			#divInfoHeaderDetalleCompte .popup-close-btn:hover {
+				color: #fff;
+				background: rgba(255,255,255,0.2);
+			}
+	.labl-style{
+		text-align: end;
+		padding-right: 5px;
+	}
+	.text-style{
+		padding-left: 0px;
+	}
+	.height-table{
+		height: 150px;
+	}
 </style>
 <div id="divComponenteDetalleComprobante">
 	<div class="d-grid border">
-		<div id="divInfoHeaderDetalleCompte" class="popup-header-bar d-flex justify-content-between align-items-center">
+		<div id="divInfoHeaderDetalleCompte"
+			 class="popup-header-bar grid-golden-header d-flex justify-content-between align-items-center">
 			<span><b>@compte</b></span>
 			<button id="btnCerrarDivDetalleCompte" class="popup-close-btn">×</button>
 		</div>
 		<div class="row px-2 py-1">
-			<div class="col-md-6">
+			<div class="col-md-2 labl-style">
 				<strong>Tipo Compte.:</strong>
+			</div>
+			<div class="col-md-2 text-style">
 				<span>@Model.Cab.tco_desc</span>
 			</div>
-			<div class="col-md-6">
+			<div class="col-md-2 labl-style">
 				<strong>N° Compte.:</strong>
+			</div>
+			<div class="col-md-6 text-style">
 				<span>@Model.Cab.cm_compte</span>
 			</div>
 
-			<div class="col-md-6 mt-1">
+			<div class="col-md-2 labl-style">
 				<strong>Fecha:</strong>
+			</div>
+			<div class="col-md-2 text-style">
 				<span>@Model.Cab.cm_fecha.ToString("dd/MM/yyyy")</span>
 			</div>
-			<div class="col-md-6 mt-1">
+			<div class="col-md-2 labl-style">
 				<strong>CUIT:</strong>
+			</div>
+			<div class="col-md-6 text-style">
 				<span>@Model.Cab.cm_cuit</span>
 			</div>
 
-			<div class="col-md-6 mt-1">
-				<strong>Libro IVA (mes-año):</strong>
-				<span>Model.Cab.cm_libro_iva</span>
+			<div class="col-md-2 labl-style">
+				<strong title="Formato MES-AÑO">Libro IVA:</strong>
+			</div>
+			<div class="col-md-2 text-style">
+				<span>@Model.Cab.cm_libro_iva</span>
 			</div>
 
-			<div class="col-md-6 mt-1">
+			<div class="col-md-2 labl-style">
 				<strong>Razón Social:</strong>
+			</div>
+			<div class="col-md-6 text-style">
 				<span>@Model.Cab.cm_nombre</span>
 			</div>
 
-			<div class="col-md-12 mt-1">
+			<div class="col-md-2 labl-style">
 				<strong>Domicilio:</strong>
+			</div>
+			<div class="col-md-10 text-style">
 				<span>@Model.Cab.cm_domicilio</span>
+			</div>
+		</div>
+	</div>
+	<div class="">
+
+		<div class="row">
+
+			<!-- COLUMNA IZQUIERDA -->
+			<div class="col-md-6">
+
+				<!-- Fila 1: Retenciones IVA -->
+				<div class="p-1 mt-1 height-table">
+					<!-- Aquí insertas la tabla de retenciones -->
+					@* Tabla de retenciones *@
+					@Html.Partial("_gridIva", Model.ListIva)
+				</div>
+
+				<!-- Fila 2: Percepciones -->
+				<div class="p-1 height-table">
+					<!-- Aquí insertas la tabla de percepciones -->
+					@* Tabla de percepciones *@
+					@Html.Partial("_gridPercepciones", Model.ListaPer)
+				</div>
+
+			</div>
+
+			<!-- COLUMNA DERECHA -->
+			<div class="col-md-6">
+
+				<div class="mb-2 p-1 mt-1">
+
+					<div class="grid-golden">
+						<div class="grid-golden-header">
+							<div class="row align-items-md-center">
+								<div class="col-md-10 col-sm-6 d-flex align-items-center">
+									<h6 class="mb-0 flex-grow-1 withe-font">
+										<strong>Totales</strong>
+									</h6>
+								</div>
+								<div class="col-md-2 col-sm-6">
+									<div class="d-flex justify-content-sm-end"></div>
+								</div>
+							</div>
+						</div>
+						<div class="grid-golden-body">
+							<div class="row px-2 py-1 mt-1">
+								<div class="col-md-6 labl-style">
+									<strong>Subtotal Neto:</strong>
+								</div>
+								<div class="col-md-6 text-style">
+									<span>@GridHelper.FormatearDato(Model.Cab.cm_gravado, FormatDato.Monto, true)</span>
+								</div>
+							</div>
+							<div class="row px-2 py-1 mt-1">
+								<div class="col-md-6 labl-style">
+									<strong>Total IVA:</strong>
+								</div>
+								<div class="col-md-6 text-style">
+									<span>@GridHelper.FormatearDato(Model.Cab.cm_iva, FormatDato.Monto, true)</span>
+								</div>
+							</div>
+							<div class="row px-2 py-1 mt-1">
+								<div class="col-md-6 labl-style">
+									<strong>Impuetos Internos:</strong>
+								</div>
+								<div class="col-md-6 text-style">
+									<span>@GridHelper.FormatearDato(Model.Cab.cm_ii, FormatDato.Monto, true)</span>
+								</div>
+							</div>
+							<div class="row px-2 py-1 mt-1">
+								<div class="col-md-6 labl-style">
+									<strong>Conceptos Deducibles:</strong>
+								</div>
+								<div class="col-md-6 text-style">
+									<span>@GridHelper.FormatearDato(Model.Cab.cm_otro_ng, FormatDato.Monto, true)</span>
+								</div>
+							</div>
+							<div class="row px-2 py-1 mt-1">
+								<div class="col-md-6 labl-style">
+									<strong>Percepciones:</strong>
+								</div>
+								<div class="col-md-6 text-style">
+									<span>@GridHelper.FormatearDato(Model.Cab.cm_percepciones, FormatDato.Monto, true)</span>
+								</div>
+							</div>
+							<div class="row px-2 py-1 mt-1">
+								<div class="col-md-6 labl-style">
+									<strong>TOTAL Comprobante:</strong>
+								</div>
+								<div class="col-md-6 text-style">
+									<span>@GridHelper.FormatearDato(Model.Cab.cm_total, FormatDato.Monto, true)</span>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
 			</div>
 		</div>
 	</div>

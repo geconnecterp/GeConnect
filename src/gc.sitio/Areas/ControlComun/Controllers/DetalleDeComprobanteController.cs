@@ -16,6 +16,8 @@ namespace gc.sitio.Areas.ControlComun.Controllers
 	{
 		private readonly AppSettings _setting;
 		private readonly IConsultasServicio _consultasServicio;
+		private readonly string NO_GRAVADO = "No Gravado";
+		private readonly string EXENTO = "Exento";
 		public DetalleDeComprobanteController(IOptions<AppSettings> options, IHttpContextAccessor contexto, ILogger<DetalleDeComprobanteController> logger,
 											  IConsultasServicio consultasServicio) : base(options, contexto, logger)
 		{
@@ -55,6 +57,7 @@ namespace gc.sitio.Areas.ControlComun.Controllers
 
 				FormatearDatos(cabModel);
 				model.Cab = cabModel;
+				AgregarRetencionesDesdeTotales(listaiva, cabModel);
 				model.ListIva = ObtenerGridCoreSmart<DetalleDeComprobanteIvaDto>(listaiva);
 				model.ListaPer = ObtenerGridCoreSmart<DetalleDeComprobantePerDto>(listaper);
 
@@ -81,7 +84,15 @@ namespace gc.sitio.Areas.ControlComun.Controllers
 		}
 
 		#region Metodos Privados
-
+		private void AgregarRetencionesDesdeTotales(List<DetalleDeComprobanteIvaDto> lista, DetalleDeCompteCabModel model)
+		{
+			if (model == null)
+				return;
+			if (model.cm_no_gravado != 0)
+				lista.Add(new DetalleDeComprobanteIvaDto() { concepto = NO_GRAVADO, iva = model.cm_no_gravado });
+			if (model.cm_exento != 0)
+				lista.Add(new DetalleDeComprobanteIvaDto() { concepto = EXENTO, iva = model.cm_exento });
+		}
 
 		private void MapperCab(DetalleDeComprobanteCabDto dto, DetalleDeCompteCabModel model)
 		{
@@ -102,7 +113,7 @@ namespace gc.sitio.Areas.ControlComun.Controllers
 			model.cm_fecha = dto.cm_fecha;
 			model.cm_gravado = dto.cm_gravado;
 			model.cm_cae_vto = dto.cm_cae_vto;
-			model.cm_ii	= dto.cm_ii;
+			model.cm_ii = dto.cm_ii;
 			model.cm_iva = dto.cm_iva;
 			model.cm_libro_iva = dto.cm_libro_iva;
 			model.cm_percepciones = dto.cm_percepciones;
@@ -112,6 +123,7 @@ namespace gc.sitio.Areas.ControlComun.Controllers
 			model.dia_movi = dto.dia_movi;
 			model.cta_id = dto.cta_id;
 			model.cm_compte = dto.cm_compte;
+			model.cm_otro_ng = dto.cm_otro_ng;
 		}
 
 		private static void FormatearDatos(DetalleDeCompteCabModel model)
@@ -119,7 +131,7 @@ namespace gc.sitio.Areas.ControlComun.Controllers
 			if (!string.IsNullOrWhiteSpace(model.cm_cuit) && model.cm_cuit.Length == 11)
 				model.cm_cuit = $"{model.cm_cuit.Substring(0, 2)}-{model.cm_cuit.Substring(2, 8)}-{model.cm_cuit.Substring(10, 1)}";
 			if (string.IsNullOrWhiteSpace(model.cm_libro_iva) || model.cm_libro_iva.Length == 6)
-				model.cm_libro_iva = $"{model.cm_libro_iva.Substring(0, 4)}-{model.cm_libro_iva.Substring(4, 2)}";
+				model.cm_libro_iva = $"{model.cm_libro_iva.Substring(4, 2)}-{model.cm_libro_iva.Substring(0, 4)}";
 		}
 
 		#endregion

@@ -1,0 +1,46 @@
+﻿@using gc.infraestructura.Dtos
+@using gc.infraestructura.Helpers
+@model GridCoreSmart<DetalleDeComprobantePerDto>
+@{
+	var alt = true;
+	string clase = string.Empty;
+}
+<div class="grid-golden">
+	<div class="grid-golden-header">
+		<div class="row align-items-md-center">
+			<div class="col-md-10 col-sm-6 d-flex align-items-center">
+				<h6 class="mb-0 flex-grow-1 withe-font">
+					<strong>Percepciones</strong>
+				</h6>
+			</div>
+			<div class="col-md-2 col-sm-6">
+				<div class="d-flex justify-content-sm-end"></div>
+			</div>
+		</div>
+	</div>
+	<div class="grid-golden-body">
+		<div class="table-responsive table-wrapper-200-full-width" id="containerListaPerc">
+			<table class="table table-sm table-golden" id="tbListaPerc">
+				<thead>
+					<tr class="header">
+						<th style="width:50%;" class="align-center tiny-row">Concepto</th>
+						<th style="width:50%;" class="align-center tiny-row">Importe</th>
+					</tr>
+				</thead>
+				<tbody>
+					@if (Model != null && Model.ListaDatos != null && Model.ListaDatos.Count > 0)
+					{
+						@foreach (var item in Model.ListaDatos)
+						{
+							if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+							<tr class="@clase">
+								<td class="align-left">@item.imp_des</td>
+								<td class="align-right">@GridHelper.FormatearDato(item.percepcion, FormatDato.Monto, true)</td>
+							</tr>
+						}
+					}
+				</tbody>
+			</table>
+		</div>
+	</div>
+</div>
