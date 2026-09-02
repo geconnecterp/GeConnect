@@ -1079,7 +1079,98 @@ activable {
     font-style: italic;
 }
 
+/* Barra operativa del buscador avanzado de productos */
+.busqueda-productos-toolbar {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.busqueda-productos-search {
+    flex: 1 1 260px;
+    min-width: 240px;
+    max-width: 300px;
+}
+
+.busqueda-productos-toolbar .busqueda-productos-search .input-group-text,
+.busqueda-productos-toolbar .busqueda-productos-search .form-control,
+.busqueda-productos-toolbar .busqueda-productos-action {
+    min-height: 36px;
+}
+
+.busqueda-productos-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 145px;
+    min-width: 145px;
+    margin: 0 !important;
+    white-space: nowrap;
+    font-size: 0.75rem;
+}
+
+.busqueda-productos-selection {
+    flex: 0 0 auto;
+}
+
+.busqueda-productos-selection-inner {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.busqueda-productos-counter {
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-start;
+    width: 170px;
+    min-width: 170px;
+    min-height: 36px;
+    padding: 0 0.35rem;
+    white-space: nowrap;
+    font-size: 0.825rem;
+}
+
+@media (max-width: 991.98px) {
+    .busqueda-productos-search {
+        max-width: none;
+    }
+
+    .busqueda-productos-selection {
+        flex-basis: 100%;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .busqueda-productos-search,
+    .busqueda-productos-selection,
+    .busqueda-productos-selection-inner,
+    .busqueda-productos-counter,
+    .busqueda-productos-action {
+        width: 100%;
+        max-width: none;
+    }
+}
+
 /* FIN ESTILO */
+
+/* Autocompletado de proveedores: razón social/cuenta + clasificación secundaria */
+.autocomplete-proveedor-principal,
+.autocomplete-cuenta-principal {
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.autocomplete-proveedor-tipo,
+.autocomplete-cuenta-tipo {
+    margin-left: 0.35rem;
+    color: #555;
+    font-size: 13px;
+    font-weight: 400;
+}
+
 /* ESTILO GOLDEN PARA DATEPICKER */
 /* Estilo Golden para bootstrap-datepicker */
 .datepicker-dropdown {
@@ -2420,6 +2511,35 @@ input, select, textarea, button, checkbox, radio {
     transform: scale(1.02);
 }
 
+/* Parámetros de Alta de Ofertas: etiquetas y selector con presentación uniforme */
+.oferta-parametros .oferta-parametro-label {
+    min-width: 68px;
+    justify-content: center;
+    white-space: nowrap;
+}
+
+.oferta-select-golden {
+    min-height: calc(1.5em + 0.5rem + 2px);
+    color: #7a4a0e;
+    font-weight: 600;
+    background-color: #fefcf7;
+    border: 1px solid #daa520;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+}
+
+.oferta-select-golden:focus {
+    color: #1e3a1c;
+    background-color: #fff8dc;
+    border-color: #b8860b;
+    box-shadow: 0 0 0 0.2rem rgba(184, 134, 11, 0.15);
+}
+
+.oferta-select-golden:disabled {
+    color: #9b8753;
+    background-color: #faf5e6;
+    border-color: #f5e7c1;
+}
+
 /* Específico para precio de oferta */
 #txtPrecioOferta {
     font-size: 0.95rem;
@@ -2759,6 +2879,128 @@ input, select, textarea, button, checkbox, radio {
         font-weight: 600 !important;
         cursor: not-allowed !important;
     }
+
+/* Distribución y escala visual del ABM de Presupuestos/Cotizaciones. */
+.presupuesto-detalle-layout {
+    align-items: flex-start;
+}
+
+#divPresupuestoDatos .card-body {
+    font-size: 0.8rem;
+}
+
+#divPresupuestoDatos .form-label,
+#divPresupuestoDatos .form-control,
+#divPresupuestoDatos select,
+#divPresupuestoDatos textarea {
+    font-size: 0.8rem;
+}
+
+#divPresupuestoDatos textarea.form-control {
+    min-height: 31px;
+    resize: vertical;
+}
+
+#divPresProds .presupuesto-productos-grid {
+    width: 100%;
+}
+
+#divPresProds .presupuesto-metricas {
+    min-width: 0;
+    white-space: nowrap;
+}
+
+#divPresProds .btn-presupuesto-agregar {
+    width: 42px;
+    min-width: 42px;
+    height: 30px;
+    border: 1px solid #f2c94c;
+    background-color: #fff8dc;
+    color: #7a5700;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.05rem;
+    box-shadow: 0 1px 2px rgba(69, 48, 0, 0.18);
+}
+
+#divPresProds .btn-presupuesto-agregar:hover:not(:disabled) {
+    background-color: #ffffff;
+    color: #4f3900;
+}
+
+#divPresProds .btn-presupuesto-agregar:disabled {
+    opacity: 0.55;
+}
+
+#tbGridPresupuestoProds {
+    width: 100%;
+    min-width: 1120px;
+    table-layout: fixed;
+    font-size: 0.8rem;
+}
+
+#tbGridPresupuestoProds col.col-item { width: 48px; }
+#tbGridPresupuestoProds col.col-codigo { width: 105px; }
+#tbGridPresupuestoProds col.col-descripcion { width: auto; }
+#tbGridPresupuestoProds col.col-costo { width: 128px; }
+#tbGridPresupuestoProds col.col-cantidad { width: 110px; }
+#tbGridPresupuestoProds col.col-margen { width: 92px; }
+#tbGridPresupuestoProds col.col-venta { width: 128px; }
+#tbGridPresupuestoProds col.col-total { width: 145px; }
+#tbGridPresupuestoProds col.col-acciones { width: 72px; }
+
+#tbGridPresupuestoProds th,
+#tbGridPresupuestoProds td {
+    vertical-align: middle;
+}
+
+#tbGridPresupuestoProds th {
+    white-space: nowrap;
+}
+
+#tbGridPresupuestoProds .presupuesto-descripcion {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+#tbGridPresupuestoProds .presupuesto-celda-numerica,
+#tbGridPresupuestoProds .td-total,
+#tbGridPresupuestoProds tfoot td {
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+}
+
+#tbGridPresupuestoProds .input-pre_margen,
+#tbGridPresupuestoProds .input-pre_pvta,
+#tbGridPresupuestoProds .input-pre_cantidad {
+    height: 27px;
+    padding: 0.15rem 0.35rem;
+    text-align: right;
+    font-size: 0.8rem;
+    font-variant-numeric: tabular-nums;
+}
+
+#tbGridPresupuestoProds .input-pre_margen:not([readonly]),
+#tbGridPresupuestoProds .input-pre_pvta:not([readonly]),
+#tbGridPresupuestoProds .input-pre_cantidad:not([readonly]) {
+    background-color: #fff8dc !important;
+    border: 1px solid #daa520 !important;
+}
+
+@media (max-width: 767.98px) {
+    #divPresProds .grid-golden-header {
+        flex-wrap: wrap;
+    }
+
+    #divPresProds .presupuesto-metricas {
+        order: 3;
+        flex-basis: 100%;
+        text-align: left !important;
+    }
+}
+
     /*Permite alertar un campo cuando hay algun evento que tiene que ser tenido en cuenta.*/
 .input-alerta-costo {
     border: 3px solid #e53935 !important; /* rojo fuerte, borde grueso medio */

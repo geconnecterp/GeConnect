@@ -16,7 +16,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
     public class ImprEtController : ControladorBase
     {
         private readonly MenuSettings _menuSettings;
-        private readonly ILogger<RPRController> _logger;
+        private new readonly ILogger<RPRController> _logger;
         private readonly IProductoServicio _productoServicio;
         private readonly AppSettings _settings;
 

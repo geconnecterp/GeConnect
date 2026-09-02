@@ -545,8 +545,7 @@ $("#Rel01").autocomplete({
 			data: data,
 			success: function (obj) {
 				response($.map(obj, function (item) {
-					var texto = item.descripcion;
-					return { label: texto, value: item.descripcion, id: item.id, prov: item.provId };
+					return normalizarClienteAutocomplete(item);
 				}));
 			}
 		})
@@ -563,6 +562,7 @@ $("#Rel01").autocomplete({
 		return true;
 	}
 });
+aplicarRenderClienteAutocomplete($("#Rel01"));
 
 function ValidarFechasClick() {
 	const desde = $("#Date1").val();

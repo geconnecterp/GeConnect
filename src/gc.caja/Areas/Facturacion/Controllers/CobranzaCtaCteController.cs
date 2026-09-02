@@ -1,4 +1,4 @@
-﻿using gc.caja.Controllers;
+using gc.caja.Controllers;
 using gc.caja.core.Servicios.Contratos.Cajas;
 using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Dtos.Cajas.Response;
@@ -77,7 +77,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
 
                 if (resp.Ok)
                 {
-                    if(resp.ListaEntidad.Any())
+                    if(resp.ListaEntidad?.Any() == true)
                     {
                         _logger?.LogInformation($"✅ Se encontraron {resp.ListaEntidad.Count} registros de la cuenta corriente de la cuenta {cta_id}");
                         //resguardamos la información en la sesión para poder usarla posteriormente

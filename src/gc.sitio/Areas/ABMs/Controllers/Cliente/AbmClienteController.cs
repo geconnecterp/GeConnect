@@ -210,7 +210,25 @@ namespace gc.sitio.Areas.ABMs.Controllers
         public async Task<JsonResult> BuscarClienteAuto(string prefix)
         {
             var clis = await _abmCliServ.BuscarClientes(new QueryFilters { Buscar = prefix }, TokenCookie);
-            var clientes = clis.Item1.Select(x => new { Id = x.cta_id, Descripcion =  x.cta_lista, Nombre = x.cta_denominacion, Domicilio = x.cta_domicilio  });
+            var cuentas = await _cuentaServicio.ObtenerListaCuentaComercial(prefix, 'C', TokenCookie);
+            var tiposPorCuenta = cuentas
+                .Where(x => !string.IsNullOrWhiteSpace(x.Cta_Id))
+                .GroupBy(x => x.Cta_Id, StringComparer.OrdinalIgnoreCase)
+                .ToDictionary(
+                    grupo => grupo.Key,
+                    grupo => grupo.First().Tipo_Desc,
+                    StringComparer.OrdinalIgnoreCase);
+
+            var clientes = clis.Item1.Select(x => new
+            {
+                Id = x.cta_id,
+                Descripcion = x.cta_lista,
+                Nombre = x.cta_denominacion,
+                Domicilio = x.cta_domicilio,
+                TipoDesc = !string.IsNullOrWhiteSpace(x.tipo_desc)
+                    ? x.tipo_desc
+                    : tiposPorCuenta.GetValueOrDefault(x.cta_id, string.Empty)
+            });
             return Json(clientes);
         }
 

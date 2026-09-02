@@ -77,20 +77,28 @@ function obtenerProductosDelGrid() {
         const pId = $fila.data("p-id");
         const boxId = $fila.data("box-id") || "";
         const cargaNro = parseInt($fila.data("carga-nro"), 10) || 0;
+        const upId = String($fila.data("up-id") || "07").padStart(2, "0");
         const pDesc = $fila.find("td:eq(1)").text();
-        const bultos = parseInt($fila.find("td:eq(2)").text(), 10) || 0;
-        const unidades = parseInt($fila.find("td:eq(3)").text(), 10) || 0;
-        const cantidad = parseFloat($fila.find("td:eq(4)").text()) || 0;
+        const bultos = parseInt(NormalizarNumeroEntrada($fila.find("td:eq(2)").text(), "InventarioGridBultos"), 10) || 0;
+        const permiteDecimales = upId !== "07";
+        const unidades = permiteDecimales
+            ? 1
+            : parseInt(NormalizarNumeroEntrada($fila.find("td:eq(3)").text(), "InventarioGridUnidades"), 10) || 0;
+        const unidadesSueltas = permiteDecimales
+            ? parseFloat($fila.attr("data-unidad-suelta")) || 0
+            : 0;
+        const cantidad = parseFloat(NormalizarNumeroEntrada($fila.find("td:eq(4)").text(), "InventarioGrid")) || 0;
         
         productos.push({
             p_id: pId,
             p_desc: pDesc,
+            up_id: upId,
             box_id: boxId,
             carga_nro: cargaNro,
             usu_id: "", // Se asigna en el servidor
             invd_unidad_pres: unidades,
             invd_bulto: bultos,
-            invd_unidad_suelta: 0,
+            invd_unidad_suelta: unidadesSueltas,
             invd_cantidad: cantidad
         });
     });
@@ -221,9 +229,13 @@ function cargarConteoEnGrid() {
     // Obtener valores de los controles con validación
     const pId = $("#pId").val()?.trim();
     const pDesc = productoBase?.p_desc || "";
-    const btos = parseInt($("#btos").val(), 10) || 0;
-    const uns = parseInt($("#uns").val(), 10) || 0;
-    const cantidad = btos * uns;
+    const upId = String(productoBase?.up_id || "07").padStart(2, "0");
+    const permiteDecimales = upId !== "07";
+    const btos = permiteDecimales ? 0 : parseInt(NormalizarNumeroEntrada($("#btos").val(), "InventarioBultos"), 10) || 0;
+    const uns = permiteDecimales
+        ? parseFloat(NormalizarNumeroEntrada($("#uns").val(), "InventarioUnidades")) || 0
+        : parseInt(NormalizarNumeroEntrada($("#uns").val(), "InventarioUnidades"), 10) || 0;
+    const cantidad = permiteDecimales ? uns : btos * uns;
     
     // Validación de datos requeridos
     if (!pId || !pDesc) {
@@ -242,7 +254,9 @@ function cargarConteoEnGrid() {
     if (cantidad <= 0) {
         AbrirMensaje(
             "Cantidad inválida",
-            "Debe ingresar bultos y unidades válidos para calcular la cantidad",
+            permiteDecimales
+                ? "Debe ingresar una cantidad decimal mayor a cero"
+                : "Debe ingresar bultos y unidades válidos para calcular la cantidad",
             function() { $("#msjModal").modal("hide"); },
             false,
             ["Aceptar"],
@@ -261,7 +275,7 @@ function cargarConteoEnGrid() {
             function(respuesta) {
                 $("#msjModal").modal("hide");
                 if (respuesta === "SI") {
-                    actualizarFilaExistente($filaExistente, btos, uns, cantidad);
+                    actualizarFilaExistente($filaExistente, btos, uns, cantidad, upId);
                 }
             },
             true,
@@ -273,7 +287,7 @@ function cargarConteoEnGrid() {
     }
     
     // Agregar nueva fila al grid
-    agregarNuevaFilaAlGrid(pId, pDesc, btos, uns, cantidad);
+    agregarNuevaFilaAlGrid(pId, pDesc, btos, uns, cantidad, upId);
     
     // Limpiar controles después de agregar
     InicializaControlesConteo();
@@ -285,10 +299,13 @@ function cargarConteoEnGrid() {
 /**
  * Actualiza una fila existente con nuevas cantidades
  */
-function actualizarFilaExistente($fila, btos, uns, cantidad) {
+function actualizarFilaExistente($fila, btos, uns, cantidad, upId) {
+    const permiteDecimales = upId !== "07";
+    $fila.attr("data-up-id", upId);
+    $fila.attr("data-unidad-suelta", permiteDecimales ? uns : 0);
     $fila.find("td:eq(2)").text(btos);
-    $fila.find("td:eq(3)").text(uns);
-    $fila.find("td:eq(4)").text(cantidad.toFixed(2));
+    $fila.find("td:eq(3)").text(FormatearCantidadProducto(uns, upId));
+    $fila.find("td:eq(4)").text(FormatearCantidadProducto(cantidad, upId));
     
     // Efecto visual de actualización
     $fila.addClass("table-warning");
@@ -298,7 +315,7 @@ function actualizarFilaExistente($fila, btos, uns, cantidad) {
 /**
  * Agrega una nueva fila al grid de conteo
  */
-function agregarNuevaFilaAlGrid(pId, pDesc, btos, uns, cantidad) {
+function agregarNuevaFilaAlGrid(pId, pDesc, btos, uns, cantidad, upId) {
     const $tbody = $("#tbGridConteoProductos tbody");
     
     // Obtener datos adicionales del contexto si están disponibles
@@ -310,12 +327,12 @@ function agregarNuevaFilaAlGrid(pId, pDesc, btos, uns, cantidad) {
     
     // Crear nueva fila con template literal para mejor rendimiento
     const nuevaFila = `
-        <tr data-p-id="${pId}" data-box-id="${boxId}" data-carga-nro="${cargaNro}">
+        <tr data-p-id="${pId}" data-box-id="${boxId}" data-carga-nro="${cargaNro}" data-up-id="${upId}" data-unidad-suelta="${upId !== "07" ? uns : 0}">
             <td>${pId}</td>
             <td>${pDesc}</td>
             <td class="text-end">${btos}</td>
-            <td class="text-end">${uns}</td>
-            <td class="text-end">${cantidad.toFixed(2)}</td>
+            <td class="text-end">${FormatearCantidadProducto(uns, upId)}</td>
+            <td class="text-end">${FormatearCantidadProducto(cantidad, upId)}</td>
             <td class="text-center">
                 <button type="button" 
                         class="btn btn-danger btn-sm btn-eliminar-producto" 
@@ -349,19 +366,35 @@ function InicializaControlesConteo() {
     $("#pId").val("");
     $("#btos").val("");
     $("#uns").val("");
+    $("#btos, #uns").off(".cantidadProductoPocket").prop("disabled", false);
     $("#nnProducto").hide();
 }
 
 function cargaProductoEnControl() {
+    const upId = String(productoBase?.up_id || "07").padStart(2, "0");
+    const permiteDecimales = upId !== "07";
     $("#pId").val(productoBase.p_id);
     $("#nnProducto").text(productoBase.p_desc).show();
     $("#btos, #uns").prop("readonly", false);
+    ConfigurarEntradaCantidadProducto("#btos", "07", "InventarioBultos");
+    ConfigurarEntradaCantidadProducto("#uns", upId, "InventarioUnidades");
+
+    if (permiteDecimales) {
+        $("#btos").val(0).prop("disabled", true);
+        $("#uns").val(0);
+    }
     $("#btnCargaConteo").prop("disabled", false);
 
     setTimeout(() => {
         $("#Busqueda").val("");
-        $("#btos").trigger("focus");
+        $(permiteDecimales ? "#uns" : "#btos").trigger("focus").trigger("select");
     }, 200);
+
+    console.info("[Pocket][Inventario] Producto preparado para conteo", {
+        producto: productoBase.p_id,
+        upId: upId,
+        permiteDecimales: permiteDecimales
+    });
 }
 
 function verificaEstadoCont() {

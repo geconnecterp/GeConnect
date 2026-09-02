@@ -9,7 +9,7 @@ namespace gc.pocket.site.Areas.Gestion.Controllers
     [Area("Gestion")]
     public class RubroController : ControladorBase
     {
-        private readonly ILogger<RubroController> _logger;
+        private new readonly ILogger<RubroController> _logger;
         private readonly AppSettings _appSettings;
 
         public RubroController(ILogger<RubroController> logger, IOptions<AppSettings> options, IHttpContextAccessor context) : base(options, context, logger)

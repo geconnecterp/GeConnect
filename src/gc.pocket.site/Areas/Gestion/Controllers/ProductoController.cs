@@ -15,7 +15,7 @@ namespace gc.pocket.site.Areas.Gestion.Controllers
     public class ProductoController : ProductoControladorBase
     {
         private readonly MenuSettings _menuSettings;
-        private readonly ILogger<ProductoController> _logger;
+        private new readonly ILogger<ProductoController> _logger;
         private readonly ICuentaServicio _ctaSv;
         private readonly IRubroServicio _rubSv;
         private readonly IProductoServicio _productoServicio;
@@ -141,7 +141,7 @@ namespace gc.pocket.site.Areas.Gestion.Controllers
                         if (!string.Equals(autorizacionRpr.Cta_id, producto.Cta_id, StringComparison.OrdinalIgnoreCase))
                         {
                             warn = true;
-                            msg = $"El Producto NO pertenece al actual proveedor. Pertenece al Proveedor {producto.Cta_denominacion}.";
+                            msg = $"El producto no pertenece al proveedor actual. Pertenece al proveedor {producto.Cta_denominacion}. ¿Carga el producto de todos modos?";
                             _logger.LogWarning("Producto de otro proveedor en RPR. Producto: {Producto}; proveedor RPR: {ProveedorRpr}; proveedor producto: {ProveedorProducto}",
                                 producto.P_id, autorizacionRpr.Cta_id, producto.Cta_id);
                         }

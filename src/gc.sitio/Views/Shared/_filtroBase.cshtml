@@ -133,60 +133,88 @@
 
         @if (Model.Modelo.Equals(ModeloFilter.ETIQUETA))
         {
+            var tiposOfertaFiltro = ViewBag.TiposOfertaFiltro as IEnumerable<gc.infraestructura.Dtos.Productos.Ofertas.TipoOfertaDto>
+                ?? Enumerable.Empty<gc.infraestructura.Dtos.Productos.Ofertas.TipoOfertaDto>();
+
             <div class="row mb-1 mt-1">
                 <div class="col-12">
                     <label class="text-danger">La selección de los criterios son independientes entre sí.</label>
                 </div>
             </div>
-            <div class="row  mb-1 mt-1">
-                <div class=" col-md-2 col-sm-6">
-                    <div class="input-group input-group-sm">
-                        <div class="form-check form-check-inline form-switch mb-2">
+            <div class="row g-2 mb-2 etiqueta-criterios-principales">
+                <div class="col-lg-6 col-12">
+                    <div class="d-flex align-items-center mb-1">
+                        <div class="form-check form-switch mb-0">
                             <input class="form-check-input" type="checkbox" id="chkTipoEtiq" checked readonly />
-                            <label class="form-check-label" for="chkTipoEtiq" id="lbTipoEtiq">Tipo de Etiqueta</label>
+                            <label class="form-check-label" for="chkTipoEtiq" id="lbTipoEtiq">Tipo de etiqueta</label>
                         </div>
                     </div>
-                </div>
-                <div class="col-md-3 col-sm-6">
                     <div class="input-group input-group-sm">
-                        <span class="input-group-text">Tipo</span>
-                        @Html.DropDownList("TipoEtiqueta", null, new { @class = "form-control", style = "width:50px;" })
+                        <span class="input-group-text etiqueta-label-control">Tipo</span>
+                        @Html.DropDownList("TipoEtiqueta", null, new { @class = "form-control etiqueta-control-golden" })
+                    </div>
+                </div>
+                <div class="col-lg-6 col-12">
+                    <div class="d-flex align-items-center mb-1">
+                        <div class="form-check form-switch mb-0">
+                            <input class="form-check-input" type="checkbox" id="chkCargaPrevia" checked readonly />
+                            <label class="form-check-label" for="chkCargaPrevia" id="lbCargaPrevia">Carga previa</label>
+                        </div>
+                    </div>
+                    <div class="input-group input-group-sm">
+                        <span class="input-group-text etiqueta-label-control">Carga previa</span>
+                        @Html.DropDownList("CargaPrevia", null, "Seleccionar...", new { @class = "form-control etiqueta-control-golden" })
                     </div>
                 </div>
             </div>
 
-            <div class="row  mb-1 mt-1">
-                <div class=" col-md-2 col-sm-6">
-                    <div class="input-group input-group-sm">
-                        <div class="form-check form-check-inline form-switch mb-2">
-                            <input class="form-check-input" type="checkbox" id="chkSinImprimir" />
-                            <label class="form-check-label" for="chkSinImprimir" id="lbSinImprimir">Sin Imprimir</label>
+            <div class="row g-2 mb-2 align-items-start etiqueta-opciones-oferta">
+                <div class="col-lg-9 col-12">
+                    <div class="d-flex align-items-center mb-1">
+                        <div class="form-check form-switch mb-0">
+                            <input class="form-check-input" type="checkbox" id="chkDesdeHasta" />
+                            <label class="form-check-label" for="chkDesdeHasta" id="lbChkDesdeHasta">Modificados</label>
+                        </div>
+                    </div>
+                    <div class="row g-2">
+                        <div class="col-sm-6">
+                            <div class="input-group input-group-sm">
+                                <span class="input-group-text">Desde</span>
+                                <input type="date" class="form-control inputEditable etiqueta-control-golden" asp-for="Date1" disabled />
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="input-group input-group-sm">
+                                <span class="input-group-text">Hasta</span>
+                                <input type="date" class="form-control inputEditable etiqueta-control-golden" asp-for="Date2" disabled />
+                            </div>
                         </div>
                     </div>
                 </div>
-                <div class=" col-md-2 col-sm-6">
-                    <div class="input-group input-group-sm">
-                        <div class="form-check form-check-inline form-switch mb-2">
-                            <input class="form-check-input" type="checkbox" id="chkOferta" />
-                            <label class="form-check-label" for="chkOferta" id="lbOferta">Oferta</label>
-                        </div>
+                <div class="col-lg-3 col-12 etiqueta-opciones-simples">
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="chkSinImprimir" />
+                        <label class="form-check-label" for="chkSinImprimir" id="lbSinImprimir">Sin imprimir</label>
                     </div>
                 </div>
             </div>
-            <div class="row  mb-1 mt-1">
-                <div class=" col-md-2 col-sm-6">
-                    <div class="input-group input-group-sm">
-                        <div class="form-check form-check-inline form-switch mb-2">
-                            <input class="form-check-input" type="checkbox" id="chkCargaPrevia" checked readonly />
-                            <label class="form-check-label" for="chkCargaPrevia" id="lbCargaPrevia"></label>
-                        </div>
+
+            <div class="row g-2 mb-2 align-items-start etiqueta-tipo-oferta-row">
+                <div class="col-lg-2 col-md-3 col-12">
+                    <div class="form-check form-switch etiqueta-tipo-oferta-switch">
+                        <input class="form-check-input" type="checkbox" id="chkOferta" />
+                        <label class="form-check-label" for="chkOferta" id="lbOferta">Tipo de oferta</label>
                     </div>
                 </div>
-                <div class="col-md-3 col-sm-6">
-                    <div class="input-group input-group-sm">
-                        <span class="input-group-text">Carga Previa</span>
-                        @Html.DropDownList("CargaPrevia", null, "Seleccionar...", new { @class = "form-control", style = "width:50px;" })
-                    </div>
+                <div class="col-lg-10 col-md-9 col-12">
+                    <select id="OfertaTipoList" class="form-select form-select-sm etiqueta-control-golden etiqueta-tipos-oferta" multiple disabled
+                            aria-describedby="ayudaTiposOferta">
+                        @foreach (var tipoOferta in tiposOfertaFiltro)
+                        {
+                            <option value="@tipoOferta.oft_id">@tipoOferta.oft_lista</option>
+                        }
+                    </select>
+                    <div id="ayudaTiposOferta" class="form-text">Puede seleccionar uno o varios tipos. Sin selección incluye todos.</div>
                 </div>
             </div>
         }
@@ -323,7 +351,6 @@
         
         @if (Model.Modelo.Equals(ModeloFilter.ORDEN_DE_COMPRA_CONSULTA) ||
                 Model.Modelo.Equals(ModeloFilter.PRESUPUESTO) ||
-                Model.Modelo.Equals(ModeloFilter.ETIQUETA) ||
                 Model.Modelo.Equals(ModeloFilter.PRECIO_LISTA) ||
                 Model.Modelo.Equals(ModeloFilter.MODIF_PRECIO) ||
                 Model.Modelo.Equals(ModeloFilter.PROV_SIN_MOD) ||

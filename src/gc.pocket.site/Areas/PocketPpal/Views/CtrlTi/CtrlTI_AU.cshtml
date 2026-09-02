@@ -27,10 +27,10 @@
 </div>
 
 <div class="row mb-3">
-    <div class="d-flex justify-content-center">
+    <div class="pocket-action-dock">
         <button type="button" disabled id="btnVerCtrl" class="btn btn-danger btn-sm m-2" title="Observar Detalle de CONTROL"><i class="bx bx-sm bx-list-ol"></i></button>
-        <a asp-action="producto" asp-controller="infoprod" asp-area="pocketppal" asp-route-callback="@callback" class="btn btn-info btn-sm m-2"><i class="bx bx-ms bx-info-circle"></i></a>
-        <button type="button" id="btnContinua01" disabled class="btn btn-success btn-sm m-2"><i class="bx bx-ms bx-right-arrow-alt"></i></button>      
+        <a asp-action="producto" asp-controller="infoprod" asp-area="pocketppal" asp-route-callback="@callback" class="btn btn-info btn-sm m-2 pocket-action-dock__button" aria-label="Consultar información de producto" title="Información de producto"><i class="bx bx-ms bx-info-circle"></i></a>
+        <button type="button" id="btnContinua01" disabled class="btn btn-success btn-sm m-2 pocket-action-dock__button" aria-label="Continuar" title="Continuar"><i class="bx bx-ms bx-right-arrow-alt"></i></button>
     </div>
 </div>
 

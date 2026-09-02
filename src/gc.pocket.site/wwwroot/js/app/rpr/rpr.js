@@ -24,8 +24,14 @@
 
     PostGen(datos, _post, function (obj) {
         if (obj.error === true) {
-            ControlaMensajeError(obj.msg);
             CerrarWaiting();
+            var selectorCorreccion = "#" + (obj.campo || "Busqueda");
+            console.warn("[Pocket][RPR] La carga requiere corrección", { campo: obj.campo, mensaje: obj.msg });
+            AbrirMensaje("ATENCIÓN", obj.msg, function () {
+                enfocarControlRpr(selectorCorreccion);
+                $("#msjModal").modal("hide");
+                return true;
+            }, false, ["Aceptar"], "warn!", null, "aceptar");
             return true;
         }
         else if (obj.warn === true) {
@@ -34,37 +40,56 @@
                 if (resp === "SI") {
                     //boton acumular
                     AcumularProducto();
-                    productosGrid();
                     $("#msjModal").modal("hide");
                     return true;
                 }
                 else if (resp === "SI2") {
                     //boton remplazar
                     RemplazarProducto();
-                    productosGrid();
                     $("#msjModal").modal("hide");
 
                     return true;
                 }
                 else {
                     productosGrid();
+                    enfocarControlRpr("#Busqueda");
                     $("#msjModal").modal("hide");
                     return true;
                 }
-            }, true, ["Acumular", "Reemplazar", "Cancelar"])
+            }, true, ["Acumular", "Reemplazar", "Cancelar"], "warn!", null, "aceptar");
 
         }
         else {
             CerrarWaiting();
             ControlaMensajeSuccess("¡¡Producto cargado!!")
             productosGrid();
+            enfocarControlRpr("#Busqueda");
             return true;
         }
     });
-    $("input#Busqueda").focus();
     return true;
 }
 
+function enfocarControlRpr(selector) {
+    var aplicarFoco = function () {
+        var control = $(selector).filter(":visible:not(:disabled)").first();
+        if (control.length > 0) {
+            control.trigger("focus");
+            if (control.is("input:not([type='date'])")) {
+                control.trigger("select");
+            }
+        }
+    };
+
+    if ($("#msjModal").hasClass("show")) {
+        $("#msjModal").one("hidden.bs.modal.rprFocus", function () {
+            setTimeout(aplicarFoco, 0);
+        });
+    }
+    else {
+        setTimeout(aplicarFoco, 0);
+    }
+}
 
 function RemplazarProducto() {
     AbrirWaiting("Espere... estamos procesando la solicitud...");
@@ -84,6 +109,7 @@ function RemplazarProducto() {
                 return true;
             }, false, ["Aceptar"], "succ!", null);
             productosGrid();
+            enfocarControlRpr("#Busqueda");
         }
         return true;
     });
@@ -115,9 +141,11 @@ function EliminarProducto(id,item) {
 }
 
 function AcumularProducto() {
+    console.info("[Pocket][RPR] Solicitando acumulación del producto seleccionado");
     AbrirWaiting("Espere... estamos procesando la solicitud...");
     PostGen({}, AcumularProductoUrl, function (obj) {
         if (obj.error === true) {
+            console.error("[Pocket][RPR] No se pudo acumular el producto", obj);
             CerrarWaiting();
             AbrirMensaje("Acumular Producto", obj.msg, function () {
                 $('#msjModal').modal('hide');
@@ -125,14 +153,14 @@ function AcumularProducto() {
             }, false, ["Aceptar"], "warn!", null);
         }
         else {
+            console.info("[Pocket][RPR] Producto acumulado correctamente", obj);
             CerrarWaiting();
             AbrirMensaje("Acumular Producto", obj.msg, function () {
                 $('#msjModal').modal('hide');
                 return true;
             }, false, ["Aceptar"], "succ!", null);
             InicializaPantalla();
-
-
+            enfocarControlRpr("#Busqueda");
         }
         return true;
     })
@@ -217,7 +245,7 @@ function verificaEstado(e) {
         $("#box").mask("000,000,000,000", { reverse: true });
 
         if (prod.up_id === "07") {  //unidades enteras
-            $("#unid").mask("000,000,000,000", { reverse: true });
+            ConfigurarEntradaCantidadProducto("#unid", prod.up_id, "RPR");
             $("#box").val(0).prop("disabled", false);
         }
         else { //unidades decimales
@@ -225,7 +253,7 @@ function verificaEstado(e) {
             $("#up").val(1);
             $("#up").addClass("backReadOnly");
 
-            $("#unid").mask("000,000,000,000.000", { reverse: true });
+            ConfigurarEntradaCantidadProducto("#unid", prod.up_id, "RPR");
         }
         $("#unid").val(0).prop("disabled", false);
 
@@ -244,16 +272,16 @@ function verificaEstado(e) {
             $("#fvto").prop("disabled", false).val(productoBase.p_con_vto_ctl);
             //asigno callback para que se ejecute luego que cierre el waiting
             /* FunctionCallback = function () {*/
-            $("#fvto").focus();
+            enfocarControlRpr("#fvto");
             //    //return true;
             //};
         } else {
             //asigno callback para que se ejecute luego que cierre el waiting
             /*FunctionCallback = function () {*/
             if (prod.up_id === "07") {
-                $("#up").trigger("focus");
+                enfocarControlRpr("#up");
             } else {
-                $("#unid").trigger("focus");
+                enfocarControlRpr("#unid");
             }
             //    //return true;
             //};
@@ -276,8 +304,8 @@ function InicializaPantalla() {
     $("#fvto").val("").prop("disabled", true);
 
     $("#box").val(0).prop("disabled", true);
-    $("#unid").val(0).prop("disabled", true);
-    $("#btnCargaProd").prop("disabled", true);
+    $("#unid").unmask().off(".cantidadProductoPocket").val(0).prop("disabled", true);
+    $("#btnCargarProd").prop("disabled", true);
     $("#divRprGrid").empty();
 
 

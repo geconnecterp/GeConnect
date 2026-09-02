@@ -692,6 +692,122 @@ function AbrirMensaje(Titulo, Mensaje, CallBack, EsConfirmacion, Botones, Tipo, 
 //    $('#msjModal').modal('show');
 //}
 
+function normalizarProveedorAutocomplete(item) {
+    const descripcion = String(item.descripcion || "");
+    const separador = descripcion.indexOf("#");
+    const descripcionPrincipal = (separador >= 0 ? descripcion.substring(0, separador) : descripcion).trim();
+    const tipoDescLegacy = separador >= 0 ? descripcion.substring(separador + 1).trim() : "";
+
+    return {
+        label: descripcionPrincipal,
+        value: descripcionPrincipal,
+        id: item.id,
+        prov: item.provId,
+        tipo: "P",
+        tipoDesc: String(item.tipoDesc || item.tipo_desc || tipoDescLegacy || "").trim()
+    };
+}
+
+function aplicarRenderProveedorAutocomplete($input) {
+    const autocomplete = $input.autocomplete("instance");
+    if (!autocomplete) {
+        return;
+    }
+
+    autocomplete._renderItem = function (ul, item) {
+        const $contenido = $("<div>");
+        $("<span>")
+            .addClass("autocomplete-proveedor-principal")
+            .text(item.label || "")
+            .appendTo($contenido);
+
+        if (item.tipoDesc) {
+            $("<span>")
+                .addClass("autocomplete-proveedor-tipo")
+                .text(item.tipoDesc)
+                .appendTo($contenido);
+        }
+
+        return $("<li>").append($contenido).appendTo(ul);
+    };
+}
+
+// Contrato visual común para búsquedas de clientes. Mantiene compatibilidad
+// con endpoints antiguos que sólo devuelven descripcion/id.
+function normalizarClienteAutocomplete(item) {
+    const descripcion = String(item.descripcion || item.Descripcion || "");
+    const separador = descripcion.indexOf("#");
+    const tipoDescLegacy = separador >= 0 ? descripcion.substring(separador + 1).trim() : "";
+    const tipoDesc = String(item.tipoDesc || item.TipoDesc || item.tipo_desc || item.tipo_Desc || item.Tipo_Desc || tipoDescLegacy || "").trim();
+    const id = String(item.id || item.Id || item.cta_Id || item.Cta_Id || "").trim();
+    let nombrePrincipal = String(item.nombre || item.Nombre || item.cta_Denominacion || item.Cta_Denominacion || "").trim();
+    let descripcionPrincipal = (separador >= 0 ? descripcion.substring(0, separador) : descripcion).trim();
+
+    // Algunos endpoints históricos agregan el tipo al final de descripcion.
+    // Se lo separa sólo para el render, sin modificar el contrato recibido.
+    if (tipoDesc && descripcionPrincipal.endsWith(tipoDesc)) {
+        descripcionPrincipal = descripcionPrincipal.substring(0, descripcionPrincipal.length - tipoDesc.length).trim();
+    }
+
+    // Cuando el endpoint entrega campos estructurados, se arma una única leyenda
+    // canónica. Así se evita mostrar la cuenta dos veces sin alterar el id elegido.
+    if (nombrePrincipal) {
+        if (id) {
+            const cuenta = `(${id})`;
+            let posicion = nombrePrincipal.toUpperCase().indexOf(cuenta.toUpperCase());
+            while (posicion >= 0) {
+                nombrePrincipal = `${nombrePrincipal.substring(0, posicion)}${nombrePrincipal.substring(posicion + cuenta.length)}`
+                    .replace(/\s{2,}/g, " ")
+                    .trim();
+                posicion = nombrePrincipal.toUpperCase().indexOf(cuenta.toUpperCase());
+            }
+            descripcionPrincipal = `${nombrePrincipal} (${id})`;
+        } else {
+            descripcionPrincipal = nombrePrincipal;
+        }
+    }
+
+    return {
+        label: descripcionPrincipal,
+        value: descripcionPrincipal,
+        id: id,
+        nombre: nombrePrincipal || descripcionPrincipal,
+        domicilio: item.domicilio || item.Domicilio || item.cta_Domicilio || item.Cta_Domicilio || "",
+        habilitada: item.habilitada || item.Habilitada || item.ctac_habilitada || item.Ctac_habilitada || "",
+        tipo: item.tipo || item.Tipo || "C",
+        tipoDesc: tipoDesc
+    };
+}
+
+function aplicarRenderClienteAutocomplete($input) {
+    const autocomplete = $input.autocomplete("instance");
+    if (!autocomplete) {
+        return;
+    }
+
+    autocomplete._renderItem = function (ul, item) {
+        const $contenido = $("<div>");
+        $("<span>")
+            .addClass("autocomplete-cuenta-principal")
+            .text(item.label || "")
+            .appendTo($contenido);
+
+        if (item.tipoDesc) {
+            $("<span>")
+                .addClass("autocomplete-cuenta-tipo")
+                .text(item.tipoDesc)
+                .appendTo($contenido);
+        }
+
+        return $("<li>").append($contenido).appendTo(ul);
+    };
+}
+
+// Los módulos específicos se cargan en archivos separados y necesitan acceder
+// explícitamente al contrato común definido dentro de este inicializador.
+window.normalizarClienteAutocomplete = normalizarClienteAutocomplete;
+window.aplicarRenderClienteAutocomplete = aplicarRenderClienteAutocomplete;
+
 //codigo generico para autocomplete 01
 $("#Rel01").autocomplete({
     source: function (request, response) {
@@ -705,8 +821,7 @@ $("#Rel01").autocomplete({
             data: data,
             success: function (obj) {
                 response($.map(obj, function (item) {
-                    var texto = item.descripcion;
-                    return { label: texto, value: item.descripcion, id: item.id, prov: item.provId, tipo: "P" };
+                    return normalizarProveedorAutocomplete(item);
                 }));
             }
         })
@@ -725,6 +840,8 @@ $("#Rel01").autocomplete({
         return true;
     }
 });
+
+aplicarRenderProveedorAutocomplete($("#Rel01"));
 
 //codigo generico para autocomplete 02
 $("#Rel02").autocomplete({
@@ -765,8 +882,7 @@ $("input#Cta_Lista").autocomplete({
             data: data,
             success: function (obj) {
                 response($.map(obj, function (item) {
-                    var texto = item.descripcion;
-                    return { label: texto, value: item.descripcion, id: item.id };
+                    return normalizarProveedorAutocomplete(item);
                 }));
             }
         })
@@ -779,6 +895,8 @@ $("input#Cta_Lista").autocomplete({
         return true;
     }
 });
+
+aplicarRenderProveedorAutocomplete($("input#Cta_Lista"));
 
 function presentaPaginacion(div) {
     div.pagination({

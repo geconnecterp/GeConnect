@@ -37,9 +37,9 @@
 </div>
 <div id="divti03"></div>
 <div class="row mb-3">
-    <div class="d-flex justify-content-center">
-        <a asp-action="producto" asp-controller="infoprod" asp-area="pocketppal"  asp-route-callback="@callback" class="btn btn-info btn-sm m-3"><i class="bx bx-ms bx-info-circle"></i></a>
-        <button type="button" id="btnCtrlSalida"  ti="@Model.Ti" class="btn btn-sm btn-success m-3" style="display:none;"><i class="bx bx-sm bxs-truck"></i></button>
+    <div class="pocket-action-dock">
+        <a asp-action="producto" asp-controller="infoprod" asp-area="pocketppal"  asp-route-callback="@callback" class="btn btn-info btn-sm m-3 pocket-action-dock__button" aria-label="Consultar información de producto" title="Información de producto"><i class="bx bx-ms bx-info-circle"></i></a>
+        <button type="button" id="btnCtrlSalida"  ti="@Model.Ti" class="btn btn-sm btn-success m-3 pocket-action-dock__button" style="display:none;" aria-label="Continuar con el control de salida" title="Control de salida"><i class="bx bx-sm bxs-truck"></i></button>
     </div>
 </div>
 

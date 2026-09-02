@@ -114,6 +114,13 @@ namespace gc.api.core.Servicios.Ofertas
             });
             ps.Add(new SqlParameter("@sin_imprimir", filters.Opt1));
             ps.Add(new SqlParameter("@oferta", filters.Opt2));
+            var tiposOferta = filters.Opt2 == true
+                ? filters.OfertaList
+                    .Where(x => !string.IsNullOrWhiteSpace(x))
+                    .Select(x => x.Trim())
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                : Enumerable.Empty<string>();
+            ps.Add(new SqlParameter("@oferta_list", string.Join(",", tiposOferta)));
 
             //previa de usuario
             if (!string.IsNullOrEmpty(filters.StrOpt03))

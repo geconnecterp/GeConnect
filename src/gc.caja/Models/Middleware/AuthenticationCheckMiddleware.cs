@@ -1,4 +1,4 @@
-﻿namespace gc.caja.Models.Middleware
+namespace gc.caja.Models.Middleware
 {
     public class AuthenticationCheckMiddleware
     {
@@ -27,7 +27,7 @@
             }
 
             // Verificar autenticación
-            if (!context.User.Identity.IsAuthenticated)
+            if (context.User.Identity?.IsAuthenticated != true)
             {
                 var loginPath = $"{context.Request.PathBase}/seguridad/token/login";
                 context.Response.Redirect(loginPath);

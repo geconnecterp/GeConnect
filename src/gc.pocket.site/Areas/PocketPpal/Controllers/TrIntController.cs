@@ -18,7 +18,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
     public class TrIntController : ControladorBase
     {
         private readonly MenuSettings _menuSettings;
-        private readonly ILogger<TrIntController> _logger;
+        private new readonly ILogger<TrIntController> _logger;
         private readonly IProductoServicio _productoServicio;
         private readonly IAdministracionServicio _administracionServicio;
         private readonly AppSettings _settings;
@@ -49,7 +49,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
             //se verificará si el usuario tiene alguna TR PENDIENTE
             var resu = await _productoServicio.TIValidaPendiente(UserName, TokenCookie);
 
-            if (!resu.Ok && resu.Entidad.resultado == -1)
+            if (!resu.Ok && resu.Entidad!.resultado == -1)
             {
                 //tiene un tr pendiente por lo que se redirecciona a la carga de productos (carrito) previamente debo obtener los datos de la tr pendiente para cargar 
                 //la variable de sesion TIActual 
@@ -421,7 +421,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                     if (resu.Ok)
                     {
                         ti = new();
-                        ti.Ti = resu.Entidad.Ti; //este es el identificador de la autorizacion pendiente temporal                        
+                        ti.Ti = resu.Entidad!.Ti; //este es el identificador de la autorizacion pendiente temporal
                     }
                     else
                     {
@@ -491,7 +491,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 ViewBag.AppItem = new AppItem { Nombre = $"{nombre} - Producto a colectar en Carrito", VolverUrl = volver ?? "#" };
                 return View(TIActual);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 throw;
             }
@@ -555,7 +555,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
         {
             string? volver;
             AutorizacionTIDto sel;
-            TiListaProductoDto prod;
+            TiListaProductoDto? prod;
             try
             {
 
@@ -666,6 +666,16 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 if (cantidad <  1 && desarma)
                 {
                     return Json(new { error = false, warn = true, msg = $"La cantidades de los productos a cargar siempre tienen que ser positivas, mayores a 0 (cero)." });
+                }
+                if (desarma && (!CantidadCompatibleConUnidadProducto(ProductoBase.up_id, unid) ||
+                    !CantidadCompatibleConUnidadProducto(ProductoBase.up_id, cantidad)))
+                {
+                    return Json(new { error = false, warn = true, msg = MensajeCantidadIncompatible(ProductoBase.up_id) });
+                }
+                var cantidadEsperada = ProductoBase.up_id.Equals("07") ? (up * bulto) + unid : unid;
+                if (desarma && cantidad != cantidadEsperada)
+                {
+                    return Json(new { error = false, warn = true, msg = "La cantidad informada no coincide con los bultos y unidades ingresados. Verifique, por favor." });
                 }
                 if (ti.PPedido < cantidad && ProductoBase.up_id.Equals("07") && (!TIActual.SinAU || !desarma)) //verificamos las cantidades siempre y cuando haya una autorización o en el caso de transferencia de box completo con desarma = false
                 {
@@ -912,7 +922,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 }
                 else
                 {
-                    return Json(new { error = true, warn = false, msg = res.Entidad.resultado_msj });
+                    return Json(new { error = true, warn = false, msg = res.Entidad!.resultado_msj });
                 }
 
                 #endregion
@@ -940,7 +950,6 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
         {
             string? volver;
             AutorizacionTIDto sel;
-            TiListaProductoDto prod;
             try
             {
 
@@ -998,7 +1007,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 }
                 else
                 {
-                    return Json(new { error = true, warn = false, msg = res.Entidad.resultado_msj });
+                    return Json(new { error = true, warn = false, msg = res.Entidad!.resultado_msj });
                 }
 
                 #endregion
@@ -1040,13 +1049,13 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 if (res.Ok)
                 {
                     //se generó la TI NUEVA. Por lo que será necesario traerla y resguardarla.
-                    await ObtenerTIPendiente(tipo, res.Entidad.Tit_id);
+                    await ObtenerTIPendiente(tipo, res.Entidad!.Tit_id);
 
                     return Json(new { error = false, warn = false, msg = "Control de Salida superado." });
                 }
                 else
                 {
-                    return Json(new { error = true, warn = false, msg = res.Entidad.resultado_msj });
+                    return Json(new { error = true, warn = false, msg = res.Entidad!.resultado_msj });
                 }
 
                 #endregion
@@ -1091,7 +1100,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
 
                 if (res.Ok)
                 {
-                    return Json(new { error = false, warn = false, vto = res.Entidad.Ps_Fv.ToDateFormat_dd_mm_yyyy() });
+                    return Json(new { error = false, warn = false, vto = res.Entidad!.Ps_Fv.ToDateFormat_dd_mm_yyyy() });
                 }
                 else
                 {

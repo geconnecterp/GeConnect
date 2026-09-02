@@ -123,18 +123,21 @@ $(function () {
                                 ?? item.ctaDenominacion ?? item.CtaDenominacion;
                             const itemTipo = item.tipo ?? item.Tipo
                                 ?? item.cta_Tipo ?? item.Cta_Tipo;
+                            const itemTipoDesc = item.tipoDesc ?? item.TipoDesc
+                                ?? item.tipo_desc ?? item.Tipo_Desc;
 
                             if (!itemId || !itemDescripcion) {
                                 return null;
                             }
 
-                            const tipoDescripcion = itemTipo === 'P' ? 'Proveedor' : 'Cliente';
-                            const texto = `${itemDescripcion} (${itemId}) (${tipoDescripcion})`;
+                            const tipoDescripcion = itemTipoDesc || (itemTipo === 'P' ? 'Proveedor' : 'Cliente');
+                            const texto = `${itemDescripcion} (${itemId})`;
                             return {
                                 label: texto,
                                 value: itemDescripcion,
                                 id: itemId,
-                                tipo: itemTipo
+                                tipo: itemTipo,
+                                tipoDesc: tipoDescripcion
                             };
                         }));
                     }
@@ -183,7 +186,13 @@ $(function () {
 
             return $("<li>")
                 .addClass(className)
-                .append($("<div>").text(item.label))
+                .append(
+                    $("<div>")
+                        .append($("<span>").addClass("autocomplete-cuenta-principal").text(item.label || ""))
+                        .append(item.tipoDesc
+                            ? $("<span>").addClass("autocomplete-cuenta-tipo").text(item.tipoDesc)
+                            : null)
+                )
                 .appendTo(ul);
         };
     });

@@ -946,7 +946,12 @@ namespace gc.pocket.site.Controllers
             //var nombres = await _provSv.BuscarAsync(new QueryFilters { Search = prefix }, TokenCookie);
             //var lista = nombres.Item1.Select(c => new EmpleadoVM { Nombre = c.NombreCompleto, Id = c.Id, Cuil = c.CUIT });
             var prov = ProveedoresLista.Where(x => x.Cta_Lista.ToUpperInvariant().Contains(prefix.ToUpperInvariant()));
-            var proveedores = prov.Select(x => new ComboGenDto { Id = x.Cta_Id, Descripcion = x.Cta_Lista });
+            var proveedores = prov.Select(x => new ProveedorAutocompleteDto
+            {
+                Id = x.Cta_Id,
+                Descripcion = $"{x.Cta_Lista}#{x.Tipo_Desc}",
+                TipoDesc = x.Tipo_Desc
+            });
             return Json(proveedores);
         }
 
@@ -966,7 +971,7 @@ namespace gc.pocket.site.Controllers
 
         public bool VerificarAutenticacion(out IActionResult redirectResult)
         {
-            redirectResult = null;
+            redirectResult = null!;
 
             var (estaAutenticado, fechaExpiracion) = EstaAutenticado;
 
@@ -977,6 +982,22 @@ namespace gc.pocket.site.Controllers
             }
 
             return true;
+        }
+
+        protected static bool CantidadCompatibleConUnidadProducto(string? upId, decimal cantidad)
+        {
+            var esUnidadEntera = string.Equals(upId?.PadLeft(2, '0'), "07", StringComparison.Ordinal);
+            return esUnidadEntera
+                ? cantidad == decimal.Truncate(cantidad)
+                : cantidad == decimal.Round(cantidad, 3);
+        }
+
+        protected static string MensajeCantidadIncompatible(string? upId)
+        {
+            var esUnidadEntera = string.Equals(upId?.PadLeft(2, '0'), "07", StringComparison.Ordinal);
+            return esUnidadEntera
+                ? "El producto utiliza unidad 07 y sólo admite cantidades enteras. Verifique, por favor."
+                : "El producto admite cantidades decimales con un máximo de tres posiciones. Use punto como separador decimal.";
         }
 
         internal RespuestaGenerica<EntidadBase> CrearRespuestaWarning(string mensaje)

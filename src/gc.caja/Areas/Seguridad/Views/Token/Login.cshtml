@@ -1,55 +1,38 @@
-﻿@using gc.infraestructura.EntidadesComunes.Options
+@model gc.infraestructura.Dtos.Seguridad.LoginDto
+@using System.Text.Json
+@using gc.infraestructura.EntidadesComunes.Options
 @{
     var cajaConfig = ViewBag.CajaConfig as CajaSettings;
-    var caja = cajaConfig?.CajaId ?? "N/A";
 }
-
 <!DOCTYPE html>
-<html lang="es"
-      class="light-style layout-wide customizer-hide"
-      dir="ltr">
+<html lang="es" class="light-style">
 <head>
     <meta charset="utf-8" />
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Ingresar | GECO Caja</title>
+    <meta name="description" content="Acceso al sistema de caja GECO de Café América Mayorista S.A." />
+    <meta name="theme-color" content="#363128" />
 
-    <title>Autenticación - GECONet</title>
-    <meta name="description" content="Sistema de autenticación GECONet" />
-
-    <!-- Favicon -->
     <link rel="icon" type="image/x-icon" href="~/favicon.ico" />
-
-    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&display=swap" />
+    <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
 
-    <!-- Icons -->
     <link rel="stylesheet" href="~/lib/boxicons/css/boxicons.min.css" />
-
-    <!-- Core CSS -->
+    <link rel="stylesheet" href="~/css/extra.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/core.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/theme-default.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/css/extra.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/golden-overlay.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-
-    <!-- Vendors CSS -->
-    <link rel="stylesheet" href="~/lib/perfect-scrollbar/perfect-scrollbar.css" />
     <link rel="stylesheet" href="~/lib/lobibox/css/lobibox.min.css" />
-
-    <!-- Page Authentication CSS -->
     <link rel="stylesheet" href="~/css/pages/page-auth.css" asp-append-version="true" />
-
-    <!-- Helpers -->
-    <script src="~/js/helpers.js" asp-append-version="true"></script>
-    <script src="~/js/config.js"></script>
+    <link rel="stylesheet" href="~/css/pages/login-caja.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/lib/virtual-keyboard/css/virtual-keyboard.css" asp-append-version="true" />
 
+    <script src="~/js/helpers.js" asp-append-version="true"></script>
+    <script src="~/js/config.js" asp-append-version="true"></script>
 </head>
-
-<body>
-    <!-- Loading Overlay -->
+<body class="geco-login-page">
     <div class="loading-overlay" id="loadingOverlay">
         <div class="loading-content">
             <div class="spinner-golden"></div>
@@ -58,158 +41,106 @@
         </div>
     </div>
 
-    <!-- Content -->
-    <div class="container-xxl">
-        <div class="authentication-wrapper authentication-basic container-p-y">
-            <div class="authentication-inner-horizontal">
-                <!-- ✅ NUEVO ORDEN: Layout Horizontal Invertido -->
-                <div class="login-horizontal-container">
-                    
-                    <!-- ✅ COLUMNA IZQUIERDA: Formulario de Login (ARRIBA) -->
-                    <div class="login-form-column">
-                        <div class="card card-golden-login">
-                            <div class="card-body">
-                                <!-- Logo y Marca -->
-                                <div class="app-brand-golden">
-                                    <div class="app-brand-logo">
-                                        <i class='bx bxs-shield-alt-2'></i>
-                                    </div>
-                                    <span class="app-brand-text">GECONet</span>
-                                </div>
-
-                                <!-- Título de Bienvenida -->
-                                <h4 class="welcome-title text-center">¡Bienvenido al Sistema de CAJA! 👋</h4>
-                                <p class="welcome-subtitle text-center">Por favor, ingrese sus credenciales para continuar</p>
-
-                                <!-- Mensajes de Error/Info -->
-                                <div id="messageContainer"></div>
-
-                                <!-- Formulario de Login -->
-                                <form id="formAuthentication" asp-area="seguridad" asp-action="login" asp-controller="token" method="post">
-                                    @Html.AntiForgeryToken()
-
-                                    <!-- Usuario -->
-                                    <div class="mb-3">
-                                        <label for="UserName" class="form-label-golden">
-                                            <i class='bx bx-user'></i>
-                                            Usuario
-                                        </label>
-                                        <input type="text"
-                                               class="form-control form-control-golden jsteclado"
-                                               id="UserName"
-                                               name="UserName"
-                                               placeholder="Ingrese su usuario"
-                                               required
-                                               autofocus
-                                               autocomplete="off"
-                                               style="text-transform: none !important;" />
-                                    </div>
-
-                                    <!-- Contraseña -->
-                                    <div class="mb-3">
-                                        <label class="form-label-golden" for="Password">
-                                            <i class='bx bx-lock-alt'></i>
-                                            Contraseña
-                                        </label>
-                                        <div class="input-group input-group-merge input-group-golden">
-                                            <input type="password"
-                                                   id="Password"
-                                                   class="form-control form-control-golden jsteclado"
-                                                   name="Password"
-                                                   placeholder="&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;"
-                                                   required
-                                                   autocomplete="off"
-                                                   aria-describedby="togglePassword"
-                                                   style="text-transform: none !important;" />
-                                            <span class="input-group-text cursor-pointer" id="togglePassword">
-                                                <i class="bx bx-hide" id="toggleIcon"></i>
-                                            </span>
-                                        </div>
-                                    </div>
-
-                                    <!-- Botón de Ingreso -->
-                                    <div class="mb-3">
-                                        <button class="btn btn-login-golden d-grid w-100" type="submit" id="btnLogin">
-                                            <i class='bx bx-log-in-circle me-2'></i>
-                                            Ingresar
-                                        </button>
-                                    </div>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- ✅ COLUMNA DERECHA: Información de Caja (ABAJO) -->
-                    <div class="login-info-column">
-                        <div class="caja-info-display">
-                            <div class="caja-info-header">
-                                <i class='bx bx-store-alt'></i>
-                                <span>Estación de Cobranza</span>
-                            </div>
-                            <div class="caja-info-body">
-                                <div class="caja-info-item">
-                                    <div class="caja-info-label">
-                                        <i class='bx bx-hash'></i>
-                                        <span>Caja ID</span>
-                                    </div>
-                                    <div class="caja-info-value">
-                                        @(cajaConfig?.CajaId ?? "No configurada")
-                                    </div>
-                                </div>
-                                <div class="caja-info-item">
-                                    <div class="caja-info-label">
-                                        <i class='bx bx-network-chart'></i>
-                                        <span>Dirección IP</span>
-                                    </div>
-                                    <div class="caja-info-value">
-                                        @(cajaConfig?.IP ?? "0.0.0.0")
-                                    </div>
-                                </div>
-                               @*  @if (cajaConfig != null)
-                                {
-                                    <div class="caja-info-item">
-                                        <div class="caja-info-label">
-                                            <i class='bx bx-receipt'></i>
-                                            <span>Facturación</span>
-                                        </div>
-                                        <div class="caja-info-value">
-                                            <span class="badge badge-facturacion-@(cajaConfig.Facturacion.ToString().ToLower())">
-                                                @(cajaConfig.Facturacion == TipoFact.FE ? "Factura Electrónica" : "Controlador Fiscal")
-                                            </span>
-                                        </div>
-                                    </div>
-                                    @if (cajaConfig.Facturacion == TipoFact.CF && cajaConfig.TipoCnnCF != TipoCnnCF.NONE)
-                                    {
-                                        <div class="caja-info-item">
-                                            <div class="caja-info-label">
-                                                <i class='bx bx-link-alt'></i>
-                                                <span>Conexión CF</span>
-                                            </div>
-                                            <div class="caja-info-value">
-                                                <span class="badge badge-conexion-@(cajaConfig.TipoCnnCF.ToString().ToLower())">
-                                                    @(cajaConfig.TipoCnnCF == TipoCnnCF.IP ? "Red (IP)" : "Puerto USB")
-                                                </span>
-                                            </div>
-                                        </div>
-                                    }
-                                } *@
-                            </div>
-                        </div>
-
-                        <!-- Fecha Actual -->
-                        <div class="fecha-display">
-                            <i class='bx bx-calendar'></i>
-                            <strong>Fecha:</strong> @Model.FechaNN
-                        </div>
-                    </div>
-
-                </div>
-                <!-- /Login Horizontal Container -->
+    <main class="geco-login-shell" id="formulario">
+        <section class="geco-login-presentation" aria-label="Presentación de GECO Caja">
+            <div class="geco-login-brand geco-login-brand--light">
+                <span class="geco-login-brand__mark">
+                    <img src="~/img/gc.png" alt="" />
+                </span>
+                <span>GECO Caja</span>
             </div>
-        </div>
-    </div>
 
-    <!-- Scripts -->
+            <div class="geco-login-presentation__content">
+                <p class="geco-login-eyebrow">Punto de venta protegido</p>
+                <h1>Operación ágil.<br />Control real.</h1>
+                <p class="geco-login-lead">
+                    Facturación, cobranzas, rendiciones y cierre de caja con el contexto operativo resguardado desde el ingreso.
+                </p>
+            </div>
+
+            <div class="geco-login-company geco-login-company--light">
+                <span class="geco-login-company__logo">
+                    <img src="~/img/Circulo CA.svg" alt="" />
+                </span>
+                <span>
+                    <small>Empresa</small>
+                    <strong>Café América Mayorista S.A.</strong>
+                </span>
+            </div>
+            <div class="geco-login-rings" aria-hidden="true"></div>
+        </section>
+
+        <section class="geco-login-access" aria-labelledby="login-title">
+            <div class="geco-login-card">
+                <div class="geco-login-mobile-header" aria-label="GECO Caja, Café América">
+                    <div class="geco-login-brand">
+                        <span class="geco-login-brand__mark">
+                            <img src="~/img/gc.png" alt="" />
+                        </span>
+                        <span>GECO Caja</span>
+                    </div>
+                    <span class="geco-login-mobile-header__divider" aria-hidden="true"></span>
+                    <img class="geco-login-mobile-header__company" src="~/img/Circulo CA.svg" alt="Café América" />
+                </div>
+
+                <div class="geco-login-access__icon" aria-hidden="true">
+                    <i class="bx bx-store-alt"></i>
+                </div>
+                <p class="geco-login-eyebrow geco-login-eyebrow--gold">Bienvenido</p>
+                <h2 id="login-title">Ingresá a tu caja</h2>
+                <p class="geco-login-intro">Validá tus credenciales para operar el punto de venta asignado.</p>
+
+                <div class="caja-login-context" aria-label="Datos del punto de venta">
+                    <div>
+                        <small>Caja</small>
+                        <strong>@(cajaConfig?.CajaId ?? "No configurada")</strong>
+                    </div>
+                    <span aria-hidden="true"></span>
+                    <div>
+                        <small>IP</small>
+                        <strong>@(cajaConfig?.IP ?? "0.0.0.0")</strong>
+                    </div>
+                </div>
+
+                <div id="messageContainer"></div>
+
+                <form class="geco-login-form" id="formAuthentication" asp-area="seguridad" asp-action="login" asp-controller="token" method="post">
+                    @Html.AntiForgeryToken()
+
+                    <div class="geco-login-field">
+                        <label for="UserName">Usuario</label>
+                        <div class="geco-login-control">
+                            <i class="bx bx-user" aria-hidden="true"></i>
+                            <input type="text" class="form-control jsteclado" id="UserName" name="UserName" placeholder="Ingrese su usuario" required autofocus autocomplete="off" autocapitalize="none" spellcheck="false" style="text-transform: none !important;" />
+                        </div>
+                    </div>
+
+                    <div class="geco-login-field">
+                        <label for="Password">Contraseña</label>
+                        <div class="geco-login-control">
+                            <i class="bx bx-lock-alt" aria-hidden="true"></i>
+                            <input type="password" id="Password" class="form-control jsteclado" name="Password" placeholder="Ingrese su contraseña" required autocomplete="off" style="text-transform: none !important;" />
+                            <button class="geco-login-password-toggle" id="togglePassword" type="button" aria-label="Mostrar contraseña" aria-pressed="false">
+                                <i class="bx bx-hide" id="toggleIcon" aria-hidden="true"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <button class="geco-login-submit" type="submit" id="btnLogin">
+                        <span>Ingresar</span>
+                        <span class="geco-login-submit__arrow" aria-hidden="true">&rarr;</span>
+                    </button>
+                </form>
+
+                <div class="geco-login-security">
+                    <i class="bx bx-shield" aria-hidden="true"></i>
+                    <span>Sesión protegida para operaciones de caja</span>
+                </div>
+                <p class="geco-login-date">@Model.FechaNN</p>
+            </div>
+        </section>
+    </main>
+
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/popper.js/umd/popper.min.js"></script>
     <script src="~/lib/bootstrap/js/bootstrap.min.js"></script>
@@ -219,14 +150,12 @@
     <script src="~/lib/lobibox/js/notifications.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     <script src="~/lib/virtual-keyboard/js/virtual-keyboard.js" asp-append-version="true"></script>
-
     <script type="text/javascript">
-        // Variables de TempData
-        var MensajeErrorTempData = '@TempData["error"]';
-        var MensajeInfoTempData = '@TempData["info"]';
-        var MensajeWarnTempData = '@TempData["warn"]';
-        var MensajeSuccessTempData = '@TempData["succ"]';
+        var MensajeErrorTempData = @Html.Raw(JsonSerializer.Serialize(TempData["error"]?.ToString()));
+        var MensajeInfoTempData = @Html.Raw(JsonSerializer.Serialize(TempData["info"]?.ToString()));
+        var MensajeWarnTempData = @Html.Raw(JsonSerializer.Serialize(TempData["warn"]?.ToString()));
+        var MensajeSuccessTempData = @Html.Raw(JsonSerializer.Serialize(TempData["succ"]?.ToString()));
     </script>
-    <script src="~/js/app/seguridad/login.js"></script>
+    <script src="~/js/app/seguridad/login.js" asp-append-version="true"></script>
 </body>
 </html>

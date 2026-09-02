@@ -74,19 +74,9 @@
                                     </div>
                                 </td>
                                 <td class="text-center td-compact">
-                                    @if (item.up_id == "07")
-                                    {
-                                        var spl = item.ps_stk.ToString().Split('.');
-                                        <span class="badge @stockClass">
-                                            <i class="bx bx-box"></i> @spl[0]
-                                        </span>
-                                    }
-                                    else
-                                    {
-                                        <span class="badge @stockClass">
-                                            <i class="bx bx-box"></i> @item.ps_stk
-                                        </span>
-                                    }
+                                    <span class="badge @stockClass">
+                                        <i class="bx bx-box"></i> @CantidadProductoFormatter.Formatear(item.ps_stk, item.up_id)
+                                    </span>
                                 </td>
                                 <td class="text-center td-compact">
                                     @if (!item.Vto.HasValue)
@@ -127,7 +117,7 @@
                 <i class="bx bx-store-alt"></i> Depósitos: <strong>@Model.ListaDatos.Count()</strong>
             </small>
             <small class="text-muted">
-                <i class="bx bx-package"></i> Stock Total: <strong>@Model.ListaDatos.Sum(x => x.ps_stk)</strong>
+                <i class="bx bx-package"></i> Stock Total: <strong>@CantidadProductoFormatter.Formatear(Model.ListaDatos.Sum(x => x.ps_stk), Model.ListaDatos.First().up_id)</strong>
             </small>
             @{
                 var conVencimiento = Model.ListaDatos.Count(x => x.Vto.HasValue);

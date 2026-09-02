@@ -1,4 +1,4 @@
-﻿using gc.caja.Controllers;
+using gc.caja.Controllers;
 using gc.caja.core.Servicios.Contratos.Cajas;
 using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Core.Exceptions;
@@ -407,7 +407,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
                     else
                     {
                         _logger?.LogInformation("📝 Producto subsiguiente detectado");
-                        _logger?.LogInformation($"   → Ya hay {productosEnSesion.Count} productos en sesión");
+                        _logger?.LogInformation($"   → Ya hay {productosEnSesion?.Count ?? 0} productos en sesión");
                     }
                     
                     // ❸ Guardar cada producto en el backup (ya sea nuevo o existente)
@@ -517,7 +517,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Hubo un error en la busqueda avanzada");
+                _logger?.LogError(ex, "Hubo un error en la busqueda avanzada");
                 return Json(new { error = true, msg = "Algo no salió bien. Vuelva a intentarlo." });
             }
         }
@@ -1240,7 +1240,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
                 if (productosAcumulados.Any())
                 {
                     // ✅ ACTUALIZADO v3.0: Guardar en backup ANTES de retornar
-                    _logger.LogInformation("💾 Intentando guardar productos de pre-factura en backup...");
+                    _logger?.LogInformation("💾 Intentando guardar productos de pre-factura en backup...");
                     bool backupExitoso = await _backupServicio.GuardarProductosEnBloque(
                         productosAcumulados,
                         cajaActual.CajaId ?? string.Empty,
@@ -1251,11 +1251,11 @@ namespace gc.caja.Areas.Facturacion.Controllers
                     {
                         // Si el backup falla, se loguea una advertencia pero no se detiene el flujo.
                         // El usuario podrá trabajar, pero los datos no estarán respaldados.
-                        _logger.LogWarning("⚠️ El guardado en backup de los productos de la pre-factura falló. La operación continuará sin respaldo.");
+                        _logger?.LogWarning("⚠️ El guardado en backup de los productos de la pre-factura falló. La operación continuará sin respaldo.");
                     }
                     else
                     {
-                        _logger.LogInformation("✅ Productos de pre-factura guardados en backup exitosamente.");
+                        _logger?.LogInformation("✅ Productos de pre-factura guardados en backup exitosamente.");
                     }
 
                     // Guardar en sesión para el frontend
@@ -1893,15 +1893,15 @@ namespace gc.caja.Areas.Facturacion.Controllers
         {
             try
             {
-                _logger.LogInformation("═══════════════════════════════════════════════════");
-                _logger.LogInformation("📋 OBTENER CONFIGURACIÓN DE REPORTES v11.1");
-                _logger.LogInformation("═══════════════════════════════════════════════════");
+                _logger?.LogInformation("═══════════════════════════════════════════════════");
+                _logger?.LogInformation("📋 OBTENER CONFIGURACIÓN DE REPORTES v11.1");
+                _logger?.LogInformation("═══════════════════════════════════════════════════");
 
                 var reportes = _reportesConfigService.ObtenerTodos();
 
                 if (reportes == null)
                 {
-                    _logger.LogWarning("⚠️ ObtenerTodos() retornó null");
+                    _logger?.LogWarning("⚠️ ObtenerTodos() retornó null");
                     return Ok(new
                     {
                         ok = false,
@@ -1911,7 +1911,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
 
                 if (reportes.Count == 0)
                 {
-                    _logger.LogWarning("⚠️ No hay reportes configurados (array vacío)");
+                    _logger?.LogWarning("⚠️ No hay reportes configurados (array vacío)");
                     return Ok(new
                     {
                         ok = false,
@@ -1920,29 +1920,29 @@ namespace gc.caja.Areas.Facturacion.Controllers
                 }
 
                 // ✅ VALIDAR cada reporte antes de enviar
-                _logger.LogInformation($"   Total de reportes: {reportes.Count}");
+                _logger?.LogInformation($"   Total de reportes: {reportes.Count}");
                 foreach (var reporte in reportes)
                 {
-                    _logger.LogInformation($"   - Key: {reporte.Key ?? "NULL"}, Nombre: {reporte.Nombre ?? "NULL"}, Id: {reporte.Id ?? "NULL"}");
+                    _logger?.LogInformation($"   - Key: {reporte.Key ?? "NULL"}, Nombre: {reporte.Nombre ?? "NULL"}, Id: {reporte.Id ?? "NULL"}");
 
                     // Advertir sobre reportes con datos faltantes
                     if (string.IsNullOrWhiteSpace(reporte.Key))
                     {
-                        _logger.LogWarning($"   ⚠️ Reporte con Key NULL o vacía: {reporte.Nombre}");
+                        _logger?.LogWarning($"   ⚠️ Reporte con Key NULL o vacía: {reporte.Nombre}");
                     }
                     if (string.IsNullOrWhiteSpace(reporte.Nombre))
                     {
-                        _logger.LogWarning($"   ⚠️ Reporte con Nombre NULL o vacío: Key={reporte.Key}");
+                        _logger?.LogWarning($"   ⚠️ Reporte con Nombre NULL o vacío: Key={reporte.Key}");
                     }
                     if (string.IsNullOrWhiteSpace(reporte.Id))
                     {
-                        _logger.LogWarning($"   ⚠️ Reporte con Id NULL o vacío: {reporte.Nombre}");
+                        _logger?.LogWarning($"   ⚠️ Reporte con Id NULL o vacío: {reporte.Nombre}");
                     }
                 }
 
-                _logger.LogInformation("═══════════════════════════════════════════════════");
-                _logger.LogInformation("✅ Devolviendo configuración de reportes");
-                _logger.LogInformation("═══════════════════════════════════════════════════");
+                _logger?.LogInformation("═══════════════════════════════════════════════════");
+                _logger?.LogInformation("✅ Devolviendo configuración de reportes");
+                _logger?.LogInformation("═══════════════════════════════════════════════════");
 
                 return Ok(new
                 {
@@ -1952,7 +1952,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "❌ Error al obtener configuración de reportes");
+                _logger?.LogError(ex, "❌ Error al obtener configuración de reportes");
                 return StatusCode(500, new
                 {
                     ok = false,
@@ -1970,14 +1970,14 @@ namespace gc.caja.Areas.Facturacion.Controllers
         {
             try
             {
-                _logger.LogInformation("═══════════════════════════════════════════════════");
-                _logger.LogInformation("📄 GENERAR REPORTE DE COMPROBANTE v11.0");
-                _logger.LogInformation("═══════════════════════════════════════════════════");
-                _logger.LogInformation($"   tco_letra: {request.tco_letra}");
-                _logger.LogInformation($"   tco_id: {request.tco_id}");
-                _logger.LogInformation($"   cm_compte: {request.cm_compte}");
-                _logger.LogInformation($"   cm_repetido: {request.cm_repetido}");
-                _logger.LogInformation("═══════════════════════════════════════════════════");
+                _logger?.LogInformation("═══════════════════════════════════════════════════");
+                _logger?.LogInformation("📄 GENERAR REPORTE DE COMPROBANTE v11.0");
+                _logger?.LogInformation("═══════════════════════════════════════════════════");
+                _logger?.LogInformation($"   tco_letra: {request.tco_letra}");
+                _logger?.LogInformation($"   tco_id: {request.tco_id}");
+                _logger?.LogInformation($"   cm_compte: {request.cm_compte}");
+                _logger?.LogInformation($"   cm_repetido: {request.cm_repetido}");
+                _logger?.LogInformation("═══════════════════════════════════════════════════");
 
                 // ❶ Validar entrada
                 if (string.IsNullOrWhiteSpace(request.tco_letra))
@@ -1995,7 +1995,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
 
                 if (reporteConfig == null)
                 {
-                    _logger.LogWarning($"⚠️ No existe configuración para comprobante tipo '{request.tco_letra}'");
+                    _logger?.LogWarning($"⚠️ No existe configuración para comprobante tipo '{request.tco_letra}'");
                     return Ok(new RespuestaReportDto
                     {
                         resultado = -1,
@@ -2004,7 +2004,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
                     });
                 }
 
-                _logger.LogInformation($"✅ Reporte identificado: {reporteConfig.Nombre} (ID: {reporteConfig.Id})");
+                _logger?.LogInformation($"✅ Reporte identificado: {reporteConfig.Nombre} (ID: {reporteConfig.Id})");
 
                 // ❸ Construir solicitud para API de reportes
                 var reporteSolicitud = new ReporteSolicitudDto
@@ -2020,14 +2020,14 @@ namespace gc.caja.Areas.Facturacion.Controllers
                     Formato = "P" // PDF
                 };
 
-                _logger.LogInformation($"📡 Invocando API de Reportes con ID: {reporteConfig.Id}");
+                _logger?.LogInformation($"📡 Invocando API de Reportes con ID: {reporteConfig.Id}");
 
                 // ❹ Obtener token de autenticación
                 var token = TokenCookie;
 
                 if (string.IsNullOrEmpty(token))
                 {
-                    _logger.LogWarning("⚠️ No se encontró token de sesión");
+                    _logger?.LogWarning("⚠️ No se encontró token de sesión");
                     return Ok(new RespuestaReportDto
                     {
                         resultado = -1,
@@ -2041,13 +2041,13 @@ namespace gc.caja.Areas.Facturacion.Controllers
 
                 if (respuestaReporte.resultado != 0)
                 {
-                    _logger.LogError($"❌ Error en API de Reportes: {respuestaReporte.resultado_msj}");
+                    _logger?.LogError($"❌ Error en API de Reportes: {respuestaReporte.resultado_msj}");
                     return Ok(respuestaReporte);
                 }
 
                 if (string.IsNullOrWhiteSpace(respuestaReporte.Base64))
                 {
-                    _logger.LogError("❌ La API de Reportes no devolvió contenido Base64");
+                    _logger?.LogError("❌ La API de Reportes no devolvió contenido Base64");
                     return Ok(new RespuestaReportDto
                     {
                         resultado = -1,
@@ -2056,17 +2056,17 @@ namespace gc.caja.Areas.Facturacion.Controllers
                     });
                 }
 
-                _logger.LogInformation("═══════════════════════════════════════════════════");
-                _logger.LogInformation($"✅ REPORTE GENERADO EXITOSAMENTE");
-                _logger.LogInformation($"   Tamaño Base64: {respuestaReporte.Base64.Length} caracteres");
-                _logger.LogInformation($"   Nombre archivo: {respuestaReporte.resultado_msj}");
-                _logger.LogInformation("═══════════════════════════════════════════════════");
+                _logger?.LogInformation("═══════════════════════════════════════════════════");
+                _logger?.LogInformation($"✅ REPORTE GENERADO EXITOSAMENTE");
+                _logger?.LogInformation($"   Tamaño Base64: {respuestaReporte.Base64.Length} caracteres");
+                _logger?.LogInformation($"   Nombre archivo: {respuestaReporte.resultado_msj}");
+                _logger?.LogInformation("═══════════════════════════════════════════════════");
 
                 return Ok(respuestaReporte);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "❌ Error al generar reporte de comprobante");
+                _logger?.LogError(ex, "❌ Error al generar reporte de comprobante");
                 return StatusCode(500, new RespuestaReportDto
                 {
                     resultado = -1,

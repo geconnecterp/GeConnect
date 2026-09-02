@@ -1,47 +1,72 @@
-﻿@{
-    ViewData["Title"] = "Página Inicial";
-    var botones = ViewBag.Botones as List<AppItem>;
-    var subtitulo = "Opciones";
+@{
+    ViewData["Title"] = "Inicio";
 }
 @if (User.Identity?.IsAuthenticated == true)
 {
-    string nya = User.Claims.First(c => c.Type.Contains("nya")).Value;
-    string a = User.Claims.First(c => c.Type.Contains("AdmId")).Value;
-    var adm = a.Split("#");
-    var modelHeader = (subtitulo, (nya, ("#", false)));
+    var nombre = User.Claims.First(c => c.Type.Contains("nya")).Value;
+    var administracionClaim = User.Claims.First(c => c.Type.Contains("AdmId")).Value;
+    var administracionPartes = administracionClaim.Split("#");
+    var sucursal = administracionPartes.Length > 1 ? administracionPartes[1] : administracionClaim;
+    var primerNombre = nombre.Split(' ', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault() ?? nombre;
+    /*
+    var saludo = DateTime.Now.Hour switch
+    {
+        < 12 => "Buenos días",
+        < 20 => "Buenas tardes",
+        _ => "Buenas noches"
+    };
+    */
 
-    <div class="text-center mb-4 fade-in">
-        <h1 class="display-4 text-golden-dark">Bienvenidos - Sucursal @adm[1]</h1>
-        <p class="lead text-muted">Menú Principal</p>
-    </div>
-    
-    <partial name="_headerApp" model="@modelHeader"/>
-    
-    <div class="row">
-        <div class="col-12">
-            <div class="card-golden">
-                <div class="card-golden-header">
-                    <h5><i class="bx bx-grid-alt"></i> Panel de Control</h5>
-                </div>
-                <div class="card-body">
-                    @await Component.InvokeAsync("MenuPpal")
+    var saludo = "Buenas noches";
+    if (DateTime.Now.Hour < 12)
+    {
+        saludo = "Buenos días";
+    }
+    else if (DateTime.Now.Hour < 20)
+    {
+        saludo = "Buenas tardes";
+    }
+
+    <section class="home-dashboard" aria-labelledby="homeWelcomeTitle">
+        <div class="home-welcome">
+            <div class="home-welcome-rings" aria-hidden="true"></div>
+            <div class="home-welcome-copy">
+                <span class="home-welcome-eyebrow">CENTRO DE OPERACIONES</span>
+                <h1 id="homeWelcomeTitle">@saludo, @primerNombre</h1>
+                <p>Elegí una operación para comenzar a trabajar desde GECO Pocket.</p>
+
+                <div class="home-welcome-meta">
+                    <span>
+                        <i class="bx bx-building" aria-hidden="true"></i>
+                        Sucursal @sucursal
+                    </span>
+                    <span>
+                        <i class="bx bx-shield-quarter" aria-hidden="true"></i>
+                        Sesión activa
+                    </span>
                 </div>
             </div>
+
+            <div class="home-welcome-brand" aria-hidden="true">
+                <img src="~/img/gc.png" alt="" />
+                <span>POCKET</span>
+            </div>
         </div>
-    </div>
-}
-else
-{
-    <div class="text-center py-5 fade-in">
-        <div class="mb-4">
-            <i class="bx bx-store-alt text-golden" style="font-size: 5rem;"></i>
+
+        <div class="home-operations">
+            <header class="home-section-header">
+                <div>
+                    <span class="home-section-eyebrow">ACCESOS RÁPIDOS</span>
+                    <h2>Operaciones disponibles</h2>
+                    <p>Seleccione el módulo con el que desea trabajar.</p>
+                </div>
+                <span class="home-touch-hint">
+                    <i class="bx bx-touch" aria-hidden="true"></i>
+                    Toque una opción
+                </span>
+            </header>
+
+            @await Component.InvokeAsync("MenuPpal")
         </div>
-        <h1 class="display-4 text-golden-dark mb-3">Bienvenidos a GECONet POCKET</h1>
-        <p class="lead text-muted">Sistema para la gestión y control de <strong class="text-golden">almacenamientos</strong>.</p>
-        <div class="mt-4">
-            <a asp-area="seguridad" asp-controller="token" asp-action="login" class="btn btn-golden btn-lg">
-                <i class="bx bx-log-in"></i> Iniciar Sesión
-            </a>
-        </div>
-    </div>
+    </section>
 }

@@ -1458,8 +1458,7 @@ function InicializarCamposEnTcfId_CH() {
 					data: data,
 					success: function (obj) {
 						response($.map(obj, function (item) {
-							var texto = item.descripcion;
-							return { label: texto, value: item.descripcion, id: item.id, prov: item.provId };
+							return normalizarClienteAutocomplete(item);
 						}));
 					}
 				})
@@ -1472,6 +1471,7 @@ function InicializarCamposEnTcfId_CH() {
 				return true;
 			}
 		});
+		aplicarRenderClienteAutocomplete($(this));
 	});
 
 	$(document).off("change", "#listaBcoCheqs");

@@ -612,6 +612,8 @@ namespace gc.sitio.Areas.Productos.Controllers
                     return Json(new { ok = false, mensaje = "Los datos de confirmación no fueron recepcionados. Verifique." });
                 }
 
+                List<ComboSustitutoDto>? sustitutosActivosValidados = null;
+
                 // Validaciones de entrada
                 if (request.Datos == null)
                 {
@@ -649,6 +651,246 @@ namespace gc.sitio.Areas.Productos.Controllers
                     return Json(new { ok = false, mensaje = "El estado informado no es válido" });
                 }
 
+                // El SP actual no valida una máquina de estados y admite saltos no
+                // autorizados. La aplicación consulta el estado persistido para
+                // impedirlos antes de enviar la operación a base de datos.
+                if (string.IsNullOrWhiteSpace(request.Datos.cmb_id))
+                {
+                    if (request.Datos.cmb_estado != 'N')
+                    {
+                        return Json(new
+                        {
+                            ok = false,
+                            warn = true,
+                            msg = "Una Promo/Combo nueva debe guardarse primero en estado Sin Activar"
+                        });
+                    }
+                }
+                else
+                {
+                    var respuestaActual = await _comboServicio.ObtenerComboPorId(request.Datos.cmb_id, TokenCookie);
+                    if (!respuestaActual.Ok || respuestaActual.EsError || respuestaActual.Entidad == null)
+                    {
+                        return Json(new
+                        {
+                            ok = false,
+                            mensaje = respuestaActual.Mensaje ?? "No se pudo verificar el estado actual de la Promo/Combo"
+                        });
+                    }
+
+                    var datosActuales = respuestaActual.Entidad;
+                    var estadoActual = datosActuales.cmb_estado;
+                    var estadoAnteriorInformado = request.Datos.cmb_estado_anterior;
+                    var estadoSolicitado = request.Datos.cmb_estado;
+                    var estadosValidos = new[] { 'N', 'A', 'H' };
+
+                    // SPGECO_Combos_Datos no siempre proyecta cmb_estado. En ese
+                    // caso se utiliza el estado de la fila que abrió el detalle.
+                    // Si el SP sí lo informa, prevalece siempre el dato persistido.
+                    if (!estadosValidos.Contains(estadoActual))
+                    {
+                        if (!estadosValidos.Contains(estadoAnteriorInformado))
+                        {
+                            return Json(new
+                            {
+                                ok = false,
+                                mensaje = "No se pudo determinar el estado actual de la Promo/Combo"
+                            });
+                        }
+
+                        estadoActual = estadoAnteriorInformado;
+                    }
+                    else if (estadosValidos.Contains(estadoAnteriorInformado) && estadoAnteriorInformado != estadoActual)
+                    {
+                        return Json(new
+                        {
+                            ok = false,
+                            warn = true,
+                            msg = "El estado de la Promo/Combo cambió desde que fue consultada. Actualice la grilla y vuelva a intentar."
+                        });
+                    }
+
+                    var transicionPermitida =
+                        (estadoActual == 'N' && (estadoSolicitado == 'N' || estadoSolicitado == 'A')) ||
+                        (estadoActual == 'A' && (estadoSolicitado == 'A' || estadoSolicitado == 'H')) ||
+                        (estadoActual == 'H' && (estadoSolicitado == 'H' || estadoSolicitado == 'A'));
+
+                    if (!transicionPermitida)
+                    {
+                        return Json(new
+                        {
+                            ok = false,
+                            warn = true,
+                            msg = $"La transición de estado {estadoActual} a {estadoSolicitado} no está permitida"
+                        });
+                    }
+
+                    if (estadoActual == 'H' && estadoSolicitado == 'A')
+                    {
+                        return Json(new
+                        {
+                            ok = false,
+                            warn = true,
+                            requiereSp = true,
+                            msg = "La reactivación está preparada en la aplicación, pero SPGECO_Combos_Confirmar " +
+                                  "valida la nueva vigencia sin persistir cmb_desde/cmb_hasta. " +
+                                  "Se requiere la adecuación del SP antes de habilitar esta operación. No se realizaron cambios."
+                        });
+                    }
+
+                    // Una Activa solo puede modificar su vigencia, pasar a Histórica
+                    // o desactivar productos/sustitutos. La estructura y los valores
+                    // económicos se reconstruyen siempre desde los datos persistidos.
+                    if (estadoActual == 'A')
+                    {
+                        var descripcionSolicitada = request.Datos.cmb_desc.Trim();
+                        var descripcionActual = datosActuales.cmb_desc.Trim();
+
+                        if (!string.Equals(descripcionSolicitada, descripcionActual, StringComparison.Ordinal) ||
+                            request.Datos.cmb_tipo != datosActuales.cmb_tipo)
+                        {
+                            return Json(new
+                            {
+                                ok = false,
+                                warn = true,
+                                msg = "Una Promo/Combo Activa solo permite modificar la vigencia, pasar a Histórica o desactivar productos/sustitutos"
+                            });
+                        }
+
+                        request.Datos.cmb_desc = descripcionActual;
+                        request.Datos.cmb_tipo = datosActuales.cmb_tipo;
+
+                        var canalesActuales = await _comboServicio.ObtenerCanalesDeCombo(request.Datos.cmb_id, TokenCookie);
+                        if (!canalesActuales.Ok || canalesActuales.EsError || canalesActuales.ListaEntidad == null)
+                        {
+                            return Json(new
+                            {
+                                ok = false,
+                                mensaje = canalesActuales.Mensaje ?? "No se pudieron verificar los canales actuales de la Promo/Combo"
+                            });
+                        }
+
+                        request.Canales = canalesActuales.ListaEntidad.ToList();
+
+                        var productosActuales = await _comboServicio.ObtenerProductosDeCombo(request.Datos.cmb_id, TokenCookie);
+                        if (!productosActuales.Ok || productosActuales.EsError || productosActuales.ListaEntidad == null)
+                        {
+                            return Json(new
+                            {
+                                ok = false,
+                                mensaje = productosActuales.Mensaje ?? "No se pudieron verificar los productos actuales de la Promo/Combo"
+                            });
+                        }
+
+                        var productosPersistidos = productosActuales.ListaEntidad.ToList();
+                        var productosSolicitados = request.Productos
+                            .GroupBy(x => x.p_id)
+                            .ToDictionary(g => g.Key, g => g.First());
+
+                        if (productosSolicitados.Count != productosPersistidos.Count ||
+                            productosPersistidos.Any(x => !productosSolicitados.ContainsKey(x.p_id)))
+                        {
+                            return Json(new
+                            {
+                                ok = false,
+                                warn = true,
+                                msg = "En una Promo/Combo Activa no se pueden agregar ni quitar productos"
+                            });
+                        }
+
+                        var productosValidados = new List<ComboProductoDto>();
+                        foreach (var productoPersistido in productosPersistidos)
+                        {
+                            var productoSolicitado = productosSolicitados[productoPersistido.p_id];
+                            var estadoSolicitadoProducto = productoSolicitado.activo;
+
+                            if (productoPersistido.activo == 'D' && estadoSolicitadoProducto != 'D')
+                            {
+                                return Json(new
+                                {
+                                    ok = false,
+                                    warn = true,
+                                    msg = $"El producto {productoPersistido.p_id} ya está desactivado y no puede reactivarse"
+                                });
+                            }
+
+                            productosValidados.Add(new ComboProductoDto
+                            {
+                                cmb_id = productoPersistido.cmb_id,
+                                p_id = productoPersistido.p_id,
+                                p_desc = productoPersistido.p_desc,
+                                p_pcosto = productoPersistido.p_pcosto,
+                                cantidad = productoPersistido.cantidad,
+                                dto_porc = productoPersistido.dto_porc,
+                                dto_imp = productoPersistido.dto_imp,
+                                up_id = productoPersistido.up_id,
+                                activo = estadoSolicitadoProducto == 'D' ? 'D' : productoPersistido.activo
+                            });
+                        }
+                        request.Productos = productosValidados;
+
+                        sustitutosActivosValidados = new List<ComboSustitutoDto>();
+                        foreach (var grupo in (request.Sustitutos ?? []).GroupBy(x => x.p_id))
+                        {
+                            var sustitutosActuales = await _comboServicio.ObtenerProductosSustitutosDeCombo(
+                                request.Datos.cmb_id, grupo.Key, TokenCookie);
+                            if (!sustitutosActuales.Ok || sustitutosActuales.EsError || sustitutosActuales.ListaEntidad == null)
+                            {
+                                return Json(new
+                                {
+                                    ok = false,
+                                    mensaje = sustitutosActuales.Mensaje ?? "No se pudieron verificar los sustitutos actuales de la Promo/Combo"
+                                });
+                            }
+
+                            var sustitutosPersistidos = sustitutosActuales.ListaEntidad
+                                .ToDictionary(x => x.p_id_sustituto, x => x);
+                            foreach (var sustitutoSolicitado in grupo)
+                            {
+                                if (!sustitutosPersistidos.TryGetValue(sustitutoSolicitado.p_id_sustituto, out var sustitutoPersistido))
+                                {
+                                    return Json(new
+                                    {
+                                        ok = false,
+                                        warn = true,
+                                        msg = $"El sustituto {sustitutoSolicitado.p_id_sustituto} no pertenece al producto {grupo.Key}"
+                                    });
+                                }
+
+                                if (sustitutoPersistido.activo == 'D' && sustitutoSolicitado.activo != 'D')
+                                {
+                                    return Json(new
+                                    {
+                                        ok = false,
+                                        warn = true,
+                                        msg = $"El sustituto {sustitutoPersistido.p_id_sustituto} ya está desactivado y no puede reactivarse"
+                                    });
+                                }
+
+                                if (sustitutoSolicitado.activo != sustitutoPersistido.activo && sustitutoSolicitado.activo != 'D')
+                                {
+                                    return Json(new
+                                    {
+                                        ok = false,
+                                        warn = true,
+                                        msg = $"El único estado permitido para desactivar el sustituto {sustitutoPersistido.p_id_sustituto} es D"
+                                    });
+                                }
+
+                                sustitutosActivosValidados.Add(new ComboSustitutoDto
+                                {
+                                    cmb_id = sustitutoPersistido.cmb_id,
+                                    p_id = sustitutoPersistido.p_id,
+                                    p_id_sustituto = sustitutoPersistido.p_id_sustituto,
+                                    p_desc = sustitutoPersistido.p_desc,
+                                    p_pcosto = sustitutoPersistido.p_pcosto,
+                                    activo = sustitutoSolicitado.activo == 'D' ? 'D' : sustitutoPersistido.activo
+                                });
+                            }
+                        }
+                    }
+                }
+
                 if (request.Productos.Any(x => x.cantidad <= 0))
                 {
                     return Json(new { ok = false, mensaje = "Todas las cantidades deben ser mayores a cero" });
@@ -664,7 +906,10 @@ namespace gc.sitio.Areas.Productos.Controllers
                     x.activo,
                     costo = x.p_pcosto
                 });
-                var sustitutos = ProductosSustitutos ?? new List<ComboSustitutoDto>();
+                var sustitutos = sustitutosActivosValidados ??
+                    request.Sustitutos ??
+                    ProductosSustitutos ??
+                    new List<ComboSustitutoDto>();
                 // Crear un HashSet con los IDs de productos para búsquedas más eficientes (O(1))
                 var productosIds = request.Productos.Select(p => p.p_id).ToHashSet();
 

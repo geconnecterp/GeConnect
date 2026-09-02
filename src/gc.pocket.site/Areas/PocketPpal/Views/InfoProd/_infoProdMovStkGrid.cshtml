@@ -14,7 +14,6 @@
     var esTexto = string.Empty;
     var stockClass = string.Empty;
     var reg = Model.ListaDatos?.FirstOrDefault();
-    var esUnidad = reg == null ? false : reg.Up_id == 7 ? true : false;
     var stk = "";
 }
 
@@ -56,13 +55,19 @@
                                 {
                                     esClass = "bg-success";
                                     esIcon = "bx-log-in-circle";
-                                    esTexto = $"+{item.Sm_es}";
+                                    esTexto = $"+{CantidadProductoFormatter.Formatear(item.Sm_es, item.Up_id)}";
                                 }
                                 else if (sm_es < 0)
                                 {
                                     esClass = "bg-danger";
                                     esIcon = "bx-log-out-circle";
-                                    esTexto = item.Sm_es.ToString();
+                                    esTexto = CantidadProductoFormatter.Formatear(item.Sm_es, item.Up_id);
+                                }
+                                else
+                                {
+                                    esClass = "bg-secondary";
+                                    esIcon = "bx-transfer";
+                                    esTexto = CantidadProductoFormatter.Formatear(item.Sm_es, item.Up_id);
                                 }
 
                                 // Determinar badge de stock
@@ -91,19 +96,9 @@
                                     </span>
                                 </td>
                                 <td class="text-center td-compact">
-                                    @if (item.Up_id == 7)
-                                    {
-                                        var spl = item.Sm_stk.ToString().Split('.');
-                                        <span class="badge @stockClass">
-                                            <i class="bx bx-box"></i> @spl[0]
-                                        </span>
-                                    }
-                                    else
-                                    {
-                                        <span class="badge @stockClass">
-                                            <i class="bx bx-box"></i> @item.Sm_stk
-                                        </span>
-                                    }
+                                    <span class="badge @stockClass">
+                                        <i class="bx bx-box"></i> @CantidadProductoFormatter.Formatear(item.Sm_stk, item.Up_id)
+                                    </span>
                                 </td>
                             </tr>
                         }
@@ -136,14 +131,9 @@
                 <i class="bx bx-log-out-circle"></i> Salidas: <strong>@Model.ListaDatos.Count(x => x.Sm_es < 0)</strong>
             </small>
             <small class="text-muted">
-                @if (esUnidad && reg!=null)
+                @if (reg != null)
                 {
-                    var spl = reg.Sm_stk.ToString().Split('.');
-                    stk = spl[0];
-                }
-                else
-                {
-                    stk = reg?.Sm_stk.ToString();
+                    stk = CantidadProductoFormatter.Formatear(reg.Sm_stk, reg.Up_id);
                 }
                 <i class="bx bx-package"></i> Stock actual: <strong>@stk</strong>
             </small>

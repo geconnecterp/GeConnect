@@ -9,7 +9,7 @@ namespace gc.pocket.site.Controllers
 {
     public class HomeController : ControladorBase
     {
-        private readonly ILogger<HomeController> _logger;
+        private new readonly ILogger<HomeController> _logger;
 
         public HomeController(ILogger<HomeController> logger,IOptions<AppSettings> options, IHttpContextAccessor context) :base(options,context, logger) 
         {

@@ -1,0 +1,580 @@
+:root {
+    --pocket-gold: #d4a80d;
+    --pocket-gold-bright: #efc847;
+    --pocket-gold-dark: #9f7600;
+    --pocket-ink: #292822;
+    --pocket-text: #45443e;
+    --pocket-muted: #77766f;
+    --pocket-border: #d9d7cf;
+    --pocket-surface: #ffffff;
+    --pocket-background: #f7f6f1;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    min-width: 320px;
+    min-height: 100%;
+}
+
+body.pocket-login-page {
+    min-height: 100vh;
+    min-height: 100dvh;
+    margin: 0;
+    overflow-x: hidden;
+    color: var(--pocket-text);
+    background: var(--pocket-background);
+    font-family: "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+}
+
+.pocket-login-stage,
+.pocket-login-shell {
+    width: 100%;
+    min-height: 100vh;
+    min-height: 100dvh;
+}
+
+.pocket-login-shell {
+    display: grid;
+    grid-template-columns: minmax(32rem, 1.08fr) minmax(30rem, 0.92fr);
+}
+
+.pocket-login-hero {
+    position: relative;
+    z-index: 0;
+    display: flex;
+    min-width: 0;
+    overflow: hidden;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: clamp(2rem, 5vw, 5.5rem);
+    color: #fff;
+    background:
+        radial-gradient(circle at 92% 90%, rgba(239, 200, 71, 0.22) 0, rgba(239, 200, 71, 0.08) 28%, transparent 54%),
+        linear-gradient(145deg, #25231e 0%, #363128 55%, #4a3b17 100%);
+}
+
+.pocket-login-hero::before {
+    position: absolute;
+    inset: 0 0 auto;
+    z-index: -1;
+    height: 5px;
+    content: "";
+    background: linear-gradient(90deg, var(--pocket-gold-dark), var(--pocket-gold-bright), var(--pocket-gold-dark));
+}
+
+.pocket-login-hero-rings {
+    position: absolute;
+    right: -18rem;
+    bottom: -22rem;
+    z-index: -1;
+    width: 58rem;
+    height: 58rem;
+    border: 1px solid rgba(239, 200, 71, 0.16);
+    border-radius: 50%;
+    pointer-events: none;
+}
+
+.pocket-login-hero-rings::before,
+.pocket-login-hero-rings::after {
+    position: absolute;
+    content: "";
+    border: 1px solid rgba(239, 200, 71, 0.13);
+    border-radius: 50%;
+}
+
+.pocket-login-hero-rings::before {
+    inset: 7rem;
+}
+
+.pocket-login-hero-rings::after {
+    inset: 14rem;
+    background: rgba(212, 168, 13, 0.05);
+}
+
+.pocket-login-brand {
+    display: inline-flex;
+    min-width: 0;
+    align-items: center;
+    gap: 0.8rem;
+}
+
+.pocket-login-geco-logo {
+    width: 46px;
+    height: 46px;
+    flex: 0 0 46px;
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    border-radius: 12px;
+    object-fit: cover;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.16);
+}
+
+.pocket-login-brand-copy {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    line-height: 1;
+}
+
+.pocket-login-brand-copy strong {
+    font-size: 1.35rem;
+    font-weight: 750;
+    letter-spacing: 0.015em;
+}
+
+.pocket-login-brand-copy span {
+    margin-top: 0.35rem;
+    color: var(--pocket-gold-bright);
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.24em;
+}
+
+.pocket-login-brand-light strong {
+    color: #fff;
+}
+
+.pocket-login-hero-copy {
+    width: min(38rem, 88%);
+    margin: auto 0;
+    padding: 4rem 0;
+}
+
+.pocket-login-eyebrow {
+    display: block;
+    margin-bottom: 0.75rem;
+    color: var(--pocket-gold-dark);
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.16em;
+}
+
+.pocket-login-eyebrow-light {
+    color: var(--pocket-gold-bright);
+}
+
+.pocket-login-hero-copy h1 {
+    max-width: 40rem;
+    margin: 0;
+    color: #fff;
+    font-size: clamp(3rem, 5vw, 5.2rem);
+    font-weight: 680;
+    letter-spacing: -0.055em;
+    line-height: 0.97;
+}
+
+.pocket-login-hero-copy p {
+    max-width: 35rem;
+    margin: 1.6rem 0 0;
+    color: rgba(255, 255, 255, 0.75);
+    font-size: clamp(1rem, 1.4vw, 1.15rem);
+    line-height: 1.65;
+}
+
+.pocket-login-company {
+    display: inline-flex;
+    width: fit-content;
+    align-items: center;
+    gap: 0.8rem;
+    padding: 0.65rem 0.85rem 0.65rem 0.65rem;
+    border: 1px solid rgba(255, 255, 255, 0.13);
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.06);
+    backdrop-filter: blur(8px);
+}
+
+.pocket-login-company-logo {
+    display: inline-flex;
+    width: 42px;
+    height: 42px;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    border-radius: 50%;
+    background: var(--pocket-gold-bright);
+}
+
+.pocket-login-company-logo img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.pocket-login-company > span:last-child {
+    display: flex;
+    flex-direction: column;
+}
+
+.pocket-login-company small {
+    color: rgba(255, 255, 255, 0.58);
+    font-size: 0.67rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.pocket-login-company strong {
+    margin-top: 0.1rem;
+    color: #fff;
+    font-size: 0.93rem;
+    font-weight: 650;
+}
+
+.pocket-login-main {
+    display: flex;
+    min-width: 0;
+    align-items: center;
+    justify-content: center;
+    padding: clamp(2rem, 5vw, 5rem);
+    background:
+        radial-gradient(circle at 90% 10%, rgba(212, 168, 13, 0.08), transparent 25rem),
+        var(--pocket-background);
+}
+
+.pocket-login-form-wrap {
+    width: min(100%, 31rem);
+}
+
+.pocket-login-mobile-brand {
+    display: none;
+}
+
+.pocket-login-access-mark {
+    display: inline-flex;
+    width: 52px;
+    height: 52px;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1.4rem;
+    border: 1px solid rgba(212, 168, 13, 0.25);
+    border-radius: 15px;
+    color: var(--pocket-gold-dark);
+    background: rgba(239, 200, 71, 0.18);
+    font-size: 1.35rem;
+}
+
+.pocket-login-form-wrap h2 {
+    margin: 0;
+    color: var(--pocket-ink);
+    font-size: clamp(2rem, 3.2vw, 2.65rem);
+    font-weight: 700;
+    letter-spacing: -0.045em;
+    line-height: 1.08;
+}
+
+.pocket-login-lead {
+    margin: 0.8rem 0 2.1rem;
+    color: var(--pocket-muted);
+    font-size: 0.96rem;
+    line-height: 1.55;
+}
+
+.pocket-login-form {
+    display: grid;
+    gap: 1.2rem;
+}
+
+.pocket-login-field label {
+    display: block;
+    margin: 0 0 0.48rem;
+    color: var(--pocket-ink);
+    font-size: 0.79rem;
+    font-weight: 700;
+}
+
+.pocket-login-control {
+    position: relative;
+}
+
+.pocket-login-control > i {
+    position: absolute;
+    top: 50%;
+    left: 1rem;
+    z-index: 3;
+    color: #8a877e;
+    font-size: 1.2rem;
+    pointer-events: none;
+    transform: translateY(-50%);
+}
+
+.pocket-login-control .form-control,
+.pocket-login-control .form-select {
+    width: 100%;
+    min-height: 52px;
+    border: 1px solid var(--pocket-border);
+    border-radius: 11px;
+    color: var(--pocket-ink);
+    background-color: var(--pocket-surface);
+    box-shadow: 0 3px 10px rgba(41, 40, 34, 0.025);
+    font-size: 0.96rem;
+    transition: border-color 150ms ease, box-shadow 150ms ease, background-color 150ms ease;
+}
+
+.pocket-login-control .form-control {
+    padding: 0.75rem 3rem;
+}
+
+.pocket-login-control .form-select {
+    padding-top: 0.75rem;
+    padding-right: 2.7rem;
+    padding-bottom: 0.75rem;
+    padding-left: 3rem;
+}
+
+.pocket-login-control .form-control::placeholder {
+    color: #a4a198;
+}
+
+.pocket-login-control .form-control:hover,
+.pocket-login-control .form-select:hover {
+    border-color: #c4b889;
+}
+
+.pocket-login-control .form-control:focus,
+.pocket-login-control .form-select:focus {
+    border-color: var(--pocket-gold);
+    background-color: #fff;
+    box-shadow: 0 0 0 4px rgba(212, 168, 13, 0.13);
+}
+
+.pocket-login-password .form-control {
+    padding-right: 3.5rem;
+}
+
+.pocket-login-password-toggle {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    z-index: 4;
+    display: inline-flex;
+    width: 44px;
+    height: 44px;
+    align-items: center;
+    justify-content: center;
+    border: 0;
+    border-radius: 9px;
+    color: #77746c;
+    background: transparent;
+    font-size: 1.25rem;
+    cursor: pointer;
+}
+
+.pocket-login-password-toggle:hover {
+    color: var(--pocket-gold-dark);
+    background: rgba(212, 168, 13, 0.1);
+}
+
+.pocket-login-password-toggle:focus-visible {
+    outline: 3px solid rgba(212, 168, 13, 0.25);
+    outline-offset: 0;
+}
+
+.pocket-login-submit {
+    display: inline-flex;
+    width: 100%;
+    min-height: 52px;
+    align-items: center;
+    justify-content: center;
+    margin-top: 0.45rem;
+    border: 1px solid #8b6900;
+    border-radius: 11px;
+    color: #fff;
+    background: linear-gradient(135deg, #b98b00 0%, #d7aa12 55%, #bd8c00 100%);
+    box-shadow: 0 12px 24px rgba(159, 118, 0, 0.22);
+    font-size: 0.98rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 150ms ease, box-shadow 150ms ease, filter 150ms ease;
+}
+
+.pocket-login-submit:hover {
+    color: #fff;
+    box-shadow: 0 15px 28px rgba(159, 118, 0, 0.3);
+    filter: brightness(1.04);
+    transform: translateY(-1px);
+}
+
+.pocket-login-submit:focus-visible {
+    outline: 4px solid rgba(212, 168, 13, 0.25);
+    outline-offset: 3px;
+}
+
+.pocket-login-submit:disabled {
+    cursor: wait;
+    filter: saturate(0.72);
+    opacity: 0.82;
+    transform: none;
+}
+
+.pocket-login-button-text,
+.pocket-login-button-loading {
+    align-items: center;
+    justify-content: center;
+    gap: 0.55rem;
+}
+
+.pocket-login-button-text:not([hidden]),
+.pocket-login-button-loading:not([hidden]) {
+    display: inline-flex;
+}
+
+.pocket-login-button-text i {
+    font-size: 1.25rem;
+}
+
+.pocket-login-meta {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.45rem;
+    margin-top: 1.5rem;
+    color: #929087;
+    font-size: 0.72rem;
+    text-align: center;
+}
+
+.pocket-login-meta span:first-child {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+.pocket-login-meta i {
+    color: #4b9c66;
+    font-size: 0.9rem;
+}
+
+@media (max-width: 991.98px) {
+    .pocket-login-shell {
+        display: block;
+    }
+
+    .pocket-login-hero {
+        display: none;
+    }
+
+    .pocket-login-main {
+        min-height: 100vh;
+        min-height: 100dvh;
+        padding: max(1.5rem, env(safe-area-inset-top)) max(1.25rem, env(safe-area-inset-right)) max(1.5rem, env(safe-area-inset-bottom)) max(1.25rem, env(safe-area-inset-left));
+    }
+
+    .pocket-login-form-wrap {
+        width: min(100%, 32rem);
+    }
+
+    .pocket-login-mobile-brand {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: clamp(2rem, 8vh, 4.5rem);
+    }
+
+    .pocket-login-mobile-brand .pocket-login-brand-copy strong {
+        color: var(--pocket-ink);
+    }
+
+    .pocket-login-mobile-ca {
+        width: 44px;
+        height: 44px;
+        padding: 3px;
+        border: 1px solid rgba(159, 118, 0, 0.2);
+        border-radius: 50%;
+        background: var(--pocket-gold-bright);
+        object-fit: contain;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .pocket-login-main {
+        align-items: flex-start;
+        padding: max(1.15rem, env(safe-area-inset-top)) max(1rem, env(safe-area-inset-right)) max(1.25rem, env(safe-area-inset-bottom)) max(1rem, env(safe-area-inset-left));
+    }
+
+    .pocket-login-form-wrap {
+        max-width: 29rem;
+        margin: auto;
+    }
+
+    .pocket-login-mobile-brand {
+        margin-bottom: clamp(1.6rem, 6vh, 3rem);
+    }
+
+    .pocket-login-geco-logo {
+        width: 42px;
+        height: 42px;
+        flex-basis: 42px;
+        border-radius: 11px;
+    }
+
+    .pocket-login-brand-copy strong {
+        font-size: 1.17rem;
+    }
+
+    .pocket-login-access-mark {
+        width: 46px;
+        height: 46px;
+        margin-bottom: 1.1rem;
+        border-radius: 13px;
+    }
+
+    .pocket-login-form-wrap h2 {
+        font-size: clamp(1.75rem, 8vw, 2.15rem);
+    }
+
+    .pocket-login-lead {
+        margin-bottom: 1.6rem;
+        font-size: 0.9rem;
+    }
+
+    .pocket-login-form {
+        gap: 1rem;
+    }
+
+    .pocket-login-control .form-control,
+    .pocket-login-control .form-select,
+    .pocket-login-submit {
+        min-height: 50px;
+    }
+
+    .pocket-login-password-toggle {
+        top: 3px;
+    }
+}
+
+@media (max-height: 680px) and (max-width: 991.98px) {
+    .pocket-login-main {
+        align-items: flex-start;
+    }
+
+    .pocket-login-mobile-brand {
+        margin-bottom: 1.35rem;
+    }
+
+    .pocket-login-access-mark {
+        display: none;
+    }
+
+    .pocket-login-lead {
+        margin-bottom: 1.2rem;
+    }
+
+    .pocket-login-form {
+        gap: 0.85rem;
+    }
+
+    .pocket-login-meta {
+        margin-top: 1rem;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .pocket-login-control .form-control,
+    .pocket-login-control .form-select,
+    .pocket-login-submit {
+        transition: none;
+    }
+}

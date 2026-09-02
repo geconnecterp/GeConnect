@@ -156,8 +156,7 @@ function btnCancelValidar() {
 					data: data,
 					success: function (obj) {
 						response($.map(obj, function (item) {
-							var texto = item.descripcion;
-							return { label: texto, value: item.descripcion, id: item.id, prov: item.provId };
+							return normalizarClienteAutocomplete(item);
 						}));
 					}
 				})
@@ -171,6 +170,7 @@ function btnCancelValidar() {
 				return true;
 			}
 		});
+		aplicarRenderClienteAutocomplete($("#txtCliente"));
 	});
 }
 
@@ -265,8 +265,7 @@ $("#txtCliente").autocomplete({
 			data: data,
 			success: function (obj) {
 				response($.map(obj, function (item) {
-					var texto = item.descripcion;
-					return { label: texto, value: item.descripcion, id: item.id, prov: item.provId };
+					return normalizarClienteAutocomplete(item);
 				}));
 			}
 		})
@@ -280,3 +279,4 @@ $("#txtCliente").autocomplete({
 		return true;
 	}
 });
+aplicarRenderClienteAutocomplete($("#txtCliente"));

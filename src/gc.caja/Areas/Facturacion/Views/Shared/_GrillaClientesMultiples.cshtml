@@ -1,8 +1,9 @@
-﻿@model GridCoreSmart<CuentaBusquedaResultadoDto>
+@model GridCoreSmart<CuentaBusquedaResultadoDto>
 
 @{
-    var hasData = Model?.ListaDatos?.Any() == true;
-    var totalRegistros = hasData ? Model.ListaDatos.Count() : 0;
+    var listaDatos = Model?.ListaDatos ?? Enumerable.Empty<CuentaBusquedaResultadoDto>();
+    var hasData = listaDatos.Any();
+    var totalRegistros = listaDatos.Count();
 
     // ═══════════════════════════════════════════════════════════
     // ✅ NUEVO v1.0: FUNCIÓN HELPER PARA DETERMINAR CLASE CSS
@@ -76,7 +77,7 @@
                     @if (hasData)
                     {
                         var index = 0;
-                        foreach (var item in Model.ListaDatos)
+                        foreach (var item in listaDatos)
                         {
                             index++;
                             var rowClass = (index % 2 == 0) ? "" : "alt";

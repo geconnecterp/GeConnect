@@ -1,0 +1,306 @@
+:root {
+    --rpr-gold: #d4a80d;
+    --rpr-gold-bright: #efc847;
+    --rpr-gold-dark: #9f7600;
+    --rpr-charcoal: #292822;
+    --rpr-text: #4a4942;
+    --rpr-muted: #77756d;
+    --rpr-border: #dedbd1;
+    --rpr-surface: #ffffff;
+}
+
+.rpr-hub,
+.rpr-hub * {
+    text-transform: none !important;
+}
+
+.rpr-hub {
+    width: min(100%, 1120px);
+    margin: 0 auto;
+    padding: clamp(0.25rem, 2vw, 1rem) 0 1.5rem;
+    color: var(--rpr-text);
+}
+
+.rpr-hub-intro {
+    position: relative;
+    overflow: hidden;
+    padding: clamp(1.25rem, 3vw, 2rem);
+    border: 1px solid rgba(239, 200, 71, 0.18);
+    border-radius: 18px;
+    color: #fff;
+    background:
+        radial-gradient(circle at 92% 90%, rgba(239, 200, 71, 0.18), transparent 19rem),
+        linear-gradient(145deg, #25231e 0%, #363128 58%, #4a3b17 100%);
+    box-shadow: 0 14px 30px rgba(41, 40, 34, 0.14);
+}
+
+.rpr-hub-intro::before {
+    position: absolute;
+    inset: 0 0 auto;
+    height: 4px;
+    content: "";
+    background: linear-gradient(90deg, var(--rpr-gold-dark), var(--rpr-gold-bright), var(--rpr-gold-dark));
+}
+
+.rpr-hub-eyebrow {
+    display: block;
+    margin-bottom: 0.45rem;
+    color: var(--rpr-gold-bright);
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 0.16em;
+}
+
+.rpr-hub-intro h1 {
+    margin: 0;
+    color: #fff;
+    font-size: clamp(1.55rem, 3vw, 2.35rem);
+    font-weight: 720;
+    letter-spacing: -0.035em;
+    line-height: 1.08;
+}
+
+.rpr-hub-intro p {
+    max-width: 47rem;
+    margin: 0.7rem 0 0;
+    color: rgba(255, 255, 255, 0.74);
+    font-size: 0.88rem;
+    line-height: 1.5;
+}
+
+.rpr-hub-options {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.85rem;
+    margin-top: 1rem;
+}
+
+.rpr-hub-options--four {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.rpr-hub-card {
+    position: relative;
+    display: flex;
+    min-width: 0;
+    min-height: 210px;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 1.15rem;
+    border: 1px solid var(--rpr-border);
+    border-radius: 15px;
+    color: var(--rpr-text);
+    background: var(--rpr-surface);
+    box-shadow: 0 6px 18px rgba(41, 40, 34, 0.06);
+    text-decoration: none;
+    transition: border-color 150ms ease, box-shadow 150ms ease, transform 150ms ease;
+}
+
+.rpr-hub-card::before {
+    position: absolute;
+    inset: 0 0 auto;
+    height: 4px;
+    border-radius: 15px 15px 0 0;
+    content: "";
+    background: var(--rpr-option-color, var(--rpr-gold));
+}
+
+.rpr-hub-card:hover {
+    border-color: var(--rpr-option-color, var(--rpr-gold));
+    color: var(--rpr-text);
+    box-shadow: 0 12px 26px rgba(41, 40, 34, 0.12);
+    transform: translateY(-2px);
+}
+
+.rpr-hub-card:focus-visible {
+    color: var(--rpr-text);
+    outline: 4px solid rgba(212, 168, 13, 0.24);
+    outline-offset: 3px;
+}
+
+.rpr-hub-card-icon {
+    display: inline-flex;
+    width: 48px;
+    height: 48px;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(159, 118, 0, 0.18);
+    border-radius: 12px;
+    color: var(--rpr-gold-dark);
+    background: #faf5e6;
+    font-size: 1.45rem;
+}
+
+.rpr-hub-card-copy {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    margin-top: 0.9rem;
+}
+
+.rpr-hub-card-code {
+    color: var(--rpr-option-color, var(--rpr-gold-dark));
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+}
+
+.rpr-hub-card-copy strong {
+    margin-top: 0.18rem;
+    color: var(--rpr-charcoal);
+    font-size: 1rem;
+    font-weight: 720;
+    line-height: 1.25;
+}
+
+.rpr-hub-card-description {
+    margin-top: 0.45rem;
+    color: var(--rpr-muted);
+    font-size: 0.76rem;
+    line-height: 1.45;
+}
+
+.rpr-hub-card-action {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    margin-top: auto;
+    padding-top: 0.85rem;
+    color: var(--rpr-gold-dark);
+    font-size: 0.73rem;
+    font-weight: 750;
+}
+
+.rpr-hub-card-action i {
+    font-size: 1rem;
+    transition: transform 150ms ease;
+}
+
+.rpr-hub-card:hover .rpr-hub-card-action i {
+    transform: translateX(2px);
+}
+
+.rpr-hub-help,
+.rpr-hub-empty {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.55rem;
+    margin-top: 1rem;
+    padding: 0.85rem 1rem;
+    border: 1px solid #e6dfc8;
+    border-radius: 12px;
+    color: #6f6547;
+    background: #fbf8ed;
+    font-size: 0.76rem;
+    line-height: 1.45;
+}
+
+.rpr-hub-help i,
+.rpr-hub-empty i {
+    flex: 0 0 auto;
+    color: var(--rpr-gold-dark);
+    font-size: 1.05rem;
+}
+
+.rpr-hub-empty {
+    min-height: 150px;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    text-align: center;
+}
+
+.rpr-hub-empty span {
+    color: var(--rpr-muted);
+}
+
+@media (max-width: 991.98px) {
+    .rpr-hub-options--four {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 767.98px) {
+    .rpr-hub {
+        padding-top: 0;
+    }
+
+    .rpr-hub-intro {
+        border-radius: 15px;
+    }
+
+    .rpr-hub-options {
+        grid-template-columns: 1fr;
+        gap: 0.7rem;
+    }
+
+    .rpr-hub-card {
+        min-height: 118px;
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr) auto;
+        align-items: center;
+        gap: 0.8rem;
+        padding: 0.9rem;
+    }
+
+    .rpr-hub-card-copy {
+        margin-top: 0;
+    }
+
+    .rpr-hub-card-description {
+        display: -webkit-box;
+        overflow: hidden;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 2;
+    }
+
+    .rpr-hub-card-action {
+        align-self: center;
+        padding: 0;
+        font-size: 0;
+    }
+
+    .rpr-hub-card-action i {
+        font-size: 1.25rem;
+    }
+}
+
+@media (max-width: 420px) {
+    .rpr-hub-intro {
+        padding: 1.15rem;
+    }
+
+    .rpr-hub-intro p {
+        font-size: 0.78rem;
+    }
+
+    .rpr-hub-card {
+        min-height: 112px;
+        gap: 0.65rem;
+    }
+
+    .rpr-hub-card-icon {
+        width: 42px;
+        height: 42px;
+        font-size: 1.25rem;
+    }
+
+    .rpr-hub-card-copy strong {
+        font-size: 0.88rem;
+    }
+
+    .rpr-hub-card-description {
+        font-size: 0.68rem;
+    }
+
+    .rpr-hub-help {
+        font-size: 0.69rem;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .rpr-hub-card,
+    .rpr-hub-card-action i {
+        transition: none;
+    }
+}

@@ -12,7 +12,7 @@ namespace gc.pocket.site.Areas.Gestion.Controllers
     public class AlmacenController : ControladorBase
     {
         private readonly MenuSettings _menuSettings;
-        private readonly ILogger<AlmacenController> _logger;
+        private new readonly ILogger<AlmacenController> _logger;
 
         public AlmacenController(ILogger<AlmacenController> logger, IOptions<MenuSettings> options,
             IOptions<AppSettings> options1, IHttpContextAccessor context) : base(options1, options, context, logger)
@@ -34,7 +34,7 @@ namespace gc.pocket.site.Areas.Gestion.Controllers
             var sigla = "rpr";
             var modulo = _menuSettings.Aplicaciones.SingleOrDefault(x => x.Sigla.Equals(sigla, StringComparison.OrdinalIgnoreCase));
             string? volver = Url.Action("index", "home", new { area = "" });           
-            ViewBag.AppItem = new AppItem { Nombre = modulo.Nombre, VolverUrl = volver ?? "#" };
+            ViewBag.AppItem = new AppItem { Nombre = modulo!.Nombre, VolverUrl = volver ?? "#" };
             return View("gen", modulo); //GEN HAY QUE UTILIZARLO CUANDO SE TIENE SECCIONES VARIAS EN EL MISMO "MODULO"
         }
 
@@ -85,7 +85,7 @@ namespace gc.pocket.site.Areas.Gestion.Controllers
             var sigla = "rti";
             var modulo = _menuSettings.Aplicaciones.SingleOrDefault(x => x.Sigla.Equals(sigla, StringComparison.OrdinalIgnoreCase));
             string? volver = Url.Action("index", "home", new { area = "" });
-            ViewBag.AppItem = new AppItem { Nombre = modulo.Nombre, VolverUrl = volver ?? "#" };
+            ViewBag.AppItem = new AppItem { Nombre = modulo!.Nombre, VolverUrl = volver ?? "#" };
             return View("gen", modulo);
         }
         [HttpGet]

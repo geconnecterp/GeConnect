@@ -325,8 +325,7 @@ function inicializarCamposEnModal() {
 					data: data,
 					success: function (obj) {
 						response($.map(obj, function (item) {
-							var texto = item.descripcion;
-							return { label: texto, value: item.descripcion, id: item.id, prov: item.provId };
+							return normalizarClienteAutocomplete(item);
 						}));
 					}
 				})
@@ -339,6 +338,7 @@ function inicializarCamposEnModal() {
 				return true;
 			}
 		});
+		aplicarRenderClienteAutocomplete($(this));
 	});
 
 	// 🧠 Lista ordenada manualmente

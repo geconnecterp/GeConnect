@@ -2,8 +2,64 @@
 @{
     Layout = "~/areas/gestion/views/shared/_LayoutGestion.cshtml";
 }
-<div class="container">
-    @{
-        await Html.RenderPartialAsync("~/views/shared/_menuprint.cshtml", Model);
+<section class="rpr-hub" aria-labelledby="infoHubTitle">
+    <header class="rpr-hub-intro">
+        <span class="rpr-hub-eyebrow">CONSULTAS OPERATIVAS</span>
+        <h1 id="infoHubTitle">¿Qué información necesita consultar?</h1>
+        <p>Acceda a la información operativa de productos, depósitos, boxes y unidades logísticas.</p>
+    </header>
+
+    @if (Model.Aplicaciones.Count > 0)
+    {
+        <nav class="rpr-hub-options rpr-hub-options--four" aria-label="Consultas de almacén">
+            @foreach (var item in Model.Aplicaciones.OrderBy(aplicacion => aplicacion.Orden))
+            {
+                var esProducto = item.Sigla.Equals("PRODUCTO", StringComparison.OrdinalIgnoreCase);
+                var esDeposito = item.Sigla.Equals("DEPO", StringComparison.OrdinalIgnoreCase);
+                var esBox = item.Sigla.Equals("BOX", StringComparison.OrdinalIgnoreCase);
+                var icono = esProducto ? "bx-package" : esDeposito ? "bx-buildings" : esBox ? "bx-box" : "bx-barcode-reader";
+                var descripcion = esProducto
+                    ? "Consulte datos, existencias, precios y movimientos de un producto."
+                    : esDeposito
+                        ? "Revise existencias y disponibilidad de mercadería por depósito."
+                        : esBox
+                            ? "Consulte el estado, contenido y movimientos asociados a un BOX."
+                            : "Busque y consulte el detalle de una unidad logística.";
+
+                <a asp-action="@item.Action"
+                   asp-controller="@item.Controller"
+                   asp-area="@item.Area"
+                   class="rpr-hub-card"
+                   style="--rpr-option-color: @item.Color"
+                   title="@item.Nombre"
+                   aria-label="@item.Nombre. @descripcion">
+                    <span class="rpr-hub-card-icon" aria-hidden="true"><i class="bx @icono"></i></span>
+                    <span class="rpr-hub-card-copy">
+                        <span class="rpr-hub-card-code">@item.Sigla</span>
+                        <strong>@item.Nombre</strong>
+                        <span class="rpr-hub-card-description">@descripcion</span>
+                    </span>
+                    <span class="rpr-hub-card-action" aria-hidden="true">Ingresar <i class="bx bx-right-arrow-alt"></i></span>
+                </a>
+            }
+        </nav>
     }
-</div>
+    else
+    {
+        <div class="rpr-hub-empty" role="status">
+            <i class="bx bx-info-circle" aria-hidden="true"></i>
+            <strong>No hay consultas habilitadas.</strong>
+            <span>Consulte con el administrador si considera que debería tener acceso.</span>
+        </div>
+    }
+
+    <aside class="rpr-hub-help" aria-label="Referencia de consultas operativas">
+        <i class="bx bx-info-circle" aria-hidden="true"></i>
+        <span>Las consultas son de solo acceso operativo y respetan los permisos asignados a su usuario.</span>
+    </aside>
+</section>
+
+@section styles {
+    <link rel="stylesheet" href="~/css/pages/rpr-hub.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/pocket-modern.css" asp-append-version="true" />
+}

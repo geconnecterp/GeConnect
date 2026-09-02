@@ -339,12 +339,18 @@ namespace gc.sitio.Areas.Financieros.Controllers
 		}
 
 		[HttpPost]
-		public JsonResult BuscarClientes(string prefix)
-		{
-			var top = ClientesLista.Where(x => x.Cta_Denominacion.ToUpperInvariant().Contains(prefix.ToUpperInvariant()));
-			var tipos = top.Select(x => new ComboGenDto { Id = x.Cta_Id, Descripcion = $"{x.Cta_Denominacion} ({x.Cta_Id})" });
-			return Json(tipos);
-		}
+        public JsonResult BuscarClientes(string prefix)
+        {
+            var top = ClientesLista.Where(x => x.Cta_Denominacion.ToUpperInvariant().Contains(prefix.ToUpperInvariant()));
+            var tipos = top.Select(x => new
+            {
+                Id = x.Cta_Id,
+                Descripcion = $"{x.Cta_Denominacion} ({x.Cta_Id})",
+                TipoDesc = x.Tipo_Desc,
+                Tipo = x.Tipo
+            });
+            return Json(tipos);
+        }
 
 		#region Clases auxiliares
 		public class AnticipoParaCarga

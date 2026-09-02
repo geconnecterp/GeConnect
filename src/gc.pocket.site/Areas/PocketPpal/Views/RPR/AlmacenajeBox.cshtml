@@ -53,13 +53,14 @@
     <!-- ✅ BOTONES DE ACCIÓN -->
     <div class="row mb-3">
         <div class="col-12">
-            <div class="d-flex justify-content-center gap-2">
+            <div class="pocket-action-dock">
                 <a asp-action="producto" 
                    asp-controller="infoprod" 
                    asp-area="pocketppal" 
                    asp-route-callback="@callback" 
-                   title="Info Producto"
-                   class="btn btn-info btn-sm">
+                   title="Información de producto"
+                   aria-label="Consultar información de producto"
+                   class="btn btn-info btn-sm pocket-action-dock__button">
                     <i class="bx bx-info-circle me-1"></i>@*  *@
                 </a>
               @*   <button type="button" 
@@ -71,7 +72,8 @@
                         disabled 
                         id="btnConfirmar" 
                         title="Confirmar"
-                        class="btn btn-success btn-sm">
+                        aria-label="Confirmar almacenaje"
+                        class="btn btn-success btn-sm pocket-action-dock__button">
                     <i class="bx bx-check me-1"></i>
                 </button>
             </div>

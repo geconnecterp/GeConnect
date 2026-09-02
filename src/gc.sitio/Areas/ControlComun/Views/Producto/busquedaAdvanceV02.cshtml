@@ -89,44 +89,40 @@
                             </div>
                         </div>
                         
-                        <div class="row g-2 mt-2">
-                            <div class="col-md-8">
-                                <div class="input-group input-group-sm">
-                                    <span class="input-group-text">Buscar</span>
-                                    <input type="text" class="form-control inputEditable" name="Search" id="Search" 
-                                           placeholder="Ingrese texto a buscar..." />
-                                </div>
+                        <div class="busqueda-productos-toolbar mt-2">
+                            <div class="input-group input-group-sm busqueda-productos-search">
+                                <span class="input-group-text">Buscar</span>
+                                <input type="text" class="form-control inputEditable" name="Search" id="Search"
+                                       placeholder="Ingrese texto a buscar..." />
                             </div>
-                            <div class="col-md-4 text-end">
-                                <button type="button" class="btn btn-success btn-sm d-inline-flex align-items-center" id="btnBuscarProd">
-                                    <i class="bx bx-search me-1"></i>
-                                    <span>Buscar</span>
-                                    <span id="spnBuscarProd" class="spinner-border spinner-border-sm ms-2 d-none" role="status" aria-hidden="true"></span>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
 
-                <!-- Sección de selección múltiple -->
-                <div id="seccionSeleccionMultiple" class="card card-golden-subtle mb-3" style="display: none;">
-                    <div class="card-body p-2">
-                        <div class="row align-items-center">
-                            <div class="col-md-8">
-                                <div class="d-flex align-items-center">
-                                    <i class="bx bx-check-square text-success me-2"></i>
-                                    <span class="fw-medium text-success">
-                                        <span id="contadorSeleccionados">0</span> productos seleccionados
-                                    </span>
+                            <button type="button"
+                                    class="btn btn-success btn-sm busqueda-productos-action"
+                                    id="btnBuscarProd">
+                                <i class="bx bx-search me-1"></i>
+                                <span>Buscar</span>
+                                <span id="spnBuscarProd" class="spinner-border spinner-border-sm ms-2 d-none" role="status" aria-hidden="true"></span>
+                            </button>
+
+                            <div id="seccionSeleccionMultiple" class="busqueda-productos-selection" style="display: none;">
+                                <div class="busqueda-productos-selection-inner">
+                                    <div class="busqueda-productos-counter">
+                                        <i class="bx bx-check-square text-success me-1"></i>
+                                        <span class="fw-medium text-success">
+                                            <span id="contadorSeleccionados">0</span> productos seleccionados
+                                        </span>
+                                    </div>
+                                    <button type="button"
+                                            id="btnAgregarSeleccionados"
+                                            class="btn btn-primary btn-sm busqueda-productos-action">
+                                        <i class="bx bx-plus-circle me-1"></i>Agregar Seleccionados
+                                    </button>
+                                    <button type="button"
+                                            id="btnLimpiarSeleccionBusqueda"
+                                            class="btn btn-outline-warning btn-sm busqueda-productos-action">
+                                        <i class="bx bx-refresh me-1"></i>Limpiar
+                                    </button>
                                 </div>
-                            </div>
-                            <div class="col-md-4 text-end">
-                                <button type="button" id="btnAgregarSeleccionados" class="btn btn-primary btn-sm me-2">
-                                    <i class="bx bx-plus-circle me-1"></i>Agregar Seleccionados
-                                </button>
-                                <button type="button" id="btnLimpiarSeleccionBusqueda" class="btn btn-outline-warning btn-sm">
-                                    <i class="bx bx-refresh me-1"></i>Limpiar
-                                </button>
                             </div>
                         </div>
                     </div>

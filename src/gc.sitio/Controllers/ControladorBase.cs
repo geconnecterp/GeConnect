@@ -2941,7 +2941,12 @@ namespace gc.sitio.Controllers
             //var nombres = await _provSv.BuscarAsync(new QueryFilters { Search = prefix }, TokenCookie);
             //var lista = nombres.Item1.Select(c => new EmpleadoVM { Nombre = c.NombreCompleto, Id = c.Id, Cuil = c.CUIT });
             var prov = ProveedoresLista.Where(x => x.Cta_Lista.ToUpperInvariant().Contains(prefix.ToUpperInvariant()));
-            var proveedores = prov.Select(x => new ComboGenDto { Id = x.Cta_Id, Descripcion = $"{x.Cta_Lista}#{x.Tipo_Desc}" });
+            var proveedores = prov.Select(x => new ProveedorAutocompleteDto
+            {
+                Id = x.Cta_Id,
+                Descripcion = $"{x.Cta_Lista}#{x.Tipo_Desc}",
+                TipoDesc = x.Tipo_Desc
+            });
             return Json(proveedores);
         }
 
@@ -2959,7 +2964,14 @@ namespace gc.sitio.Controllers
         public JsonResult BuscarCuentas(string prefix)
         {
             var cta = CuentasLista.Where(x => x.Cta_Denominacion.ToUpperInvariant().Contains(prefix.ToUpperInvariant()));
-            var cuentas = cta.Select(x => new ComboGenDto { Id = x.Cta_Id, Descripcion = $"{x.Cta_Denominacion} ({x.Cta_Id}) {x.Tipo_Desc}" });
+            var cuentas = cta.Select(x => new
+            {
+                Id = x.Cta_Id,
+                // Se conserva el texto histórico para no alterar consumidores existentes.
+                Descripcion = $"{x.Cta_Denominacion} ({x.Cta_Id}) {x.Tipo_Desc}",
+                TipoDesc = x.Tipo_Desc,
+                Tipo = x.Tipo
+            });
             return Json(cuentas);
         }
 
