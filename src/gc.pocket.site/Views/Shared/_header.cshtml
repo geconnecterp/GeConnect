@@ -1,23 +1,42 @@
-﻿<nav class="layout-navbar container-xxl navbar navbar-expand-xl navbar-detached align-items-center bg-navbar-theme "
-     id="layout-navbar">
-    <div class="layout-menu-toggle navbar-nav align-items-xl-center me-3 me-xl-0 d-xl-none">
-        <a class="nav-item nav-link px-0 me-xl-4">
-            <i class="bx bx-menu bx-sm"></i> 
+@{
+    var autenticado = User.Identity?.IsAuthenticated == true;
+    var sucursal = string.Empty;
+
+    if (autenticado)
+    {
+        var administracionClaim = User.Claims.First(c => c.Type.Contains("AdmId")).Value;
+        var administracionPartes = administracionClaim.Split("#");
+        sucursal = administracionPartes.Length > 1 ? administracionPartes[1] : administracionClaim;
+    }
+}
+
+<header class="pocket-app-header">
+    <nav class="pocket-app-navbar container-xxl" aria-label="Navegación principal">
+        <a asp-action="Index"
+           asp-controller="Home"
+           asp-area=""
+           class="pocket-app-brand"
+           aria-label="Ir al inicio de GECONet Pocket">
+            <img src="~/img/gc.png" alt="" />
+            <span>
+                <strong>GECONet</strong>
+                <small>POCKET</small>
+            </span>
         </a>
-    </div>
-    <div class="navbar-nav-right d-flex align-content-center">
-        <h4>GECONet</h4>
-    </div>
-    <div class="navbar-nav-right d-flex align-items-center" id="navbar-collapse">
-        <ul class="navbar-nav flex-row align-items-center ms-auto">
-            @if (User.Identity.IsAuthenticated)
+
+        <div class="pocket-app-nav-actions">
+            @if (autenticado)
             {
+                <span class="pocket-app-branch" title="Sucursal @sucursal">
+                    <i class="bx bx-building" aria-hidden="true"></i>
+                    <span>Sucursal @sucursal</span>
+                </span>
                 <partial name="_loginAuth" />
             }
             else
             {
                 <partial name="_loginBlank" />
             }
-        </ul>
-    </div>
-</nav>
+        </div>
+    </nav>
+</header>

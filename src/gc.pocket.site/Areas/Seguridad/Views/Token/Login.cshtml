@@ -1,135 +1,194 @@
-﻿<!DOCTYPE html>
-<html lang="es" class="light-style layout-wide customizer-hide" dir="ltr">
+<!DOCTYPE html>
+<html lang="es" class="light-style" dir="ltr">
 <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
-    <title>Autenticación - GECONet POCKET</title>
-    <meta name="description" content="Sistema de gestión y control de almacenamientos GECONet" />
-    
-    <!-- Favicon -->
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Acceso - GECONet Pocket</title>
+    <meta name="description" content="Acceso seguro a GECONet Pocket de Café América" />
+    <meta name="theme-color" content="#2b2822" />
+
     <link rel="icon" type="image/x-icon" href="~/favicon.ico" />
-    
-    <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&display=swap" rel="stylesheet" />
-    
-    <!-- Icons -->
     <link rel="stylesheet" href="~/fonts/boxicons.css" />
-    
-    <!-- Core CSS -->
-    <link rel="stylesheet" href="~/css/extra.css" class="template-customizer-core-css" />
-    <link rel="stylesheet" href="~/css/core.css" class="template-customizer-core-css" />
-    <link rel="stylesheet" href="~/css/theme-default.css" class="template-customizer-theme-css" />
-    <link rel="stylesheet" href="~/css/golden-overlay.css" asp-append-version="true" />
-    
-    <!-- Vendors CSS -->
-    <link rel="stylesheet" href="~/lib/perfect-scrollbar/perfect-scrollbar.css" />
+    <link rel="stylesheet" href="~/css/extra.css" />
+    <link rel="stylesheet" href="~/css/core.css" />
+    <link rel="stylesheet" href="~/css/theme-default.css" />
     <link rel="stylesheet" href="~/lib/lobibox/css/lobibox.min.css" />
-    
-    <!-- Page CSS -->
-    <link rel="stylesheet" href="~/css/pages/page-auth.css" />
-    
-    <!-- Helpers -->
-    <script src="~/js/helpers.js"></script>
-    <script src="~/js/config.js"></script>
+    <link rel="stylesheet" href="~/css/pages/login-pocket.css" asp-append-version="true" />
 </head>
 
-<body class="auth-golden">
-    <!-- Content -->
-    <div class="container-xxl authentication-wrapper authentication-wrapper-golden authentication-basic container-p-y" id="formulario" style="display:none">
-            <div class="authentication-inner">
-                <!-- Login Card -->
-                <div class="card card-golden-login fade-in">
-                    <div class="card-body">
-                        <!-- Logo -->
-                        <div class="app-brand-golden justify-content-center text-center">
-                            <a asp-action="Index" asp-controller="Home" asp-area="" class="app-brand-link gap-2">
-                                <i class="bx bx-store-alt text-golden" style="font-size: 2.5rem;"></i>
-                                <span class="app-brand-text">GECONet</span>
-                            </a>
-                        </div>
-                        <!-- /Logo -->
-                        
-                        <h4 class="login-title text-center">¡Bienvenido a Geco-Pocket! 👋</h4>
-                        <p class="login-subtitle text-center mb-3">Por favor, ingrese sus credenciales para continuar.</p>
-                        
-                        <div class="text-center">
-                            <span class="fecha-badge">
-                                <i class="bx bx-calendar"></i> @Model.FechaNN
+<body class="pocket-login-page">
+    <div id="formulario" class="pocket-login-stage" style="display:none">
+        <div class="pocket-login-shell">
+            <aside class="pocket-login-hero" aria-label="Presentación de GECONet Pocket">
+                <div class="pocket-login-hero-rings" aria-hidden="true"></div>
+
+                <header class="pocket-login-brand pocket-login-brand-light">
+                    <img src="~/img/gc.png" class="pocket-login-geco-logo" alt="" />
+                    <span class="pocket-login-brand-copy">
+                        <strong>GECONet</strong>
+                        <span>POCKET</span>
+                    </span>
+                </header>
+
+                <section class="pocket-login-hero-copy">
+                    <span class="pocket-login-eyebrow pocket-login-eyebrow-light">GESTIÓN OPERATIVA MÓVIL</span>
+                    <h1>Cada movimiento.<br />Bajo control.</h1>
+                    <p>La herramienta de trabajo para registrar operaciones de depósito con precisión, trazabilidad y seguridad.</p>
+                </section>
+
+                <footer class="pocket-login-company">
+                    <span class="pocket-login-company-logo">
+                        <img src="~/img/Circulo CA.svg" alt="" />
+                    </span>
+                    <span>
+                        <small>Una solución para</small>
+                        <strong>Café América</strong>
+                    </span>
+                </footer>
+            </aside>
+
+            <main class="pocket-login-main">
+                <div class="pocket-login-form-wrap">
+                    <header class="pocket-login-mobile-brand">
+                        <div class="pocket-login-brand">
+                            <img src="~/img/gc.png" class="pocket-login-geco-logo" alt="" />
+                            <span class="pocket-login-brand-copy">
+                                <strong>GECONet</strong>
+                                <span>POCKET</span>
                             </span>
                         </div>
-                        
-                        <form class="mb-3" asp-area="seguridad" asp-action="login" asp-controller="token" method="post">
-                            <div class="mb-3">
-                                <label for="Admid" class="form-label form-label-golden">
-                                    <i class="bx bx-building"></i> Administración
-                                </label>
-                                @Html.DropDownList("Admid", null, "Seleccione una administración...", new { @class = "form-select" })
+                        <img src="~/img/Circulo CA.svg" class="pocket-login-mobile-ca" alt="Café América" />
+                    </header>
+
+                    <div class="pocket-login-access-mark" aria-hidden="true">
+                        <i class="bx bx-lock-alt"></i>
+                    </div>
+                    <span class="pocket-login-eyebrow">BIENVENIDO</span>
+                    <h2 id="loginTitle">Ingresá a GECO Pocket</h2>
+                    <p class="pocket-login-lead">Seleccione la administración e ingrese sus credenciales para comenzar.</p>
+
+                    <form id="loginForm"
+                          class="pocket-login-form"
+                          asp-area="seguridad"
+                          asp-action="login"
+                          asp-controller="token"
+                          method="post"
+                          aria-labelledby="loginTitle">
+                        <div class="pocket-login-field">
+                            <label for="Admid">Administración</label>
+                            <div class="pocket-login-control">
+                                <i class="bx bx-building" aria-hidden="true"></i>
+                                @Html.DropDownList("Admid", null, "Seleccione una administración...", new
+                                {
+                                    @class = "form-select",
+                                    required = "required",
+                                    autocomplete = "organization",
+                                    aria_label = "Administración"
+                                })
                             </div>
-                            
-                            <div class="mb-3">
-                                <label for="UserName" class="form-label form-label-golden">
-                                    <i class="bx bx-user"></i> Usuario
-                                </label>
+                        </div>
+
+                        <div class="pocket-login-field">
+                            <label for="UserName">Usuario</label>
+                            <div class="pocket-login-control">
+                                <i class="bx bx-user" aria-hidden="true"></i>
                                 <input type="text"
                                        class="form-control"
                                        id="UserName"
                                        name="UserName"
                                        placeholder="Ingrese su usuario"
+                                       autocomplete="username"
+                                       autocapitalize="none"
+                                       spellcheck="false"
                                        autofocus
                                        required />
                             </div>
-                            
-                            <div class="mb-4 form-password-toggle">
-                                <label class="form-label form-label-golden" for="Password">
-                                    <i class="bx bx-lock-alt"></i> Contraseña
-                                </label>
-                                <div class="input-group input-group-merge">
-                                    <input type="password"
-                                           id="Password"
-                                           class="form-control"
-                                           name="Password"
-                                           placeholder="&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;"
-                                           aria-describedby="password"
-                                           required />
-                                    <span class="input-group-text input-group-text-golden cursor-pointer">
-                                        <i class="bx bx-hide"></i>
-                                    </span>
-                                </div>
-                            </div>
+                        </div>
 
-                            <div class="mb-3">
-                                <button class="btn btn-login-golden d-grid w-100" type="submit">
-                                    <i class="bx bx-log-in me-2"></i>Ingresar al Sistema
+                        <div class="pocket-login-field">
+                            <label for="Password">Contraseña</label>
+                            <div class="pocket-login-control pocket-login-password">
+                                <i class="bx bx-lock-alt" aria-hidden="true"></i>
+                                <input type="password"
+                                       class="form-control"
+                                       id="Password"
+                                       name="Password"
+                                       placeholder="Ingrese su contraseña"
+                                       autocomplete="current-password"
+                                       required />
+                                <button id="togglePassword"
+                                        class="pocket-login-password-toggle"
+                                        type="button"
+                                        aria-label="Mostrar contraseña"
+                                        aria-pressed="false">
+                                    <i class="bx bx-show" aria-hidden="true"></i>
                                 </button>
                             </div>
-                        </form>
-                    </div>
+                        </div>
+
+                        <button id="btnLogin" class="pocket-login-submit" type="submit">
+                            <span class="pocket-login-button-text">
+                                Ingresar
+                                <i class="bx bx-right-arrow-alt" aria-hidden="true"></i>
+                            </span>
+                            <span class="pocket-login-button-loading" hidden>
+                                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                                Validando acceso...
+                            </span>
+                        </button>
+                    </form>
+
+                    <footer class="pocket-login-meta">
+                        <span><i class="bx bx-shield-quarter" aria-hidden="true"></i> Acceso seguro</span>
+                        <span aria-hidden="true">•</span>
+                        <span>@Model.FechaNN</span>
+                    </footer>
                 </div>
-                <!-- /Login Card -->
-            </div>      
+            </main>
+        </div>
     </div>
-    <!-- / Content -->
-    
-    <!-- Core JS -->
+
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/popper.js/umd/popper.min.js"></script>
     <script src="~/lib/bootstrap/js/bootstrap.min.js"></script>
-    <script src="~/lib/perfect-scrollbar/perfect-scrollbar.js"></script>
     <script src="~/lib/lobibox/js/lobibox.min.js"></script>
     <script src="~/lib/lobibox/js/messageboxes.min.js"></script>
     <script src="~/lib/lobibox/js/notifications.min.js"></script>
-    
-    <!-- Main JS -->
-    <script src="~/js/site.js"></script>
-    
+    <script src="~/js/site.js" asp-append-version="true"></script>
+
     <script>
         var MensajeErrorTempData = '@TempData["error"]';
         var MensajeInfoTempData = '@TempData["info"]';
         var MensajeWarnTempData = '@TempData["warn"]';
         var MensajeSuccessTempData = '@TempData["succ"]';
         var MensajeBlock = "<h3><i class='bx bx-loader-circle bx-spin'></i> Por favor, espere...</h3>";
+
+        (function () {
+            var form = document.getElementById("loginForm");
+            var password = document.getElementById("Password");
+            var togglePassword = document.getElementById("togglePassword");
+            var loginButton = document.getElementById("btnLogin");
+
+            togglePassword?.addEventListener("click", function () {
+                var mostrar = password.type === "password";
+                password.type = mostrar ? "text" : "password";
+                togglePassword.setAttribute("aria-pressed", mostrar.toString());
+                togglePassword.setAttribute("aria-label", mostrar ? "Ocultar contraseña" : "Mostrar contraseña");
+                togglePassword.querySelector("i")?.classList.replace(mostrar ? "bx-show" : "bx-hide", mostrar ? "bx-hide" : "bx-show");
+                password.focus();
+            });
+
+            form?.addEventListener("submit", function () {
+                if (!loginButton || loginButton.disabled) {
+                    return;
+                }
+
+                loginButton.disabled = true;
+                loginButton.setAttribute("aria-busy", "true");
+                loginButton.querySelector(".pocket-login-button-text").hidden = true;
+                loginButton.querySelector(".pocket-login-button-loading").hidden = false;
+            });
+        })();
     </script>
 </body>
 </html>

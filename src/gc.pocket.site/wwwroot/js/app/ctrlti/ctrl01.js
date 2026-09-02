@@ -226,7 +226,7 @@ function verificaEstado(e) {
         $("#box").mask("000,000,000,000", { reverse: true });
 
         if (prod.up_id === "07") {  //unidades enteras
-            $("#unid").mask("000,000,000,000", { reverse: true });
+            ConfigurarEntradaCantidadProducto("#unid", prod.up_id, "ControlTI");
             $("#box").val(0).prop("disabled", false);            
         }
         else { //unidades decimales
@@ -234,7 +234,7 @@ function verificaEstado(e) {
             $("#up").val(1);
             $("#up").addClass("backReadOnly");
 
-            $("#unid").mask("000,000,000,000.000", { reverse: true });       
+            ConfigurarEntradaCantidadProducto("#unid", prod.up_id, "ControlTI");
         }
         $("#unid").val(0).prop("disabled", false);
        

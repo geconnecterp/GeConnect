@@ -1,10 +1,147 @@
 ﻿@model AppItem
 @{
     Layout = "~/areas/gestion/views/shared/_LayoutGestion.cshtml";
+    var esRpr = Model.Sigla.Equals("RPR", StringComparison.OrdinalIgnoreCase);
+    var esRti = Model.Sigla.Equals("RTI", StringComparison.OrdinalIgnoreCase);
+    var esCargaPrevia = Model.Sigla.Equals("CPREV", StringComparison.OrdinalIgnoreCase);
 }
-<div class="container">
-    @{
-        await Html.RenderPartialAsync("~/views/shared/_menuprint.cshtml", Model);
-    }
 
-</div>
+@if (esRpr || esRti)
+{
+    <section class="rpr-hub" aria-labelledby="rprHubTitle">
+        <header class="rpr-hub-intro">
+            <span class="rpr-hub-eyebrow">@(esRti ? "RECEPCIÓN DE TRANSFERENCIAS" : "RECEPCIÓN DE PROVEEDORES")</span>
+            <h1 id="rprHubTitle">¿Qué operación desea realizar?</h1>
+            <p>Seleccione una opción para continuar con la recepción, el almacenaje o la modificación de una unidad logística.</p>
+        </header>
+
+        @if (Model.Aplicaciones.Count > 0)
+        {
+            <nav class="rpr-hub-options" aria-label="@(esRti ? "Operaciones de recepción de transferencias" : "Operaciones de recepción de proveedores")">
+                @foreach (var item in Model.Aplicaciones.OrderBy(aplicacion => aplicacion.Orden))
+                {
+                    var sigla = item.Sigla.Trim().ToUpperInvariant();
+                    var icono = "bx-package";
+                    var descripcion = esRti
+                        ? "Acceda a la operación configurada para recepción de transferencias."
+                        : "Acceda a la operación configurada para recepción de proveedores.";
+
+                    if (sigla.Contains("ABOX"))
+                    {
+                        icono = "bx-cube";
+                        descripcion = "Valide la UL y registre su ubicación física dentro de un BOX.";
+                    }
+                    else if (sigla.Contains("MUL"))
+                    {
+                        icono = "bx-edit-alt";
+                        descripcion = "Consulte una recepción en curso y modifique el detalle de sus UL.";
+                    }
+                    else if (sigla.Contains("AP"))
+                    {
+                        descripcion = esRti
+                            ? "Seleccione una transferencia pendiente y cargue los productos recibidos."
+                            : "Seleccione una autorización pendiente y cargue los productos recibidos.";
+                    }
+
+                    <a asp-action="@item.Action"
+                       asp-controller="@item.Controller"
+                       asp-area="@item.Area"
+                       class="rpr-hub-card"
+                       style="--rpr-option-color: @item.Color"
+                       title="@item.Nombre"
+                       aria-label="@item.Nombre. @descripcion">
+                        <span class="rpr-hub-card-icon" aria-hidden="true"><i class="bx @icono"></i></span>
+                        <span class="rpr-hub-card-copy">
+                            <span class="rpr-hub-card-code">@item.Sigla</span>
+                            <strong>@item.Nombre</strong>
+                            <span class="rpr-hub-card-description">@descripcion</span>
+                        </span>
+                        <span class="rpr-hub-card-action" aria-hidden="true">Ingresar <i class="bx bx-right-arrow-alt"></i></span>
+                    </a>
+                }
+            </nav>
+        }
+        else
+        {
+            <div class="rpr-hub-empty" role="status">
+                <i class="bx bx-info-circle" aria-hidden="true"></i>
+                <strong>No hay operaciones @(esRti ? "RTI" : "RPR") habilitadas.</strong>
+                <span>Consulte con el administrador si considera que debería tener acceso.</span>
+            </div>
+        }
+
+        <aside class="rpr-hub-help" aria-label="Referencia del circuito @(esRti ? "RTI" : "RPR")">
+            <i class="bx bx-info-circle" aria-hidden="true"></i>
+            <span>El circuito habitual comienza con la recepción de productos, continúa con la generación de la UL y finaliza con su almacenaje en BOX.</span>
+        </aside>
+    </section>
+}
+else if (esCargaPrevia)
+{
+    <section class="rpr-hub" aria-labelledby="cprevHubTitle">
+        <header class="rpr-hub-intro">
+            <span class="rpr-hub-eyebrow">PREPARACIÓN DE OPERACIONES</span>
+            <h1 id="cprevHubTitle">¿Qué carga previa desea iniciar?</h1>
+            <p>Seleccione una operación para preparar ajustes de stock, devoluciones de proveedores o impresión de etiquetas.</p>
+        </header>
+
+        @if (Model.Aplicaciones.Count > 0)
+        {
+            <nav class="rpr-hub-options" aria-label="Operaciones de carga previa">
+                @foreach (var item in Model.Aplicaciones.OrderBy(aplicacion => aplicacion.Orden))
+                {
+                    var esAjuste = item.Sigla.Equals("ASTK", StringComparison.OrdinalIgnoreCase);
+                    var esDevolucion = item.Sigla.Equals("DevProv", StringComparison.OrdinalIgnoreCase);
+                    var icono = esAjuste ? "bx-adjust" : esDevolucion ? "bx-undo" : "bx-printer";
+                    var descripcion = esAjuste
+                        ? "Prepare y registre ajustes sobre las existencias de mercadería."
+                        : esDevolucion
+                            ? "Organice la mercadería que será devuelta a un proveedor."
+                            : "Genere las etiquetas necesarias para identificar la operación.";
+
+                    <a asp-action="@item.Action"
+                       asp-controller="@item.Controller"
+                       asp-area="@item.Area"
+                       class="rpr-hub-card"
+                       style="--rpr-option-color: @item.Color"
+                       title="@item.Nombre"
+                       aria-label="@item.Nombre. @descripcion">
+                        <span class="rpr-hub-card-icon" aria-hidden="true"><i class="bx @icono"></i></span>
+                        <span class="rpr-hub-card-copy">
+                            <span class="rpr-hub-card-code">@item.Sigla</span>
+                            <strong>@item.Nombre</strong>
+                            <span class="rpr-hub-card-description">@descripcion</span>
+                        </span>
+                        <span class="rpr-hub-card-action" aria-hidden="true">Ingresar <i class="bx bx-right-arrow-alt"></i></span>
+                    </a>
+                }
+            </nav>
+        }
+        else
+        {
+            <div class="rpr-hub-empty" role="status">
+                <i class="bx bx-info-circle" aria-hidden="true"></i>
+                <strong>No hay cargas previas habilitadas.</strong>
+                <span>Consulte con el administrador si considera que debería tener acceso.</span>
+            </div>
+        }
+
+        <aside class="rpr-hub-help" aria-label="Referencia de cargas previas">
+            <i class="bx bx-info-circle" aria-hidden="true"></i>
+            <span>Estas operaciones preparan la información que luego será validada o confirmada dentro de cada circuito.</span>
+        </aside>
+    </section>
+}
+else
+{
+    <div class="container">
+        @{
+            await Html.RenderPartialAsync("~/views/shared/_menuprint.cshtml", Model);
+        }
+    </div>
+}
+
+@section styles {
+    <link rel="stylesheet" href="~/css/pages/rpr-hub.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/pocket-modern.css" asp-append-version="true" />
+}

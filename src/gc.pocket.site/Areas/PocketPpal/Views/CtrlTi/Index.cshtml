@@ -3,20 +3,19 @@
     Layout = "~/areas/gestion/views/shared/_LayoutGestion.cshtml";
 }
 
-<div class="container-fluid py-3">
-    <div class="row mb-3 text-center">
+<section class="pocket-modern pocket-hub pocket-transfer-hub">
+    <div class="pocket-modern__intro">
         <div class="col-12">
-            <h3 class="text-golden-dark">
-                <i class="bx bx-check-shield"></i> Control de Salida de Transferencias
-            </h3>
-            <p class="text-muted mb-0">Seleccione el tipo de transferencia a controlar</p>
+            <span class="pocket-modern__eyebrow"><i class="bx bx-check-shield"></i> Control operativo</span>
+            <h1 class="pocket-modern__title">Control de salida de transferencias</h1>
+            <p class="pocket-modern__subtitle">Seleccione el circuito de origen para controlar la mercadería transferida.</p>
         </div>
     </div>
 
-    <div class="row g-3">
+    <div class="pocket-hub__grid">
         <div class="col-12 col-md-6">
             <a asp-action="CtrlTI_AU" asp-controller="ctrlti" asp-area="pocketppal" asp-route-titId="S"
-               class="card-golden text-decoration-none h-100 d-block">
+               class="card-golden pocket-action-card pocket-transfer-card text-decoration-none h-100 d-block">
                 <div class="card-golden-header">
                     <h5 class="mb-0"><i class="bx bx-building me-2"></i>Entre Sucursales</h5>
                 </div>
@@ -28,7 +27,7 @@
 
         <div class="col-12 col-md-6">
             <a asp-action="CtrlTI_AU" asp-controller="ctrlti" asp-area="pocketppal" asp-route-titId="D"
-               class="card-golden text-decoration-none h-100 d-block">
+               class="card-golden pocket-action-card pocket-transfer-card text-decoration-none h-100 d-block">
                 <div class="card-golden-header">
                     <h5 class="mb-0"><i class="bx bx-package me-2"></i>Entre Depósitos</h5>
                 </div>
@@ -38,4 +37,8 @@
             </a>
         </div>
     </div>
-</div>
+</section>
+
+@section styles {
+    <link rel="stylesheet" href="~/css/pocket-modern.css" asp-append-version="true" />
+}

@@ -15,6 +15,88 @@ function NormalizarNumeroEntrada(valor, contexto) {
     return normalizado;
 }
 
+// Regla común de cantidades de producto para GECO Pocket:
+// up_id 07 usa enteros; cualquier otro up_id admite punto decimal explícito
+// y hasta tres posiciones. La coma queda reservada para separar miles.
+function ConfigurarEntradaCantidadProducto(selector, upId, contexto) {
+    var $control = $(selector);
+    var permiteDecimales = String(upId || "").padStart(2, "0") !== "07";
+    var espacioEventos = ".cantidadProductoPocket";
+
+    if (typeof $control.unmask === "function") {
+        $control.unmask();
+    }
+
+    $control.off(espacioEventos);
+    $control.attr({
+        inputmode: permiteDecimales ? "decimal" : "numeric",
+        placeholder: permiteDecimales ? "0.000" : "0",
+        maxlength: permiteDecimales ? 19 : 15
+    });
+
+    $control.on("input" + espacioEventos, function () {
+        var valor = String(this.value || "").replace(/,/g, "");
+        var parteEntera;
+        var parteDecimal = "";
+
+        if (permiteDecimales) {
+            valor = valor.replace(/[^0-9.]/g, "");
+            var posicionPunto = valor.indexOf(".");
+
+            if (posicionPunto >= 0) {
+                parteEntera = valor.substring(0, posicionPunto);
+                parteDecimal = valor.substring(posicionPunto + 1).replace(/\./g, "").substring(0, 3);
+            }
+            else {
+                parteEntera = valor;
+            }
+
+            parteEntera = parteEntera.replace(/\D/g, "").substring(0, 12);
+            if (posicionPunto >= 0 && parteEntera.length === 0) {
+                parteEntera = "0";
+            }
+
+            this.value = parteEntera + (posicionPunto >= 0 ? "." + parteDecimal : "");
+            return;
+        }
+
+        this.value = valor.replace(/\D/g, "").substring(0, 12);
+    });
+
+    $control.on("blur" + espacioEventos, function () {
+        var valor = String(this.value || "").replace(/,/g, "");
+        if (valor === "") {
+            return;
+        }
+
+        var partes = valor.split(".");
+        var parteEntera = partes[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        this.value = parteEntera + (permiteDecimales && partes.length > 1 && partes[1] !== "" ? "." + partes[1] : "");
+    });
+
+    console.info("[Pocket][Cantidades][" + (contexto || "general") + "] Entrada configurada", {
+        selector: selector,
+        upId: upId,
+        permiteDecimales: permiteDecimales,
+        separadorDecimal: permiteDecimales ? "." : null,
+        decimalesMaximos: permiteDecimales ? 3 : 0
+    });
+}
+
+function FormatearCantidadProducto(valor, upId) {
+    var permiteDecimales = String(upId || "").padStart(2, "0") !== "07";
+    var numero = Number(NormalizarNumeroEntrada(valor, "FormatoCantidad"));
+
+    if (!Number.isFinite(numero)) {
+        return permiteDecimales ? "0.000" : "0";
+    }
+
+    return numero.toLocaleString("en-US", {
+        minimumFractionDigits: permiteDecimales ? 3 : 0,
+        maximumFractionDigits: permiteDecimales ? 3 : 0
+    });
+}
+
 estado = {
     inv_lista: '',
     inv_box: '',
@@ -282,7 +364,50 @@ function AceptarMensaje(Value) {
 
 var FunctionCallback = null;
 var FunctionCallBackExportar = null;
-function AbrirMensaje(Titulo, Mensaje, CallBack, EsConfirmacion, Botones, Tipo, CallBackExportar) {
+function ObtenerBotonPredeterminadoMensaje(preferencia) {
+    var selectores = {
+        aceptar: "#btnMensajeAceptar",
+        alternativa: "#btnMensajeAlternativa",
+        cancelar: "#btnMensajeCancelar"
+    };
+    var selector = selectores[(preferencia || "").toLowerCase()] || preferencia;
+    var boton = selector ? $(selector).filter(":visible:not(:disabled)").first() : $();
+
+    if (boton.length === 0) {
+        boton = $("#msjModal .modal-footer button:visible:not(:disabled)").first();
+    }
+    return boton;
+}
+
+function PrepararTecladoMensaje(botonPredeterminado) {
+    var modal = $("#msjModal");
+    modal.data("boton-predeterminado", botonPredeterminado || "aceptar");
+    modal.off("shown.bs.modal.mensajeFoco")
+        .one("shown.bs.modal.mensajeFoco", function () {
+            setTimeout(function () {
+                ObtenerBotonPredeterminadoMensaje(modal.data("boton-predeterminado")).trigger("focus");
+            }, 0);
+        });
+
+    modal.off("keydown.mensajeEnter")
+        .on("keydown.mensajeEnter", function (evento) {
+            if (evento.key !== "Enter" || evento.altKey || evento.ctrlKey || evento.metaKey || evento.shiftKey) {
+                return;
+            }
+
+            var boton = $(document.activeElement).filter("#msjModal button:visible:not(:disabled)");
+            if (boton.length === 0) {
+                boton = ObtenerBotonPredeterminadoMensaje(modal.data("boton-predeterminado"));
+            }
+            if (boton.length > 0) {
+                evento.preventDefault();
+                evento.stopPropagation();
+                boton.trigger("click");
+            }
+        });
+}
+
+function AbrirMensaje(Titulo, Mensaje, CallBack, EsConfirmacion, Botones, Tipo, CallBackExportar, BotonPredeterminado) {
     if (EsConfirmacion) {
         if (Botones.length > 2) {
             $("#btnMensajeAceptar").show();
@@ -371,6 +496,7 @@ function AbrirMensaje(Titulo, Mensaje, CallBack, EsConfirmacion, Botones, Tipo, 
         $("#btnMensajeCancelar").show();
     }
 
+    PrepararTecladoMensaje(BotonPredeterminado);
     $('#msjModal').modal('show');
 }
 

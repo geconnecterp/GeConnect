@@ -43,10 +43,10 @@
 <div id="divGrids">
 </div>
 <div class="row mb-3">
-    <div class="d-flex justify-content-center">
-        <a asp-action="producto" asp-controller="infoprod" asp-area="pocketppal" asp-route-callback="@callback" class="btn btn-info btn-sm m-2"><i class="bx bx-ms bx-info-circle"></i></a>
+    <div class="pocket-action-dock">
+        <a asp-action="producto" asp-controller="infoprod" asp-area="pocketppal" asp-route-callback="@callback" class="btn btn-info btn-sm m-2 pocket-action-dock__button" aria-label="Consultar información de producto" title="Información de producto"><i class="bx bx-ms bx-info-circle"></i></a>
         <form asp-action="TICargaCarrito" asp-controller="trint" asp-area="pocketppal" method="get">
-        <button type="submit" id="btnContinua02" disabled class="btn btn-success btn-sm m-2"><i class="bx bx-ms bx-right-arrow-alt"></i></button>
+        <button type="submit" id="btnContinua02" disabled class="btn btn-success btn-sm m-2 pocket-action-dock__button" aria-label="Continuar" title="Continuar"><i class="bx bx-ms bx-right-arrow-alt"></i></button>
             @Html.Hidden("esrubro")
             @Html.Hidden("esbox")
             @Html.Hidden("boxid")

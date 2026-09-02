@@ -1,66 +1,47 @@
-﻿@{
-    var user = User.Claims.First(c => c.Type.Contains("name")).Value;
-    var email = User.Claims.First(c => c.Type.Contains("email")).Value;
+@{
+    var usuario = User.Claims.First(c => c.Type.Contains("name")).Value;
     var nombre = User.Claims.First(c => c.Type.Contains("nya")).Value;
-    string a = User.Claims.First(c => c.Type.Contains("AdmId")).Value;
-    var adm = a.Split("#");
+    var administracionClaim = User.Claims.First(c => c.Type.Contains("AdmId")).Value;
+    var administracionPartes = administracionClaim.Split("#");
+    var sucursal = administracionPartes.Length > 1 ? administracionPartes[1] : administracionClaim;
+    var palabrasNombre = nombre.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+    var iniciales = string.Concat(palabrasNombre.Take(2).Select(palabra => char.ToUpperInvariant(palabra[0])));
 }
-<!-- User -->
-<li class="nav-item navbar-dropdown dropdown-user dropdown">
-    <a class="nav-link dropdown-toggle hide-arrow" href="javascript:void(0);" data-bs-toggle="dropdown">
-        <div class="avatar avatar-online">
-            <img src="~/img/avatars/avatar2.png" alt="avatar" class="w-px-40 h-auto rounded-circle" />
-        </div>
-    </a>
-    <ul class="dropdown-menu dropdown-menu-end">
-        <li>
-            <a class="dropdown-item" href="#">
-                <div class="d-flex">
-                    <div class="flex-shrink-0 me-3">
-                        <div class="avatar avatar-online">
-                            <img src="~/img/avatars/avatar2.png" alt="avatar" class="w-px-40 h-auto rounded-circle" />
-                        </div>
-                    </div>
-                    <div class="flex-grow-1">
-                        <span class="fw-medium d-block">@nombre</span>
-                        <small class="text-muted">Sucursal @adm[1]</small>
-                    </div>
-                </div>
-            </a>
-        </li>
-        <li>
-            <div class="dropdown-divider"></div>
-        </li>
-        <li>
-            <a class="dropdown-item" href="#">
-                <i class="bx bx-user me-2"></i>
-                <span class="align-middle">My Profile</span>
-            </a>
-        </li>
-        <li>
-            <a class="dropdown-item" href="#">
-                <i class="bx bx-cog me-2"></i>
-                <span class="align-middle">Settings</span>
-            </a>
-        </li>
-        @*  <li>
-        <a class="dropdown-item" href="#">
-        <span class="d-flex align-items-center align-middle">
-        <i class="flex-shrink-0 bx bx-credit-card me-2"></i>
-        <span class="flex-grow-1 align-middle ms-1">Billing</span>
-        <span class="flex-shrink-0 badge badge-center rounded-pill bg-danger w-px-20 h-px-20">4</span>
+
+<div class="dropdown pocket-user-menu">
+    <button type="button"
+            class="pocket-user-trigger dropdown-toggle"
+            data-bs-toggle="dropdown"
+            aria-expanded="false"
+            aria-label="Abrir menú de usuario de @nombre">
+        <span class="pocket-user-avatar" aria-hidden="true">@iniciales</span>
+        <span class="pocket-user-summary">
+            <strong>@nombre</strong>
+            <small>@usuario</small>
         </span>
-        </a>
-        </li> *@
+        <i class="bx bx-chevron-down" aria-hidden="true"></i>
+    </button>
+
+    <ul class="dropdown-menu dropdown-menu-end pocket-user-dropdown">
+        <li class="pocket-user-dropdown-header">
+            <span class="pocket-user-avatar" aria-hidden="true">@iniciales</span>
+            <span>
+                <strong>@nombre</strong>
+                <small>Sucursal @sucursal</small>
+            </span>
+        </li>
+        <li><hr class="dropdown-divider" /></li>
         <li>
-            <div class="dropdown-divider"></div>
+            <a class="dropdown-item" asp-action="Privacy" asp-controller="Home" asp-area="">
+                <i class="bx bx-file me-2" aria-hidden="true"></i>
+                Normativas
+            </a>
         </li>
         <li>
-            <a class="dropdown-item" asp-action="logout" asp-controller="token" asp-area="seguridad">
-                <i class="bx bx-log-out-circle me-2"></i>
-                <span class="align-middle">Salir</span>
+            <a class="dropdown-item pocket-user-logout" asp-action="Logout" asp-controller="Token" asp-area="Seguridad">
+                <i class="bx bx-log-out-circle me-2" aria-hidden="true"></i>
+                Cerrar sesión
             </a>
         </li>
     </ul>
-</li>
-<!--/ User -->
+</div>

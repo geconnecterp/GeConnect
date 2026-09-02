@@ -1,12 +1,85 @@
 ﻿
-@section styles {
-    <link rel="stylesheet" href="~/css/pages/home-geco.css" asp-append-version="true" />
+@using System.Globalization
+@{
+    var fechaActual = DateTime.Now.ToString("dddd d 'de' MMMM 'de' yyyy", CultureInfo.GetCultureInfo("es-AR"));
 }
 
-<div class="home-geco-welcome" aria-label="GECONet">
-    <p class="home-geco-branch">
-        <span>Sucursal</span>
-        <strong>@ViewBag.Sucursal</strong>
-    </p>
-    <h1>GECONet</h1>
+@section styles {
+    <link rel="stylesheet" href="~/css/pages/home-geconet.css" asp-append-version="true" />
+}
+
+<div class="home-geco-dashboard">
+    <section class="home-geco-hero" aria-labelledby="homeTitle">
+        <div class="home-geco-hero__content">
+            <div class="home-geco-brand" aria-label="GeCoNet">
+                <span class="home-geco-brand__mark">
+                    <img src="~/img/gc.png" alt="" />
+                </span>
+                <span>GeCoNet</span>
+            </div>
+
+            <div class="home-geco-hero__copy">
+                <p class="home-geco-eyebrow">Sistema de gestión comercial</p>
+                <h1 id="homeTitle">Todo el negocio,<br />en un solo lugar.</h1>
+                <p class="home-geco-lead">
+                    Bienvenido a su espacio de trabajo. Desde el menú superior puede acceder
+                    a los módulos habilitados para su perfil.
+                </p>
+            </div>
+
+            <div class="home-geco-context" aria-label="Contexto de trabajo actual">
+                <div class="home-geco-context__item">
+                    <i class="bx bx-map" aria-hidden="true"></i>
+                    <span>
+                        <small>Sucursal activa</small>
+                        <strong>@ViewBag.Sucursal</strong>
+                    </span>
+                </div>
+                <span class="home-geco-context__divider" aria-hidden="true"></span>
+                <div class="home-geco-context__item">
+                    <i class="bx bx-calendar" aria-hidden="true"></i>
+                    <span>
+                        <small>Fecha</small>
+                        <strong class="text-capitalize">@fechaActual</strong>
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <div class="home-geco-hero__identity" aria-label="Café América Mayorista">
+            <div class="home-geco-rings" aria-hidden="true"></div>
+            <div class="home-geco-company-logo">
+                <img src="~/img/Circulo CA.svg" alt="Café América" />
+            </div>
+            <p>Una plataforma para</p>
+            <h2>Café América</h2>
+            <span>Mayorista S.A.</span>
+        </div>
+    </section>
+
+    <section class="home-geco-guidance" aria-label="Información de la sesión">
+        <article class="home-geco-card">
+            <span class="home-geco-card__icon"><i class="bx bx-grid-alt" aria-hidden="true"></i></span>
+            <div>
+                <h2>Módulos disponibles</h2>
+                <p>El menú muestra únicamente las funciones habilitadas para su perfil.</p>
+            </div>
+        </article>
+
+        <article class="home-geco-card">
+            <span class="home-geco-card__icon"><i class="bx bx-building-house" aria-hidden="true"></i></span>
+            <div>
+                <h2>Contexto de operación</h2>
+                <p>Las operaciones se realizarán en la sucursal <strong>@ViewBag.Sucursal</strong>.</p>
+            </div>
+        </article>
+
+        <article class="home-geco-card">
+            <span class="home-geco-card__icon"><i class="bx bx-shield-quarter" aria-hidden="true"></i></span>
+            <div>
+                <h2>Acceso protegido</h2>
+                <p>La sesión respeta los perfiles y derechos asignados a su usuario.</p>
+            </div>
+        </article>
+    </section>
 </div>

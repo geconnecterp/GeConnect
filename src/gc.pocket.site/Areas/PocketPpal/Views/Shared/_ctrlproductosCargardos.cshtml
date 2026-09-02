@@ -27,7 +27,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach (var item in Model.ListaDatos)
+                    @foreach (var item in Model.ListaDatos!)
                     {
                         if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
                         var id = $"btnDel{item.p_id}";
@@ -36,9 +36,9 @@
                             <td class="corta-linea">@item.p_desc</td>
                             <td>@item.unidad_pres</td>
                             <td>@item.bulto</td>
-                            <td>@item.us</td>
-                            <td>@item.cantidad</td>
-                            <td>@item.cantidad_total</td>
+                            <td>@CantidadProductoFormatter.Formatear(item.us, item.up_id)</td>
+                            <td>@CantidadProductoFormatter.Formatear(item.cantidad, item.up_id)</td>
+                            <td>@CantidadProductoFormatter.Formatear(item.cantidad_total, item.up_id)</td>
                             <td>
                                 @if (item.diferencia == 0)
                                 {

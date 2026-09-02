@@ -173,8 +173,8 @@ function construirFila(producto) {
     tr.append(`<td class="text-start">${producto.p_id || ''}</td>`);
     tr.append(`<td class="text-start">${producto.p_desc || ''}</td>`);
     tr.append(`<td class="text-start">${producto.bulto || 0}</td>`);
-    tr.append(`<td class="text-start">${formatearDecimal(producto.us)}</td>`);
-    tr.append(`<td class="text-start">${formatearDecimal(producto.cantidad)}</td>`);
+    tr.append(`<td class="text-start">${FormatearCantidadProducto(producto.us, producto.up_id)}</td>`);
+    tr.append(`<td class="text-start">${FormatearCantidadProducto(producto.cantidad, producto.up_id)}</td>`);
 
     // Columna de acción (botón eliminar)
     const tdAccion = $('<td class="text-center"></td>');
@@ -197,11 +197,6 @@ function construirFila(producto) {
     tr.append(tdAccion);
 
     return tr;
-}
-
-function formatearDecimal(valor) {
-    if (!valor && valor !== 0) return '0';
-    return parseFloat(valor).toFixed(2);
 }
 
 function mostrarCargando() {

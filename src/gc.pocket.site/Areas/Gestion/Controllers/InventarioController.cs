@@ -27,7 +27,7 @@ namespace gc.pocket.site.Areas.Gestion.Controllers
     {
         private readonly MenuSettings _menuSettings;
         private readonly AppSettings _configuracion;
-        private readonly ILogger<AlmacenController> _logger;
+        private new readonly ILogger<AlmacenController> _logger;
         private readonly IInventarioServicio _invSv;
 
         public InventarioController(ILogger<AlmacenController> logger,
@@ -369,7 +369,7 @@ namespace gc.pocket.site.Areas.Gestion.Controllers
             var sigla = "inv";
             var modulo = _menuSettings.Aplicaciones.SingleOrDefault(x => x.Sigla.Equals(sigla, StringComparison.OrdinalIgnoreCase));
             string? volver = Url.Action("index", "inventario", new { area = "gestion" });
-            ViewBag.AppItem = new AppItem { Nombre = modulo.Nombre, VolverUrl = volver ?? "#" };
+            ViewBag.AppItem = new AppItem { Nombre = modulo!.Nombre, VolverUrl = volver ?? "#" };
 
             if (string.IsNullOrEmpty(invNro) ||
                 string.IsNullOrEmpty(tipo) ||

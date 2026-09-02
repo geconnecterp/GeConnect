@@ -11,7 +11,7 @@
 <div class="grid-golden h-100">
     <div class="grid-golden-body p-1">
         <div class="table-responsive table-wrapper table-wrapper-500">
-            <table class="table table-sm table-hover mb-0 table-golden" id="tbProdRPR">
+            <table class="table table-sm table-hover mb-0 table-golden rpr-product-grid" id="tbProdRPR">
                 <thead class="sticky-top table-golden-header-compact">
                     <tr class="header">
                         <th class="text-sm-center th-compact" scope="col" style="width:5%">IT</th>
@@ -32,6 +32,10 @@
                             cont++;
                             if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
                             var id = $"btnDel{item.p_id}";
+                            var unidadesPresentacion = item.unidad_pres.ToString("0");
+                            var bultos = item.bulto.ToString("0");
+                            var unidadesSueltas = CantidadProductoFormatter.Formatear(item.us, item.up_id);
+                            var cantidad = CantidadProductoFormatter.Formatear(item.cantidad, item.up_id);
                             
                             <tr class="@clase cursor-pointer" data-prod-id="@item.p_id">
                                 <td class="text-sm-center td-compact">
@@ -40,30 +44,22 @@
                                 <td class="text-sm-center td-compact">
                                     <strong class="text-golden">@item.p_id</strong>
                                 </td>
-                                <td class="td-compact">
+                                <td class="td-compact rpr-description" title="@item.p_desc">
                                     <div class="d-flex flex-column">
                                         <span class="corta-linea">@item.p_desc</span>
                                     </div>
                                 </td>
-                                <td class="text-sm-end td-compact">
-                                   @item.unidad_pres
+                                <td class="text-sm-end td-compact rpr-number">
+                                   @unidadesPresentacion
                                 </td>
-                                <td class="text-sm-end td-compact">
-                                    <strong>@item.bulto</strong>
+                                <td class="text-sm-end td-compact rpr-number">
+                                    <strong>@bultos</strong>
                                 </td>
-                                <td class="text-sm-end td-compact">
-                                    <strong>@item.us</strong>
+                                <td class="text-sm-end td-compact rpr-number">
+                                    <strong>@unidadesSueltas</strong>
                                 </td>
-                                <td class="text-sm-end td-compact">
-                                    @if (item.up_id.Equals("07"))
-                                    {
-                                        var cant = item.cantidad.ToString().Split('.');
-                                        <span class="badge bg-success">@cant[0]</span>
-                                    }
-                                    else
-                                    {
-                                        <span class="badge bg-success">@item.cantidad</span>
-                                    }
+                                <td class="text-sm-end td-compact rpr-number">
+                                    <span class="badge bg-success rpr-quantity-badge">@cantidad</span>
                                 </td>
                                 <td class="text-sm-center td-compact">
                                     <button type="button" 
@@ -100,7 +96,7 @@
                 <i class="bx bx-package"></i> Total productos: <strong>@Model.ListaDatos.Count()</strong>
             </small>
             <small class="text-muted">
-                <i class="bx bx-calculator"></i> Total unidades: <strong>@Model.ListaDatos.Sum(x => x.cantidad)</strong>
+                <i class="bx bx-calculator"></i> Total unidades: <strong>@CantidadProductoFormatter.FormatearTotalMixto(Model.ListaDatos.Sum(x => x.cantidad))</strong>
             </small>
         </div>
     }

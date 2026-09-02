@@ -12,7 +12,7 @@
     <div class="grid-golden-header d-flex justify-content-between align-items-center">
         <h6 class="mb-0">
             <i class="bx bx-package me-2"></i>Stock en Depósito
-            <span class="badge bg-primary ms-2">@Model.ListaDatos.Count()</span>
+            <span class="badge bg-primary ms-2">@Model.ListaDatos!.Count()</span>
         </h6>
     </div>
     <div class="grid-golden-body p-0">
@@ -42,7 +42,7 @@
                                 </td>
                                 <td class="td-compact text-end">
                                     <span class="badge @(item.Ps_stk > 0 ? "bg-success" : "bg-secondary")">
-                                        @item.Ps_stk
+                                        @CantidadProductoFormatter.Formatear(item.Ps_stk, item.Up_id)
                                     </span>
                                 </td>
                                 <td class="td-compact text-center">

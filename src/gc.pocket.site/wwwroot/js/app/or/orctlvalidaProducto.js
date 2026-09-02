@@ -116,7 +116,7 @@ function verificaEstadoOrCtl() {
         $("#box").mask("000,000,000,000", { reverse: true });
         $("#box").val(0).prop("disabled", false);
 
-        $("#unid").mask("000,000,000,000", { reverse: true });
+        ConfigurarEntradaCantidadProducto("#unid", prod.up_id, "ControlOrdenReparto");
         $("#unid").val(0).prop("disabled", false);
     }
     else {
@@ -125,7 +125,7 @@ function verificaEstadoOrCtl() {
 
         $("#box").val(0).prop("disabled", true);
 
-        $("#unid").mask("000,000,000,000.000", { reverse: true });
+        ConfigurarEntradaCantidadProducto("#unid", prod.up_id, "ControlOrdenReparto");
         $("#unid").val(0).prop("disabled", false);
     }
 

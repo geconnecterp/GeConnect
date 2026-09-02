@@ -77,10 +77,10 @@
     </div>
 </div>
 <div class="row mb-3">
-    <div class="d-flex justify-content-center">
+    <div class="pocket-action-dock">
         @* <button type="button" disabled id="btnVerCtrl" class="btn btn-danger btn-sm m-2" title="Observar Detalle de CONTROL"><i class="bx bx-sm bx-list-ol"></i></button> *@
-        <a asp-action="producto" asp-controller="infoprod" asp-area="pocketppal" asp-route-callback="@callback" class="btn btn-info btn-sm m-2"><i class="bx bx-ms bx-info-circle"></i></a>
-        <button type="button" id="btnConfirmarConteo" disabled class="btn btn-success btn-sm m-2"><i class="bx bx-ms bx-right-arrow-alt"></i></button>
+        <a asp-action="producto" asp-controller="infoprod" asp-area="pocketppal" asp-route-callback="@callback" class="btn btn-info btn-sm m-2 pocket-action-dock__button" aria-label="Consultar información de producto" title="Información de producto"><i class="bx bx-ms bx-info-circle"></i></a>
+        <button type="button" id="btnConfirmarConteo" disabled class="btn btn-success btn-sm m-2 pocket-action-dock__button" aria-label="Continuar con la confirmación del conteo" title="Continuar"><i class="bx bx-ms bx-right-arrow-alt"></i></button>
     </div>
 </div>
 
@@ -105,5 +105,5 @@
     </script>
 
     <script src="~/js/app/busquedas.js" type="text/javascript"></script>
-    <script src="~/js/app/gestion/inv-conteo.js"></script>
+    <script src="~/js/app/gestion/inv-conteo.js" asp-append-version="true"></script>
 }

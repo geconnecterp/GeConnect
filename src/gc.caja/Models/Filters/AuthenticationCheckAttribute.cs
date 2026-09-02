@@ -1,4 +1,4 @@
-﻿using gc.infraestructura.Core.EntidadesComunes.Options;
+using gc.infraestructura.Core.EntidadesComunes.Options;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.Options;
@@ -16,7 +16,7 @@ namespace gc.caja.Models.Filters
 
         public override void OnActionExecuting(ActionExecutingContext context)
         {
-            if (!context.HttpContext.User.Identity.IsAuthenticated)
+            if (context.HttpContext.User.Identity?.IsAuthenticated != true)
             {
                 var loginPath = $"{_pathBase}/seguridad/Token/Login";
                 context.Result = new RedirectResult(loginPath);

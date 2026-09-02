@@ -4,14 +4,23 @@
 
 }
 
-<partial name="_gridOrdenReparto" />
-
-<div class="row mb-3">
-    <div class="d-flex justify-content-center">
-        <a asp-action="producto" asp-controller="infoprod" asp-area="pocketppal" asp-route-callback="@callback" class="btn btn-info btn-sm m-3"><i class="bx bx-ms bx-info-circle"></i></a>
-        <button type="button" id="btnContinuar" class="btn btn-sm btn-success m-3" style="display:none;"><i class="bx bx-sm bx-right-arrow-alt"></i></button>
+<section class="pocket-modern pocket-workspace">
+    <div class="pocket-workspace__header">
+        <h1 class="pocket-workspace__heading"><i class="bx bx-list-check"></i> Órdenes disponibles</h1>
+        <p class="pocket-workspace__hint">Seleccione una orden para consultar su detalle y continuar.</p>
     </div>
-</div>
+
+    <partial name="_gridOrdenReparto" />
+
+    <div class="pocket-workspace__actions pocket-action-dock">
+        <a asp-action="producto" asp-controller="infoprod" asp-area="pocketppal" asp-route-callback="@callback" class="btn btn-info btn-sm pocket-action-dock__button" aria-label="Consultar información de producto" title="Información de producto"><i class="bx bx-ms bx-info-circle"></i></a>
+        <button type="button" id="btnContinuar" class="btn btn-sm btn-success pocket-action-dock__button" style="display:none;" aria-label="Continuar con la orden seleccionada" title="Continuar"><i class="bx bx-sm bx-right-arrow-alt"></i></button>
+    </div>
+</section>
+
+@section styles {
+    <link rel="stylesheet" href="~/css/pocket-modern.css" asp-append-version="true" />
+}
 
 @section scripts {
     <script type="text/javascript">

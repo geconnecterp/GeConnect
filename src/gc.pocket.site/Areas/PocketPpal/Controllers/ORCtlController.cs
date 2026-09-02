@@ -263,8 +263,23 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                     return Json(new { error = false, warn = true, msg = "Las cantidades de los productos a cargar deben ser positivas, mayores a 0 (cero)." });
                 }
 
+                var upIdProducto = string.IsNullOrWhiteSpace(ProductoBase?.up_id) ? request.up_id : ProductoBase.up_id;
+                if (!CantidadCompatibleConUnidadProducto(upIdProducto, request.us) ||
+                    !CantidadCompatibleConUnidadProducto(upIdProducto, request.cantidad))
+                {
+                    return Json(new { error = false, warn = true, msg = MensajeCantidadIncompatible(upIdProducto) });
+                }
+
+                var cantidadEsperada = string.Equals(upIdProducto, "07", StringComparison.Ordinal)
+                    ? (request.unidad_pres * request.bulto) + request.us
+                    : request.us;
+                if (request.cantidad != cantidadEsperada)
+                {
+                    return Json(new { error = false, warn = true, msg = "La cantidad informada no coincide con los bultos y unidades ingresados. Verifique, por favor." });
+                }
+
                 // Validar unidad de presentación para productos pesables (UP_ID != "07")
-                if (!string.IsNullOrWhiteSpace(request.up_id) && !request.up_id.Equals("07") && request.unidad_pres != 1)
+                if (!string.IsNullOrWhiteSpace(upIdProducto) && !upIdProducto.Equals("07") && request.unidad_pres != 1)
                 {
                     return Json(new { error = false, warn = true, msg = "El producto no es por unidades. La unidad de presentación tiene que ser igual a 1 siempre." });
                 }
@@ -320,7 +335,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                     _logger?.LogInformation("🔄 Producto duplicado detectado: {PId}. Actualizando datos...", request.p_id);
 
                     // Actualizar el producto existente con los nuevos datos
-                    ActualizarProductoExistente(productoExistente, request);
+                    ActualizarProductoExistente(productoExistente!, request);
 
                     // Actualizar sesión
                     sesion.UltimaActualizacion = DateTime.Now;
