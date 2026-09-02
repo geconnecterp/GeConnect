@@ -8,12 +8,24 @@
     var administracionPartes = administracionClaim.Split("#");
     var sucursal = administracionPartes.Length > 1 ? administracionPartes[1] : administracionClaim;
     var primerNombre = nombre.Split(' ', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault() ?? nombre;
+    /*
     var saludo = DateTime.Now.Hour switch
     {
         < 12 => "Buenos días",
         < 20 => "Buenas tardes",
         _ => "Buenas noches"
     };
+    */
+
+    var saludo = "Buenas noches";
+    if (DateTime.Now.Hour < 12)
+    {
+        saludo = "Buenos días";
+    }
+    else if (DateTime.Now.Hour < 20)
+    {
+        saludo = "Buenas tardes";
+    }
 
     <section class="home-dashboard" aria-labelledby="homeWelcomeTitle">
         <div class="home-welcome">
