@@ -15,7 +15,7 @@ namespace gc.pocket.site.Areas.Gestion.Controllers
     [Area("Gestion")]
     public class ProveedorController : ControladorBase
     {
-        private readonly ILogger<ProveedorController> _logger;
+        private new readonly ILogger<ProveedorController> _logger;
         private readonly AppSettings _appSettings;
         private readonly IProveedorServicio _provSv;
 

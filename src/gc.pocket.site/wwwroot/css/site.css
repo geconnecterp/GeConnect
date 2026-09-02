@@ -1232,3 +1232,121 @@ body.confirmacion-en-proceso #wWaiting {
     font-size: 13px;
     font-weight: 400;
 }
+
+/* RPR y Modificación de UL: lectura numérica estable en colectores angostos. */
+.rpr-product-grid {
+    min-width: 46rem;
+}
+
+.rpr-product-grid .rpr-description {
+    min-width: 10rem;
+}
+
+.rpr-product-grid .rpr-number {
+    min-width: 4rem;
+    white-space: nowrap;
+    font-size: 0.875rem;
+    font-variant-numeric: tabular-nums;
+}
+
+.rpr-product-grid .rpr-quantity-badge {
+    display: inline-block;
+    min-width: 4.75rem;
+    padding: 0.35rem 0.45rem;
+    font-size: 0.825rem;
+    text-align: right;
+}
+
+#msjModal .modal-footer {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+#msjModal .modal-footer .btn {
+    min-height: 44px;
+    margin: 0;
+}
+
+@media (max-width: 576px) {
+    .rpr-product-grid {
+        min-width: 40rem;
+    }
+
+    .rpr-product-grid .th-compact,
+    .rpr-product-grid .td-compact {
+        padding: 0.35rem 0.3rem;
+        font-size: 0.8rem;
+    }
+
+    .rpr-product-grid .rpr-quantity-badge {
+        min-width: 4.25rem;
+        font-size: 0.8rem;
+    }
+
+    #msjModal .modal-dialog {
+        margin: 0.5rem;
+    }
+
+    #msjModal .modal-footer .btn {
+        flex: 1 1 7rem;
+    }
+}
+
+/* Acciones de cierre de la vista funcional: optimizadas para móvil, tablet y colector. */
+.pocket-action-dock {
+    display: flex;
+    width: 100%;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin: clamp(0.75rem, 2vh, 1.25rem) auto max(0.75rem, env(safe-area-inset-bottom));
+    padding: 0.25rem max(0.5rem, env(safe-area-inset-left));
+}
+
+.pocket-action-dock > form {
+    display: contents;
+}
+
+.pocket-action-dock .pocket-action-dock__button {
+    display: inline-flex;
+    width: 48px;
+    min-width: 48px;
+    height: 48px;
+    min-height: 48px;
+    align-items: center;
+    justify-content: center;
+    margin: 0 !important;
+    padding: 0;
+    border-radius: 0.7rem;
+    box-shadow: 0 3px 8px rgba(20, 35, 55, 0.18);
+    touch-action: manipulation;
+}
+
+.pocket-action-dock .pocket-action-dock__button > i {
+    margin: 0 !important;
+    font-size: 1.3rem;
+    line-height: 1;
+}
+
+.pocket-action-dock .pocket-action-dock__button:hover:not(:disabled):not(.disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 5px 12px rgba(20, 35, 55, 0.22);
+}
+
+.pocket-action-dock .pocket-action-dock__button:focus-visible {
+    outline: 3px solid rgba(13, 110, 253, 0.28);
+    outline-offset: 3px;
+}
+
+.pocket-action-dock .pocket-action-dock__button:disabled,
+.pocket-action-dock .pocket-action-dock__button.disabled {
+    box-shadow: none;
+    opacity: 0.58;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .pocket-action-dock .pocket-action-dock__button {
+        transition: none;
+    }
+}

@@ -1,11 +1,13 @@
-﻿@model GridCoreSmart<ProductoListaDto>
+@model GridCoreSmart<ProductoListaDto>
 
 @{
     var dataMod = new ProductoListaDto();
     var alt = true;
     string clase = string.Empty;
     // string sortDirInv = Model.SortDir.Equals("ASC") ? "DESC" : "ASC";
-    string sort = Model.Sort;
+    var listaDatos = Model?.ListaDatos ?? Enumerable.Empty<ProductoListaDto>();
+    string sort = Model?.Sort ?? string.Empty;
+    string sortDir = Model?.SortDir ?? string.Empty;
 }
 
 
@@ -14,7 +16,7 @@
         <thead class="sticky-top table-golden-header-compact">
             <tr class="header">
                 <th scope="col" class="text-center th-compact">
-                    @if (sort.Equals("p_id", StringComparison.InvariantCultureIgnoreCase) && Model.SortDir.Equals("desc"))
+                    @if (sort.Equals("p_id", StringComparison.InvariantCultureIgnoreCase) && sortDir.Equals("desc"))
                     {
                         <button class="btn btn-sm btn-secondary btn-grid btn-block" sortDir="desc" sort="p_id" onclick="ordenarColumna(this);"><span>ID </span><i class="bx  bx-chevron-up-circle btn-xs"></i> </button>
                     }
@@ -24,7 +26,7 @@
                     }
                 </th>
                 <th scope="col" class="text-center th-compact">
-                    @if (sort.Equals("p_desc", StringComparison.InvariantCultureIgnoreCase) && Model.SortDir.Equals("desc"))
+                    @if (sort.Equals("p_desc", StringComparison.InvariantCultureIgnoreCase) && sortDir.Equals("desc"))
                     {
                         <button class="btn btn-sm btn-secondary btn-grid btn-block" sortDir="desc" sort="p_desc" onclick="ordenarColumna(this);"><span>Desc </span><i class="bx  bx-chevron-up-circle btn-xs"></i> </button>
                     }
@@ -34,7 +36,7 @@
                     }
                 </th>
                 <th scope="col" class="text-center th-compact">
-                    @if (sort.Equals("p_id_barrado", StringComparison.InvariantCultureIgnoreCase) && Model.SortDir.Equals("desc"))
+                    @if (sort.Equals("p_id_barrado", StringComparison.InvariantCultureIgnoreCase) && sortDir.Equals("desc"))
                     {
                         <button class="btn btn-sm btn-secondary btn-grid btn-block" sortDir="desc" sort="p_id_barrado" onclick="ordenarColumna(this);"><span>EAN </span><i class="bx  bx-chevron-up-circle btn-xs"></i> </button>
                     }
@@ -44,7 +46,7 @@
                     }
                 </th>
                 <th scope="col" class="text-center th-compact">
-                    @if (sort.Equals("p_id_prov", StringComparison.InvariantCultureIgnoreCase) && Model.SortDir.Equals("desc"))
+                    @if (sort.Equals("p_id_prov", StringComparison.InvariantCultureIgnoreCase) && sortDir.Equals("desc"))
                     {
                         <button class="btn btn-sm btn-secondary btn-grid btn-block" sortDir="desc" sort="p_id_prov" onclick="ordenarColumna(this);"><span>PROV </span><i class="bx  bx-chevron-up-circle btn-xs"></i> </button>
                     }
@@ -54,7 +56,7 @@
                     }
                 </th>
                 <th scope="col" class="text-center th-compact">
-                    @if (sort.Equals("p_activo", StringComparison.InvariantCultureIgnoreCase) && Model.SortDir.Equals("desc"))
+                    @if (sort.Equals("p_activo", StringComparison.InvariantCultureIgnoreCase) && sortDir.Equals("desc"))
                     {
                         <button class="btn btn-sm btn-secondary btn-grid btn-block" sortDir="desc" sort="p_activo" onclick="ordenarColumna(this);"><span>E </span><i class="bx  bx-chevron-up-circle btn-xs"></i> </button>
                     }
@@ -64,7 +66,7 @@
                     }
                 </th>
                 @*  <th scope="col">
-                @if (sort.Equals("p_pcosto", StringComparison.InvariantCultureIgnoreCase) && Model.SortDir.Equals("desc"))
+                @if (sort.Equals("p_pcosto", StringComparison.InvariantCultureIgnoreCase) && sortDir.Equals("desc"))
                 {
                 <button class="btn btn-sm btn-secondary btn-grid btn-block" sortDir="desc" sort="p_pcosto" onclick="ordenarColumna(this);"><span>PRECIO </span><i class="bx  bx-chevron-up-circle btn-xs"></i> </button>
                 }
@@ -74,7 +76,7 @@
                 }
                 </th>
                 <th scope="col">
-                @if (sort.Equals("ps_stk", StringComparison.InvariantCultureIgnoreCase) && Model.SortDir.Equals("desc"))
+                @if (sort.Equals("ps_stk", StringComparison.InvariantCultureIgnoreCase) && sortDir.Equals("desc"))
                 {
                 <button class="btn btn-sm btn-secondary btn-grid btn-block" sortDir="desc" sort="ps_stk" onclick="ordenarColumna(this);"><span>STOCK </span><i class="bx  bx-chevron-up-circle btn-xs"></i> </button>
                 }
@@ -86,16 +88,16 @@
             </tr>
         </thead>
         <tbody>
-            @foreach (var item in Model.ListaDatos)
+            @foreach (var item in listaDatos)
             {
                 if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
 
                 <tr class="@clase" onclick="selectReg(this, 'tbGridProd')" ondblclick="selectRegDbl(this)" data-producto-id="@item.P_id">
-                    <td class="@Model.ObtenerClase(item.P_id)">@item.P_id</td>
-                    <td class="@Model.ObtenerClase(item.P_desc)">@item.P_desc</td>
-                    <td class="@Model.ObtenerClase(item.P_id_barrado)">@item.P_id_barrado</td>
-                    <td class="@Model.ObtenerClase(item.P_id_prov)">@item.P_id_prov</td>
-                    <td class="@Model.ObtenerClase(item.P_activo)">@item.P_activo </td>
+                    <td class="@(Model?.ObtenerClase(item.P_id) ?? string.Empty)">@item.P_id</td>
+                    <td class="@(Model?.ObtenerClase(item.P_desc) ?? string.Empty)">@item.P_desc</td>
+                    <td class="@(Model?.ObtenerClase(item.P_id_barrado) ?? string.Empty)">@item.P_id_barrado</td>
+                    <td class="@(Model?.ObtenerClase(item.P_id_prov) ?? string.Empty)">@item.P_id_prov</td>
+                    <td class="@(Model?.ObtenerClase(item.P_activo) ?? string.Empty)">@item.P_activo </td>
                     @*                     <td class="text-sm-end">@item.P_pcosto</td>
                 <td class="text-sm-end">@item.Ps_stk</td> *@
                 </tr>

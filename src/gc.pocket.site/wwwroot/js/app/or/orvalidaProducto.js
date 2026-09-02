@@ -338,12 +338,12 @@ function verificaEstado() {
                             }
 
                             if (prod.up_id === "07") {  //unidades enteras
-                                $("#unid").mask("000,000,000,000", { reverse: true });
+                                ConfigurarEntradaCantidadProducto("#unid", prod.up_id, "OrdenReparto");
                                 $("#unid").val(0).prop("disabled", false);
                                 $("#box").val(0).prop("disabled", false);
                             }
                             else { //unidades decimales
-                                $("#unid").mask("000,000,000,000.000", { reverse: true });
+                                ConfigurarEntradaCantidadProducto("#unid", prod.up_id, "OrdenReparto");
                                 $("#unid").val(0).prop("disabled", false);
                                 // $("#box").val(0).prop("disabled", true);
                             }

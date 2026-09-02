@@ -1,4 +1,4 @@
-﻿using gc.caja.Controllers;
+using gc.caja.Controllers;
 using gc.caja.core.Servicios.Contratos.Cajas;
 using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Core.Exceptions;
@@ -114,8 +114,8 @@ namespace gc.caja.Areas.Seguridad.Controllers
                     //se debe leer el cuerpo del response
                     string strJWT = await response.Content.ReadAsStringAsync();
                     //obtenermos el TOKEN   
-                    AutenticacionDto auth = JsonConvert.DeserializeObject<AutenticacionDto>(strJWT);
-                    if (!string.IsNullOrEmpty(auth.Token))
+                    AutenticacionDto? auth = JsonConvert.DeserializeObject<AutenticacionDto>(strJWT);
+                    if (!string.IsNullOrEmpty(auth?.Token))
                     {
                         var token = auth.Token;
                         var handler = new JwtSecurityTokenHandler(); //Libreria System.IdentityModel.Token.Jwt (6.7.1)
@@ -152,12 +152,13 @@ namespace gc.caja.Areas.Seguridad.Controllers
                         };
 
                         var principal = new ClaimsPrincipal(new[] { identity });
-                        await _context.HttpContext?.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal, authProperties);
-                        _context.HttpContext?.Response.Cookies.Append(Etiqueta, token, cookieOptions); //se resguarda el token con el nombre del usuario
+                        var httpContext = _context.HttpContext ?? throw new InvalidOperationException("No se encontró el contexto HTTP.");
+                        await httpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal, authProperties);
+                        httpContext.Response.Cookies.Append(Etiqueta, token, cookieOptions); //se resguarda el token con el nombre del usuario
 
                         #region resguardamos los perfiles del usuario. 11/02/2025
 
-                        UserPerfiles = JsonConvert.DeserializeObject<List<PerfilUserDto>>(jsonp);
+                        UserPerfiles = JsonConvert.DeserializeObject<List<PerfilUserDto>>(jsonp) ?? [];
 
                         if (UserPerfiles == null || UserPerfiles.Count() == 0)
                         {

@@ -1,4 +1,4 @@
-﻿using gc.caja.core.Servicios.Contratos.Cajas;
+using gc.caja.core.Servicios.Contratos.Cajas;
 using gc.infraestructura.Core.EntidadesComunes;
 using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Dtos;
@@ -40,6 +40,7 @@ namespace gc.caja.Controllers
         public ControladorBaseCaja(IOptions<AppSettings> options, IHttpContextAccessor contexto)
         {
             _options = options.Value;
+            _setting = options.Value;
             _context = contexto;
         }
 
@@ -597,10 +598,10 @@ namespace gc.caja.Controllers
         // ✅ ACTUALIZADO: Método de verificación de autenticación mejorado
         protected bool VerificarAutenticacion(out IActionResult redirectResult)
         {
-            redirectResult = null;
+            redirectResult = default!;
 
             // Validación 1: Usuario autenticado
-            if (!HttpContext.User.Identity.IsAuthenticated)
+            if (HttpContext.User.Identity?.IsAuthenticated != true)
             {
                 _logger?.LogWarning("Usuario no autenticado intentando acceder al controlador");
                 redirectResult = RedirectToAction("Login", "Token", new { area = "seguridad" });
@@ -1167,7 +1168,7 @@ namespace gc.caja.Controllers
             var estadoPV = await cajaServicio.ValidaEstadoPV(reqEstadoPV, TokenCookie);
 
             // ❸ Validar respuesta del servicio
-            if (estadoPV == null || !estadoPV.Ok && estadoPV.Entidad.resultado!=1 || estadoPV.Entidad == null)
+            if (estadoPV == null || estadoPV.Entidad == null || (!estadoPV.Ok && estadoPV.Entidad.resultado != 1))
             {
                 _logger?.LogWarning("❌ No se pudo obtener el estado del punto de venta");
                 _logger?.LogWarning($"   estadoPV.Ok: {estadoPV?.Ok}");
@@ -1320,7 +1321,7 @@ namespace gc.caja.Controllers
                 RespuestaSP = new RespuestaDto
                 {
                     resultado = resultadoEstadoPV,
-                    resultado_msj = mensajeEstadoPV,
+                    resultado_msj = mensajeEstadoPV ?? string.Empty,
                     resultado_id = JsonConvert.SerializeObject(new
                     {
                         usuario = UserName,
@@ -1365,7 +1366,7 @@ namespace gc.caja.Controllers
                 // CASO 1: La propiedad es un string.
                 if (property.PropertyType == typeof(string))
                 {
-                    var originalValue = (string)property.GetValue(obj);
+                    var originalValue = property.GetValue(obj) as string;
                     if (!string.IsNullOrEmpty(originalValue))
                     {
                         // Limpiar la cadena de caracteres problemáticos.

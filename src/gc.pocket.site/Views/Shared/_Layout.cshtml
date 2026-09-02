@@ -17,19 +17,22 @@
     <link rel="stylesheet" href="~/lib/jqueryui/themes/sunny/theme.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/golden-overlay.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/pages/home-pocket.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/gc.pocket.site.styles.css" asp-append-version="true" />
 </head>
-<body>
+<body class="pocket-app-body">
    <partial name="_header" />
-    <div class="container" id="formulario" style="display:none">
+    <div class="container-xxl pocket-app-content" id="formulario" style="display:none">
         <main role="main" class="pb-0">
             @RenderBody()
         </main>
     </div>
 
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2024 - GECONet POCKET Site - <a asp-area="" asp-controller="Home" asp-action="Privacy">Normativas</a>
+    <footer class="pocket-app-footer">
+        <div class="container-xxl">
+            <span>&copy; @DateTime.Now.Year GECONet Pocket</span>
+            <span class="pocket-app-footer-separator" aria-hidden="true">•</span>
+            <span>Café América</span>
         </div>
     </footer>
     <partial name="_espera" />

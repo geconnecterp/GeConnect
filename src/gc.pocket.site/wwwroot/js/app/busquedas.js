@@ -234,7 +234,7 @@ function buscarProducto(mod) {
                         return true;
                     }
                     else {
-                        //se deniega
+                        //se cancela
                         productoBase = null;
                         $("#estadoFuncion").val(false);
                         $("#btnBusquedaBase").prop("disabled", false);
@@ -243,7 +243,7 @@ function buscarProducto(mod) {
                         return true;
                     }
                 },
-                    true, ["Aceptar", "Denegar"], "Warning!", null);
+                    true, ["Aceptar", "Cancelar"], "warn!", null, "cancelar");
             }
         }
         else {

@@ -17,7 +17,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
     public class AStkController : ControladorBase
     {
         private readonly MenuSettings _menuSettings;
-        private readonly ILogger<RPRController> _logger;
+        private new readonly ILogger<RPRController> _logger;
         private readonly IProductoServicio _productoServicio;
         private readonly IProducto2Servicio _producto2Servicio;
         private readonly AppSettings _settings;
@@ -110,6 +110,11 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 if (unidad < 0)
                 {
                     return Json(new { error = true, msg = "Las unidades sueltas no puede tener valores negativos. Verifique, por favor." });
+                }
+
+                if (!CantidadCompatibleConUnidadProducto(ProductoBase.up_id, unidad))
+                {
+                    return Json(new { error = true, msg = MensajeCantidadIncompatible(ProductoBase.up_id) });
                 }
 
                 if (!ProductoBase.up_id.Equals("07") && up != 1)
@@ -269,8 +274,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 }
                 else
                 { //son unidades decimales. Directamente se suman.
-                    item.unidad_pres += ProductoTemp.unidad_pres;
-                    item.bulto += ProductoTemp.bulto;
+                    item.us += ProductoTemp.us;
                     item.cantidad += ProductoTemp.cantidad;
                 }
                 //Para agregar el acumulado primero debo sacar el producto de la lista

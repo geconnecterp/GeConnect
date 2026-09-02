@@ -1131,6 +1131,16 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 {
                     return Json(new { error = false, warn = true, msg = $"La cantidades de los productos a cargar siempre tienen que ser positivas, mayores a 0 (cero)." });
                 }
+                if (!CantidadCompatibleConUnidadProducto(ProductoBase.up_id, unid) ||
+                    !CantidadCompatibleConUnidadProducto(ProductoBase.up_id, cantidad))
+                {
+                    return Json(new { error = false, warn = true, msg = MensajeCantidadIncompatible(ProductoBase.up_id) });
+                }
+                var cantidadEsperada = ProductoBase.up_id.Equals("07") ? (up * bulto) + unid : unid;
+                if (cantidad != cantidadEsperada)
+                {
+                    return Json(new { error = false, warn = true, msg = "La cantidad informada no coincide con los bultos y unidades ingresados. Verifique, por favor." });
+                }
                 if (prod.pedido < cantidad && ProductoBase.up_id.Equals("07"))// && (!TIActual.SinAU || !desarma)) //verificamos las cantidades siempre y cuando haya una autorización o en el caso de transferencia de box completo con desarma = false
                 {
                     return Json(new { error = false, warn = true, msg = $"No se puede cargar más unidades o cantidades ({cantidad}) que las pedidas ({prod.pedido})" });

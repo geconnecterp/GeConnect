@@ -17,7 +17,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
     public class RPRController : ControladorBase
     {
         private readonly MenuSettings _menuSettings;
-        private readonly ILogger<RPRController> _logger;
+        private new readonly ILogger<RPRController> _logger;
         private readonly IProductoServicio _productoServicio;
         private readonly AppSettings _settings;
 
@@ -272,35 +272,58 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 //validaciones de parametros
                 if (up < 1)
                 {
-                    return Json(new { error = true, msg = "Las unidades del bulto no puede ser 0 (cero) o tener valores negativos. Verifique, por favor." });
+                    return Json(new { error = true, msg = "Las unidades del bulto no pueden ser 0 (cero) ni tener valores negativos. Verifique, por favor.", campo = "up" });
                 }
                 if (bulto < 0)
                 {
-                    return Json(new { error = true, msg = "Los bultos no puede tener valores negativos. Verifique, por favor." });
+                    return Json(new { error = true, msg = "Los bultos no pueden tener valores negativos. Verifique, por favor.", campo = "box" });
                 }
 
                 if (unidad < 0)
                 {
-                    return Json(new { error = true, msg = "Las unidades sueltas no puede tener valores negativos. Verifique, por favor." });
+                    return Json(new { error = true, msg = "Las unidades sueltas no pueden tener valores negativos. Verifique, por favor.", campo = "unid" });
+                }
+
+                if (!CantidadCompatibleConUnidadProducto(ProductoBase.up_id, unidad))
+                {
+                    return Json(new { error = true, msg = MensajeCantidadIncompatible(ProductoBase.up_id), campo = "unid" });
                 }
 
                 if (!ProductoBase.up_id.Equals("07") && up != 1)
                 {
-                    return Json(new { error = true, msg = "EL PRODUCTO NO ES POR UNIDADES. LA UNIDAD DE PRESENTACIÓN TIENE QUE SER IGUAL A 1 SIEMPRE." });
+                    return Json(new { error = true, msg = "El producto admite unidades decimales. La unidad de presentación debe ser siempre igual a 1.", campo = "unid" });
                 }
 
-                if (!string.IsNullOrEmpty(vto) && !string.IsNullOrWhiteSpace(vto))
+                if (!string.Equals(ProductoBase.P_con_vto, "N", StringComparison.OrdinalIgnoreCase) && string.IsNullOrWhiteSpace(vto))
+                {
+                    return Json(new { error = true, msg = "Ingrese la fecha de vencimiento para continuar.", campo = "fvto" });
+                }
+
+                if (!string.IsNullOrWhiteSpace(vto))
                 {
                     var fecha = vto.ToDateTimeOrNull();
-                    var tope = DateTime.Today.AddDays(_settings.FechaVtoCota);
+                    var diasMinimosVencimiento = ProductoBase.p_con_vto_min;
+                    var fechaMinimaVencimiento = DateTime.Today.AddDays(diasMinimosVencimiento);
 
                     if (fecha == null)
                     {
-                        return Json(new { error = true, msg = "La fecha recepcionada no es válida. Verifique." });
+                        return Json(new { error = true, msg = "La fecha de vencimiento no es válida. Verifique, por favor.", campo = "fvto" });
                     }
-                    else if (fecha < tope)
+                    else if (fecha.Value.Date < fechaMinimaVencimiento)
                     {
-                        return Json(new { error = true, msg = $"La fecha recepcionada no puede ser menor a {tope}. Verifique, por favor." });
+                        _logger.LogWarning(
+                            "RPR rechazó la fecha de vencimiento {FechaIngresada} para el producto {ProductoId}. Fecha mínima: {FechaMinima}; días mínimos configurados: {DiasMinimos}",
+                            fecha.Value.Date,
+                            ProductoBase.P_id,
+                            fechaMinimaVencimiento,
+                            diasMinimosVencimiento);
+
+                        return Json(new
+                        {
+                            error = true,
+                            msg = $"La fecha de vencimiento debe ser igual o posterior al {fechaMinimaVencimiento:dd/MM/yyyy}, según los {diasMinimosVencimiento} días mínimos configurados para el producto. Corríjala para continuar.",
+                            campo = "fvto"
+                        });
                     }
                 }
 
@@ -309,7 +332,8 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
 
                 if (cantidad <= 0)
                 {
-                    return Json(new { error = true, msg = "La cantidad dió como resultado 0 (cero). Verifique." });
+                    var campoCantidad = ProductoBase.up_id.Equals("07") ? "box" : "unid";
+                    return Json(new { error = true, msg = "La cantidad dio como resultado 0 (cero). Verifique.", campo = campoCantidad });
                 }
 
                 //armo producto a resguardar
@@ -441,16 +465,20 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 }
                 else
                 { //son unidades decimales. Directamente se suman.
-                    item.unidad_pres += ProductoTemp.unidad_pres;
-                    item.bulto += ProductoTemp.bulto;
+                    _logger.LogInformation("RPR acumulando producto decimal {ProductoId}. Cantidad actual: {CantidadActual}; cantidad ingresada: {CantidadIngresada}",
+                        item.p_id, item.cantidad, ProductoTemp.cantidad);
+                    item.us += ProductoTemp.us;
                     item.cantidad += ProductoTemp.cantidad;
                 }
                 //Para agregar el acumulado primero debo sacar el producto de la lista
-                _ = EliminaProductoBase(ProductoTemp.p_id,ProductoTemp.item);
+                _ = EliminaProductoBase(item.p_id, item.item);
                 //traigo la lista, lo agrego y lo vuelvo a resguardar
                 var lista = ProductoGenRegs;
                 lista.Add(item);
                 ProductoGenRegs = lista;
+
+                _logger.LogInformation("RPR producto {ProductoId} acumulado. Ítem: {Item}; unidades sueltas: {UnidadesSueltas}; cantidad final: {CantidadFinal}",
+                    item.p_id, item.item, item.us, item.cantidad);
 
                 return Json(new { error = false, msg = infraestructura.Constantes.Constantes.MensajesOK.RPR_PRODUCTO_ACUMULADO });
             }

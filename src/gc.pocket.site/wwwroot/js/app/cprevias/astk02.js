@@ -77,24 +77,8 @@ function verificaEstadoASTK(e) {
             showMaskOnHover: false
         });
 
-        let patron = "";
+        ConfigurarEntradaCantidadProducto("#unid", prod.up_id, "AjusteStock");
         if (prod.up_id === "07") {  //unidades enteras
-            if (tajValor === "M") {
-                //admite valores positivos y negativos ENTEROS
-                patron = "[-]d{1,}";
-            }
-            else {
-                //admite valores negativos ENTEROS
-                patron = "-d{1,}";
-            }
-            //$("#unid").mask("000,000,000,000", { reverse: true });
-            $("#unid").mask('#,###', {
-                reverse: true,
-                //regex: "[-]?\\d+(\\.\\d+)?", // Permite números negativos, enteros y decimales
-                regex: patron,
-                placeholder: "",
-                showMaskOnHover: false
-            });
             $("#box").val(0).prop("disabled", false);
         }
         else { //unidades decimales
@@ -102,22 +86,6 @@ function verificaEstadoASTK(e) {
             $("#up").val(1);
             $("#up").addClass("backReadOnly");
 
-            //$("#unid").mask("000,000,000,000.000", { reverse: true });
-            if (tajValor === "M") {
-                //admite valores positivos y negativos DECIMALES
-                patron = "[-]d{1,3}[.]{0,1}d{0,2}";
-            }
-            else {
-                //admite valores negativos DECIMALES
-                patron = "-d{1,3}[.]{0,1}d{0,2}";
-            }
-            $("#unid").mask('#,###.###', {
-                reverse: true,
-                //regex: "[-]?\\d+(\\.\\d+)?", // Permite números negativos, enteros y decimales
-                regex: patron,
-                placeholder: "",
-                showMaskOnHover: false
-            });
         }
         $("#unid").val(0).prop("disabled", false);
 

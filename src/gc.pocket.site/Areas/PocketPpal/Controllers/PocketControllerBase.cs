@@ -85,7 +85,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
         /// <summary>
         /// Obtiene el producto actual según el ID seleccionado
         /// </summary>
-        public ORProductoDto ObtenerProductoActualOR()
+        public ORProductoDto? ObtenerProductoActualOR()
         {
             var session = ORSession;
             if (string.IsNullOrEmpty(session?.ORProductoSeleccionado))

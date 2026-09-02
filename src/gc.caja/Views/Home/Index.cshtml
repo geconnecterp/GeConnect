@@ -1,91 +1,129 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+@using System.Globalization
+@{
+    ViewData["Title"] = "Sistema de Caja GECO";
+    var fechaActual = DateTime.Now.ToString("dddd d 'de' MMMM 'de' yyyy", CultureInfo.GetCultureInfo("es-AR"));
 }
-<!-- MAIN CONTENT PUSHED BEHIND MODALS -->
-<div class="container mt-5">
-    <div class="text-center">
-        <h1 class="text-golden-dark"><i class='bx bx-desktop'></i> Sistema de Caja GECO</h1>
-        <p class="text-muted">La interfaz está delegada a las ventanas modales flotantes por requerimiento.</p>
-       @* <button class="btn btn-golden mt-3 border" onclick="location.reload();">
-            <i class='bx bx-refresh'></i> Reiniciar Prototipo
-        </button> *@
-    </div>
+
+@section styles {
+    <link rel="stylesheet" href="~/css/pages/home-caja.css" asp-append-version="true" />
+}
+
+<div class="home-geco-dashboard caja-home-dashboard">
+    <section class="home-geco-hero" aria-labelledby="homeTitle">
+        <div class="home-geco-hero__content">
+            <div class="home-geco-brand" aria-label="GECO Caja">
+                <span class="home-geco-brand__mark">
+                    <img src="~/img/gc.png" alt="" />
+                </span>
+                <span>GECO Caja</span>
+            </div>
+
+            <div class="home-geco-hero__copy">
+                <p class="home-geco-eyebrow">Sistema de caja y punto de venta</p>
+                <h1 id="homeTitle">Cada operación,<br />bajo control.</h1>
+                <p class="home-geco-lead">
+                    El menú habilita las acciones disponibles para la caja actual: facturación, cobranzas,
+                    rendiciones, cambios de valores y cierre de punto de venta.
+                </p>
+            </div>
+
+            <div class="home-geco-context" aria-label="Contexto de trabajo actual">
+                <div class="home-geco-context__item">
+                    <i class="bx bx-store-alt" aria-hidden="true"></i>
+                    <span>
+                        <small>Punto de venta</small>
+                        <strong>GECO PV</strong>
+                    </span>
+                </div>
+                <span class="home-geco-context__divider" aria-hidden="true"></span>
+                <div class="home-geco-context__item">
+                    <i class="bx bx-calendar" aria-hidden="true"></i>
+                    <span>
+                        <small>Fecha</small>
+                        <strong class="text-capitalize">@fechaActual</strong>
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <div class="home-geco-hero__identity" aria-label="Café América Mayorista">
+            <div class="home-geco-rings" aria-hidden="true"></div>
+            <div class="home-geco-company-logo">
+                <img src="~/img/Circulo CA.svg" alt="Café América" />
+            </div>
+            <p>Operación diaria</p>
+            <h2>Café América</h2>
+            <span>Mayorista S.A.</span>
+        </div>
+    </section>
+
+    <section class="home-geco-guidance" aria-label="Información de la sesión">
+        <article class="home-geco-card">
+            <span class="home-geco-card__icon"><i class="bx bx-grid-alt" aria-hidden="true"></i></span>
+            <div>
+                <h2>Menú operativo</h2>
+                <p>Las opciones visibles dependen del estado de caja y del perfil activo.</p>
+            </div>
+        </article>
+
+        <article class="home-geco-card">
+            <span class="home-geco-card__icon"><i class="bx bx-lock-alt" aria-hidden="true"></i></span>
+            <div>
+                <h2>Contexto protegido</h2>
+                <p>Proceso, cierre, usuario y punto de venta se resguardan para cada operación.</p>
+            </div>
+        </article>
+
+        <article class="home-geco-card">
+            <span class="home-geco-card__icon"><i class="bx bx-check-shield" aria-hidden="true"></i></span>
+            <div>
+                <h2>Cierre seguro</h2>
+                <p>Antes del cierre se validan pendientes y rendición final según el circuito de caja.</p>
+            </div>
+        </article>
+    </section>
 </div>
 
-
-<!-- 1. Overlay de inicialización asíncrona -->
 @await Html.PartialAsync("_LoaderOverlay")
-
-<!-- 2. Modal Pregunta (Alta/Logueo) -->
 @await Html.PartialAsync("_ModalValidacion")
-
-<!-- 3. Modal Menú Principal -->
 @await Html.PartialAsync("_ModalMenu")
-
 @await Html.PartialAsync("_ModalCambiaPV")
-
 <partial name="_ModalTecladoDemo" />
 
 @section scripts{
-
     <script type="text/javascript">
-
         var ValidacionIntegridadUrl = '@Url.Action("ValidacionIntegridad", "Home", new { area = "" })';
         var AperturaCajaUrl = '@Url.Action("AperturaCaja", "Home", new { area = "" })';
         var ObtenerDatosCajaUrl = '@Url.Action("ObtenerDatosCaja", "Home", new { area = "" })';
-        var CierreCajaUrl = '@Url.Action("CierreCaja", "Home", new { area = "" })'; // ✅ NUEVO
+        var CierreCajaUrl = '@Url.Action("CierreCaja", "Home", new { area = "" })';
         var CambioPVUrl =  '@Url.Action("CambioPuntoVenta", "Home", new { area = "" })';
 
         var facturacionInicializaUrl = '@Url.Action("index", "Inicio", new { area = "Facturacion" })';
         var FacturacionValidarUrl =  '@Url.Action("ValidacionInicial", "Inicio", new { area = "Facturacion" })';
 
-        var notaCreditoDevolucionValidarUrl =
-            '@Url.Action("ValidacionInicial", "NotaCredito", new { area = "Facturacion" })';
+        var notaCreditoDevolucionValidarUrl = '@Url.Action("ValidacionInicial", "NotaCredito", new { area = "Facturacion" })';
+        var notaCreditoDevolucionInicializaUrl = '@Url.Action("Index", "NotaCredito", new { area = "Facturacion" })';
 
-        var notaCreditoDevolucionInicializaUrl =
-            '@Url.Action("Index", "NotaCredito", new { area = "Facturacion" })';
+        var notaDebitoCreditoValidarUrl = '@Url.Action("ValidacionInicial", "NotaDebitoCredito", new { area = "Facturacion" })';
+        var notaDebitoCreditoInicializaUrl = '@Url.Action("Index", "NotaDebitoCredito", new { area = "Facturacion" })';
 
-        var notaDebitoCreditoValidarUrl =
-            '@Url.Action("ValidacionInicial", "NotaDebitoCredito", new { area = "Facturacion" })';
+        var rendicionParcialValidarUrl = '@Url.Action("ValidacionInicial", "Rendicion", new { area = "Facturacion" })';
+        var rendicionParcialInicializaUrl = '@Url.Action("Index", "Rendicion", new { area = "Facturacion" })';
 
-        var notaDebitoCreditoInicializaUrl =
-            '@Url.Action("Index", "NotaDebitoCredito", new { area = "Facturacion" })';
+        var cierreCajaValidarUrl = '@Url.Action("ValidacionInicial", "CierreCaja", new { area = "Facturacion" })';
+        var cierreCajaInicializaUrl = '@Url.Action("Index", "CierreCaja", new { area = "Facturacion" })';
 
-        var rendicionParcialValidarUrl =
-            '@Url.Action("ValidacionInicial", "Rendicion", new { area = "Facturacion" })';
+        var anulacionCobranzaValidarUrl = '@Url.Action("ValidacionInicial", "AnulacionCobranza", new { area = "Facturacion" })';
+        var anulacionCobranzaInicializaUrl = '@Url.Action("Index", "AnulacionCobranza", new { area = "Facturacion" })';
 
-        var rendicionParcialInicializaUrl =
-            '@Url.Action("Index", "Rendicion", new { area = "Facturacion" })';
+        var cambioValoresValidarUrl = '@Url.Action("ValidacionInicial", "CambioValores", new { area = "Facturacion" })';
+        var cambioValoresInicializaUrl = '@Url.Action("Index", "CambioValores", new { area = "Facturacion" })';
 
-
-        var cierreCajaValidarUrl =
-            '@Url.Action("ValidacionInicial", "CierreCaja", new { area = "Facturacion" })';
-
-        var cierreCajaInicializaUrl =
-            '@Url.Action("Index", "CierreCaja", new { area = "Facturacion" })';
-        var anulacionCobranzaValidarUrl =
-            '@Url.Action("ValidacionInicial", "AnulacionCobranza", new { area = "Facturacion" })';
-
-        var anulacionCobranzaInicializaUrl =
-            '@Url.Action("Index", "AnulacionCobranza", new { area = "Facturacion" })';
-
-        var cambioValoresValidarUrl =
-            '@Url.Action("ValidacionInicial", "CambioValores", new { area = "Facturacion" })';
-
-        var cambioValoresInicializaUrl =
-            '@Url.Action("Index", "CambioValores", new { area = "Facturacion" })';
-
-        // URLs necesarias para el módulo de Cobranza Diferida y el buscador de clientes
         const cobranzaDiferidaInicializaUrl = '@Url.Action("Inicializa", "PDiferido", new { Area = "Facturacion" })';
         const cobranzaDiferidaValidarUrl = '@Url.Action("Validar", "PDiferido", new { Area = "Facturacion" })';
 
-        //URLs especificas del módulo de Cta Cte
         const validarModuloCCUrl = '@Url.Action("validar", "cobranzactacte", new { Area = "Facturacion" })';
         const accesoModuloCCUrl = '@Url.Action("index", "cobranzactacte", new { Area = "Facturacion" })';
     </script>
-
-    <script src="~/js/app/caja.js"></script>
+    <script src="~/js/app/caja.js" asp-append-version="true"></script>
 }
-
-
-

@@ -45,12 +45,12 @@
     </div>
 
     <div class="row mb-3">
-        <div class="col-12 d-flex justify-content-center gap-2">
+        <div class="col-12 pocket-action-dock">
             <a asp-action="producto" asp-controller="infoprod" asp-area="pocketppal"
-               asp-route-callback="@callback" class="btn btn-info btn-sm" title="Info producto">
+               asp-route-callback="@callback" class="btn btn-info btn-sm pocket-action-dock__button" title="Información de producto" aria-label="Consultar información de producto">
                 <i class="bx bx-info-circle"></i>
             </a>
-            <button type="button" disabled id="btnConfirmar" class="btn btn-success btn-sm" title="Confirmar">
+            <button type="button" disabled id="btnConfirmar" class="btn btn-success btn-sm pocket-action-dock__button" title="Confirmar" aria-label="Confirmar almacenaje">
                 <i class="bx bx-check"></i>
             </button>
         </div>

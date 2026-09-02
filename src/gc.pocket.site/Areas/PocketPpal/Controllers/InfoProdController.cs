@@ -25,7 +25,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
     public class InfoProdController : ControladorBase
     {
         private readonly MenuSettings _menuSettings;
-        private readonly ILogger<InfoProdController> _logger;
+        private new readonly ILogger<InfoProdController> _logger;
         private readonly IProductoServicio _productoServicio;
         private readonly IProducto2Servicio _producto2Servicio;
         private readonly IDepositoServicio _depositoServicio;

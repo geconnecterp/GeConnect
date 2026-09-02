@@ -24,7 +24,7 @@ namespace gc.pocket.site.Areas.Seguridad.Controllers
     public class TokenController : ControladorBase
     {
         private readonly IConfiguration _configuration;
-        private readonly ILogger<TokenController> _logger;
+        private new readonly ILogger<TokenController> _logger;
         private readonly IAdministracionServicio _admSv;
         private readonly AppSettings _appSettings;
         //private readonly IHttpContextAccessor _context;

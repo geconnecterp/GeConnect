@@ -18,7 +18,7 @@ namespace gc.pocket.site.Areas.ABMs.Controllers
     public class ProductoControladorBase : ControladorBase
     {
         private readonly AppSettings _setting;
-        private readonly ILogger _logger;
+        private new readonly ILogger _logger;
 
         public ProductoControladorBase(IOptions<AppSettings> options, IHttpContextAccessor accessor, ILogger logger) : base(options, accessor, logger)
         {
@@ -76,7 +76,7 @@ namespace gc.pocket.site.Areas.ABMs.Controllers
                 {
                     return [];
                 }
-                return JsonConvert.DeserializeObject<List<ProductoListaDto>>(json);
+                return JsonConvert.DeserializeObject<List<ProductoListaDto>>(json)!;
             }
             set
             {
@@ -94,7 +94,7 @@ namespace gc.pocket.site.Areas.ABMs.Controllers
                 {
                     return new MetadataGrid();
                 }
-                return JsonConvert.DeserializeObject<MetadataGrid>(txt); ;
+                return JsonConvert.DeserializeObject<MetadataGrid>(txt)!;
             }
             set
             {

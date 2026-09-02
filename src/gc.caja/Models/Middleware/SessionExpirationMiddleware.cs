@@ -1,4 +1,4 @@
-﻿using gc.infraestructura.Core.EntidadesComunes.Options;
+using gc.infraestructura.Core.EntidadesComunes.Options;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
@@ -43,7 +43,7 @@ namespace gc.caja.Models.Middleware
             var loginPath = $"{context.Request.PathBase}/seguridad/Token/Login";
 
             // Verificar autenticación
-            if (!context.User.Identity.IsAuthenticated)
+            if (context.User.Identity?.IsAuthenticated != true)
             {
                 _logger.LogWarning("Usuario no autenticado intentando acceder a: {Path}", context.Request.Path);
                 await RedirigirALogin(context, isAjaxRequest, loginPath, "Usuario no autenticado.");

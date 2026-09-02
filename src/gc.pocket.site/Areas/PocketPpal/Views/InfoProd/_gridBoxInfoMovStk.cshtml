@@ -18,7 +18,7 @@
             </tr>
         </thead>
         <tbody>
-            @foreach (var item in Model.ListaDatos)
+            @foreach (var item in Model.ListaDatos!)
             {
                 if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
 
@@ -26,7 +26,7 @@
                     <td class="text-sm-center">@item.Sm_Fecha</td>
                     <td class="text-sm-center corta-linea">@item.P_id</td>
                     <td class="text-sm-start">@item.Tco_id</td>
-                    <td class="text-sm-end">@item.Sm_es</td>                   
+                    <td class="text-sm-end">@CantidadProductoFormatter.Formatear(item.Sm_es, item.up_id)</td>
                 </tr>
             }
         </tbody>
