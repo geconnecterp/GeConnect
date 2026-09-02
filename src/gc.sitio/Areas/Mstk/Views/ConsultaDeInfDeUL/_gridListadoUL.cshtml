@@ -1,0 +1,54 @@
+﻿@using gc.infraestructura.Dtos.Almacen.Info
+@using gc.infraestructura.Helpers
+@model GridCoreSmart<ConsULDto>
+@{
+	var alt = true;
+	string clase = string.Empty;
+}
+<style>
+</style>
+<div class="table-responsive table-wrapper-700">
+	<table class="table table-sm table-hover mb-0 table-golden" id="tbUL">
+		<thead class="sticky-top table-golden-header-compact">
+			<tr class="header">
+				<th class="text-center">UL</th>
+				<th class="text-center">Estado</th>
+				<th class="text-center">Fecha</th>
+				<th class="text-center">Tipo</th>
+				<th class="text-center">Comprobante</th>
+				<th class="text-center">Nota</th>
+				<th class="text-center">Box</th>
+			</tr>
+		</thead>
+		<tbody>
+			@if (Model == null || Model.ListaDatos == null || !Model.ListaDatos.Any())
+			{
+				<tr class="fila-vacia">
+					<td colspan="7" class="text-center text-muted py-2">
+						<i class="bx bx-info-circle me-1"></i>
+						No hay items para mostrar.
+					</td>
+				</tr>
+			}
+			else
+			{
+				foreach (var item in Model.ListaDatos)
+				{
+					if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+					<tr class="@clase"
+						data-ul-id="@item.UL_id"
+						onclick="selectReg(this, 'tbUL')"
+						ondblclick="SeleccionarUL(this,'tbUL')">
+						<td class="text-center">@item.UL_id</td>
+						<td class="text-start">@item.ULe_desc</td>
+						<td class="text-center">@item.UL_fecha.ToString("dd/MM/yy")</td>
+						<td class="text-center">@item.Tipo</td>
+						<td class="text-center">@item.Id_compte</td>
+						<td class="text-start">@item.Obs</td>
+						<td class="text-center">@item.Box_id</td>
+					</tr>
+				}
+			}
+		</tbody>
+	</table>
+</div>
