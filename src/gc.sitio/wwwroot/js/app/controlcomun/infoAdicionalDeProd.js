@@ -204,7 +204,7 @@ $(function () {
 
 	$(document).on("change", "#ajusteAltura", function () {
 		let valor = $(this).val();
-		let base = 40; // altura base en %
+		let base = 45; // altura base en %
 
 		let nuevoAlto;
 		if (valor === "-75") {
@@ -255,7 +255,7 @@ function invocarComponenteDeInfoAdicionalDeProd(p) {
 	var data = { pId };
 	PostGenHtml(data, abrirComponenteDeInfoAdicionalDeProdUrl, function (obj) {
 		$("#divInfoAdicionaDeProducto").html(obj);
-		
+
 		restoreDivInfoPosition();
 		makeDivInfoDraggable();
 
@@ -273,61 +273,68 @@ function invocarComponenteDeInfoAdicionalDeProd(p) {
 		var semanas = $("#txtSemanas").val();
 		var admId = $("#listaSucursales").val();
 		if (mostrarInfoProd) {
+			showTabSpinner("divInfoProducto");
 			datos = { pId }
 			PostGenHtml(datos, BuscarInfoProdURL, function (obj) {
 				$("#divInfoProducto").html(obj);
 				AddEventListenerToTable("tbInfoProducto");
-				CerrarWaiting();
+				hideTabSpinner("divInfoProducto");
 				return true
 			});
 		}
 		if (mostrarInfoProdStkA) {
+			showTabSpinner("divStkA");
 			PostGenHtml(datos, BuscarInfoProdStkAURL, function (obj) {
 				$("#divStkA").html(obj);
 				AddEventListenerToTable("tbInfoProdStkA");
-				CerrarWaiting();
+				hideTabSpinner("divStkA");
 				return true
 			});
 		}
 		if (mostrarInfoProdStkD) {
+			showTabSpinner("divStkD");
 			let sucId = $("#listaSucursalesD").val();
 			var datos = { pId, pasarAdmLogueo, sucId };
 			PostGenHtml(datos, BuscarInfoProdStkDURL, function (obj) {
 				$("#divStkD").html(obj);
 				AddEventListenerToTable("tbInfoProdStkD");
-				CerrarWaiting();
+				hideTabSpinner("divStkD");
 				return true
 			});
 		}
 		if (mostrarInfoProdStkBox) {
+			showTabSpinner("divStkBox");
 			let sucId = $("#listaSucursalesX").val();
 			var datos = { pId, pasarAdmLogueo, sucId };
 			PostGenHtml(datos, BuscarInfoProdStkBoxURL, function (obj) {
 				$("#divStkBox").html(obj);
 				AddEventListenerToTable("tbInfoProdStkBox");
-				CerrarWaiting();
+				hideTabSpinner("divStkBox");
 				return true
 			});
 		}
 		if (mostrarInfoProdStkMovM) {
+			showTabSpinner("divMovMen");
 			var datos = { pId, admId, meses };
 			PostGenHtml(datos, BuscarInfoProdMovMensURL, function (obj) {
 				$("#divMovMen").html(obj);
 				AddEventListenerToTable("tbInfoProdMovMes");
-				CerrarWaiting();
+				hideTabSpinner("divMovMen");
 				return true
 			});
 		}
 		if (mostrarInfoProdStkMovS) {
+			showTabSpinner("divMovSem");
 			var datos = { pId, admId, semanas };
 			PostGenHtml(datos, BuscarInfoProdMovSemURL, function (obj) {
 				$("#divMovSem").html(obj);
 				AddEventListenerToTable("tbInfoProdMovSem");
-				CerrarWaiting();
+				hideTabSpinner("divMovSem");
 				return true
 			});
 		}
 		if (mostrarInfoProdStkMovD) {
+			showTabSpinner("divMovDet");
 			var depId = "%";
 			var tmId = "%";
 			var hoy = new Date();
@@ -348,22 +355,31 @@ function invocarComponenteDeInfoAdicionalDeProd(p) {
 			PostGenHtml(datos, BuscarInfoProdMovDURL, function (obj) {
 				$("#divMovDet").html(obj);
 				AddEventListenerToTable("tbInfoProdMovD");
-				CerrarWaiting();
+				hideTabSpinner("divMovDet");
 				return true
 			});
 		}
 		if (mostrarInfoProdSustituto) {
+			showTabSpinner("divSus");
 			var tipo = tipoDeOperacion;
 			var soloProv = true;
 			var datos = { pId, tipo, soloProv }
 			PostGenHtml(datos, BuscarInfoProdSustitutoURL, function (obj) {
 				$("#divSus").html(obj);
 				AddEventListenerToTable("tbListaProductoSust");
-				CerrarWaiting();
+				hideTabSpinner("divSus");
 				return true
 			});
 		}
 	});
+}
+
+function showTabSpinner(divId) {
+	$("#" + divId).siblings(".tab-spinner").removeClass("d-none");
+}
+
+function hideTabSpinner(divId) {
+	$("#" + divId).siblings(".tab-spinner").addClass("d-none");
 }
 
 function AddEventListenerToTable(tabla) {

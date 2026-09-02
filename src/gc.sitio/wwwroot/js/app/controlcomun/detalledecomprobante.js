@@ -44,7 +44,7 @@ function invocarComponenteDeDetalleDeComprobante(p) {
 	var data = { tco_id, cm_compte, dia_movi };
 	PostGenHtml(data, abrirComponenteDetalleDeComprobanteUrl, function (obj) {
 		// Detecta si vino un partial de error
-		if (esRespuestaDeError(obj)) {
+		git statusif (esRespuestaDeError(obj)) {
 			console.info(`Error al abrir componente de detalle de comprobante: Tipo: ${tco_id} Comprobante: ${cm_compte} Movimiento: ${dia_movi}`);
 			return; // No renderiza nada
 		}
