@@ -3,6 +3,7 @@ using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Core.Exceptions;
 using gc.infraestructura.Core.Helpers;
 using gc.infraestructura.Dtos.Almacen.Info;
+using gc.infraestructura.Dtos.Almacen.Rpr;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Helpers;
 using gc.sitio.Areas.Mstk.Models;
@@ -17,11 +18,13 @@ namespace gc.sitio.Areas.Mstk.Controllers.ConsultaDeInfDeUL
 	{
 		private readonly AppSettings _setting;
 		private readonly IProducto2Servicio _producto2Servicio;
+		private readonly IProductoServicio _productoServicio;
 		public ConsultaDeInfDeULController(IOptions<AppSettings> options, IHttpContextAccessor contexto, ILogger<ConsultaDeInfDeULController> logger,
-										   IProducto2Servicio producto2Servicio) : base(options, contexto, logger)
+										   IProducto2Servicio producto2Servicio, IProductoServicio productoServicio) : base(options, contexto, logger)
 		{
 			_setting = options.Value;
 			_producto2Servicio = producto2Servicio;
+			_productoServicio = productoServicio;
 		}
 
 		public IActionResult Index()
@@ -87,6 +90,10 @@ namespace gc.sitio.Areas.Mstk.Controllers.ConsultaDeInfDeUL
 			RespuestaGenerica<EntidadBase> response = new();
 			try
 			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+					return RedirectToAction("Login", "Token", new { area = "seguridad" });
+
 				if (desde > hasta)
 				{
 					throw new NegocioException("Verifique el Periodo de fechas, ya que es incorrecta.");
@@ -145,6 +152,32 @@ namespace gc.sitio.Areas.Mstk.Controllers.ConsultaDeInfDeUL
 				response.EsError = true;
 				return PartialView("_gridMensaje", response);
 			}
+		}
+
+		public async Task<IActionResult> BuscarDetalleDeUnidadesDeLectura(string ul_id)
+		{
+			RespuestaGenerica<EntidadBase> response = new();
+			GridCoreSmart<RPRxULDetalleDto> datosIP = new();
+			try
+			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+					return RedirectToAction("Login", "Token", new { area = "seguridad" });
+
+				var detalle = await _productoServicio.RPRxULDetalle(ul_id, TokenCookie);
+				datosIP = ObtenerGridCoreSmart<RPRxULDetalleDto>(detalle);
+			}
+			catch (Exception ex)
+			{
+				string msg = "Error al Intentar consultar el detalle de la UL. Verifique.";
+				_logger.LogError(ex, "Error al consultar el detalle de la UL");
+				response.Mensaje = msg;
+				response.Ok = false;
+				response.EsWarn = false;
+				response.EsError = true;
+				return PartialView("_gridMensaje", response);
+			}
+			return PartialView("_gridListadoDetalleUL", datosIP);
 		}
 
 		#region Metodos Privados

@@ -1,5 +1,37 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
+﻿@using gc.infraestructura.Dtos.Almacen.Rpr
+@using gc.infraestructura.Helpers
+@using static gc.infraestructura.Helpers.GridHelper
+@model GridCoreSmart<RPRxULDetalleDto>
 @{
+	var alt = true;
+	string clase = string.Empty;
 }
+
+<div class="table-responsive table-wrapper-700">
+	<table class="table table-sm table-hover mb-0 table-golden" id="tbULDetalle">
+		<thead>
+			<tr>
+				<th style="width:10%;" class="text-center">Item</th>
+				<th style="width:10%;" class="text-center">Id</th>
+				<th style="width:60%;" class="text-center">Descripción</th>
+				<th style="width:20%;" class="text-center">Cantidad</th>
+			</tr>
+		</thead>
+		<tbody>
+			@if (Model != null && Model.ListaDatos != null && Model.ListaDatos.Count > 0)
+			{
+				@foreach (var item in Model.ListaDatos)
+				{
+					if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+					<tr class="@clase"
+						onclick="selectReg(this, 'tbULDetalle')">
+						<td class="align-center">@item.item</td>
+						<td class="align-center">@item.p_id</td>
+						<td class="align-left">@item.p_desc</td>
+						<td class="align-right">@GridHelper.FormatearDato(item.cantidad, FormatDato.Monto, item.PermiteDecimales)</td>
+					</tr>
+				}
+			}
+		</tbody>
+	</table>
+</div>

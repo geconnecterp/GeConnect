@@ -7,10 +7,12 @@
 		if ($("#divFiltros").hasClass("show")) {
 			$("#divFiltros").collapse("hide");
 			$("#divDetalle").collapse("show");
+			autoEvalTabVisible();
 		}
 		else {
 			$("#divFiltros").collapse("show");
 			$("#divDetalle").collapse("hide");
+			$("#btnImprimir").hide();
 		}
 	});
 
@@ -57,9 +59,21 @@ function InicializarPantallaPrincipal() {
 	});
 }
 
+function autoEvalTabVisible() {
+	const selector = 'button[data-bs-toggle="tab"]';
+
+	$(document)
+		.off('shown.bs.tab.autoEval', selector)
+		.on('shown.bs.tab.autoEval', selector, function (e) {
+			const tabId = $(e.target).attr("data-bs-target").replace("#", "");
+			EvaluarBotonImprimir(tabId);
+		});
+}
+
+
 const TabToTableMapUL = {
 	"navs-top-ul": "#tbUL",
-	"navs-top-det": "#tbDetalle"
+	"navs-top-det": "#tbULDetalle"
 };
 
 function EvaluarBotonImprimir(tabId) {
@@ -82,7 +96,8 @@ function EvaluarBotonImprimir(tabId) {
 	}
 
 	// Si tiene datos → mostrar botón
-	$("#btnImprimir").show();
+	//$("#btnImprimir").show(); => DESCOMENTAR ESTA LINEA SI HAY QUE IMPRIMIR REPORTE, LA LOGICA DE MOSTRAR O NO EL BOTON YA ESTA CONSTRUIDA
+	$("#btnImprimir").hide();
 
 	// Guardamos el tab actual para imprimir
 	$("#btnImprimir").data("tab-activo", tabId);
@@ -127,8 +142,8 @@ function BuscarUnidadesDeLectura() {
 	var data = { desde, hasta, tipo };
 	PostGenHtml(data, buscarUnidadesDeLecturaURL, function (obj) {
 		$("#divUL").html(obj);
-		$("#btnImprimir").show();
-
+		//$("#btnImprimir").show();
+		autoEvalTabVisible();
 		CerrarWaiting();
 		return true
 	});
@@ -145,7 +160,7 @@ function SeleccionarUL(row, gridId) {
 		return;
 	}
 	AbrirWaiting("Buscando detalle de la UL...");
-	let data = { ulId };
+	let data = { ul_id: ulId };
 
 	PostGenHtml(data, buscarDetalleDeUnidadesDeLecturaURL, function (obj) {
 		$("#divDetalleUL").html(obj);

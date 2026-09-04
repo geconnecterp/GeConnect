@@ -26,10 +26,18 @@
 		z-index: 1100;
 	}
 
+	#filtrosAplicadosFloating{
+		position: absolute;
+		right: 0px;
+		z-index: 2000;
+		background-color: rgba(108,117,125,0.05);
+		display: inline-flex;
+		gap: 8px;
+		white-space: nowrap;
+	}
 </style>
-
-<div class="container-fluid min-vh-100 d-flex flex-column">
-	<div class="d-flex align-items-center w-100 mt-2">
+<div class="container-fluid min-vh-100 d-flex flex-column w-75">
+	<div class="position-relative d-flex align-items-center w-100 mt-2" id="tabsWrapper">
 		<ul class="nav nav-tabs nav-tabs-golden" role="tablist" id="tabsConsultaDeInfDeUL">
 			<li class="nav-item" role="presentation" id="tabUL">
 				<button type="button" class="nav-link active" role="tab" data-bs-toggle="tab" data-bs-target="#navs-top-ul" aria-controls="navs-top-ul" aria-selected="true" id="btnTabUL">
@@ -43,7 +51,9 @@
 			</li>
 		</ul>
 		<!-- Contenedor flotante para mostrar filtros aplicados (fallback en partials: #filtrosAplicadosContainer) -->
-		<div id="filtrosAplicadosFloating" class="border rounded d-flex align-items-center p-1" style="position:absolute; right:123px; z-index:2000; background-color:rgba(108,117,125,0.05); display:inline-flex; gap:8px; white-space:nowrap;">
+@* 		<div id="filtrosAplicadosFloating" class="border rounded d-flex align-items-center p-1" style="position:absolute; right:0px; z-index:2000; background-color:rgba(108,117,125,0.05); display:inline-flex; gap:8px; white-space:nowrap;">
+		</div> *@
+		<div id="filtrosAplicadosFloating" class="border rounded d-flex align-items-center p-1">
 		</div>
 	</div>
 	<div class="tab-content tab-content-compact">
@@ -52,7 +62,7 @@
 			</div>
 		</div>
 		<div class="tab-pane fade tab-content-golden" id="navs-top-det" role="tabpanel">
-			<div id="divDetalle">
+			<div id="divDetalleUL">
 			</div>
 		</div>
 	</div>
