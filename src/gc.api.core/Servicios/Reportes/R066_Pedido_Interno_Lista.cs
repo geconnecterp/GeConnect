@@ -3,6 +3,7 @@ using gc.api.core.Contratos.Servicios.Reportes;
 using gc.api.core.Entidades;
 using gc.api.core.Interfaces.Datos;
 using gc.infraestructura.Core.Exceptions;
+using gc.infraestructura.Dtos.Almacen.Tr;
 using gc.infraestructura.Dtos.Almacen.Tr.Transferencia;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.EntidadesComunes.Options;
@@ -11,6 +12,7 @@ using iTextSharp.text;
 using iTextSharp.text.pdf;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
 
 namespace gc.api.core.Servicios.Reportes
 {
@@ -45,7 +47,7 @@ namespace gc.api.core.Servicios.Reportes
 				#region Obteniendo registros desde la base de datos
 				string tit;
 				string subtit;
-				List<PIDetalleDto> registros = ObtenerDatos(solicitud, out tit, out subtit);
+				List<PedidoInternoListaDto> registros = ObtenerDatos(solicitud, out tit, out subtit);
 
 				solicitud.Titulo = tit;
 				solicitud.SubTitulo = subtit;
@@ -99,7 +101,7 @@ namespace gc.api.core.Servicios.Reportes
 				pdf.Open();
 
 				#region Lista 
-				CargarRepoPedidoInterno(pdf, registros, chico, normal, normalBold, titulo, tituloBig);
+				CargarRepoPedidosInternos(pdf, registros, chico, normal, normalBold, titulo, tituloBig);
 				#endregion
 
 				pdf.Close();
@@ -119,16 +121,41 @@ namespace gc.api.core.Servicios.Reportes
 			}
 		}
 
-		private List<PIDetalleDto> ObtenerDatos(ReporteSolicitudDto solicitud, out string titulo, out string subtit)
+		private static bool GetBoolParam(IDictionary<string, string> parametros, string clave, bool valorPorDefecto = false)
+		{
+			if (parametros == null || !parametros.TryGetValue(clave, out var valor) || string.IsNullOrWhiteSpace(valor))
+				return valorPorDefecto;
+
+			return bool.TryParse(valor, out var resultado) ? resultado : valorPorDefecto;
+		}
+
+		private List<PedidoInternoListaDto> ObtenerDatos(ReporteSolicitudDto solicitud, out string titulo, out string subtit)
 		{
 			try
 			{
-				var pi_compte = solicitud.Parametros.GetValueOrDefault("id", "")?.ToString() ?? null;
+				var fecha_d = solicitud.Parametros.GetValueOrDefault("FechaD", "").ToDateTime();
+				var fecha_h = solicitud.Parametros.GetValueOrDefault("FechaH", "").ToDateTime();
+				var adm_list = solicitud.Parametros.GetValueOrDefault("Rel01", "").ToString() ?? null;
+				var estado_list = solicitud.Parametros.GetValueOrDefault("Rel02", "").ToString() ?? null;
+				var adm_id = solicitud.Parametros.GetValueOrDefault("AdmId", "")?.ToString() ?? "0000";
+				var usu_id = solicitud.Parametros.GetValueOrDefault("UsuId", "")?.ToString() ?? "";
+				var filtrosString = solicitud.Parametros.GetValueOrDefault("filtrosString", "")?.ToString() ?? null;
 
-				var listaTemp = _apiProdSv.PIDetalle(pi_compte);
+				var request = new PedidoInternoRequest()
+				{
+					fecha_d= fecha_d,
+					fecha_h= fecha_h,
+					adm_list = GetString(adm_list),
+					estado_list = GetString(estado_list),
+					adm_id = adm_id,
+					usu_id = usu_id,
+					Registros = 999999999,
+					Pagina = 1
+				};
+				var listaTemp = _apiProdSv.PedidosInternosLista(request);
 				var item = listaTemp.First();
-				titulo = $"Pedido Interno de Productos N° {pi_compte}";
-				subtit = $"De Sucursal: {item.adm_id_gen_nombre}\nPara Sucursal: {item.adm_id_des_nombre}";
+				titulo = $"Pedidos Internos";
+				subtit = $"Desde: {fecha_d:dd/MM/yyyy} Hasta: {fecha_h:dd/MM/yyyy}\n{filtrosString}";
 				return listaTemp;
 			}
 			catch (Exception)
@@ -140,12 +167,20 @@ namespace gc.api.core.Servicios.Reportes
 
 		}
 
+		private string GetString(string json)
+		{
+			if (string.IsNullOrEmpty(json))
+				return string.Empty;
+			List<string> lista = JsonConvert.DeserializeObject<List<string>>(json);
+			return string.Join(",", lista);
+		}
+
 		public string GenerarTxt(ReporteSolicitudDto solicitud)
 		{
 			#region Obteniendo registros desde la base de datos
 			string tit;
 			string subtit;
-			List<PIDetalleDto> registros = ObtenerDatos(solicitud, out tit, out subtit);
+			List<PedidoInternoListaDto> registros = ObtenerDatos(solicitud, out tit, out subtit);
 
 			if (registros == null || registros.Count == 0)
 			{
@@ -169,7 +204,7 @@ namespace gc.api.core.Servicios.Reportes
 			#region Obteniendo registros desde la base de datos
 			string tit;
 			string subtit;
-			List<PIDetalleDto> registros = ObtenerDatos(solicitud, out tit, out subtit);
+			List<PedidoInternoListaDto> registros = ObtenerDatos(solicitud, out tit, out subtit);
 
 			if (registros == null || registros.Count == 0)
 			{
@@ -188,89 +223,38 @@ namespace gc.api.core.Servicios.Reportes
 		}
 
 		#region funciones
-		public static void CargarRepoPedidoInterno(Document pdf, List<PIDetalleDto> registros, Font chico, Font normal, Font normalBold, Font titulo, Font tituloBig)
+		public static void CargarRepoPedidosInternos(Document pdf, List<PedidoInternoListaDto> registros, Font chico, Font normal, Font normalBold, Font titulo, Font tituloBig)
 		{
 			if (registros == null || registros.Count == 0)
+			{
+				pdf.Add(new Paragraph("No hay pedidos internos para mostrar.", normal));
 				return;
+			}
 
-			var reg0 = registros.First();
-
-			// ================================
-			// ENCABEZADO MANUAL
-			// ================================
-			AgregarEncabezado(pdf, reg0, normal, normalBold);
-
-			// ================================
-			// TÍTULO
-			// ================================
-			Paragraph tit = new Paragraph("Detalle de Productos Solicitados", titulo);
-			tit.Alignment = Element.ALIGN_CENTER;
-			tit.SpacingAfter = 10f;
-			pdf.Add(tit);
-
-			// ================================
-			// TABLA PRINCIPAL
-			// ================================
-			PdfPTable tabla = new PdfPTable(4);
+			// ============================
+			// TABLA
+			// ============================
+			PdfPTable tabla = new PdfPTable(6);
 			tabla.WidthPercentage = 100;
-			tabla.SetWidths(new float[] { 10f, 55f, 15f, 20f });
+			tabla.SetWidths(new float[] { 15f, 12f, 20f, 20f, 15f, 18f });
 
 			// Encabezados
-			AgregarCeldaHeader(tabla, "Código", normalBold);
-			AgregarCeldaHeader(tabla, "Descripción", normalBold);
-			AgregarCeldaHeader(tabla, "Ref. Prov.", normalBold);
-			AgregarCeldaHeader(tabla, "Código de Barras", normalBold);
+			AgregarCeldaHeader(tabla, "PI N°", normalBold);
+			AgregarCeldaHeader(tabla, "Fecha", normalBold);
+			AgregarCeldaHeader(tabla, "Sucursal Generó", normalBold);
+			AgregarCeldaHeader(tabla, "Sucursal Entrega", normalBold);
+			AgregarCeldaHeader(tabla, "Estado", normalBold);
+			AgregarCeldaHeader(tabla, "Usuario", normalBold);
 
-			// ================================
-			// AGRUPADOR ÚNICO POR RUBRO
-			// ================================
-			string grupoActual = "";
-
-			foreach (var item in registros
-				.OrderBy(x => x.rub_id)
-				.ThenBy(x => x.p_id))
+			// Filas
+			foreach (var item in registros)
 			{
-				// Detectar salto de página
-				if (writerFitsNewPage(pdf, tabla))
-				{
-					pdf.NewPage();
-					AgregarEncabezado(pdf, reg0, normal, normalBold);
-
-					Paragraph titulo2 = new Paragraph("Detalle de Productos Solicitados", normalBold);
-					titulo2.Alignment = Element.ALIGN_CENTER;
-					titulo2.SpacingAfter = 10f;
-					pdf.Add(titulo2);
-
-					// Reimprimir encabezados
-					AgregarCeldaHeader(tabla, "Código", normalBold);
-					AgregarCeldaHeader(tabla, "Descripción", normalBold);
-					AgregarCeldaHeader(tabla, "Ref. Prov.", normalBold);
-					AgregarCeldaHeader(tabla, "Código de Barras", normalBold);
-					AgregarCeldaHeader(tabla, "Bultos Aprox.", normalBold);
-				}
-
-				// ---- ÚNICO AGRUPADOR ----
-				string grupo = $"{item.rub_desc} ({item.rub_id})";
-
-				if (grupo != grupoActual)
-				{
-					PdfPCell celdaGrupo = new(new Phrase(grupo, normalBold))
-					{
-						Colspan = 4,
-						BackgroundColor = new BaseColor(230, 230, 230),
-						Padding = 5,
-						HorizontalAlignment = Element.ALIGN_CENTER
-					};
-					tabla.AddCell(celdaGrupo);
-
-					grupoActual = grupo;
-				}
-
-				// ---- Fila de producto ----
-				AgregarCelda(tabla, item.p_id, chico, Element.ALIGN_CENTER);
-				AgregarCelda(tabla, item.p_desc, chico, Element.ALIGN_LEFT);
-				AgregarCelda(tabla, item.p_id_prov ?? "", chico, Element.ALIGN_RIGHT);
-				AgregarCelda(tabla, item.p_id_barrado, chico, Element.ALIGN_CENTER);
+				AgregarCelda(tabla, item.pi_compte, normal, Element.ALIGN_CENTER);
+				AgregarCelda(tabla, item.pi_fecha.ToString("dd/MM/yy"), normal, Element.ALIGN_CENTER);
+				AgregarCelda(tabla, item.adm_id_gen_nombre, normal, Element.ALIGN_LEFT);
+				AgregarCelda(tabla, item.adm_id_des_nombre, normal, Element.ALIGN_LEFT);
+				AgregarCelda(tabla, item.pie_desc, normal, Element.ALIGN_LEFT);
+				AgregarCelda(tabla, item.usu_apellidoynombre, normal, Element.ALIGN_LEFT);
 			}
 
 			pdf.Add(tabla);
@@ -289,41 +273,6 @@ namespace gc.api.core.Servicios.Reportes
 			tabla.AddCell(celda);
 		}
 
-		private static void AgregarEncabezado(Document pdf, PIDetalleDto reg, Font normal, Font bold)
-		{
-			PdfPTable header = new(4)
-			{
-				WidthPercentage = 100
-			};
-			header.SetWidths([20f, 30f, 20f, 30f]);
-
-			header.AddCell(new PdfPCell(new Phrase("Fecha Pedido:", bold))
-			{
-				Border = 0,
-				HorizontalAlignment = Element.ALIGN_RIGHT
-			});
-			header.AddCell(new PdfPCell(new Phrase(reg.pi_fecha.ToString("dd/MM/yyyy"), normal))
-			{
-				Border = 0,
-				HorizontalAlignment = Element.ALIGN_LEFT
-			});
-
-			header.AddCell(new PdfPCell(new Phrase("Solicitado Por:", bold))
-			{
-				Border = 0,
-				HorizontalAlignment = Element.ALIGN_RIGHT
-			});
-			header.AddCell(new PdfPCell(new Phrase(reg.usu_apellidoynombre, normal))
-			{
-				Border = 0,
-				HorizontalAlignment = Element.ALIGN_LEFT
-			});
-
-			header.SpacingAfter = 10f;
-
-			pdf.Add(header);
-		}
-
 		private static void AgregarCeldaHeader(PdfPTable tabla, string texto, Font font)
 		{
 			PdfPCell celda = new PdfPCell(new Phrase(texto, font));
@@ -334,10 +283,6 @@ namespace gc.api.core.Servicios.Reportes
 			tabla.AddCell(celda);
 		}
 
-		private static bool writerFitsNewPage(Document pdf, PdfPTable tabla)
-		{
-			return tabla.TotalHeight > (pdf.PageSize.Height - pdf.TopMargin - pdf.BottomMargin - 100);
-		}
 		#endregion
 	}
 }

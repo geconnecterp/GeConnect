@@ -134,6 +134,8 @@ namespace gc.sitio.Areas.Mstk.Controllers
 
 				filters.Rel01 = filters.Rel01?.Where(x => !string.IsNullOrEmpty(x)).ToList();
 				filters.Rel02 = filters.Rel02?.Where(x => !string.IsNullOrEmpty(x)).ToList();
+				filters.Adm_id = AdministracionId;
+				filters.Usu_id = UserName;
 				//debo realizar la busqueda de los presupuestos
 				var pedidos = await _productoServicio.PedidosInternosLista(filters, TokenCookie);
 
@@ -249,7 +251,7 @@ namespace gc.sitio.Areas.Mstk.Controllers
 						break;
 				}
 
-				return Json(new { error = false, warn = false, msg = "Tipo de reporte actualizado correctamente." });
+				return Json(new { error = false, warn = false, msg = "Tipo de reporte actualizado correctamente.", adm_id = AdministracionId, usu_id = UserName });
 			}
 			catch (Exception ex)
 			{

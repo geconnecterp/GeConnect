@@ -1927,6 +1927,8 @@ namespace gc.api.core.Servicios
 
 			ps.Add(new SqlParameter("@registros", req.Registros));
 			ps.Add(new SqlParameter("@pagina", req.Pagina));
+			ps.Add(new SqlParameter("@adm_id", req.adm_id));
+			ps.Add(new SqlParameter("@usu_id", req.usu_id));
 
 			var ordenes = _repository.EjecutarLstSpExt<PedidoInternoListaDto>(sp, ps, true);
 

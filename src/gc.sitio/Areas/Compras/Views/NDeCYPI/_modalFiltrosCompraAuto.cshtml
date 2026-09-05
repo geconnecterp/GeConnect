@@ -57,7 +57,7 @@
         <div class="row mt-2">
 
             <!-- Ventas Ult. 30 días -->
-            <div class="col-sm-6">
+            <div class="col-sm-5">
                 <div class="form-check">
                     <input class="form-check-input" type="radio" name="optFiltro" id="optVta30" value="VTA30">
                     <label class="form-check-label fw-bold" for="optVta30">
@@ -67,7 +67,7 @@
             </div>
 
             <!-- Ventas entre + fechas en la misma línea -->
-            <div class="col-sm-6 d-flex align-items-center">
+            <div class="col-sm-7 d-flex align-items-center">
 
                 <!-- Radio -->
                 <div class="form-check me-2">
@@ -89,7 +89,7 @@
         <div class="row mt-2">
 
             <!-- Check debajo de Ventas Ult. 30 días -->
-            <div class="col-sm-6">
+            <div class="col-sm-5">
                 <div class="form-check" id="divChkCotizaciones">
                     <input class="form-check-input" type="checkbox" id="chkCotizaciones">
                     <label class="form-check-label" for="chkCotizaciones">
@@ -99,7 +99,7 @@
             </div>
 
             <!-- Check + input debajo de Ventas entre -->
-            <div class="col-sm-6">
+            <div class="col-sm-7">
 
                 <div class="promo-inline" id="divChkPromos">
                     <div class="form-check m-0">
@@ -138,66 +138,67 @@
         </div>
 
 
+        @if (Model.EsOC)
+        {
+            <!-- ========================= -->
+            <!-- COMPRAR PARA -->
+            <!-- ========================= -->
+            <div class="section-title">Comprar para</div>
 
-        <!-- ========================= -->
-        <!-- COMPRAR PARA -->
-        <!-- ========================= -->
-        <div class="section-title">Comprar para</div>
+            <div class="row mt-2">
 
-        <div class="row mt-2">
+                <!-- Checkbox + SelectList -->
+                <div class="col-sm-6 alinear-arriba">
+                    <div class="form-check me-2">
+                        <input class="form-check-input" type="checkbox" id="chkSucursales">
+                        <label class="form-check-label fw-bold" for="chkSucursales">Sucursales</label>
+                    </div>
 
-            <!-- Checkbox + SelectList -->
-            <div class="col-sm-6 alinear-arriba">
-                <div class="form-check me-2">
-                    <input class="form-check-input" type="checkbox" id="chkSucursales">
-                    <label class="form-check-label fw-bold" for="chkSucursales">Sucursales</label>
-                </div>
-
-                @Html.DropDownListFor(m => m.SelectedValue, Model.ListaSucursales, "Seleccionar",
+                    @Html.DropDownListFor(m => m.SelectedValue, Model.ListaSucursales, "Seleccionar",
                     new { @id = "listaSucursalesModal", @class = "form-control form-control-sm ms-2", disabled = "disabled" })
-            </div>
-
-            <!-- ListBox -->
-            <div class="col-sm-6 alinear-arriba">
-                @Html.ListBox("SucursalesListModal", null,
-                    new { @class = "form-control listbox-sm", disabled = "disabled" })
-            </div>
-
-        </div>
-
-        <!-- ========================= -->
-        <!-- EXISTENCIAS -->
-        <!-- ========================= -->
-
-        <div class="section-title">Existencias</div>
-
-        <div class="row mt-2">
-
-            <!-- Checkbox + label alineado al select -->
-            <div class="col-sm-6 alinear-arriba">
-                <div class="form-check me-2">
-                    <input class="form-check-input" type="checkbox" id="chkDepositos">
-                    <label class="form-check-label fw-bold" for="chkDepositos">Depósitos</label>
                 </div>
 
-                @Html.DropDownListFor(m => m.SelectedValue, Model.ListaDepositos, "Seleccionar",
-                    new { @id = "listaDepositosModal", @class = "form-control form-control-sm", disabled = "disabled" })
+                <!-- ListBox -->
+                <div class="col-sm-6 alinear-arriba">
+                    @Html.ListBox("SucursalesListModal", null,
+                                    new { @class = "form-control listbox-sm", disabled = "disabled" })
+                </div>
+
             </div>
 
-            <!-- ListBox -->
-            <div class="col-sm-6 alinear-arriba">
-                @Html.ListBox("DepositosListModal", null,
-                    new { @class = "form-control listbox-sm", disabled = "disabled" })
+            <!-- ========================= -->
+            <!-- EXISTENCIAS -->
+            <!-- ========================= -->
+
+            <div class="section-title">Existencias</div>
+
+            <div class="row mt-2">
+
+                <!-- Checkbox + label alineado al select -->
+                <div class="col-sm-6 alinear-arriba">
+                    <div class="form-check me-2">
+                        <input class="form-check-input" type="checkbox" id="chkDepositos">
+                        <label class="form-check-label fw-bold" for="chkDepositos">Depósitos</label>
+                    </div>
+
+                    @Html.DropDownListFor(m => m.SelectedValue, Model.ListaDepositos, "Seleccionar",
+                                    new { @id = "listaDepositosModal", @class = "form-control form-control-sm", disabled = "disabled" })
+                </div>
+
+                <!-- ListBox -->
+                <div class="col-sm-6 alinear-arriba">
+                    @Html.ListBox("DepositosListModal", null,
+                                    new { @class = "form-control listbox-sm", disabled = "disabled" })
+                </div>
+
             </div>
-
-        </div>
-
+        }
 
         <!-- ========================= -->
         <!-- 4) DÍAS DE APROVISIONAMIENTO -->
         <!-- ========================= -->
         <div class="row mt-3">
-            <div class="col-sm-3">
+            <div class="col-sm-4">
                 <label class="input-group-text fw-bold">Días de Aprovisionamiento:</label>
             </div>
             <div class="col-sm-1">
@@ -220,13 +221,26 @@
                     </label>
                 </div>
 
-                <!-- Renombrado -->
-                <div class="form-check form-switch mb-2">
-                    <input class="form-check-input" asp-for="ExcluirOCPendientes" />
-                    <label class="form-check-label" for="ExcluirOCPendientes">
-                        Excluir OC Pendientes con plazo de Entrega no vencido
-                    </label>
-                </div>
+                @if (Model.EsOC)
+                {
+                    <!-- Renombrado -->
+                    <div class="form-check form-switch mb-2">
+                        <input class="form-check-input" asp-for="ExcluirOCPendientes" />
+                        <label class="form-check-label" for="ExcluirOCPendientes">
+                            Excluir OC Pendientes con plazo de Entrega no vencido
+                        </label>
+                    </div>
+                }
+                else
+                {
+                    <!-- Renombrado -->
+                    <div class="form-check form-switch mb-2">
+                        <input class="form-check-input" asp-for="ExcluirPIPendientes" />
+                        <label class="form-check-label" for="ExcluirPIPendientes">
+                            Excluir PI Pendientes con plazo de Entrega no vencido
+                        </label>
+                    </div>
+                }
 
                 <!-- Ya existentes -->
                 <div class="form-check form-switch mb-2">

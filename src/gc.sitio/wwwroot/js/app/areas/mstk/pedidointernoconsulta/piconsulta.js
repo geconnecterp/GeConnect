@@ -72,6 +72,8 @@ function BuscarPedidosInternos(pag = 1) {
 		PostGenHtml({}, urlInitView, function (html) {
 			$("#divDetalle").html(html).collapse("show");
 			$("#divFiltros").collapse("hide");
+			// Actualizar filtros aplicados después de renderizar la pantalla principal
+			try { MostrarFiltrosAplicados(); } catch (e) { console.warn('MostrarFiltrosAplicados no disponible:', e); }
 			CerrarWaiting();
 			CargarPedidosInternos(filtros, url);
 			CargarEventosDeTabs();
@@ -283,7 +285,31 @@ function configurarEventosSeleccionListaPI() {
 	});
 	$(document).off("click", "#btnImprimirLista");
 	$(document).on("click", "#btnImprimirLista", function () {
+		const $tabla = $("#tbGridPedidosInternos");
 
+		if ($tabla.length === 0 || $tabla.find("tbody tr").not(".fila-vacia").length === 0) {
+			AbrirMensaje("ATENCIÓN", "No hay registros para imprimir.", function () {
+				$("#msjModal").modal("hide");
+			}, false, ["Aceptar"], "error!", null);
+			return;
+		}
+
+		var tipoReporte = 2;
+		var data = { tipoReporte };
+		PostGen(data, setearTipoDeReporteUrl, function (obj) {
+			CerrarWaiting();
+			if (obj.error === true) {
+				CerrarWaiting();
+				AbrirMensaje("ATENCIÓN", obj.msg, function () {
+					$("#msjModal").modal("hide");
+					return true;
+				}, false, ["Aceptar"], "error!", null);
+			}
+			else {
+				CerrarWaiting();
+				ImprimirPedidoInternoLista(obj.adm_id, obj.usu_id);
+			}
+		});
 	});
 	$(document).off("click", "#btnImprimirPI");
 	$(document).on("click", "#btnImprimirPI", function () {
@@ -321,6 +347,101 @@ function ImprimirPedidoInterno(id) {
 		cargarReporteEnArre(65, data, "PEDIDO INTERNO", "", "");
 		invocacionGestorDoc({});
 	}, 500);
+}
+
+function ImprimirPedidoInternoLista(adm_id, usu_id) {
+	ReseteoDeReportes();
+	setTimeout(() => {
+		const usaPeriodo = $("#chkDesdeHasta").is(":checked");
+		const fechaD = usaPeriodo ? $("#FechaDesde").val() : null;
+		const fechaH = usaPeriodo ? $("#FechaHasta").val() : null;
+
+		var rel01 = [];
+		$("#SucursalesList").children().each(function (i, item) { rel01.push($(item).val()) });
+
+		var rel02 = [];
+		$("#EstadosList").children().each(function (i, item) { rel02.push($(item).val()) });
+
+		// 🔥 Construcción del string de filtros
+		var filtrosDesc = [];
+		filtrosDesc.push(ConstruirDescripcionFiltro("Sucursales", "#chkSucursales", "#SucursalesList"));
+		filtrosDesc.push(ConstruirDescripcionFiltro("Estados", "#chkEstados", "#EstadosList"));
+		// Limpieza: eliminar vacíos
+		filtrosDesc = filtrosDesc.filter(x => x !== "");
+		// String final
+		var filtrosString = filtrosDesc.join(" | ");
+
+		var data ={
+			FechaD: fechaD || null,
+			FechaH: fechaH || null,
+			Rel01: rel01.length ? rel01 : null,
+			Rel02: rel02.length ? rel02 : null,
+			AdmId: adm_id,
+			UsuId: usu_id,
+			filtrosString
+		};
+		
+		cargarReporteEnArre(66, data, "REPORTE PEDIDOS INTERNOS", "", "");
+		invocacionGestorDoc({});
+	}, 500);
+}
+
+function MostrarFiltrosAplicados() {
+	try {
+		const cont = $("#filtrosAplicadosFloating");
+		const fallback = $(".p-1.border.rounded.bg-light").first();
+		const target = cont.length ? cont : fallback;
+		if (!target.length) return;
+
+		const desde = $("#FechaDesde").val();
+		const hasta = $("#FechaHasta").val();
+
+		const sucursales = listFrom("SucursalesList");
+		const estados = listFrom("EstadosList");
+
+		let html = '<div class="d-inline-flex align-items-center" style="gap:8px;white-space:nowrap;">';
+		if (desde) html += `<span class="badge bg-secondary">Desde: ${desde}</span>`;
+		if (hasta) html += `<span class="badge bg-secondary">Hasta: ${hasta}</span>`;
+
+		html += renderGroup('SUC', sucursales);
+		html += renderGroup('EST', estados);
+		html += '</div>';
+
+		// Render
+		target.html(html);
+	} catch (e) {
+		console.error('MostrarFiltrosAplicados error', e);
+	}
+}
+
+function ConstruirDescripcionFiltro(nombre, idCheckbox, idListBox) {
+
+	const activo = $(idCheckbox).is(":checked");
+
+	// Si NO está activo → devolver "Todos"
+	if (!activo) {
+		return `${nombre}: Todos`;
+	}
+
+	// Si está activo → obtener valores
+	const valores = [];
+	$(idListBox + " option").each(function () {
+		const txt = $(this).text().trim();
+
+		// Si viene "%" → reemplazar por "Todos"
+		if (txt === "%" || txt === "") {
+			valores.push("Todos");
+		} else {
+			valores.push(txt);
+		}
+	});
+
+	// Si no hay valores → "Todos"
+	if (valores.length === 0) {
+		return `${nombre}: Todos`;
+	}
+
+	return `${nombre}: ${valores.join(", ")}`;
 }
 
 function ActualizarEstadosDeBotonesEnPI() {

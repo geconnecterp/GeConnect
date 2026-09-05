@@ -145,6 +145,16 @@ function BuscarUnidadesDeLectura() {
 		//$("#btnImprimir").show();
 		autoEvalTabVisible();
 		CerrarWaiting();
+		// Seleccionar automáticamente la primera fila si hay datos
+		const $primerFila = $("#tbUL tbody tr").not(".fila-vacia").first();
+
+		if ($primerFila.length > 0) {
+			// Marca visual de selección
+			selectReg($primerFila[0], "tbUL");
+
+			// Ejecuta el doble click para cargar el detalle
+			SeleccionarUL($primerFila[0], "tbUL");
+		}
 		return true
 	});
 }
