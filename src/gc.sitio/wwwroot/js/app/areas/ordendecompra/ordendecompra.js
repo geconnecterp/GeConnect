@@ -106,6 +106,17 @@ $(function () {
 		}
 	});
 
+	$("#btnFiltro").on("click", function () {
+		if ($("#divFiltros").hasClass("show")) {
+			$("#divFiltros").collapse("hide");
+			$("#divDetalle").collapse("show");
+		}
+		else {
+			$("#divFiltros").collapse("show");
+			$("#divDetalle").collapse("hide");
+		}
+	});
+
 	//$(document).on("click", "#btnAbmCancelar"
 	$(document).on("click", "#btnAbmCancelar", function () {
 		const filas = window.obtenerFilasGrillaOCModificadas();
@@ -159,7 +170,7 @@ $(function () {
 	$(document).on("click", "#btnCancel", function () {
 		LimpiarDatosDelFiltroInicial();
 		$("#divDetalle").collapse("hide");
-		$("#divFiltro").collapse("show");
+		$("#divFiltros").collapse("show");
 	});
 
 	$("#btnCollapseSection").on("click", btnCollapseSectionClicked);
@@ -701,7 +712,7 @@ function presentaPaginacionOC(div) {
 		}
 	});
 	$("#pagEstado").val(false);
-	$("#divFiltro").collapse("hide")
+	$("#divFiltros").collapse("hide")
 	return true;
 }
 
@@ -903,7 +914,7 @@ function limpiarNumero(valor) {
 function InicializaPantalla() {
 	var tb = $("#tbListaProducto tbody tr");
 	if (tb.length === 0) {
-		//$("#divFiltro").collapse("show")
+		//$("#divFiltros").collapse("show")
 	}
 
 	$("#lbRel01").text("Proveedor");
@@ -930,6 +941,7 @@ function InicializaPantalla() {
 	ocIdSelected = "";
 	ctaIdSelected = "";
 	MostrarDatosDeCuenta(false);
+	$("#divFiltros").collapse("show");
 	$("#btnAbmAceptar").prop("disabled", true);
 	CerrarWaiting();
 	//if (vieneDesdeModuloExterno)
@@ -1218,6 +1230,7 @@ function BuscarProductos(pag = 1) {
 	PostGenHtml(data, BuscarProductosURL, function (obj) {
 		CerrarWaiting();
 		$("#divListaProducto").html(obj);
+		$("#divFiltros").collapse("hide");
 		$("#divDetalle").collapse("show");
 		AddEventListenerToGrid("tbListaProducto");
 		PostGen({}, buscarMetadataURL, function (obj) {
@@ -1250,7 +1263,7 @@ function BuscarProductos(pag = 1) {
 		tab.show();
 		viendeDesdeBusquedaDeProducto = false;
 		$("#divDetalle").collapse("show");
-		$("#divFiltro").collapse("hide");
+		$("#divFiltros").collapse("hide");
 		return true
 	});
 }

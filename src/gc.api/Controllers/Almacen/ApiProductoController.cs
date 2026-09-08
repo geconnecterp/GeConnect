@@ -1787,6 +1787,8 @@ namespace gc.api.Controllers.Almacen
 				Pagina = filtro.Pagina ?? 0,
 				fecha_d = filtro.FechaD ?? DateTime.MinValue,
 				fecha_h = filtro.FechaH ?? DateTime.MaxValue,
+                adm_id = filtro.Adm_id,
+                usu_id = filtro.Usu_id,
 				adm_list = ToCsv(filtro.Rel01),
 				estado_list = ToCsv(filtro.Rel02),
 			};

@@ -1,0 +1,253 @@
+﻿@using gc.infraestructura.Helpers
+@using gc.sitio.Areas.Compras.Models
+@model BuscarProductosOCPI2Model;
+@using static gc.infraestructura.Helpers.GridHelper
+@{
+	var alt = true;
+	string clase = string.Empty;
+
+	string grupoActual = string.Empty;
+	string grupoAnterior = string.Empty;
+
+	decimal totalCosto = 0;
+	decimal totalPallet = 0;
+}
+@section styles {
+}
+<style>
+	.bg-pedido-m {
+		background-color: lightgreen !important;
+	}
+
+	.bg-pedido-a {
+		background-color: #6cc6f3 !important;
+	}
+
+	#containerListaInfoProducto {
+		position: relative;
+		height: 600px;
+		max-height: 600px;
+		overflow-y: auto;
+		overflow-x: auto;
+		z-index: auto;
+		background: #fff; 
+	}
+
+	.table-golden {
+		border-collapse: separate;
+		border-spacing: 0;
+		table-layout: fixed;
+	}
+
+		.table-golden thead {
+			position: sticky;
+			top: 0;
+			z-index: 1;
+			background: linear-gradient(to bottom, #b8860b, #daa520) !important;
+			color: #fff !important;
+		}
+
+			.table-golden thead th {
+				position: sticky;
+				top: 0;
+				z-index: 4;
+				background: linear-gradient(to bottom, #b8860b, #daa520);
+				color: #fff;
+				box-shadow: 0 1px 0 rgba(0,0,0,0.05), 0 2px 2px rgba(0,0,0,0.04);
+				background-clip: padding-box;
+			}
+
+			.table-golden thead,
+			.table-golden thead th {
+				/*background-color: #b8860b;  tu dorado */
+				/* color: #333; */
+			}
+
+	#tbListaInfoProducto th,
+	#tbListaInfoProducto td {
+		padding: 0.01rem 0.15rem !important;
+		line-height: 1.2 !important;
+		height: auto !important;
+	}
+
+	#tbListaInfoProducto tr {
+		height: 1.6rem !important;
+	}
+
+	.th-descripcion {
+		position: relative;
+		text-align: center;
+		vertical-align: middle;
+		width: 10%;
+	}
+
+		.th-descripcion .th-title {
+			display: inline-block;
+		}
+
+	.btn-info-producto {
+		position: absolute;
+		right: 4px;
+		top: 50%;
+		transform: translateY(-50%);
+		background: transparent !important;
+		border: none !important;
+		padding: 0;
+		color: #fff; 
+		cursor: pointer;
+	}
+
+		.btn-info-producto i {
+			font-size: 1rem;
+			line-height: 1;
+		}
+
+	#tbListaInfoProducto tfoot {
+		position: sticky;
+		bottom: 0;
+		z-index: 2;
+	}
+
+		#tbListaInfoProducto tfoot .total-row {
+			border-top: 2px solid #999;
+			background-color: #e9ecef;
+		}
+
+	.cell-ellipsis {
+		white-space: nowrap !important;
+		overflow: hidden !important;
+		text-overflow: ellipsis !important;
+		display: flex; /* en vez de block */
+		align-items: center; /* centra verticalmente el texto */
+		width: 100%;
+	}
+
+	.bg-stk-verde {
+		background-color: #2e7d32 !important; /* verde oscuro */
+		color: #fff !important;
+	}
+
+	.bg-stk-azul {
+		background-color: #1565c0 !important; /* azul */
+		color: #fff !important;
+	}
+
+	.bg-stk-rojo {
+		background-color: #c62828 !important; /* rojo */
+		color: #fff !important;
+	}
+	.disc-icon {
+		position: absolute;
+		right: 2px;
+		top: 50%;
+		transform: translateY(-50%);
+	}
+</style>
+<div class="table-responsive table-wrapper-full-width" id="containerListaInfoProducto">
+	<table class="table table-sm mb-0 table-hover table-golden" id="tbListaInfoProducto">
+		<thead>
+			<tr class="header">
+				<th style="width:3%;" class="align-center tiny-row">Código</th>
+				<th class="th-descripcion">
+					<span class="th-title">Descripción</span>
+					<button type="button"
+							class="btn btn-info-producto"
+							data-action="info-producto"
+							title="Abrir info de producto">
+						<i class="bx bx-info-circle"></i>
+					</button>
+				</th>
+				<th style="width:8%;" class="align-center">Id. Barrado</th>
+				<th style="width:3%;" class="align-center tiny-row">Cod. Prov</th>
+				<th style="width:2%;" class="align-center tiny-row">Stock Suc</th>
+				<th style="width:3%;" class="align-center tiny-row">Stock Tot</th>
+				<th style="width:2%;" class="align-center tiny-row" title="Unidad de Presentación">Uni. Pres.</th>
+				<th style="width:3%;" class="align-center tiny-row" title="Unidades por Pallet">Uni. Pallet</th>
+				<th style="width:0%; display:none;">pg_id</th>
+				<th style="width:0%; display:none;">rub_id</th>
+			</tr>
+		</thead>
+		<tbody>
+			@if (Model != null && Model.ListaDatosProductos != null && Model.ListaDatosProductos.ListaDatos != null && Model.ListaDatosProductos.ListaDatos.Count > 0)
+			{
+				var productos = Model.ListaDatosProductos.ListaDatos.OrderBy(x => x.cta_id).ThenBy(y => y.pg_id).ThenBy(z => z.p_orden_pg).ToList();
+				
+				@foreach (var item in productos)
+				{
+					grupoActual = item.cta_id + item.pg_id;
+					if (grupoActual != grupoAnterior)
+					{
+						var leyenda = $"Prov: {item.cta_id} {item.cta_denominacion} Familia: {item.pg_id} {item.pg_desc}";
+						<tr class="table-secondary fw-bold">
+							<td colspan="8" class="text-center">
+								<i class="bx bx-folder me-1"></i>
+								@leyenda
+							</td>
+						</tr>
+						grupoAnterior = grupoActual;
+						alt = true; 
+					}
+
+					if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+					<tr class="@clase"
+						data-id="@item.p_id"
+						data-cta-id="@item.cta_id"
+						data-cta-denominacion="@item.cta_denominacion"
+						data-pedido-tipo="@item.pedido_tipo"
+						onclick="selectListaProductoRow(this)">
+						<td class="align-center tiny-row">@item.p_id</td>
+						@if (item.p_activo == "D")
+						{
+							<td class="align-left tiny-row" style="position:relative;">
+								<span class="cell-ellipsis" title="@item.p_desc">
+									@item.p_desc
+								</span>
+								<span class="disc-icon" title="Producto discontinuo">
+									<i class="bx bx-dislike"></i>
+								</span>
+							</td>
+						}
+						else
+						{
+							<td class="align-left tiny-row">
+								<span class="cell-ellipsis" title="@item.p_desc">
+									@item.p_desc
+								</span>
+							</td>
+						}
+						<td class="align-center tiny-row">@item.p_id_barrado</td>
+						<td class="align-center tiny-row">@item.p_id_prov</td>
+						<td class="align-right tiny-row">@GridHelper.FormatearDato(item.stk_suc, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
+						<td class="align-right tiny-row">@GridHelper.FormatearDato(item.stk, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
+						<td class="align-right tiny-row">@item.p_unidad_pres</td>
+						<td class="align-right tiny-row">@item.p_unidad_palet</td>
+						<td style="display:none;">@item.pg_id</td>
+						<td style="display:none;">@item.rub_id</td>
+					</tr>
+				}
+				
+				totalCosto = productos.Sum(x => x.costo_total);
+				totalPallet = productos.Sum(x => x.paletizado);
+			}
+			else
+			{
+				<tr>
+					<td colspan="8" class="text-center text-muted py-4">
+						<i class="bx bx-info-circle me-2"></i>
+						No se encontraron productos con los criterios especificados
+					</td>
+				</tr>
+			}
+		</tbody>
+	</table>
+</div>
+<script>
+</script>
+
+@section scripts {
+	<script type="text/javascript">
+		var pedido = "";
+		var pIdEditado = "";
+		var rowIndex = 0;
+	</script>
+}

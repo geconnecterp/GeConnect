@@ -1,4 +1,5 @@
-﻿using gc.api.core.Contratos.Servicios;
+﻿using DocumentFormat.OpenXml.Vml;
+using gc.api.core.Contratos.Servicios;
 using gc.api.core.Contratos.Servicios.Reportes;
 using gc.api.core.Entidades;
 using gc.api.core.Interfaces.Datos;
@@ -216,15 +217,18 @@ namespace gc.api.core.Servicios.Reportes
 			// ================================
 			// TABLA PRINCIPAL
 			// ================================
-			PdfPTable tabla = new PdfPTable(4);
+			PdfPTable tabla = new PdfPTable(6);
 			tabla.WidthPercentage = 100;
-			tabla.SetWidths(new float[] { 10f, 55f, 15f, 20f });
+			//tabla.SetWidths(new float[] { 10f, 55f, 15f, 20f });
+			tabla.SetWidths(new float[] { 7f, 55f, 10f, 10f, 9, 9 });
 
 			// Encabezados
 			AgregarCeldaHeader(tabla, "Código", normalBold);
 			AgregarCeldaHeader(tabla, "Descripción", normalBold);
 			AgregarCeldaHeader(tabla, "Ref. Prov.", normalBold);
 			AgregarCeldaHeader(tabla, "Código de Barras", normalBold);
+			AgregarCeldaHeader(tabla, "STK Salón Vta.", normalBold);
+			AgregarCeldaHeader(tabla, "STK Otros Depo.", normalBold);
 
 			// ================================
 			// AGRUPADOR ÚNICO POR RUBRO
@@ -251,7 +255,8 @@ namespace gc.api.core.Servicios.Reportes
 					AgregarCeldaHeader(tabla, "Descripción", normalBold);
 					AgregarCeldaHeader(tabla, "Ref. Prov.", normalBold);
 					AgregarCeldaHeader(tabla, "Código de Barras", normalBold);
-					AgregarCeldaHeader(tabla, "Bultos Aprox.", normalBold);
+					AgregarCeldaHeader(tabla, "STK Salón Vta.", normalBold);
+					AgregarCeldaHeader(tabla, "STK Otros Depo.", normalBold);
 				}
 
 				// ---- ÚNICO AGRUPADOR ----
@@ -261,7 +266,7 @@ namespace gc.api.core.Servicios.Reportes
 				{
 					PdfPCell celdaGrupo = new(new Phrase(grupo, normalBold))
 					{
-						Colspan = 4,
+						Colspan = 6,
 						BackgroundColor = new BaseColor(230, 230, 230),
 						Padding = 5,
 						HorizontalAlignment = Element.ALIGN_CENTER
@@ -274,8 +279,10 @@ namespace gc.api.core.Servicios.Reportes
 				// ---- Fila de producto ----
 				AgregarCelda(tabla, item.p_id, chico, Element.ALIGN_CENTER);
 				AgregarCelda(tabla, item.p_desc, chico, Element.ALIGN_LEFT);
-				AgregarCelda(tabla, item.p_id_prov ?? "", chico, Element.ALIGN_RIGHT);
+				AgregarCelda(tabla, item.p_id_prov ?? "", chico, Element.ALIGN_CENTER);
 				AgregarCelda(tabla, item.p_id_barrado, chico, Element.ALIGN_CENTER);
+				AgregarCelda(tabla, GridHelper.FormatearDato(item.stk_dest_salon, GridHelper.FormatDato.Monto, item.PermiteDecimales), chico, Element.ALIGN_RIGHT);
+				AgregarCelda(tabla, GridHelper.FormatearDato(item.stk_dest, GridHelper.FormatDato.Monto, item.PermiteDecimales), chico, Element.ALIGN_RIGHT);
 			}
 
 			pdf.Add(tabla);

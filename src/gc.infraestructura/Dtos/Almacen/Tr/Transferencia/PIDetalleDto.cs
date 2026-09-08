@@ -30,5 +30,7 @@
 		public string up_tipo { get; set; } = string.Empty;
 		public bool PermiteDecimales => up_tipo == "P";
 		public int unidad_pres { get; set; }
+		public decimal stk_dest_salon { get; set; }
+		public decimal stk_dest { get; set; }
 	}
 }

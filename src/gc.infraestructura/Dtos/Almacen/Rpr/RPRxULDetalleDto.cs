@@ -1,7 +1,7 @@
 ﻿
 namespace gc.infraestructura.Dtos.Almacen.Rpr
 {
-	public class RPRxULDetalleDto : Dto
+	public class RPRxULDetalleDto : Dto, IProductoConUnidad
 	{
 		public string id { get; set; } = string.Empty;
 		public string ul_id { get; set; } = string.Empty;
@@ -11,7 +11,8 @@ namespace gc.infraestructura.Dtos.Almacen.Rpr
 		public string p_id_prov { get; set; } = string.Empty;
 		public string up_id { get; set; } = string.Empty;
         public string up_desc { get; set; } = string.Empty;
-        public int unidad_pres { get; set; }
+		public string up_tipo { get; set; } = string.Empty;
+		public int unidad_pres { get; set; }
         public int bulto { get; set; }
 		public decimal us { get; set; } = 0.000M;
 		public decimal cantidad { get; set; } = 0.000M;
@@ -21,7 +22,8 @@ namespace gc.infraestructura.Dtos.Almacen.Rpr
 		public string p_con_vto { get; set; } = string.Empty;
         public int p_con_vto_min { get; set; }
         public DateTime p_con_vto_ctl { get; set; }
-    }
+		public bool PermiteDecimales => up_tipo == "P";
+	}
 
 	public class RTRxULDetalleDto : RPRxULDetalleDto
 	{ }
