@@ -1854,23 +1854,37 @@ namespace gc.sitio.core.Servicios.Implementacion
 
 			var link = $"{_appSettings.RutaBase}{RutaApiAlmacen}{TI_ListaProductos}?tr={tr}&admId={admId}&usuId={usuId}&boxid={boxid}&rubroid={rubId}";
 
-			response = await client.GetAsync(link);
+			_logger.LogInformation(
+				"[TR-TRACE][SITIO-API][LISTA-REQUEST] TI={Ti} Adm={AdmId} Usuario={Usuario} BoxFiltro={BoxFiltro} RubroFiltro={RubroFiltro} Url={Url}",
+				tr, admId, usuId, boxid, rubId, link);
+			try
+			{
+				response = await client.GetAsync(link);
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, "[TR-TRACE][SITIO-API][LISTA-EXCEPTION] TI={Ti} Url={Url}", tr, link);
+				throw;
+			}
+			_logger.LogInformation("[TR-TRACE][SITIO-API][LISTA-HTTP] TI={Ti} StatusCode={StatusCode}", tr, (int)response.StatusCode);
 
 			if (response.StatusCode == HttpStatusCode.OK)
 			{
 				string stringData = await response.Content.ReadAsStringAsync();
+				_logger.LogInformation("[TR-TRACE][SITIO-API][LISTA-RAW-RESPONSE] TI={Ti} Body={Body}", tr, stringData);
 				if (string.IsNullOrEmpty(stringData))
 				{
 					_logger.LogWarning($"La API no devolvió dato alguno. Parametro de busqueda {JsonConvert.SerializeObject(response)}");
 					return new();
 				}
 				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<TiListaProductoDto>>>(stringData) ?? new ApiResponse<List<TiListaProductoDto>>(new List<TiListaProductoDto>());
+				_logger.LogInformation("[TR-TRACE][SITIO-API][LISTA-DESERIALIZADA] TI={Ti} CantidadRegistros={CantidadRegistros}", tr, apiResponse.Data.Count);
 				return apiResponse.Data;
 			}
 			else
 			{
 				string stringData = await response.Content.ReadAsStringAsync();
-				_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+				_logger.LogWarning("[TR-TRACE][SITIO-API][LISTA-ERROR] TI={Ti} StatusCode={StatusCode} Body={Body}", tr, (int)response.StatusCode, stringData);
 
 				try
 				{
@@ -1935,17 +1949,33 @@ namespace gc.sitio.core.Servicios.Implementacion
 
 			var link = $"{_appSettings.RutaBase}{RutaAPI}{TI_VALIDA_PROD_CARRITO}";
 
-			response = await client.PostAsync(link, contentData);
+			_logger.LogInformation(
+				"[TR-TRACE][SITIO-API][VALIDACION-REQUEST] TI={Ti} Url={Url} Request={Request}",
+				request.Ti, link, JsonConvert.SerializeObject(request));
+			try
+			{
+				response = await client.PostAsync(link, contentData);
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, "[TR-TRACE][SITIO-API][VALIDACION-EXCEPTION] TI={Ti} Url={Url}", request.Ti, link);
+				throw;
+			}
+			_logger.LogInformation("[TR-TRACE][SITIO-API][VALIDACION-HTTP] TI={Ti} StatusCode={StatusCode}", request.Ti, (int)response.StatusCode);
 
 			if (response.StatusCode == HttpStatusCode.OK)
 			{
 				string stringData = await response.Content.ReadAsStringAsync();
+				_logger.LogInformation("[TR-TRACE][SITIO-API][VALIDACION-RAW-RESPONSE] TI={Ti} Body={Body}", request.Ti, stringData);
 				if (string.IsNullOrEmpty(stringData))
 				{
 					_logger.LogWarning($"La API devolvió error. Parametros {JsonConvert.SerializeObject(request)}");
 					return new() { Ok = false, Mensaje = "No se recepciono datos alguno." };
 				}
 				apiResponse = JsonConvert.DeserializeObject<ApiResponse<RespuestaDto>>(stringData) ?? throw new NegocioException("Hubo un problema al deserializar los datos");
+				_logger.LogInformation(
+					"[TR-TRACE][SITIO-API][VALIDACION-DESERIALIZADA] TI={Ti} Resultado={Resultado} Mensaje={Mensaje}",
+					request.Ti, apiResponse.Data.resultado, apiResponse.Data.resultado_msj);
 				if (apiResponse.Data.resultado == 0)
 				{
 					return new RespuestaGenerica<RespuestaDto> { Ok = true, Mensaje = "OK" };
@@ -1958,7 +1988,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 			else
 			{
 				string stringData = await response.Content.ReadAsStringAsync();
-				_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+				_logger.LogWarning("[TR-TRACE][SITIO-API][VALIDACION-ERROR] TI={Ti} StatusCode={StatusCode} Body={Body}", request.Ti, (int)response.StatusCode, stringData);
 				return new() { Ok = false, Mensaje = "Algo no fue bien. Verifique el log." };
 			}
 		}
@@ -1975,17 +2005,33 @@ namespace gc.sitio.core.Servicios.Implementacion
 
 			var link = $"{_appSettings.RutaBase}{RutaAPI}{TI_RESGUARDA_PROD_CARRITO}";
 
-			response = await client.PostAsync(link, contentData);
+			_logger.LogInformation(
+				"[TR-TRACE][SITIO-API][CARGA-REQUEST] TI={Ti} Url={Url} Request={Request}",
+				request.Ti, link, JsonConvert.SerializeObject(request));
+			try
+			{
+				response = await client.PostAsync(link, contentData);
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, "[TR-TRACE][SITIO-API][CARGA-EXCEPTION] TI={Ti} Url={Url}", request.Ti, link);
+				throw;
+			}
+			_logger.LogInformation("[TR-TRACE][SITIO-API][CARGA-HTTP] TI={Ti} StatusCode={StatusCode}", request.Ti, (int)response.StatusCode);
 
 			if (response.StatusCode == HttpStatusCode.OK)
 			{
 				string stringData = await response.Content.ReadAsStringAsync();
+				_logger.LogInformation("[TR-TRACE][SITIO-API][CARGA-RAW-RESPONSE] TI={Ti} Body={Body}", request.Ti, stringData);
 				if (string.IsNullOrEmpty(stringData))
 				{
 					_logger.LogWarning($"La API devolvió error. Parametros {JsonConvert.SerializeObject(request)}");
 					return new();
 				}
 				apiResponse = JsonConvert.DeserializeObject<ApiResponse<RespuestaDto>>(stringData) ?? throw new NegocioException("Hubo un problema al deserializar los datos");
+				_logger.LogInformation(
+					"[TR-TRACE][SITIO-API][CARGA-DESERIALIZADA] TI={Ti} Resultado={Resultado} Mensaje={Mensaje}",
+					request.Ti, apiResponse.Data.resultado, apiResponse.Data.resultado_msj);
 				if (apiResponse.Data.resultado == 0)
 				{
 					return new RespuestaGenerica<RespuestaDto> { Ok = true, Mensaje = "OK" };
@@ -1998,7 +2044,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 			else
 			{
 				string stringData = await response.Content.ReadAsStringAsync();
-				_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+				_logger.LogWarning("[TR-TRACE][SITIO-API][CARGA-ERROR] TI={Ti} StatusCode={StatusCode} Body={Body}", request.Ti, (int)response.StatusCode, stringData);
 				return new();
 			}
 		}

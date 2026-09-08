@@ -12,8 +12,8 @@
 
 <div class="grid-golden h-100">
     <div class="grid-golden-body p-1">
-        <div class="table-responsive table-wrapper table-wrapper-500">
-            <table class="table table-sm table-hover mb-0 table-golden" id="tbORListaProd">
+        <div class="pocket-grid-scroll table-responsive table-wrapper table-wrapper-500">
+            <table class="pocket-grid table table-sm table-hover mb-0 table-golden" id="tbORListaProd">
                 <thead class="sticky-top table-golden-header-compact">
                     <tr class="header">
                         <th style="display:none;"></th>
@@ -27,6 +27,8 @@
                         {
                             cont++;
                             if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+                            var pedido = item.pedido.ToString(item.up_id == "07" ? "N0" : "N3");
+                            var colectado = item.colectado.ToString(item.up_id == "07" ? "N0" : "N3");
 
                             <tr class="@clase cursor-pointer" 
                                 data-prod-id="@item.p_id"
@@ -49,12 +51,12 @@
                                             </div>
                                             <div class="p-0">
                                                 <span class="badge bg-info">
-                                                    Pedido: @item.pedido
+                                                    Pedido: @pedido
                                                 </span>
                                                 @if (item.colectado > 0)
                                                 {
                                                     <span class="badge bg-success">
-                                                        Colectado: @item.colectado
+                                                        Colectado: @colectado
                                                     </span>
                                                 }
                                             </div>
@@ -66,8 +68,25 @@
                                                asp-controller="or" 
                                                asp-area="pocketppal" 
                                                asp-route-p_id="@item.p_id" 
+                                               asp-route-box_id="@item.box_id"
                                                class="btn btn-sm btn-success">
                                                 <i class="bx bx-barcode"></i>
+                                            </a>
+                                            <a asp-action="ORValidaProducto"
+                                               asp-controller="or"
+                                               asp-area="pocketppal"
+                                               asp-route-p_id="@item.p_id"
+                                               asp-route-box_id="@item.box_id"
+                                               asp-route-reemplazar="true"
+                                               class="btn btn-sm btn-warning btnReemplazarProducto"
+                                               title="Reemplazar producto"
+                                               aria-label="Reemplazar @item.p_id @item.p_desc"
+                                               data-producto-id="@item.p_id"
+                                               data-producto-desc="@item.p_desc"
+                                               data-box-id="@item.box_id"
+                                               data-pedido="@pedido"
+                                               data-colectado="@colectado">
+                                                <i class="bx bx-transfer-alt"></i>
                                             </a>
                                             
                                             @if (!string.IsNullOrEmpty(item.nota) && !string.IsNullOrWhiteSpace(item.nota))

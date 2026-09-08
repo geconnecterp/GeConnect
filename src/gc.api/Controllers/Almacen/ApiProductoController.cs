@@ -778,7 +778,22 @@ namespace gc.api.Controllers.Almacen
         {
             if (request == null) return BadRequest("No se recepcionaron los datos");
 
-            RespuestaDto resp = _productosSv.ValidarProductoCarrito(request);
+            _logger.LogInformation(
+                "[TR-TRACE][API][VALIDACION-ANTES-SP] SP=SPGECO_TR_Carrito_Valida TI={Ti} Request={Request}",
+                request.Ti, JsonConvert.SerializeObject(request));
+            RespuestaDto resp;
+            try
+            {
+                resp = _productosSv.ValidarProductoCarrito(request);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "[TR-TRACE][API][VALIDACION-SP-EXCEPTION] SP=SPGECO_TR_Carrito_Valida TI={Ti} Request={Request}", request.Ti, JsonConvert.SerializeObject(request));
+                throw;
+            }
+            _logger.LogInformation(
+                "[TR-TRACE][API][VALIDACION-DESPUES-SP] SP=SPGECO_TR_Carrito_Valida TI={Ti} Resultado={Resultado} Mensaje={Mensaje} Response={Response}",
+                request.Ti, resp.resultado, resp.resultado_msj, JsonConvert.SerializeObject(resp));
 
             var response = new ApiResponse<RespuestaDto>(resp);
             return Ok(response);
@@ -790,7 +805,22 @@ namespace gc.api.Controllers.Almacen
         {
             if (request == null) return BadRequest("No se recepcionaron los datos");
 
-            RespuestaDto resp = _productosSv.ResguardarProductoCarrito(request);
+            _logger.LogInformation(
+                "[TR-TRACE][API][CARGA-ANTES-SP] SP=SPGECO_TR_Carrito_Carga TI={Ti} Request={Request}",
+                request.Ti, JsonConvert.SerializeObject(request));
+            RespuestaDto resp;
+            try
+            {
+                resp = _productosSv.ResguardarProductoCarrito(request);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "[TR-TRACE][API][CARGA-SP-EXCEPTION] SP=SPGECO_TR_Carrito_Carga TI={Ti} Request={Request}", request.Ti, JsonConvert.SerializeObject(request));
+                throw;
+            }
+            _logger.LogInformation(
+                "[TR-TRACE][API][CARGA-DESPUES-SP] SP=SPGECO_TR_Carrito_Carga TI={Ti} Resultado={Resultado} Mensaje={Mensaje} Response={Response}",
+                request.Ti, resp.resultado, resp.resultado_msj, JsonConvert.SerializeObject(resp));
 
             var response = new ApiResponse<RespuestaDto>(resp);
             return Ok(response);

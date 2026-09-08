@@ -1,0 +1,89 @@
+/* Golden grids: opt-in presentation, preserving data and event hooks. */
+.pocket-grid-scroll {
+    max-width: 100%; min-width: 0; overflow-x: auto;
+    border: 1px solid var(--bs-golden-bg-secondary, #f4e4c1);
+    border-radius: .5rem;
+    -webkit-overflow-scrolling: touch;
+}
+table.pocket-grid {
+    --pg-ink: #302d26;
+    --pg-stripe: var(--bs-golden-bg-light, #fff8e7);
+    --pg-selected: var(--bs-golden-light, #f5e6a3);
+    --pg-border: var(--bs-golden-bg-secondary, #f4e4c1);
+    min-width: 100%; width: auto; table-layout: auto;
+    font-size: .875rem; line-height: 1.45;
+    font-variant-numeric: tabular-nums;
+    color: var(--pg-ink);
+}
+table.pocket-grid > thead > tr > th {
+    background: var(--pg-ink) !important; color: #fff8e7 !important;
+    padding: .625rem .75rem !important; border-color: var(--pg-border);
+    font-size: .8125rem !important; font-weight: 600;
+    white-space: nowrap; vertical-align: middle;
+}
+table.pocket-grid > thead a { color: inherit !important; }
+table.pocket-grid > tbody > tr { --pg-row: #fff; }
+table.pocket-grid > tbody > tr:nth-child(odd),
+table.pocket-grid > tbody > tr.alt { --pg-row: var(--pg-stripe); }
+table.pocket-grid > tbody:has(> tr.alt) > tr:not(.alt) { --pg-row: #fff; }
+table.pocket-grid > tbody > tr:hover,
+table.pocket-grid > tbody > tr:focus-within { --pg-row: #f9edca; }
+table.pocket-grid > tbody > tr > td {
+    background: var(--pg-row) !important;
+    color: var(--pg-ink);
+    border-bottom: 1px solid var(--pg-border);
+    padding: .625rem .75rem !important;
+    font-size: .875rem !important; vertical-align: middle;
+    box-shadow: none !important;
+}
+table.pocket-grid > tbody > tr.sel,
+table.pocket-grid > tbody > tr.selected,
+table.pocket-grid > tbody > tr.selected-row,
+table.pocket-grid > tbody > tr.row-selected,
+table.pocket-grid > tbody > tr[aria-selected="true"] { --pg-row: var(--pg-selected) !important; }
+table.pocket-grid > tbody > tr.selectedEdit-row { --pg-row: #ead390 !important; }
+table.pocket-grid > tbody > tr:is(.sel,.selected,.selected-row,.row-selected,.selectedEdit-row) > td {
+    color: var(--pg-ink) !important; border-bottom-color: var(--bs-golden-primary);
+    border-left: 0 !important;
+}
+table.pocket-grid > tbody > tr:is(.sel,.selected,.selected-row,.row-selected,.selectedEdit-row) > td:first-child {
+    box-shadow: inset 3px 0 var(--bs-golden-primary) !important;
+}
+/* State-driven feedback takes priority over decorative striping. */
+table.pocket-grid > tbody > tr:is(.table-warning,.bg-warning) { --pg-row: #fff0bd !important; }
+table.pocket-grid > tbody > tr:is(.table-danger,.bg-danger) { --pg-row: #fde7e2 !important; }
+table.pocket-grid > tbody > tr:is(.table-success,.bg-success) { --pg-row: #e8f4e8 !important; }
+table.pocket-grid > tbody > tr:is(.table-info,.bg-info) { --pg-row: #e6f1fb !important; }
+table.pocket-grid > tbody > tr,
+table.pocket-grid > tbody > tr:hover { transform: none !important; animation: none !important; }
+table.pocket-grid > tfoot > tr > td {
+    background: var(--pg-stripe); color: var(--pg-ink);
+    padding: .625rem .75rem; font-weight: 600;
+}
+table.pocket-grid .corta-linea {
+    white-space: normal !important; overflow-wrap: anywhere;
+    text-overflow: clip; max-width: 24rem;
+}
+table.pocket-grid td:is(.text-start,.text-left) { white-space: normal; }
+table.pocket-grid td:is(.text-end,.text-right,.text-sm-end,.rpr-number) { white-space: nowrap; text-align: right; }
+table.pocket-grid .text-golden { color: #755b13 !important; }
+table.pocket-grid .text-muted { color: #625c50 !important; }
+table.pocket-grid .badge { font-size: .8125rem !important; line-height: 1.4; padding: .25rem .5rem; }
+table.pocket-grid .badge.bg-success { background: #e8f4e8 !important; color: #245b2a !important; }
+table.pocket-grid .badge.bg-info { background: #e6f1fb !important; color: #20527d !important; }
+table.pocket-grid .badge.bg-warning { background: #fff0bd !important; color: #705000 !important; }
+table.pocket-grid .badge.bg-danger { background: #fde7e2 !important; color: #9a2b1b !important; }
+table.pocket-grid .badge.bg-secondary { background: #efede7 !important; color: #514b3f !important; }
+table.pocket-grid .btn { min-width: 44px; min-height: 44px; }
+table.pocket-grid :is(a,button,input,select):focus-visible { outline: 3px solid #755b13; outline-offset: 2px; }
+table.pocket-grid input[type="checkbox"] { width: 1.25rem; height: 1.25rem; }
+/* Reflow OR records; multi-column grids retain their scrollable structure. */
+table.pocket-grid#tbORListaProd { width: 100%; table-layout: fixed; }
+table.pocket-grid#tbORListaProd td > .d-flex { flex-wrap: wrap; gap: .75rem; }
+table.pocket-grid#tbORListaProd .flex-grow-1 { min-width: 0; overflow-wrap: anywhere; flex-basis: 16rem; }
+@media (max-width: 575.98px) {
+    table.pocket-grid > thead > tr > th,
+    table.pocket-grid > tbody > tr > td { padding: .5rem .625rem !important; }
+    table.pocket-grid td.corta-linea { min-width: 9rem; }
+    table.pocket-grid#tbORListaProd td > .d-flex > .gap-1 { margin-left: auto; flex-wrap: wrap; }
+}

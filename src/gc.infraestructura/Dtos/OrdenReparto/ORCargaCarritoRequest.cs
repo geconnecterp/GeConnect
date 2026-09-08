@@ -13,5 +13,8 @@
         public decimal us { get; set; }
         public decimal cantidad { get; set; }
         public  string fv { get; set; }= string.Empty;
+        public bool remplazar { get; set; }
+        public string? remplazar_box_id { get; set; }
+        public string? remplazar_p_id { get; set; }
     }
 }

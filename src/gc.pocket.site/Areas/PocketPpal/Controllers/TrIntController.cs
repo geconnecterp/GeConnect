@@ -9,6 +9,7 @@ using gc.pocket.site.Controllers;
 using gc.sitio.core.Servicios.Contratos;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
 using System.Reflection;
 using X.PagedList;
 
@@ -504,7 +505,13 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
             try
             {
                 var selec = TIActual;
+                _logger.LogInformation(
+                    "[TR-TRACE][POCKET][LISTA-REQUEST] TI={Ti} Adm={AdmId} Usuario={Usuario} BoxFiltro={BoxFiltro} RubroFiltro={RubroFiltro} Orden={Orden}",
+                    selec.Ti, AdministracionId, UserName, selec.BoxId ?? "%", selec.RubroId ?? "%", orden);
                 List<TiListaProductoDto> regs = await _productoServicio.BuscaTIListaProductos(tr: TIActual.Ti, admId: AdministracionId, usuId: UserName, boxid: selec.BoxId ?? "%", rubId: selec.RubroId ?? "%", token: TokenCookie);
+                _logger.LogInformation(
+                    "[TR-TRACE][POCKET][LISTA-RESPONSE] TI={Ti} CantidadRegistros={CantidadRegistros} Datos={Datos}",
+                    selec.Ti, regs.Count, JsonConvert.SerializeObject(regs));
                 switch (orden)
                 {
                     case "B":
@@ -522,24 +529,53 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
             }
             catch (NegocioException ex)
             {
+                _logger.LogWarning(ex, "[TR-TRACE][POCKET][LISTA-NEGOCIO] TI={Ti}", TIActual.Ti);
                 TempData["warn"] = ex.Message;
                 return RedirectToAction("Index");   //para mensajes en pantalla debere generar una vista generica de errores.
             }
             catch (UnauthorizedException ex)
             {
-                _logger.LogWarning(ex.Message);
+                _logger.LogWarning(ex, "[TR-TRACE][POCKET][LISTA-NO-AUTORIZADA] TI={Ti}", TIActual.Ti);
                 TempData["warn"] = ex.Message;
                 return RedirectToAction("Index");
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex.Message);
+                _logger.LogError(ex, "[TR-TRACE][POCKET][LISTA-ERROR] TI={Ti}", TIActual.Ti);
                 TempData["error"] = ex.Message;
                 return RedirectToAction("Index");
 
             }
 
+            ViewBag.PermiteReemplazo = TIActual.TipoTI.Equals("S") && !TIActual.SinAU;
+            ViewBag.EsSucursal = TIActual.TipoTI.Equals("S");
+            ViewBag.UsuarioActual = UserName;
             return PartialView("_gridTIListaProducto", grid);
+        }
+
+        private async Task<TiListaProductoDto> ObtenerRenglonSucursal(string producto, string? box, short? item, bool eliminar = false)
+        {
+            if (!item.HasValue)
+                throw new NegocioException("Actualice el listado y seleccione nuevamente el renglón de la transferencia.");
+
+            // Consultar el estado actual: otro operador puede haber colectado desde que se mostró la lista.
+            var registros = await _productoServicio.BuscaTIListaProductos(tr: TIActual.Ti, admId: AdministracionId,
+                usuId: UserName, boxid: "%", rubId: "%", token: TokenCookie);
+            var registro = registros.SingleOrDefault(x => x.Item == item.Value && x.P_id == producto &&
+                (string.IsNullOrWhiteSpace(box) || x.Box_id == box));
+            if (registro == null)
+                throw new NegocioException("El renglón ya no está disponible. Actualice el listado de la transferencia.");
+            if (("S".Equals(registro.Remplazo, StringComparison.OrdinalIgnoreCase) || registro.Resultado == "40") &&
+                !string.Equals(registro.Remplazo_usu_id?.Trim(), UserName?.Trim(), StringComparison.OrdinalIgnoreCase))
+                throw new NegocioException("Sólo puede modificar o eliminar los reemplazos realizados por su usuario.");
+            if (eliminar && registro.Colectado <= 0)
+                throw new NegocioException("Sólo puede eliminar productos con cantidades colectadas por su usuario.");
+            if (!eliminar && (registro.Resultado == "E1" || registro.Resultado == "21"))
+                throw new NegocioException($"Estado {registro.Resultado}: {registro.Resultado_msj}. No permite carga.");
+
+            _logger.LogInformation("[TR-TRACE][POCKET][RENGLON] TI={Ti} Item={Item} Producto={Producto} Resultado={Resultado} Eliminar={Eliminar}",
+                TIActual.Ti, registro.Item, registro.P_id, registro.Resultado, eliminar);
+            return registro;
         }
 
         private GridCoreSmart<TiListaProductoDto> ObtenerGrillaTIListaProductos(List<TiListaProductoDto> regs)
@@ -551,7 +587,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> TIValidaProducto(string pId)
+        public async Task<IActionResult> TIValidaProducto(string pId, string? boxId = null, bool reemplazar = false, short? item = null)
         {
             string? volver;
             AutorizacionTIDto sel;
@@ -566,21 +602,46 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 }
 
                 sel = TIActual;
+                _logger.LogInformation(
+                    "[TR-TRACE][POCKET][SELECCION] TI={Ti} ProductoOriginal={ProductoOriginal} BoxOriginal={BoxOriginal} EsReemplazo={EsReemplazo}",
+                    sel.Ti, pId, boxId, reemplazar);
 
                 //se verifica que si el pid no trae productos, pero es proceso B o D, deberia continuar sin buscar producto
                 //en el if siguiente niego toda la premisa... si no se cumple la premisa, DEBE BUSCAR.
                 if (!((string.IsNullOrWhiteSpace(pId) || string.IsNullOrEmpty(pId)) && (TI_ModId.Equals("E") || TI_ModId.Equals("O"))))
                 {
 
-                    prod = ListaProductosActual.FirstOrDefault(x => x.P_id == pId);
+                    if (reemplazar && (!sel.TipoTI.Equals("S") || sel.SinAU))
+                    {
+                        throw new NegocioException("El reemplazo sólo está disponible para transferencias entre sucursales con autorización.");
+                    }
+
+                    prod = sel.TipoTI.Equals("S")
+                        ? await ObtenerRenglonSucursal(pId, boxId, item)
+                        : ListaProductosActual.FirstOrDefault(x => x.P_id == pId &&
+                            (string.IsNullOrWhiteSpace(boxId) || x.Box_id == boxId));
                     if (prod == null)
                     {
                         throw new Exception("El producto buscado no puede ser encontrado. Intente de nuevo, seleccione la lista y seleccione el producto a cargar.");
                     }
                     sel.PId = pId; //le asigno el pId para tenerlo resguardado. 
-                    sel.PBoxId = prod.Box_id;
+                    sel.PItem = prod.Item;
+                    if (sel.TipoTI.Equals("S") && new[] { "E0", "01", "02", "03", "04", "10", "11", "20" }.Contains(prod.Resultado))
+                        ViewBag.AvisoTR = $"Estado {prod.Resultado}: {prod.Resultado_msj}. Verifique lo colectado antes de continuar. El servidor validará la nueva carga.";
+                    sel.PBoxId = reemplazar ? string.Empty : prod.Box_id;
                     sel.PUnidPres = prod.Unidad_pres;
                     sel.PPedido = prod.Pedido;
+                    sel.PUpId = prod.Up_id;
+                    sel.PColectado = prod.Colectado;
+                    sel.PBulto = prod.Bulto;
+                    sel.PUs = prod.Us;
+                    sel.EsReemplazo = reemplazar;
+                    _logger.LogInformation(
+                        "[TR-TRACE][POCKET][CONTEXTO] TI={Ti} Item={Item} EsReemplazo={EsReemplazo} ProductoOriginal={ProductoOriginal} BoxOriginal={BoxOriginal} PedidoOriginal={PedidoOriginal} ColectadoUsuario={ColectadoUsuario} BultosUsuario={BultosUsuario} UnidadesUsuario={UnidadesUsuario} UpIdOriginal={UpIdOriginal}",
+                        sel.Ti, prod.Item, sel.EsReemplazo, prod.P_id, prod.Box_id, prod.Pedido, prod.Colectado, prod.Bulto, prod.Us, prod.Up_id);
+                    sel.ReemplazarPId = reemplazar ? prod.P_id : string.Empty;
+                    sel.ReemplazarPDesc = reemplazar ? prod.P_desc : string.Empty;
+                    sel.ReemplazarBoxId = reemplazar ? prod.Box_id : string.Empty;
                 }
 
 
@@ -606,24 +667,27 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> LimpiaProductoCarrito(string p_id, string boxId = "")
+        public async Task<IActionResult> LimpiaProductoCarrito(string p_id, string boxId = "", short? item = null)
         {
             try
             {
                 var ti = TIActual;
-
+                var renglon = ti.TipoTI.Equals("S") ? await ObtenerRenglonSucursal(p_id, boxId, item, eliminar: true) : null;
                 TiProductoCarritoDto request = new TiProductoCarritoDto();
+                request.Item = renglon?.Item ?? 0;
                 request.Ti = ti.Ti;
                 request.AdmId = AdministracionId;
                 request.UsuId = UserName;
-                request.BoxId = !string.IsNullOrEmpty(ti.PBoxId) ? ti.PBoxId : boxId;
+                request.BoxId = renglon?.Box_id ?? (!string.IsNullOrEmpty(ti.PBoxId) ? ti.PBoxId : boxId);
                 request.Desarma = true;
                 request.Pid = p_id;
-                request.Unidad_pres = ti.PUnidPres;
+                request.Unidad_pres = renglon?.Unidad_pres ?? ti.PUnidPres;
                 request.Bulto = 0;
                 request.Us = 0;
                 request.Cantidad = 0;
                 request.Fvto = DateTime.MinValue.ToStringYYYYMMDD();
+                _logger.LogInformation("[TR-TRACE][POCKET][ELIMINAR] TI={Ti} Item={Item} Producto={Producto} Box={Box} Usuario={Usuario}",
+                    request.Ti, request.Item, request.Pid, request.BoxId, UserName);
 
                 RespuestaGenerica<RespuestaDto> respv = await _productoServicio.VaidaProductoCarrito(request, TokenCookie);
                 if (respv.Ok)
@@ -632,7 +696,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
 
                     if (resp.Ok)
                     {
-                        return Json(new { error = false, warn = false, msg = $"Producto {ProductoBase.P_desc} fue limpiado exitosamente",tiId = TI_ModId });
+                        return Json(new { error = false, warn = false, msg = $"Producto {renglon?.P_desc ?? p_id} fue limpiado exitosamente",tiId = TI_ModId });
                     }
                     else { return Json(new { error = false, warn = true, msg = resp.Mensaje }); }
                 }
@@ -658,32 +722,51 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
             }
         }
         [HttpPost]
-        public async Task<IActionResult> ResguardarProductoCarrito(string p_id, int up, int bulto, decimal unid, decimal cantidad, DateTime? fv, bool desarma = true)
+        public async Task<IActionResult> ResguardarProductoCarrito(string p_id, int up, int bulto, decimal unid, decimal cantidad, DateTime? fv, bool desarma = true, short? item = null, string modoCarga = "nueva")
         {
             try
             {
                 var ti = TIActual;
-                if (cantidad <  1 && desarma)
+                if (ti.TipoTI.Equals("S") && desarma)
                 {
+                    if (!item.HasValue || item.Value != ti.PItem || (!ti.EsReemplazo && p_id != ti.PId))
+                        throw new NegocioException("El renglón seleccionado cambió. Vuelva al listado y selecciónelo nuevamente.");
+                    await ObtenerRenglonSucursal(ti.PId, ti.EsReemplazo ? ti.ReemplazarBoxId : ti.PBoxId, item);
+                }
+                _logger.LogInformation(
+                    "[TR-TRACE][POCKET][CARGA-INICIO] TI={Ti} Usuario={Usuario} ProductoIngresado={ProductoIngresado} BoxColectado={BoxColectado} Up={Up} Bulto={Bulto} Unidades={Unidades} Cantidad={Cantidad} FechaVencimiento={FechaVencimiento} Desarma={Desarma} ModoCarga={ModoCarga} EsReemplazo={EsReemplazo} ProductoOriginal={ProductoOriginal} BoxOriginal={BoxOriginal}",
+                    ti.Ti, UserName, p_id, ti.PBoxId, up, bulto, unid, cantidad, fv, desarma, modoCarga, ti.EsReemplazo, ti.ReemplazarPId, ti.ReemplazarBoxId);
+                if (ti.EsReemplazo && string.IsNullOrWhiteSpace(ti.PBoxId))
+                {
+                    _logger.LogWarning("[TR-TRACE][POCKET][RECHAZO-LOCAL] TI={Ti} Motivo=BOX de reemplazo no validado", ti.Ti);
+                    return Json(new { error = false, warn = true, msg = "Debe validar el BOX del producto de reemplazo." });
+                }
+                if ((ti.TipoTI.Equals("S") ? cantidad <= 0 : cantidad < 1) && desarma)
+                {
+                    _logger.LogWarning("[TR-TRACE][POCKET][RECHAZO-LOCAL] TI={Ti} Motivo=Cantidad no positiva Cantidad={Cantidad}", ti.Ti, cantidad);
                     return Json(new { error = false, warn = true, msg = $"La cantidades de los productos a cargar siempre tienen que ser positivas, mayores a 0 (cero)." });
                 }
                 if (desarma && (!CantidadCompatibleConUnidadProducto(ProductoBase.up_id, unid) ||
                     !CantidadCompatibleConUnidadProducto(ProductoBase.up_id, cantidad)))
                 {
+                    _logger.LogWarning("[TR-TRACE][POCKET][RECHAZO-LOCAL] TI={Ti} Motivo=Cantidad incompatible con UpId UpId={UpId} Unidades={Unidades} Cantidad={Cantidad}", ti.Ti, ProductoBase.up_id, unid, cantidad);
                     return Json(new { error = false, warn = true, msg = MensajeCantidadIncompatible(ProductoBase.up_id) });
                 }
                 var cantidadEsperada = ProductoBase.up_id.Equals("07") ? (up * bulto) + unid : unid;
                 if (desarma && cantidad != cantidadEsperada)
                 {
+                    _logger.LogWarning("[TR-TRACE][POCKET][RECHAZO-LOCAL] TI={Ti} Motivo=Desglose inconsistente Cantidad={Cantidad} CantidadEsperada={CantidadEsperada}", ti.Ti, cantidad, cantidadEsperada);
                     return Json(new { error = false, warn = true, msg = "La cantidad informada no coincide con los bultos y unidades ingresados. Verifique, por favor." });
                 }
-                if (ti.PPedido < cantidad && ProductoBase.up_id.Equals("07") && (!TIActual.SinAU || !desarma)) //verificamos las cantidades siempre y cuando haya una autorización o en el caso de transferencia de box completo con desarma = false
+                if (!ti.TipoTI.Equals("S") && ti.PPedido < cantidad && ProductoBase.up_id.Equals("07") && (!TIActual.SinAU || !desarma)) //En sucursales, el límite lo deciden los SP de validación y carga.
                 {
+                    _logger.LogWarning("[TR-TRACE][POCKET][RECHAZO-LOCAL] TI={Ti} Motivo=Cantidad mayor a pedido Cantidad={Cantidad} Pedido={Pedido}", ti.Ti, cantidad, ti.PPedido);
                     return Json(new { error = false, warn = true, msg = $"No se puede cargar más unidades o cantidades ({cantidad}) que las pedidas ({ti.PPedido})" });
                 }
                 //DEBO VALIAR SI ES PESABLE UP_ID != 07 QUE LA UP==1
                 if(!ProductoBase.up_id.Equals("07") && up != 1 && desarma)
                 {
+                    _logger.LogWarning("[TR-TRACE][POCKET][RECHAZO-LOCAL] TI={Ti} Motivo=Unidad de presentación inválida UpId={UpId} Up={Up}", ti.Ti, ProductoBase.up_id, up);
                     return Json(new { error = false, warn = true, msg = $"EL PRODUCTO NO ES POR UNIDADES. LA UNIDAD DE PRESENTACIÓN TIENE QUE SER IGUAL A 1 SIEMPRE." });
                 }
                 //VALIDAR LA FECHA FV CON LA FECHA DE CONTROL (SOLO PARA TRANSFERENCIA DE SUCURSALES)
@@ -691,6 +774,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 
                 if(ProductoBase.P_con_vto.Equals("S") && (fv == null || fechaControl > fv.Value ) && ti.TipoTI.Equals("S") ) 
                 {
+                    _logger.LogWarning("[TR-TRACE][POCKET][RECHAZO-LOCAL] TI={Ti} Motivo=Fecha de vencimiento inválida FechaIngresada={FechaIngresada} FechaControl={FechaControl}", ti.Ti, fv, fechaControl);
                     return Json(new { error = false, warn = true, msg = $"LA FECHA DE CONTROL DEL PRODUCTO {ProductoBase.P_desc} NO ES VALIDA." });
                 }
 
@@ -707,6 +791,10 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 request.Bulto = bulto;
                 request.Us = unid;
                 request.Cantidad = cantidad;
+                request.Remplazar = ti.EsReemplazo;
+                request.Item = ti.TipoTI.Equals("S") ? ti.PItem : (short)0;
+                request.RemplazarBoxId = ti.EsReemplazo ? ti.ReemplazarBoxId : null;
+                request.RemplazarPId = ti.EsReemplazo ? ti.ReemplazarPId : null;
                 if (fv.HasValue)
                 {
                     request.Fvto = fv.Value.ToStringYYYYMMDD();   ///debo traer fecha de vencimiento del producto a mostrar
@@ -716,13 +804,34 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                     request.Fvto = "19700101";
                 }
 
+                _logger.LogInformation(
+                    "[TR-TRACE][POCKET][VALIDACION-REQUEST] TI={Ti} Request={Request}",
+                    ti.Ti, JsonConvert.SerializeObject(request));
                 RespuestaGenerica<RespuestaDto> respv = await _productoServicio.VaidaProductoCarrito(request, TokenCookie);
+                _logger.LogInformation(
+                    "[TR-TRACE][POCKET][VALIDACION-RESPONSE] TI={Ti} Ok={Ok} Mensaje={Mensaje}",
+                    ti.Ti, respv.Ok, respv.Mensaje);
                 if (respv.Ok)
                 {
+                    _logger.LogInformation(
+                        "[TR-TRACE][POCKET][CARGA-REQUEST] TI={Ti} Request={Request}",
+                        ti.Ti, JsonConvert.SerializeObject(request));
                     RespuestaGenerica<RespuestaDto> resp = await _productoServicio.ResguardarProductoCarrito(request, TokenCookie);
+                    _logger.LogInformation(
+                        "[TR-TRACE][POCKET][CARGA-RESPONSE] TI={Ti} Ok={Ok} Mensaje={Mensaje}",
+                        ti.Ti, resp.Ok, resp.Mensaje);
 
                     if (resp.Ok)
                     {
+                        if (ti.EsReemplazo)
+                        {
+                            ti.EsReemplazo = false;
+                            ti.ReemplazarPId = string.Empty;
+                            ti.ReemplazarPDesc = string.Empty;
+                            ti.ReemplazarBoxId = string.Empty;
+                            TIActual = ti;
+                            _logger.LogInformation("[TR-TRACE][POCKET][CONTEXTO-LIMPIADO] TI={Ti} El modo reemplazo fue cerrado después de una carga exitosa", ti.Ti);
+                        }
                         if (desarma)
                         {
                             return Json(new { error = false, warn = false, msg = $"Producto {ProductoBase.P_desc} fue cargado exitosamente" });
@@ -742,17 +851,17 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
             }
             catch (NegocioException ex)
             {
-                _logger.LogWarning($"{ex.Message} -{this.GetType().Name} {MethodBase.GetCurrentMethod()?.Name}params: {p_id} {up} {bulto} {unid} {cantidad} {fv}");
+                _logger.LogWarning(ex, "[TR-TRACE][POCKET][CARGA-NEGOCIO] Producto={Producto} Up={Up} Bulto={Bulto} Unidades={Unidades} Cantidad={Cantidad} FechaVencimiento={FechaVencimiento}", p_id, up, bulto, unid, cantidad, fv);
                 return Json(new { error = false, warn = true, msg = ex.Message });
             }
             catch (UnauthorizedException ex)
             {
-                _logger.LogWarning($"{ex.Message} -{this.GetType().Name} {MethodBase.GetCurrentMethod()?.Name} params: {p_id} {up} {bulto} {unid} {cantidad} {fv}");
+                _logger.LogWarning(ex, "[TR-TRACE][POCKET][CARGA-NO-AUTORIZADA] Producto={Producto} Up={Up} Bulto={Bulto} Unidades={Unidades} Cantidad={Cantidad} FechaVencimiento={FechaVencimiento}", p_id, up, bulto, unid, cantidad, fv);
                 return Json(new { error = false, warn = true, msg = ex.Message });
             }
             catch (Exception ex)
             {
-                _logger.LogError($"{ex.Message} -{this.GetType().Name} {MethodBase.GetCurrentMethod()?.Name} params: {p_id} {up} {bulto} {unid} {cantidad} {fv}");
+                _logger.LogError(ex, "[TR-TRACE][POCKET][CARGA-ERROR] Producto={Producto} Up={Up} Bulto={Bulto} Unidades={Unidades} Cantidad={Cantidad} FechaVencimiento={FechaVencimiento}", p_id, up, bulto, unid, cantidad, fv);
                 return Json(new { error = true, warn = false, msg = ex.Message });
             }
         }
@@ -763,7 +872,18 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
             AutorizacionTIDto sel;
             try
             {
-                return await ValidaBox(boxId, esBoxDest);
+                sel = TIActual;
+                _logger.LogInformation(
+                    "[TR-TRACE][POCKET][BOX-REQUEST] TI={Ti} BoxIngresado={BoxIngresado} EsDestino={EsDestino} EsReemplazo={EsReemplazo} BoxOriginal={BoxOriginal}",
+                    sel.Ti, boxId, esBoxDest, sel.EsReemplazo, sel.ReemplazarBoxId);
+                var response = await ValidaBox(boxId, esBoxDest);
+                var responseData = response is JsonResult jsonResult
+                    ? JsonConvert.SerializeObject(jsonResult.Value)
+                    : response.GetType().Name;
+                _logger.LogInformation(
+                    "[TR-TRACE][POCKET][BOX-RESPONSE] TI={Ti} BoxIngresado={BoxIngresado} BoxColectado={BoxColectado} Response={Response}",
+                    sel.Ti, boxId, TIActual.PBoxId, responseData);
+                return response;
             }
             catch (NegocioException ex)
             {
@@ -789,6 +909,19 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
         {
             AutorizacionTIDto sel = TIActual;
             boxId = boxId.ToUpper();
+
+            if (sel.EsReemplazo)
+            {
+                var res = await _productoServicio.ValidarBox(boxId, AdministracionId, TokenCookie);
+                if (res.Resultado != 0)
+                {
+                    return Json(new { error = false, warn = true, msg = res.Resultado_msj });
+                }
+
+                sel.PBoxId = res.Box_id_sugerido.ToUpper();
+                TIActual = sel;
+                return Json(new { error = false, warn = false, msg = "BOX de reemplazo correcto" });
+            }
 
             if ((sel.TipoTI.Equals("E") || sel.TipoTI.Equals("O") && sel.SinAU))
             {
@@ -835,6 +968,16 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
             try
             {
                 sel = TIActual;
+                _logger.LogInformation(
+                    "[TR-TRACE][POCKET][PRODUCTO-REQUEST] TI={Ti} ProductoIngresado={ProductoIngresado} ProductoOriginal={ProductoOriginal} EsReemplazo={EsReemplazo}",
+                    sel.Ti, pId, sel.ReemplazarPId, sel.EsReemplazo);
+                if (sel.EsReemplazo)
+                {
+                    _logger.LogInformation(
+                        "[TR-TRACE][POCKET][PRODUCTO-RESPONSE] TI={Ti} ProductoIngresado={ProductoIngresado} Resultado=ACEPTADO_REEMPLAZO",
+                        sel.Ti, pId);
+                    return Json(new { error = false, warn = false, msg = "Producto de reemplazo correcto" });
+                }
                 if ((sel.TipoTI.Equals("E") || sel.TipoTI.Equals("O") && sel.SinAU))
                 {
                     return Json(new { error = false, warn = false, msg = "Producto es Correcto" });

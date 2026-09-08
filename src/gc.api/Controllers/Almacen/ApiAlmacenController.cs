@@ -10,6 +10,7 @@ using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.Productos;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 using System.Net;
 
 
@@ -153,15 +154,32 @@ namespace gc.api.Controllers.Almacen
         [Route("[action]")]
         public IActionResult BuscaTIListaProductos(string tr, string admId, string usuId, string boxid, string rubroid)
         {
+            _logger.LogInformation(
+                "[TR-TRACE][API][LISTA-ANTES-SP] SP=SPGECO_TR_Lista_Productos TI={Ti} Adm={AdmId} Usuario={Usuario} BoxFiltro={BoxFiltro} RubroFiltro={RubroFiltro}",
+                tr, admId, usuId, boxid, rubroid);
             if (string.IsNullOrEmpty(tr) || string.IsNullOrEmpty(admId) || string.IsNullOrEmpty(usuId) || string.IsNullOrEmpty(boxid) || string.IsNullOrEmpty(rubroid))
             {
+                _logger.LogWarning("[TR-TRACE][API][LISTA-RECHAZADA] Motivo=Parámetro vacío TI={Ti} Adm={AdmId} Usuario={Usuario} BoxFiltro={BoxFiltro} RubroFiltro={RubroFiltro}", tr, admId, usuId, boxid, rubroid);
                 return BadRequest("Faltó alguno de los datos necesarios para devolver la lista de Box para TI");
             }
             if (string.IsNullOrWhiteSpace(tr) || string.IsNullOrWhiteSpace(admId) || string.IsNullOrWhiteSpace(usuId) || string.IsNullOrWhiteSpace(boxid) || string.IsNullOrWhiteSpace(rubroid))
             {
+                _logger.LogWarning("[TR-TRACE][API][LISTA-RECHAZADA] Motivo=Parámetro en blanco TI={Ti} Adm={AdmId} Usuario={Usuario} BoxFiltro={BoxFiltro} RubroFiltro={RubroFiltro}", tr, admId, usuId, boxid, rubroid);
                 return BadRequest("Faltó alguno de los datos necesarios para devolver la lista de Box para TI");
             }
-            var lista = _almSv.BuscaTIListaProductos(admId, usuId, tr, boxid, rubroid);
+            List<TiListaProductoDto> lista;
+            try
+            {
+                lista = _almSv.BuscaTIListaProductos(admId, usuId, tr, boxid, rubroid);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "[TR-TRACE][API][LISTA-SP-EXCEPTION] SP=SPGECO_TR_Lista_Productos TI={Ti} Adm={AdmId} Usuario={Usuario} BoxFiltro={BoxFiltro} RubroFiltro={RubroFiltro}", tr, admId, usuId, boxid, rubroid);
+                throw;
+            }
+            _logger.LogInformation(
+                "[TR-TRACE][API][LISTA-DESPUES-SP] SP=SPGECO_TR_Lista_Productos TI={Ti} CantidadRegistros={CantidadRegistros} Datos={Datos}",
+                tr, lista.Count, JsonConvert.SerializeObject(lista));
             var response = new ApiResponse<List<TiListaProductoDto>>(lista);
             return Ok(response);
         }

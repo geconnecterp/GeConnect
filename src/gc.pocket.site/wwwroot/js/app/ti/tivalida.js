@@ -9,7 +9,9 @@
     $("#estadoFuncion").on("change", verificaEstado); //este control debe ser insertado el mismo o similar para cada modulo.
 
     $("#txtBox").on("input", function () {
-        var inputLength = $(this).val().length; // Obtener la longitud del texto ingresado
+        var boxIngresado = $(this).val().replace(/\D/g, "").slice(0, 11);
+        $(this).val(boxIngresado);
+        var inputLength = boxIngresado.length;
 
         if (inputLength === 11) {
             // Si el texto tiene exactamente 11 caracteres, activar el botón
@@ -117,6 +119,102 @@ function InicializaBusqueda() {
     }  
 }
 
+function enviarCargaProducto(dato) {
+    console.info("[Pocket][TR][CARGA] Validación de cantidades en servidor", {
+        item: dato.item,
+        producto: dato.p_id,
+        cantidad: dato.cantidad,
+        modoCarga: dato.modoCarga,
+        reemplazoProducto: autorizacionActual.esReemplazo
+    });
+
+    PostGen(dato, ResguardarProductoCarritoUrl, function (obj) {
+        if (obj.error === true) {
+            CerrarWaiting();
+            AbrirMensaje("Importante", obj.msg, function () {
+                $("#msjModal").modal("hide");
+                return true;
+            }, false, ["Aceptar"], "error!", null);
+        } else if (obj.warn === true) {
+            CerrarWaiting();
+            AbrirMensaje("Importante", obj.msg, function () {
+                $("#msjModal").modal("hide");
+                return true;
+            }, false, ["Aceptar"], "warn!", null);
+        } else {
+            CerrarWaiting();
+            AbrirMensaje("Importante", obj.msg, function () {
+                $("#msjModal").modal("hide");
+                window.location.href = proximoProductoUrl + "?esrubro=false&esbox=false&tiId=" + autorizacionActual.tipoTI;
+            }, false, ["Aceptar"], "succ!", null);
+        }
+    });
+}
+
+function formatearCantidadTR(valor, upId) {
+    var decimales = upId === "07" ? 0 : 3;
+    return Number(valor || 0).toLocaleString("es-AR", {
+        minimumFractionDigits: decimales,
+        maximumFractionDigits: decimales
+    });
+}
+
+function resolverCargaPrevia(dato) {
+    var cargaPrevia = Number(autorizacionActual.pColectado || 0);
+    var debeConsultar = autorizacionActual.tipoTI === "S" &&
+        autorizacionActual.esReemplazo !== true && cargaPrevia > 0;
+
+    if (!debeConsultar) {
+        dato.modoCarga = "nueva";
+        enviarCargaProducto(dato);
+        return;
+    }
+
+    CerrarWaiting();
+    var totalAcumulado = cargaPrevia + Number(dato.cantidad || 0);
+    var formatoPrevia = formatearCantidadTR(cargaPrevia, productoBase.up_id);
+    var formatoNueva = formatearCantidadTR(dato.cantidad, productoBase.up_id);
+    var formatoAcumulada = formatearCantidadTR(totalAcumulado, productoBase.up_id);
+    var mensaje = "El producto <strong>" + productoBase.p_id + " " + productoBase.p_desc + "</strong> " +
+        "ya tiene <strong>" + formatoPrevia + "</strong> colectado(s) por su usuario en este registro.<br><br>" +
+        "Nueva carga: <strong>" + formatoNueva + "</strong>.<br>" +
+        "Si elige <strong>Sobrescribir carga</strong>, el registro quedará en " + formatoNueva + ".<br>" +
+        "Si elige <strong>Acumular</strong>, conservará lo anterior y quedará en " + formatoAcumulada + ".<br><br>" +
+        "Esta decisión modifica cantidades del ítem " + autorizacionActual.pItem +
+        "; no cambia el producto ni activa el modo reemplazo.";
+
+    AbrirMensaje("Producto ya colectado", mensaje, function (respuesta) {
+        if (respuesta === "NO") {
+            $("#msjModal").modal("hide");
+            $("#up").trigger("focus");
+            return true;
+        }
+
+        var datoFinal = $.extend({}, dato);
+        if (respuesta === "SI2") {
+            datoFinal.bulto = Number(autorizacionActual.pBulto || 0) + Number(dato.bulto || 0);
+            datoFinal.unid = Number(autorizacionActual.pUs || 0) + Number(dato.unid || 0);
+            datoFinal.cantidad = totalAcumulado;
+            datoFinal.modoCarga = "acumular";
+        } else {
+            datoFinal.modoCarga = "sobrescribir";
+        }
+
+        console.info("[Pocket][TR][CARGA] Decisión sobre carga previa", {
+            item: datoFinal.item,
+            producto: datoFinal.p_id,
+            decision: datoFinal.modoCarga,
+            cantidadPrevia: cargaPrevia,
+            cantidadIngresada: dato.cantidad,
+            cantidadEnviada: datoFinal.cantidad
+        });
+        $("#msjModal").modal("hide");
+        AbrirWaiting();
+        enviarCargaProducto(datoFinal);
+        return true;
+    }, true, ["Sobrescribir carga", "Acumular", "Cancelar"], "warn!", null, "cancelar");
+}
+
 function cargarCarrito() {
     //aca se validará previamente si la cantidad ingresada corresponde a lo solicitado
     AbrirWaiting()
@@ -143,7 +241,7 @@ function cargarCarrito() {
         }
 
         ////los que tienen que tener cantidad exacta seran tambien los que tengan upId!==07
-        if (cantidad > cantSolic && upId === "07" && autorizacionActual.sinAU === false) {
+        if (autorizacionActual.tipoTI !== "S" && cantidad > cantSolic && upId === "07" && autorizacionActual.sinAU === false) {
             CerrarWaiting();
 
             AbrirMensaje("Atención", "La cantidad ingresada" + cantidad + "no corresponde a la cantidad solicitada (" + cantSolic + "). Verifique.", function () {
@@ -155,30 +253,8 @@ function cargarCarrito() {
         else {
             //ControlaMensajeSuccess("Cantidad correcta");
             //se procede a enviar el producto a cargar
-            var dato = { p_id: autorizacionActual.pId, up, bulto, unid, cantidad, fv}
-            PostGen(dato, ResguardarProductoCarritoUrl, function (obj) {
-                if (obj.error === true) {
-                    CerrarWaiting();
-
-                    AbrirMensaje("Importante", obj.msg, function () {
-                        $("#msjModal").modal("hide");
-                        return true;
-                    }, false, ["Aceptar"], "error!", null);
-                } else if (obj.warn === true) {
-                    CerrarWaiting();
-                    AbrirMensaje("Importante", obj.msg, function () {
-                        $("#msjModal").modal("hide");
-                        return true;
-                    }, false, ["Aceptar"], "warn!", null);
-                }
-                else {
-                    CerrarWaiting();
-                    AbrirMensaje("Importante", obj.msg, function () {
-                        $("#msjModal").modal("hide");
-                        window.location.href = proximoProductoUrl + "?esrubro=false&esbox=false&tiId=" + autorizacionActual.tipoTI;                        
-                    }, false, ["Aceptar"], "succ!", null);                                     
-                }
-            });
+            var dato = { p_id: productoBase.p_id, item: autorizacionActual.pItem, up, bulto, unid, cantidad, fv };
+            resolverCargaPrevia(dato);
 
         }
     } else {
@@ -232,6 +308,9 @@ function validaBoxCarrito() {
             $("#chkDesarma").prop("checked", true).prop("disabled", false);
             $("#Busqueda").prop("disabled", false);
             $("#btnBusquedaBase").prop("disabled", false);
+            setTimeout(function () {
+                $("#Busqueda").trigger("focus");
+            }, 120);
             
             //if ($("#chkDesarma").prop("disabled") === false && !$("#chkDesarma").is(":checked")) {
             //    $("#Busqueda").prop("disabled", true);
@@ -324,7 +403,7 @@ function verificaEstado() {
                             $("#Descipcion").val(prod.p_desc);
                             $("#Rubro").val(prod.rub_desc);
                             //$("#up").mask("000.000.000.000", { reverse: true });
-                            if (autoAct.pUnidPres === 0) {
+                            if (autoAct.esReemplazo === true || autoAct.pUnidPres === 0) {
                                 $("#up").val(prod.p_unidad_pres).prop("disabled", false);
                             } else {
                                 $("#up").val(autoAct.pUnidPres).prop("disabled", false);

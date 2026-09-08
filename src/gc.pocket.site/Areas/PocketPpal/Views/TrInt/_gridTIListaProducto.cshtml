@@ -7,14 +7,16 @@
     string clase = string.Empty;
     string sortDirInv = Model.SortDir.Equals("ASC") ? "DESC" : "ASC";
     int cont = 0;
+    bool esSucursal = ViewBag.EsSucursal == true;
+    string usuarioActual = ViewBag.UsuarioActual as string ?? string.Empty;
 }
 
-<div class="table-responsive table-wrapper">
+<div class="table-responsive table-wrapper pocket-record-list">
     <table class="table table-sm mb-0 table-hover table-wrapper-fixed-head" id="tbListaProd">
         <thead>
             <tr class="header table-dark">
                 <th style="display:none;"></th>
-                <th scope="col">Rubro</th>
+                <th scope="col">Productos a colectar</th>
             </tr>
         </thead>
         <tbody>
@@ -22,25 +24,120 @@
             {
                 cont++;
                 if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+                var pedido = item.Pedido.ToString(item.Up_id == "07" ? "N0" : "N3");
+                var colectado = item.Colectado.ToString(item.Up_id == "07" ? "N0" : "N3");
+                var formatoCantidad = item.Up_id == "07" ? "N0" : "N3";
+                var esReemplazo = "S".Equals(item.Remplazo, StringComparison.OrdinalIgnoreCase);
+                var resultado = (item.Resultado ?? "PE").Trim().ToUpperInvariant();
+                var esPropio = !(esReemplazo || item.Resultado == "40") ||
+                    string.Equals(item.Remplazo_usu_id?.Trim(), usuarioActual.Trim(), StringComparison.OrdinalIgnoreCase);
+                var estadoBloqueaCarga = resultado == "E1" || resultado == "21";
+                var permiteCarga = !esSucursal || (esPropio && !estadoBloqueaCarga);
+                var permiteColeccion = permiteCarga && (!esSucursal || item.Pedido > 0 || item.Colectado > 0);
+                var permiteReemplazo = ViewBag.PermiteReemplazo == true && permiteCarga && !esReemplazo && item.Pedido > 0;
+                var totalBox = item.Colectado + item.Colectado_otros;
+                var estadoTexto = resultado switch
+                {
+                    "PE" => "Pendiente sin colección",
+                    "E0" => "Colección compartida en este BOX",
+                    "E1" => "Colección realizada por otros usuarios",
+                    "00" => "Pedido completado por usted",
+                    "01" => "Pedido completado por otros usuarios",
+                    "02" => "Producto completado en la transferencia",
+                    "03" => "Producto completado en la transferencia",
+                    "04" => "Producto completado con reemplazo",
+                    "40" => "Producto cargado como reemplazo",
+                    "10" => "Colección propia incompleta",
+                    "11" => "Colección de otros usuarios incompleta",
+                    "20" => "Cantidad propia mayor al pedido",
+                    "21" => "Cantidad de otros usuarios mayor al pedido",
+                    _ => string.IsNullOrWhiteSpace(item.Resultado_msj) ? "Estado informado por el servidor" : item.Resultado_msj
+                };
+                var estadoClase = resultado switch
+                {
+                    "00" or "01" or "02" or "03" or "04" => "bg-success",
+                    "10" or "11" or "E0" or "40" => "bg-warning text-dark",
+                    "20" or "21" or "E1" => "bg-danger",
+                    _ => "bg-secondary"
+                };
 
                 <tr class="@clase" tiprod="@item.P_id">
                     <td style="display:none;">@cont</td>
                     <td>
-                        <div class="d-flex justify-content-between">
-                            <div class="d-flex flex-column">
-                                <div class="p-0">@item.P_id @item.P_desc | <strong>Pedido: @item.Pedido</strong></div>
-                                <div class="p-0">Box @item.Box_id Rub @item.Rub_id</div>
-                                <div class="p-0"><strong>Cantidad: @item.Colectado</strong></div>
+                        <div class="pocket-record">
+                            <div class="pocket-record__body">
+                                <div class="pocket-record__title">
+                                    <span class="pocket-record__code">@item.P_id</span>
+                                    <strong>@item.P_desc</strong>
+                                    @if (esReemplazo)
+                                    {
+                                        <span class="badge bg-warning text-dark ms-1" title="Producto cargado como reemplazo">
+                                            <i class="bx bx-transfer-alt"></i> REEMPLAZO
+                                        </span>
+                                    }
+                                </div>
+                                <div class="pocket-record__context"><span>BOX @item.Box_id</span><span>Rubro @item.Rub_id</span></div>
+                                <div class="pocket-record__quantities">
+                                    <div><span>Pedido</span><strong>@pedido</strong></div>
+                                    <div><span>Colectado</span><strong>@colectado</strong></div>
+                                </div>
+                                @if (esSucursal)
+                                {
+                                    <div class="pocket-record__totals">
+                                        <span>Otros usuarios: <strong>@item.Colectado_otros.ToString(formatoCantidad)</strong></span>
+                                        <span>Total en este BOX: <strong>@totalBox.ToString(formatoCantidad)</strong></span>
+                                        <span>Total del producto en la TR: <strong>@item.Colectado_x_p.ToString(formatoCantidad)</strong></span>
+                                    </div>
+                                    <div class="pocket-record__status">
+                                        <span class="badge @estadoClase">@resultado · @estadoTexto</span>
+                                        @if (esReemplazo && !string.IsNullOrWhiteSpace(item.Remplazo_p_id))
+                                        {
+                                            <small class="text-muted">
+                                                Reemplaza al producto @item.Remplazo_p_id
+                                                @if (!string.IsNullOrWhiteSpace(item.Remplazo_box))
+                                                {
+                                                    <text> del BOX @item.Remplazo_box</text>
+                                                }
+                                                @if (!string.IsNullOrWhiteSpace(item.Remplazo_usu_id))
+                                                {
+                                                    <text> · Operador @item.Remplazo_usu_id</text>
+                                                }
+                                            </small>
+                                        }
+                                    </div>
+                                    @if (!permiteCarga)
+                                    {
+                                        <small class="text-danger fw-semibold">@(esPropio ? "Este estado no permite realizar una nueva carga." : "El reemplazo pertenece a otro operador y no puede modificarse.")</small>
+                                    }
+                                }
                             </div>
-                            <div class="d-flex align-items-sm-center">
-                                <a asp-action="TIValidaProducto" asp-controller="trint" asp-area="pocketppal" asp-route-pId="@item.P_id" class="btn btn-sm btn-success btnBarcode"><i class="bx bx-barcode"></i></a>
-                                @if (!string.IsNullOrEmpty(item.Nota) && !string.IsNullOrWhiteSpace(item.Nota))
+                            <div class="pocket-record__actions">
+                                @if (permiteColeccion)
+                                {
+                                    <a asp-action="TIValidaProducto" asp-controller="trint" asp-area="pocketppal" asp-route-pId="@item.P_id" asp-route-boxId="@item.Box_id" asp-route-item="@item.Item" class="btn btn-sm btn-success btnBarcode" title="Colectar producto"><i class="bx bx-barcode"></i></a>
+                                }
+                                @if (permiteReemplazo)
+                                {
+                                    <a asp-action="TIValidaProducto" asp-controller="trint" asp-area="pocketppal"
+                                       asp-route-pId="@item.P_id" asp-route-boxId="@item.Box_id" asp-route-item="@item.Item" asp-route-reemplazar="true"
+                                       class="btn btn-sm btn-warning btnReemplazarProducto"
+                                       title="Reemplazar producto"
+                                       aria-label="Reemplazar @item.P_id @item.P_desc"
+                                       data-producto-id="@item.P_id"
+                                       data-producto-desc="@item.P_desc"
+                                       data-box-id="@item.Box_id"
+                                       data-pedido="@pedido"
+                                       data-colectado="@colectado">
+                                        <i class="bx bx-transfer-alt"></i>
+                                    </a>
+                                }
+                                @if (!esSucursal && !string.IsNullOrEmpty(item.Nota) && !string.IsNullOrWhiteSpace(item.Nota))
                                 {
                                     <button type="button" class="btn btn-sm btn-warning btnNota" onclick="mostrarMensaje('@item.Nota')"><i class="bx bx-note"></i></button>
                                 }
-                                @if (item.Colectado > 0)
+                                @if (item.Colectado > 0 && (!esSucursal || esPropio))
                                 {
-                                    <button type="button" class="btn btn-sm btn-danger" onclick="limpiarProductoCarrito('@item.P_id','@item.Box_id')"><i class="bx bx-eraser"></i></button>
+                                    <button type="button" class="btn btn-sm btn-danger" title="Eliminar colección propia" onclick="limpiarProductoCarrito('@item.P_id','@item.Box_id',@item.Item)"><i class="bx bx-eraser"></i></button>
                                 }
 
                             </div>

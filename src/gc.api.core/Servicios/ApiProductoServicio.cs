@@ -28,11 +28,14 @@ using gc.infraestructura.Dtos.Productos.Impositivo;
 using gc.infraestructura.Dtos.Productos.OrdenDeReparto;
 using gc.infraestructura.EntidadesComunes.Options;
 using Microsoft.Data.SqlClient;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
 using Org.BouncyCastle.Ocsp;
 using System.Data;
 using System.Diagnostics;
 using System.Linq.Dynamic.Core;
+using System.Reflection;
 using System.Text;
 using NDeCYPI = gc.infraestructura.Dtos.Almacen.Tr.NDeCYPI;
 
@@ -41,9 +44,10 @@ namespace gc.api.core.Servicios
 {
     public class ApiProductoServicio : Servicio<Producto>, IApiProductoServicio
     {
-        public ApiProductoServicio(IUnitOfWork uow, IOptions<PaginationOptions> options) : base(uow, options)
+        private readonly ILogger<ApiProductoServicio> _logger;
+        public ApiProductoServicio(IUnitOfWork uow, IOptions<PaginationOptions> options, ILogger<ApiProductoServicio> logger) : base(uow, options)
         {
-
+            _logger = logger;
         }
 
         public override PagedList<Producto> GetAll(QueryFilters filters)
@@ -711,7 +715,10 @@ namespace gc.api.core.Servicios
                 new("@bulto",request.Bulto),
                 new("@us",request.Us),
                 new("@cantidad",request.Cantidad),
-                new("@fv",request.Fvto)
+                new("@fv",request.Fvto),
+                new("@remplazar",request.Remplazar),
+                new("@remplazar_box_id",(object?)request.RemplazarBoxId ?? DBNull.Value),
+                new("@remplazar_p_id",(object?)request.RemplazarPId ?? DBNull.Value)
             };
             List<RespuestaDto> resp = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
             return resp.First();
@@ -732,8 +739,13 @@ namespace gc.api.core.Servicios
                 new("@bulto",request.Bulto),
                 new("@us",request.Us),
                 new("@cantidad",request.Cantidad),
-                new("@fv",request.Fvto)
+                new("@fv",request.Fvto),
+                new("@remplazar",request.Remplazar),
+                new("@remplazar_box_id",(object?)request.RemplazarBoxId ?? DBNull.Value),
+                new("@remplazar_p_id",(object?)request.RemplazarPId ?? DBNull.Value)
             };
+            _logger.LogInformation(
+                    $"{MethodBase.GetCurrentMethod().Name} -> Parámetros: {JsonConvert.SerializeObject(request)}");
             List<RespuestaDto> resp = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
             return resp.First();
         }
@@ -743,6 +755,7 @@ namespace gc.api.core.Servicios
             var sp = Constantes.ConstantesGC.StoredProcedures.SP_TR_Carrito_Carga;
             var ps = new List<SqlParameter>()
             {
+                new("@item", request.Item),
                 new("@ti", request.Ti),
                 new("@adm_id",request.AdmId),
                 new("@usu_id",request.UsuId),
@@ -753,7 +766,10 @@ namespace gc.api.core.Servicios
                 new("@bulto",request.Bulto),
                 new("@us",request.Us),
                 new("@cantidad",request.Cantidad),
-                new("@fv",request.Fvto)
+                new("@fv",request.Fvto),
+                new("@remplazar",request.Remplazar),
+                new("@remplazar_box_id",(object?)request.RemplazarBoxId ?? DBNull.Value),
+                new("@remplazar_p_id",(object?)request.RemplazarPId ?? DBNull.Value)
             };
             List<RespuestaDto> resp = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
             return resp.First();

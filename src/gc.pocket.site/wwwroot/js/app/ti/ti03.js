@@ -136,12 +136,13 @@ function mostrarMensaje(nota) {
         return true;
     }, false, ["Aceptar"], "info!", null);
 }
-function limpiarProductoCarrito(id,boxId) {
+function limpiarProductoCarrito(id,boxId,item) {
     AbrirWaiting()
     //aca se validará previamente si la cantidad ingresada corresponde a lo solicitado
 
     //se procede a enviar el producto a cargar
-    var dato = { p_id: id, boxId }
+    var dato = { p_id: id, boxId: boxId, item: item };
+    console.info("[Pocket][TR][ELIMINAR] Colección propia", dato);
     PostGen(dato, LimpiaProductoCarritoUrl, function (obj) {
         if (obj.error === true) {
             CerrarWaiting();
