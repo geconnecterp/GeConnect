@@ -5,10 +5,7 @@
 	string clase = string.Empty;
 }
 <style>
-	/* ============================================
-	   ESTILOS ORIGINALES
-	   ============================================ */
-
+	
 	.btn-icon-compact {
 		padding: 0.15rem 0.3rem;
 		font-size: 0.7rem;
@@ -18,10 +15,6 @@
 		.btn-icon-compact i {
 			font-size: 0.9rem;
 		}
-
-	/* ============================================
-	   FIELDSET SUPERIORES (50% de la pantalla)
-	   ============================================ */
 
 	.fieldset-fixed {
 		height: 50vh; 
@@ -36,10 +29,6 @@
 			min-height: 0;
 		}
 
-	/* ============================================
-	   FIELDSET INFERIORES (ocupan el resto)
-	   ============================================ */
-
 	.fieldset-flex-fill {
 		flex: 1;
 		display: flex;
@@ -52,10 +41,6 @@
 			overflow-y: auto;
 			overflow-x: hidden;
 		}
-
-	/* ============================================
-	   CORRECCIONES PARA ALINEAR Y EXPANDIR COL-8
-	   ============================================ */
 
 	.col-8 {
 		display: flex;
@@ -103,11 +88,6 @@
 				overflow-y: auto;
 			}
 
-
-	/* ============================================
-	   TABLAS: asegurar ancho completo
-	   ============================================ */
-
 	.table-responsive,
 	.table-wrapper,
 	.table-wrapper-xs {
@@ -151,6 +131,36 @@
 			}
 	.table-golden i {
 		font-size: 1.2rem;
+	}
+
+	.ancho-botones{
+		padding-left: 5px;
+		padding-right: 5px;
+	}
+
+	.lbl-wrap {
+		white-space: normal;
+		line-height: 1.1rem;
+		margin-left: 4px; /* separa el texto del check */
+	}
+
+	#divOpciones .lbl-wrap {
+		white-space: normal !important;
+	}
+
+	#divOpciones label.form-check-label.lbl-wrap {
+		white-space: normal !important;
+		line-height: 1.1rem;
+		margin-left: 4px;
+	}
+
+	.input-compact {
+		width: 60px !important;
+		text-align: right !important;
+		padding: 0 4px !important;
+		height: 27px !important;
+		line-height: 22px !important;
+		font-size: 0.75rem !important;
 	}
 </style>
 <div class="grid-golden">
@@ -206,7 +216,7 @@
 				</fieldset>
 			</div>
 			<div class="row">
-				<div class="col-5" style="padding-left: 0px;padding-right: 0px;">
+				<div class="col-6" style="padding-left: 0px;padding-right: 0px;">
 					<fieldset class="fieldset-flex-fill">
 						<legend>
 							<h5 style="margin-bottom: 0px;">Depósitos de Envío</h5>
@@ -216,10 +226,11 @@
 								<table class="table table-sm mb-0 table-hover table-golden" id="tbDepositosDeEnvio">
 									<thead>
 										<tr class="header">
-											<th style="width:80%;" class="align-center">Depósito</th>
+											<th style="width:70%;" class="align-center">Depósito</th>
 											<th style="width:20%;" class="align-center">
 												<input type="checkbox" id="chkSelectAllDepositos" />
 											</th>
+											<th style="width:10%;" class="align-center">Solo si<br />no hay stk</th>
 											<th style="width:0%; display:none;">depo_id</th>
 										</tr>
 									</thead>
@@ -229,10 +240,15 @@
 											@foreach (var item in Model.ListaDepositosDeEnvio.ListaDatos)
 											{
 												if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
-												<tr class="@clase" onclick="selectTRDepositosDeEnvioRow(this)">
+												<tr class="@clase" 
+													data-depo-id="@item.depo_id"
+													onclick="selectTRDepositosDeEnvioRow(this)">
 													<td>@item.depo_nombre</td>
 													<td class="text-center">
 														<input type="checkbox" class="chkDeposito" value="@item.seleccionado" @((item.seleccionado ? "checked" : "")) />
+													</td>
+													<td class="text-center td-solo-si-no-hay-stk">
+														@* Celda gestionada por JS: si el checkbox de la fila está marcado, se inserta aquí un checkbox hijo (inicialmente desmarcado). *@
 													</td>
 													<td style="width:0%; display:none;">@item.depo_id</td>
 												</tr>
@@ -244,7 +260,7 @@
 						</div>
 					</fieldset>
 				</div>
-				<div class="col-7" style="padding-left: 0px;padding-right: 5px;">
+				<div class="col-6" style="padding-left: 0px;padding-right: 5px;">
 					<fieldset class="fieldset-flex-fill">
 						<legend>
 							<h5 style="margin-bottom: 0px;">Opciones</h5>
@@ -252,51 +268,31 @@
 						<div class="fieldset-body" id="divOpciones">
 							<div class="row">
 								<div class="col-sm">
-									<div class="form-check">
-										@if (Model != null && Model.ConsiderarStockExistente == false)
-										{
-											<input class="form-check-input" type="checkbox" id="chkConsiderarStock" asp-for="@Model.ConsiderarStockExistente">
-										}
-										else
-										{
-											<input class="form-check-input" type="checkbox" id="chkConsiderarStock" checked asp-for="@Model.ConsiderarStockExistente">
-										}
-										<label class="form-check-label" for="chkConsiderarStock"> Considerar STK Existente de Sucursales</label>
-									</div>
-								</div>
-								<div class="col-sm">
-									<div class="form-check">
-										@if (Model != null && Model.ModificarYSustituto == false)
-										{
-											<input class="form-check-input" type="checkbox" id="chkModificarYSustituto" asp-for="@Model.ModificarYSustituto">
-										}
-										else
-										{
-											<input class="form-check-input" type="checkbox" id="chkModificarYSustituto" checked asp-for="@Model.ModificarYSustituto">
-										}
-										<label class="form-check-label" for="chkModificarYSustituto"> Modificar y Sustituto</label>
-									</div>
-								</div>
-								<div class="col-sm">
 									<div class="row">
-										<div class="col-9" style="padding-right: 0;">
-											@if (Model != null && Model.MaximoPalletXAuto == false)
-											{
-												<input class="form-check-input" onchange="changeMaxPalletChk(this);" type="checkbox" id="chkMaxPallet" asp-for="@Model.MaximoPalletXAuto">
-											}
-											else
-											{
-												<input class="form-check-input" onchange="changeMaxPalletChk(this);" type="checkbox" id="chkMaxPallet" checked asp-for="@Model.MaximoPalletXAuto">
-											}
-											<label class="form-check-label" for="chkMaxPallet" title="Máximo Pallet x Autorización de TR"> Máx. Pallet x Aut. de TR</label>
+										<div class="col-8" style="padding-right: 0;">
+											<div class="d-flex align-items-start">
+												@if (Model != null && Model.MaximoPalletXAuto == false)
+												{
+													<input class="form-check-input" onchange="changeMaxPalletChk(this);" type="checkbox" id="chkMaxPallet" asp-for="@Model.MaximoPalletXAuto">
+												}
+												else
+												{
+													<input class="form-check-input" onchange="changeMaxPalletChk(this);" type="checkbox" id="chkMaxPallet" checked asp-for="@Model.MaximoPalletXAuto">
+												}
+
+												<label class="form-check-label lbl-wrap" for="chkMaxPallet" title="Máximo Pallet x Autorización de TR">
+													Máx. Pallet<br>x Aut. de TR
+												</label>
+											</div>
 										</div>
-										<div class="col-3" style="padding-left: 0px;">
-											<input type="number" id="txtMaxPallet" class="form-control" min="10" max="100" value="@Model.MaximoPalletXAutoValor">
+
+										<div class="col-4" style="padding-left: 0px;">
+											<input type="number" id="txtMaxPallet" class="input-compact text-end" min="10" max="100" value="@Model.MaximoPalletXAutoValor">
 										</div>
 									</div>
 								</div>
 								<div class="row mt-4">
-									<div class="col-sm-6">
+									<div class="col-sm-6 ancho-botones">
 										<a asp-action="TRAutorizacionesLista"
 										   asp-controller="Transferencia"
 										   asp-area="Compras"
@@ -306,7 +302,7 @@
 										</a>
 									</div>
 
-									<div class="col-sm-6">
+									<div class="col-sm-6 ancho-botones">
 										<a href="#"
 										   id="btnAnalizar"
 										   class="btn btn-sm btn-success w-100">

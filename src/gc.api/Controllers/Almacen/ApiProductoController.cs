@@ -858,11 +858,11 @@ namespace gc.api.Controllers.Almacen
 
         [HttpGet]
         [Route("[action]")]
-        public IActionResult TRAutAnaliza(string listaPi, string listaDepo, bool stkExistente, bool sustituto, int palletNro)
+        public IActionResult TRAutAnaliza(string listaPi, string listaDepo, int palletNro)
         {
             if (string.IsNullOrWhiteSpace(listaPi) || string.IsNullOrWhiteSpace(listaDepo)) return BadRequest("No se recepcionaron los datos");
 
-            List<TRAutAnalizaDto> resp = _productosSv.TRAutAnaliza(listaPi, listaDepo, stkExistente, sustituto, palletNro);
+            List<TRAutAnalizaDto> resp = _productosSv.TRAutAnaliza(listaPi, listaDepo, palletNro);
 
             var response = new ApiResponse<List<TRAutAnalizaDto>>(resp);
             return Ok(response);

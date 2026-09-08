@@ -36,9 +36,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 		{
 			var auth = EstaAutenticado;
 			if (!auth.Item1 || auth.Item2 < DateTime.Now)
-			{
 				return RedirectToAction("Login", "Token", new { area = "seguridad" });
-			}
 
 			GridCoreSmart<TRPendienteDto> grid;
 			try
@@ -62,6 +60,10 @@ namespace gc.sitio.Areas.Compras.Controllers
 			GridCoreSmart<TRPendienteDto> grid;
 			try
 			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+					return RedirectToAction("Login", "Token", new { area = "seguridad" });
+
 				if (string.IsNullOrEmpty(titId))
 					titId = "S";
 				var items = await _productoServicio.TRObtenerPendientes(AdministracionId, "%", titId, TokenCookie);
@@ -82,6 +84,10 @@ namespace gc.sitio.Areas.Compras.Controllers
 			Dictionary<string, string> sucursales = [];
 			try
 			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+					return RedirectToAction("Login", "Token", new { area = "seguridad" });
+
 				if (TRSucursalesLista != null && TRSucursalesLista.Count > 0)
 				{
 					var temp1 = TRSucursalesLista;
@@ -128,6 +134,10 @@ namespace gc.sitio.Areas.Compras.Controllers
 			var model = new GridCoreSmart<TRAutPIDto>();
 			try
 			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+					return RedirectToAction("Login", "Token", new { area = "seguridad" });
+
 				var itemsAutPI = await _productoServicio.TRObtenerAutPI(AdministracionId, admId, TokenCookie);
 				model = ObtenerGridCoreSmart<TRAutPIDto>(itemsAutPI);
 			}
@@ -144,6 +154,10 @@ namespace gc.sitio.Areas.Compras.Controllers
 			var model = new GridCoreSmart<TRAutDepoDto>();
 			try
 			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+					return RedirectToAction("Login", "Token", new { area = "seguridad" });
+
 				var itemsAutDepo = await _productoServicio.TRObtenerAutDepositos(admId, TokenCookie);
 				model = ObtenerGridCoreSmart<TRAutDepoDto>(itemsAutDepo);
 			}
@@ -160,6 +174,10 @@ namespace gc.sitio.Areas.Compras.Controllers
 			var model = new TRDetallePedidoDto();
 			try
 			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+					return RedirectToAction("Login", "Token", new { area = "seguridad" });
+
 				var itemsAutPIDetalle = await _productoServicio.TRObtenerAutPIDetalle(piCompte, TokenCookie);
 				model.Detalle = ObtenerGridCoreSmart<TRAutPIDetalleDto>(itemsAutPIDetalle.OrderBy(x => x.pid_item).ToList());
 				model.Titulo = $"Detalle de Pedido {piCompte}";
@@ -178,6 +196,10 @@ namespace gc.sitio.Areas.Compras.Controllers
 			var model = new GridCoreSmart<TRAutPIDto>();
 			try
 			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+					return RedirectToAction("Login", "Token", new { area = "seguridad" });
+
 				//No existe en la lista de pedidos incluidos, lo agrego
 				var listaTemp = TRAutPedidosIncluidosILista;
 				if (!listaTemp.Exists(x => x.pi_compte == picompte))
@@ -204,6 +226,10 @@ namespace gc.sitio.Areas.Compras.Controllers
 			var model = new GridCoreSmart<TRAutPIDto>();
 			try
 			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+					return RedirectToAction("Login", "Token", new { area = "seguridad" });
+
 				//Existe en la lista de pedidos incluidos, lo quito
 				var listaTemp = TRAutPedidosIncluidosILista;
 				if (listaTemp.Exists(x => x.pi_compte == picompte))
@@ -227,6 +253,10 @@ namespace gc.sitio.Areas.Compras.Controllers
 			var model = new GridCoreSmart<TRAutSucursalesDto>();
 			try
 			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+					return RedirectToAction("Login", "Token", new { area = "seguridad" });
+
 				var listaSucursal = TRSucursalesLista;
 				foreach (var sucursalItem in listaSucursal)
 				{
@@ -254,11 +284,11 @@ namespace gc.sitio.Areas.Compras.Controllers
 		/// <param name="sustituto">booleano</param>
 		/// <param name="maxPallet">intero entre 1 y 80</param>
 		/// <returns></returns>
-		public async Task<JsonResult> AnalizarParametros(string depositos, bool stkExistente, bool sustituto, int maxPallet)
+		public async Task<JsonResult> AnalizarParametros(string depositosJson, int maxPallet)
 		{
 			try
 			{
-				if (string.IsNullOrWhiteSpace(depositos))
+				if (string.IsNullOrWhiteSpace(depositosJson))
 				{
 					return Json(new { error = true, warn = false, msg = "Se debe indicar al menos un depósito." });
 				}
@@ -269,9 +299,9 @@ namespace gc.sitio.Areas.Compras.Controllers
 				else
 				{
 					//Obtenemos la lista de Pedidos Incluidos (solo pi_compte)
-					TRDepositosSeleccionados = depositos;
+					TRDepositosSeleccionados = depositosJson;
 					var listaPI = ObtenerStringListDePedidosIncluidos();
-					var itemsAutAnaliza = await _productoServicio.TRAutAnaliza(listaPI, depositos, stkExistente, sustituto, maxPallet, TokenCookie);
+					var itemsAutAnaliza = await _productoServicio.TRAutAnaliza(listaPI, depositosJson, maxPallet, TokenCookie);
 					TRAutAnaliza = itemsAutAnaliza;
 					return Json(new { error = false, warn = false, vacio = false, cantidad = itemsAutAnaliza.Count, msg = "" });
 				}
@@ -286,22 +316,32 @@ namespace gc.sitio.Areas.Compras.Controllers
 				return Json(new { error = true, msg = "Algo no fue bien al analizar los parámetros de la transferencia solicitada, intente nuevamente mas tarde." });
 			}
 		}
+		public class DepositoSeleccionadoDto
+		{
+			public string depo_id { get; set; }
+			public string solo_sino_hay_stk { get; set; }
+		}
 
 		public async Task<IActionResult> AbrirVistaEdicionNuevasAutYDetalleTR()
 		{
 			var model = new TRNuevaAutDto();
 			try
 			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+					return RedirectToAction("Login", "Token", new { area = "seguridad" });
+
 				if (TRAutAnaliza == null)
 					return ObtenerMensajeDeError("Ocurrio un error al intentar leer los datos para analizar. Intente nevamente desde el principio, si el problema persiste informe al Administrador.");
 
 				var orden = 0;
 				var listaSucursales = from i in TRAutAnaliza
+									  where i.autorizacion != null
 									  group i by new { i.adm_id, i.adm_nombre, i.autorizacion } into x
-									  select new TRNuevaAutSucursalDto() { adm_id = x.Key.adm_id, adm_nombre = x.Key.adm_nombre, pallet_aprox = x.Sum(y => y.palet), aut_a_generar = x.Max(y => y.autorizacion), orden = orden++ };
+									  select new TRNuevaAutSucursalDto() { adm_id = x.Key.adm_id, adm_nombre = x.Key.adm_nombre, pallet_aprox = x.Sum(y => y.palet), aut_a_generar = x.Max(y => y.autorizacion.Value), orden = orden++ };
 				TRNuevaAutSucursalLista = listaSucursales.ToList();
 				model.Sucursales = ObtenerGridCoreSmart<TRNuevaAutSucursalDto>(listaSucursales.ToList());
-				TRNuevaAutDetallelLista = TRAutAnaliza.Select(x => new TRNuevaAutDetalleDto()
+				TRNuevaAutDetallelLista = TRAutAnaliza.Where(z => z.autorizacion != null).Select(x => new TRNuevaAutDetalleDto()
 				{
 					#region Campos
 					adm_id = x.adm_id,
@@ -330,6 +370,35 @@ namespace gc.sitio.Areas.Compras.Controllers
 				}).OrderBy(y => y.p_id).ToList();
 				model.Detalle = ObtenerGridCoreSmart<TRNuevaAutDetalleDto>(TRNuevaAutDetallelLista);
 
+				TRNuevaAutDetallelListaSinStock = TRAutAnaliza.Where(z => z.autorizacion == null).Select(x => new TRNuevaAutDetalleDto()
+				{
+					#region Campos
+					adm_id = x.adm_id,
+					adm_nombre = x.adm_nombre,
+					autorizacion = x.autorizacion,
+					a_transferir = x.a_transferir,
+					a_transferir_box = x.a_transferir_box,
+					box_id = x.box_id,
+					depo_id = x.depo_id,
+					depo_nombre = x.depo_nombre,
+					fv = x.fv,
+					nota = x.nota,
+					palet = x.palet,
+					pedido = x.pedido,
+					pi_compte = x.pi_compte,
+					p_desc = x.p_desc,
+					p_id = x.p_id,
+					p_id_sustituto = x.p_id_sustituto,
+					p_sustituto = x.p_sustituto,
+					stk = x.stk,
+					stk_adm = x.stk_adm,
+					unidad_palet = x.unidad_palet,
+					p_id_prov = x.p_id_prov,
+					up_tipo = x.up_tipo
+					#endregion
+				}).OrderBy(y => y.p_id).ToList();
+				model.DetalleSinStock = ObtenerGridCoreSmart<TRNuevaAutDetalleDto>(TRNuevaAutDetallelListaSinStock);
+
 				var titulo = "NUEVA AUTORIZACIÓN DE TRANSFERENCIA";
 				ViewData["Titulo"] = titulo;
 
@@ -348,6 +417,10 @@ namespace gc.sitio.Areas.Compras.Controllers
 			var model = new GridCoreSmart<TRNuevaAutDetalleDto>();
 			try
 			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+					return RedirectToAction("Login", "Token", new { area = "seguridad" });
+
 				var listaFiltrada = new List<TRNuevaAutDetalleDto>();
 				var listaTemp = TRNuevaAutDetallelLista;
 				if (string.IsNullOrWhiteSpace(aut))
@@ -366,6 +439,26 @@ namespace gc.sitio.Areas.Compras.Controllers
 				return ObtenerMensajeDeError("Hubo algun problema al filtrar la lista de productos por sucursal. Si el problema persiste informe al Administrador");
 			}
 			return PartialView("_trNuevaAutListaProductos", model);
+		}
+
+		public async Task<IActionResult> ObtenerListaDeProductosPorSucursalSinStock(string admId, string aut = "")
+		{
+			var model = new GridCoreSmart<TRNuevaAutDetalleDto>();
+			try
+			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+					return RedirectToAction("Login", "Token", new { area = "seguridad" });
+
+				model = ObtenerGridCoreSmart<TRNuevaAutDetalleDto>(TRNuevaAutDetallelListaSinStock);
+			}
+			catch (Exception ex)
+			{
+				_logger?.LogError(ex, "Error al obtener la lista de productos sin stock.");
+				TempData["error"] = "Hubo algun problema al obtener la lista de productos sin stock. Si el problema persiste informe al Administrador";
+				return ObtenerMensajeDeError("Hubo algun problema al obtener la lista de productos sin stock. Si el problema persiste informe al Administrador");
+			}
+			return PartialView("_trListaProductosSinStock", model);
 		}
 
 		public async Task<JsonResult> ExisteProductoEnTR(string pId, string admId)
@@ -427,8 +520,8 @@ namespace gc.sitio.Areas.Compras.Controllers
 						pedido = 0;
 					}
 					var listaTemp = TRNuevaAutDetallelLista;
-					var existeProdEnBox=listaTemp.Where(x=>x.p_id == idProdDeProdSeleccionado && x.adm_id == admSeleccionado && x.box_id == boxDeProdSeleccionado).Any();
-					if (existeProdEnBox) 
+					var existeProdEnBox = listaTemp.Where(x => x.p_id == idProdDeProdSeleccionado && x.adm_id == admSeleccionado && x.box_id == boxDeProdSeleccionado).Any();
+					if (existeProdEnBox)
 					{
 						return Json(new { error = true, warn = false, msg = $"Le producto '{idProdDeProdSeleccionado}' ya existe en el box '{boxDeProdSeleccionado}' seleccionado." });
 					}
@@ -451,7 +544,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 						pi_compte = piCompteSeleccionado,
 						autorizacion = item.autorizacion
 					};
-					
+
 					listaTemp.Add(nuevoProducto);
 					TRNuevaAutDetallelLista = listaTemp;
 					return Json(new { error = false, warn = false, msg = "" });
@@ -494,6 +587,10 @@ namespace gc.sitio.Areas.Compras.Controllers
 					{
 						pedido = 0;
 					}
+					if (TRNuevaAutDetallelLista.Where(x => x.p_id == idProdDeProdSeleccionado).Any())
+					{
+						return Json(new { error = true, warn = false, msg = $"El producto que esta intentando agregar como Sustituto ya existe en el pedido de transferencia. Id: {idProdDeProdSeleccionado}" });
+					}
 					var productoBase = ObtenerDatosDeProducto(idProdDeProdSeleccionado);
 					var nuevoProducto = new TRNuevaAutDetalleDto
 					{
@@ -504,14 +601,18 @@ namespace gc.sitio.Areas.Compras.Controllers
 						adm_nombre = admSeleccionadoNombre,
 						box_id = boxDeProdSeleccionado,
 						pedido = pedido,
-						nota = "Sustituto",
-						p_sustituto = false,
+						nota = $"Producto Sustituido: {idProductoSustituto}",
+						p_sustituto = true,
 						a_transferir = ctd,
 						p_id_sustituto = idProductoSustituto,
 					};
 					var listaTemp = TRNuevaAutDetallelLista;
 					listaTemp.Add(nuevoProducto);
 					TRNuevaAutDetallelLista = listaTemp;
+					//Quitarlo de la lista de productos sin stock
+					var listaTempSinStock = TRNuevaAutDetallelListaSinStock;
+					listaTempSinStock.RemoveAll(x => x.p_id == idProductoSustituto && x.adm_id == admSeleccionado);
+					TRNuevaAutDetallelListaSinStock = listaTempSinStock;
 					return Json(new { error = false, warn = false, msg = "" });
 				}
 			}
@@ -570,6 +671,10 @@ namespace gc.sitio.Areas.Compras.Controllers
 			var model = new TRAgregarProductoDto();
 			try
 			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+					return RedirectToAction("Login", "Token", new { area = "seguridad" });
+
 				if (string.IsNullOrWhiteSpace(pId))
 					return ObtenerMensajeDeError($"Faltan parámetros: 'p_id'. Si el problema persiste informe al Administrador.");
 				if (string.IsNullOrWhiteSpace(tipo))
@@ -594,12 +699,16 @@ namespace gc.sitio.Areas.Compras.Controllers
 			var model = new TRAgregarProductoDto();
 			try
 			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+					return RedirectToAction("Login", "Token", new { area = "seguridad" });
+
 				model.Titulo = $"Detalle de TR {admId} - {TRSucursalesLista.Where(x => x.adm_id == admId).Select(y => y.adm_nombre).First()}";
 				var listaTemp = new List<TRProductoParaAgregar>();
 				model.Productos = ObtenerGridCoreSmart<TRProductoParaAgregar>(listaTemp);
 				model.adm_id = admId;
 				model.PiCompte = pi_compte;
-			}	
+			}
 			catch (Exception ex)
 			{
 				_logger?.LogError(ex, "Error al inicializar modal de carga de producto a TR.");
@@ -609,15 +718,25 @@ namespace gc.sitio.Areas.Compras.Controllers
 			return PartialView("_trCargarNuevoProducto", model);
 		}
 
-		public async Task<IActionResult> InicializarModalAgregarProductoSustitutoATR(string admId, string prodSeleccionado, string listaDepo, string tipo)
+		public async Task<IActionResult> InicializarModalAgregarProductoSustitutoATR(string admId, string prodSinStockSeleccionado, string listaDepo, string tipo)
 		{
 			var model = new TRAgregarProductoDto();
 			try
 			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+					return RedirectToAction("Login", "Token", new { area = "seguridad" });
+
 				model.Titulo = $"Detalle de TR {admId} - {TRSucursalesLista.Where(x => x.adm_id == admId).Select(y => y.adm_nombre).First()}";
+
 				if (!string.IsNullOrWhiteSpace(TRDepositosSeleccionados))
 					listaDepo = TRDepositosSeleccionados; //Lo seteo cuando abro la ventana TRCrudAutorizacion.cshtml
-				var itemsSustitutoParaAgregar = await _productoServicio.TRObtenerSustituto(prodSeleccionado, string.IsNullOrWhiteSpace(listaDepo) ? "N" : listaDepo, admId, tipo, TokenCookie);
+
+				// 🔥 DESERIALIZAR JSON Y ARMAR STRING "02@03@09"
+				var lista = JsonConvert.DeserializeObject<List<DepositoSeleccionadoDto>>(listaDepo);
+				string depositosConcatenados = string.Join("@", lista.Select(x => x.depo_id));
+
+				var itemsSustitutoParaAgregar = await _productoServicio.TRObtenerSustituto(prodSinStockSeleccionado, string.IsNullOrWhiteSpace(listaDepo) ? "N" : depositosConcatenados, admId, tipo, TokenCookie);
 				model.Productos = ObtenerGridCoreSmart<TRProductoParaAgregar>(itemsSustitutoParaAgregar);
 				model.adm_id = admId;
 				return PartialView("_trCargarNuevoProducto", model);
@@ -635,6 +754,10 @@ namespace gc.sitio.Areas.Compras.Controllers
 			var model = new TRAgregarProductoDto();
 			try
 			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+					return RedirectToAction("Login", "Token", new { area = "seguridad" });
+
 				if (string.IsNullOrWhiteSpace(pId))
 					return ObtenerMensajeDeError($"Faltan parámetros: seleccione un producto de la lista. Si el problema persiste informe al Administrador.");
 				if (string.IsNullOrWhiteSpace(admId))
@@ -669,6 +792,10 @@ namespace gc.sitio.Areas.Compras.Controllers
 			var model = new GridCoreSmart<TRNuevaAutDetalleDto>();
 			try
 			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+					return RedirectToAction("Login", "Token", new { area = "seguridad" });
+
 				if (string.IsNullOrWhiteSpace(pId))
 					return ObtenerMensajeDeError($"Faltan parámetros: id de producto. Si el problema persiste informe al Administrador.");
 				if (string.IsNullOrWhiteSpace(admId))
@@ -744,13 +871,15 @@ namespace gc.sitio.Areas.Compras.Controllers
 				}
 
 				var json = GenerarJsonDesdeListaDeProductosAutDetallelLista();
-				var respuesta = await _productoServicio.TRConfirmaAutorizaciones(json, AdministracionId, UserName, TokenCookie);
+				var jsonSinStock = GenerarJsonDesdeListaDeProductosSinStock();
+				var respuesta = await _productoServicio.TRConfirmaAutorizaciones(json, jsonSinStock, AdministracionId, UserName, TokenCookie);
 				if (respuesta != null && respuesta.First().resultado == 0) //Genero correctamente el json, limpio variable de sesion de JSON y Detalle de productos
 				{
 					//Limpiar datos
 					TRAutAnaliza = [];
 					TRNuevaAutDetallelLista = [];
 					TRAutPedidosIncluidosILista = [];
+					TRNuevaAutDetallelListaSinStock = [];
 					TRSucursalesLista.ForEach(x => x.tiene_pi = false);
 					return Json(new { error = false, warn = false, codigo = 0, msg = "" });
 				}
@@ -770,6 +899,10 @@ namespace gc.sitio.Areas.Compras.Controllers
 			var model = new TRNotaEnSucursalDto();
 			try
 			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+					return RedirectToAction("Login", "Token", new { area = "seguridad" });
+
 				if (admId == null)
 					return ObtenerMensajeDeError("Debe proporcionar una sucursal válida. Si el problema persiste informe al Administrador.");
 
@@ -825,6 +958,10 @@ namespace gc.sitio.Areas.Compras.Controllers
 			var model = new TRNotaEnProductoDto();
 			try
 			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+					return RedirectToAction("Login", "Token", new { area = "seguridad" });
+
 				if (pId == null)
 					return ObtenerMensajeDeError("Debe proporcionar un producto válido. Si el problema persiste informe al Administrador.");
 
@@ -885,6 +1022,10 @@ namespace gc.sitio.Areas.Compras.Controllers
 			var model = new TRVerTransferenciaDto();
 			try
 			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+					return RedirectToAction("Login", "Token", new { area = "seguridad" });
+
 				var tipoLoc = tipo == "S" ? "Sucursal" : "Deposito";
 				model.Autorizacion = $"Autorización TR {ti}";
 				model.TipoTR = $"Tipo: {tipoLoc}";
@@ -990,9 +1131,31 @@ namespace gc.sitio.Areas.Compras.Controllers
 			var jsonstring = JsonConvert.SerializeObject(listaJsonDeTR, new JsonSerializerSettings());
 			return jsonstring;
 		}
+		private string GenerarJsonDesdeListaDeProductosSinStock()
+		{
+			var listaJsonDeTRSinStock = new List<AuxiliarSinStock>();
+			
+			foreach (var item in TRNuevaAutDetallelListaSinStock)
+			{
+				listaJsonDeTRSinStock.Add(new AuxiliarSinStock()
+				{
+					#region Campos
+					adm_id = item.adm_id,
+					pi_compte = item.pi_compte,
+					p_id = item.p_id,
+					#endregion
+				});
+			}
+			return JsonConvert.SerializeObject(listaJsonDeTRSinStock, new JsonSerializerSettings());
+		}
 		private class Auxiliar()
 		{
 			public string pi_compte { get; set; } = string.Empty;
+		}
+		private class AuxiliarSinStock() : Auxiliar
+		{
+			public string p_id { get; set; } = string.Empty;
+			public string adm_id { get; set; } = string.Empty;
 		}
 
 		private ProductoBusquedaDto ObtenerDatosDeProducto(string p_id)

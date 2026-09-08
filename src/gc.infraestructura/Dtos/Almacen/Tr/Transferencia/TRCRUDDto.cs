@@ -9,8 +9,6 @@ namespace gc.infraestructura.Dtos.Almacen.Tr.Transferencia
 		public GridCoreSmart<TRAutPIDto> ListaPedidosSucursal { get; set; }
 		public GridCoreSmart<TRAutPIDto> ListaPedidosIncluidos { get; set; }
         public GridCoreSmart<TRAutDepoDto> ListaDepositosDeEnvio { get; set; }
-		public bool ConsiderarStockExistente { get; set; }
-		public bool ModificarYSustituto { get; set; }
 		public bool MaximoPalletXAuto { get; set; }
         public int MaximoPalletXAutoValor { get; set; }
         public TRCRUDDto()
@@ -19,8 +17,6 @@ namespace gc.infraestructura.Dtos.Almacen.Tr.Transferencia
 			ListaPedidosSucursal = new GridCoreSmart<TRAutPIDto>();
 			ListaPedidosIncluidos = new GridCoreSmart<TRAutPIDto>();
 			ListaDepositosDeEnvio = new GridCoreSmart<TRAutDepoDto>();
-			ConsiderarStockExistente = true;
-			ModificarYSustituto = false;
 			MaximoPalletXAuto = false;
 			MaximoPalletXAutoValor = 10;
 		}

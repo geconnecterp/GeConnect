@@ -34,11 +34,11 @@ using NDeCYPI = gc.infraestructura.Dtos.Almacen.Tr.NDeCYPI;
 
 namespace gc.sitio.core.Servicios.Implementacion
 {
-    public class ProductoServicio : Servicio<ProductoDto>, IProductoServicio
+	public class ProductoServicio : Servicio<ProductoDto>, IProductoServicio
 	{
 		private const string RutaAPI = "/api/apiproducto";
 		private const string RutaAPIEtiqueta = "/api/apietiqueta";
-        private const string BUSCAR_PROD = "/ProductoBuscar";
+		private const string BUSCAR_PROD = "/ProductoBuscar";
 		private const string BUSCAR_PROD_POR_IDS = "/ProductoBuscarPorIds";
 		private const string BUSCAR_LISTA = "/ProductoListaBuscar";
 		private const string INFOPROD_STKD = "/InfoProductoStkD";
@@ -141,7 +141,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 		private const string CONFIRMAR_CARGA_PREVIA = "/Confirmar-Carga-Previa";
 
 
-        private readonly AppSettings _appSettings;
+		private readonly AppSettings _appSettings;
 
 		public ProductoServicio(IOptions<AppSettings> options, ILogger<ProductoServicio> logger) : base(options, logger)
 		{
@@ -235,7 +235,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 					return new();
 				}
 				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<ProductoListaDto>>>(stringData) ?? throw new NegocioException("Hubo un problema al deserializar los datos");
-				return (apiResponse.Data ?? [], apiResponse.Meta ?? new()	);
+				return (apiResponse.Data ?? [], apiResponse.Meta ?? new());
 			}
 			else
 			{
@@ -266,7 +266,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 					_logger.LogWarning($"La API no devolvió dato alguno. Parametros de busqueda id:{id}-admId:{admId}");
 					return new();
 				}
-				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<InfoProdStkD>>>(stringData) ?? throw new NegocioException("Hubo un problema al deserializar los datos")	;
+				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<InfoProdStkD>>>(stringData) ?? throw new NegocioException("Hubo un problema al deserializar los datos");
 				return apiResponse.Data;
 			}
 			else
@@ -558,7 +558,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 
 			var link = $"{_appSettings.RutaBase}{RutaAPI}{NEC_STOCK_AUTO}";
 
-			response =  client.PostAsync(link, contentData).Result;
+			response = client.PostAsync(link, contentData).Result;
 
 			if (response.StatusCode == HttpStatusCode.OK)
 			{
@@ -632,7 +632,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 					_logger.LogWarning($"La API no devolvió dato alguno.");
 					return new();
 				}
-				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<AjustePrevioCargadoDto>>>(stringData) ?? throw new NegocioException("Hubo un problema al deserializar los datos")	;
+				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<AjustePrevioCargadoDto>>>(stringData) ?? throw new NegocioException("Hubo un problema al deserializar los datos");
 				return apiResponse.Data;
 			}
 			else
@@ -997,7 +997,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 					_logger.LogWarning($"La API devolvió error. Parametros rp:{rp}");
 					return new();
 				}
-				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<RespuestaDto>>>(stringData) ?? throw new NegocioException("Hubo un problema al deserializar los datos")	;
+				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<RespuestaDto>>>(stringData) ?? throw new NegocioException("Hubo un problema al deserializar los datos");
 				return apiResponse.Data;
 			}
 			else
@@ -1499,7 +1499,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 			}
 		}
 
-		public async Task<List<TRAutAnalizaDto>> TRAutAnaliza(string listaPi, string listaDepo, bool stkExistente, bool sustituto, int palletNro, string token)
+		public async Task<List<TRAutAnalizaDto>> TRAutAnaliza(string listaPi, string listaDepo, int palletNro, string token)
 		{
 			ApiResponse<List<TRAutAnalizaDto>> apiResponse;
 
@@ -1507,7 +1507,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 			HttpClient client = helper.InicializaCliente(token);
 			HttpResponseMessage response;
 
-			var link = $"{_appSettings.RutaBase}{RutaAPI}{TR_AUT_Analiza}?listaPi={listaPi}&listaDepo={listaDepo}&stkExistente={stkExistente}&sustituto={sustituto}&palletNro={palletNro}";
+			var link = $"{_appSettings.RutaBase}{RutaAPI}{TR_AUT_Analiza}?listaPi={listaPi}&listaDepo={listaDepo}&palletNro={palletNro}";
 
 			response = await client.GetAsync(link);
 
@@ -1561,12 +1561,12 @@ namespace gc.sitio.core.Servicios.Implementacion
 			}
 		}
 
-		public async Task<List<RespuestaDto>> TRConfirmaAutorizaciones(string json, string admId, string usuId, string token)
+		public async Task<List<RespuestaDto>> TRConfirmaAutorizaciones(string json, string json_sin_stock, string admId, string usuId, string token)
 		{
 			ApiResponse<List<RespuestaDto>> apiResponse;
 
 			HelperAPI helper = new();
-			TRConfirmaRequest request = new() { json = json, adm_id = admId, usu_id = usuId };
+			TRConfirmaRequest request = new() { json = json, json_sin_stock = json_sin_stock, adm_id = admId, usu_id = usuId };
 			HttpClient client = helper.InicializaCliente(request, token, out StringContent contentData);
 			HttpResponseMessage response;
 
@@ -2332,7 +2332,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 					return new();
 				}
 				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<ProductoNCPIDto>>>(stringData) ?? throw new NegocioException("Hubo un problema al deserializar los datos");
-				return (apiResponse.Data ?? [], apiResponse.Meta??new());
+				return (apiResponse.Data ?? [], apiResponse.Meta ?? new());
 			}
 			else
 			{
@@ -2364,7 +2364,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 					return new();
 				}
 				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<ProductoNCPIDto>>>(stringData) ?? throw new NegocioException("Hubo un problema al deserializar los datos");
-				return (apiResponse.Data ?? [], apiResponse.Meta??new());
+				return (apiResponse.Data ?? [], apiResponse.Meta ?? new());
 			}
 			else
 			{
@@ -2410,7 +2410,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 					return new List<OrdenDeCompraListDto>();
 				}
 			}
-			catch (NegocioException )
+			catch (NegocioException)
 			{
 				throw;
 			}
@@ -2419,7 +2419,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 				_logger.LogError(e, "Error al intentar obtener las Familia de Proveedores.");
 				throw;
 			}
-			
+
 		}
 
 		public async Task<List<ProductoParaOcDto>> CargarProductosDeOC(CargarProductoParaOcRequest req, string token)
@@ -2474,7 +2474,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 					_logger.LogWarning($"La API devolvió error. Parametros admId:{admId}");
 					return new();
 				}
-				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<OrdenDeCompraTopeDto>>>(stringData) ?? throw new NegocioException("Hubo un problema al deserializar los datos")		;
+				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<OrdenDeCompraTopeDto>>>(stringData) ?? throw new NegocioException("Hubo un problema al deserializar los datos");
 				return apiResponse.Data;
 			}
 			else
@@ -2734,77 +2734,77 @@ namespace gc.sitio.core.Servicios.Implementacion
 			}
 		}
 
-        public async Task<RespuestaGenerica<RespuestaDto>> ConfirmarCargaPrevia(AbmGenDto req, string token)
-        {
-            try
-            {
-                var helper = new HelperAPI();
-                var client = helper.InicializaCliente(req, token, out StringContent contentData);
-                var link = $"{_appSettings.RutaBase}{RutaAPIEtiqueta}{CONFIRMAR_CARGA_PREVIA}";
+		public async Task<RespuestaGenerica<RespuestaDto>> ConfirmarCargaPrevia(AbmGenDto req, string token)
+		{
+			try
+			{
+				var helper = new HelperAPI();
+				var client = helper.InicializaCliente(req, token, out StringContent contentData);
+				var link = $"{_appSettings.RutaBase}{RutaAPIEtiqueta}{CONFIRMAR_CARGA_PREVIA}";
 
-                using var response = await client.PostAsync(link, contentData);
-                if (response.StatusCode == HttpStatusCode.OK)
-                {
-                    var stringData = await response.Content.ReadAsStringAsync();
-                    if (string.IsNullOrEmpty(stringData))
-                    {
-                        return new() { Ok = false, Mensaje = "No se recibió respuesta válida de la API" };
-                    }
+				using var response = await client.PostAsync(link, contentData);
+				if (response.StatusCode == HttpStatusCode.OK)
+				{
+					var stringData = await response.Content.ReadAsStringAsync();
+					if (string.IsNullOrEmpty(stringData))
+					{
+						return new() { Ok = false, Mensaje = "No se recibió respuesta válida de la API" };
+					}
 
-                    var apiResponse = JsonConvert.DeserializeObject<ApiResponse<RespuestaDto>>(stringData);
-                    if (apiResponse == null || apiResponse.Data == null)
-                    {
-                        return new() { Ok = false, Mensaje = "Error deserializando la respuesta de la API" };
-                    }
-                    var resp = apiResponse.Data;
-                    if (resp.resultado == 0)
-                    {
-                        return new RespuestaGenerica<RespuestaDto>
-                        {
-                            Ok = true,
-                            Mensaje = "OK",
-                            Entidad = apiResponse.Data
-                            // Nota: si necesitas la metadata (apiResponse.Meta), amplía RespuestaGenerica para incluirla.
-                        };
-                    }
-                    else if (resp.resultado > 0)
-                    {
-                        return new RespuestaGenerica<RespuestaDto>
-                        {
-                            Ok = false,
-                            EsWarn = true,
-                            EsError = false,
-                            Mensaje = resp.resultado_msj,
-                            Entidad = apiResponse.Data
-                            // Nota: si necesitas la metadata (apiResponse.Meta), amplía RespuestaGenerica para incluirla.
-                        };
-                    }
-                    else
-                    {
-                        return new RespuestaGenerica<RespuestaDto>
-                        {
-                            Ok = false,
-                            EsWarn = false,
-                            EsError = true,
-                            Mensaje = resp.resultado_msj,
-                            Entidad = apiResponse.Data
-                            // Nota: si necesitas la metadata (apiResponse.Meta), amplía RespuestaGenerica para incluirla.
-                        };
-                    }
-                }
-                else
-                {
-                    var msg = await ReadApiErrorAsync(response);
-                    _logger.LogWarning($"Error API ({response.StatusCode}): {msg}");
-                    return new() { Ok = false, Mensaje = msg };
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError($"{GetType().Name}-{MethodBase.GetCurrentMethod()?.Name} - {ex}");
-                return new() { Ok = false, Mensaje = "Error al confirmar las etiquetas" };
-            }
-        }
+					var apiResponse = JsonConvert.DeserializeObject<ApiResponse<RespuestaDto>>(stringData);
+					if (apiResponse == null || apiResponse.Data == null)
+					{
+						return new() { Ok = false, Mensaje = "Error deserializando la respuesta de la API" };
+					}
+					var resp = apiResponse.Data;
+					if (resp.resultado == 0)
+					{
+						return new RespuestaGenerica<RespuestaDto>
+						{
+							Ok = true,
+							Mensaje = "OK",
+							Entidad = apiResponse.Data
+							// Nota: si necesitas la metadata (apiResponse.Meta), amplía RespuestaGenerica para incluirla.
+						};
+					}
+					else if (resp.resultado > 0)
+					{
+						return new RespuestaGenerica<RespuestaDto>
+						{
+							Ok = false,
+							EsWarn = true,
+							EsError = false,
+							Mensaje = resp.resultado_msj,
+							Entidad = apiResponse.Data
+							// Nota: si necesitas la metadata (apiResponse.Meta), amplía RespuestaGenerica para incluirla.
+						};
+					}
+					else
+					{
+						return new RespuestaGenerica<RespuestaDto>
+						{
+							Ok = false,
+							EsWarn = false,
+							EsError = true,
+							Mensaje = resp.resultado_msj,
+							Entidad = apiResponse.Data
+							// Nota: si necesitas la metadata (apiResponse.Meta), amplía RespuestaGenerica para incluirla.
+						};
+					}
+				}
+				else
+				{
+					var msg = await ReadApiErrorAsync(response);
+					_logger.LogWarning($"Error API ({response.StatusCode}): {msg}");
+					return new() { Ok = false, Mensaje = msg };
+				}
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError($"{GetType().Name}-{MethodBase.GetCurrentMethod()?.Name} - {ex}");
+				return new() { Ok = false, Mensaje = "Error al confirmar las etiquetas" };
+			}
+		}
 
 		public async Task<List<PedidoInternoPendienteDetalleDto>> PIPendienteDetalle(string admId, string usuId, string token)
 		{

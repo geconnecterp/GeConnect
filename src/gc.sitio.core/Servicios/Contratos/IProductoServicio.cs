@@ -89,10 +89,10 @@ namespace gc.sitio.core.Servicios.Contratos
 		Task<RespuestaGenerica<TIRespuestaDto>> TIValidaPendiente(string usu, string token);
 		Task<RespuestaGenerica<RespuestaDto>> TIConfirma(TIRequestConfirmaDto confirma, string token);
 		Task<RespuestaGenerica<TIRespuestaDto>> TINueva_SinAu(string tipo, string adm, string usu, string token);
-		Task<List<TRAutAnalizaDto>> TRAutAnaliza(string listaPi, string listaDepo, bool stkExistente, bool sustituto, int palletNro, string token);
+		Task<List<TRAutAnalizaDto>> TRAutAnaliza(string listaPi, string listaDepo, int palletNro, string token);
 		Task<RespuestaGenerica<ProductoDepositoDto>> BuscarFechaVto(string pId, string bId, string tokenCookie);
 		Task<List<TRProductoParaAgregar>> TRObtenerSustituto(string pId, string listaDepo, string admIdDes, string tipo, string token);
-		Task<List<RespuestaDto>> TRConfirmaAutorizaciones(string json, string admId, string usuId, string token);
+		Task<List<RespuestaDto>> TRConfirmaAutorizaciones(string json, string json_sin_stock, string admId, string usuId, string token);
 		Task<RespuestaGenerica<ProductoGenDto>> ObtenerProductosCargadosCtrlSalida(string tr, string user, string token);
 		Task<RespuestaGenerica<RespuestaDto>> EnviarProductosCtrl(List<ProductoGenDto> lista, string Token);
 		Task<List<TRVerConteosDto>> TRVerConteos(string ti, string token);

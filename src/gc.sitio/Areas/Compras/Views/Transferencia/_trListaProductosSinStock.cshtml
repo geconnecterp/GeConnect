@@ -1,0 +1,69 @@
+﻿@model GridCoreSmart<TRNuevaAutDetalleDto>
+@{
+	var alt = true;
+	string clase = string.Empty;
+
+	string grupoActual = string.Empty;
+	string grupoAnterior = string.Empty;
+	string leyendaAgrupador = string.Empty;
+
+	var productosSinStock = new List<TRNuevaAutDetalleDto>();
+}
+<div class="table-responsive text-nowrap table-wrapper">
+	<table class="table table-sm mb-0 table-hover table-golden" id="tbNuevaAutListaProductosSinStock">
+		<thead>
+			<tr class="header">
+				<th style="width:5%;" class="align-center">ID</th>
+				<th style="width:25%;" class="align-center">Descripción</th>
+				<th style="width:10%;" class="align-center">ID Prov.</th>
+				<th style="width:10%;" class="align-center">Comprobante</th>
+				<th style="width:10%;" class="align-center">Stock</th>
+				<th style="width:10%;" class="align-center">Pedido</th>
+			</tr>
+		</thead>
+		<tbody>
+			@if (Model != null && 
+						Model.ListaDatos != null &&
+						Model.ListaDatos.Count > 0)
+			{
+				productosSinStock = Model.ListaDatos.OrderBy(x => x.adm_id).ToList();
+
+				foreach (var item in productosSinStock)
+				{
+					grupoActual = item.adm_id;
+					leyendaAgrupador = $"({item.adm_id}) {item.adm_nombre}";
+
+					if (grupoActual != grupoAnterior)
+					{
+						<tr class="table-secondary fw-bold">
+							<td colspan="6" class="text-center">
+								<i class="bx bx-folder me-1"></i>
+								@leyendaAgrupador
+							</td>
+						</tr>
+						grupoAnterior = grupoActual;
+						alt = true;
+					}
+
+					<tr onclick="selectNuevaAutListaProductosSinStockRow(this)">
+						<td class="align-center">@item.p_id</td>
+						<td class="align-left">@item.p_desc</td>
+						<td class="align-center">@item.p_id_prov</td>
+						<td class="align-center">@item.pi_compte</td>
+						<td class="align-right">@GridHelper.FormatearDato(item.stk, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
+						<td class="align-right">@GridHelper.FormatearDato(item.pedido, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
+					</tr>
+				}
+			}
+			else
+			{
+				<tr>
+					<td colspan="6" class="text-center text-muted py-4">
+						<i class="bx bx-info-circle me-2"></i>
+						No se encontraron productos con los criterios especificados
+					</td>
+				</tr>
+			}
+		</tbody>
+	</table>
+</div>

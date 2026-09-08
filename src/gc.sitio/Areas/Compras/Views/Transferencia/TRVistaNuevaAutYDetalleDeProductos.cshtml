@@ -5,6 +5,12 @@
 	var alt = true;
 	string clase = string.Empty;
 	string ultimoProducto = null;
+
+	string grupoActual = string.Empty;
+	string grupoAnterior = string.Empty;
+	string leyendaAgrupador = string.Empty;
+
+	var productosSinStock = new List<TRNuevaAutDetalleDto>();
 }
 <style>
 	.btn-icon-compact {
@@ -26,15 +32,16 @@
 	}
 
 	.table-area {
-		max-height: 350px; 
-		overflow-y: auto; 
+		max-height: 350px;
+		overflow-y: auto;
 		overflow-x: hidden;
-		padding-right: 4px; 
+		padding-right: 4px;
+		position: relative; /* 🔥 clave para sticky */
 	}
 
 	.modal-body {
-		overflow: hidden; 
-		padding-bottom: 0; 
+		overflow: hidden;
+		padding-bottom: 0;
 	}
 
 		.modal-body .d-flex {
@@ -52,14 +59,24 @@
 		height: 28px;
 	}
 
-	.a-transferir{
+	.a-transferir {
 		width: 40%;
 		max-width: 40%;
 	}
 
-	.btn-modal{
+	.btn-modal {
 		width: 100px;
 		height: 30px;
+	}
+
+	.tab-content-no-padding {
+		padding: 0;
+	}
+
+	#divListaProductosParaAgregar .table-golden thead {
+		position: sticky;
+		top: 0;
+		z-index: 20;
 	}
 </style>
 <div class="card">
@@ -118,121 +135,229 @@
 		<div class="col-8" style="padding-left: 0px;">
 			<fieldset>
 				<div class="d-flex justify-content-between align-items-center mb-2">
-					<h5 class="mb-0">Detalle de Productos de TR</h5>
-
-					<div class="d-flex gap-2">
-						<button id="btnAgregar" class="btn btn-primary btn-sm" onclick="abrirlModalAgregaProductoATR();" title="Agregar un nuevo producto">
-							<i class="bx bx-plus-circle"></i> Agregar
-						</button>
-
-						@*<button id="btnSustituto" class="btn btn-primary btn-sm" onclick="abrirlModalSustitutoDeProductoATR();" disabled title="Buscar sustituto" >
-							<i class="bx bx-plus-circle"></i> Sustituto
-						</button>*@
-
-						<button id="btnEliminar" class="btn btn-danger btn-sm" onclick="eliminarProductoATR();" disabled title="Eliminar">
-							<i class="bx bx-trash"></i> Eliminar
-						</button>
-
-						<button id="btnModCantidad" class="btn btn-info btn-sm" onclick="abrirlModalModCantDeProductoATR();" disabled title="Modificar">
-							<i class="bx bx-edit"></i> Modificar
-						</button>
+					<!-- TABS -->
+					<ul class="nav nav-tabs" id="tabNuevaAut" role="tablist">
+						<li class="nav-item" role="presentation">
+							<button class="nav-link active" id="tab-detalle-tab" data-bs-toggle="tab"
+									data-bs-target="#tab-detalle" type="button" role="tab">
+								Detalle de Productos de TR
+							</button>
+						</li>
+						<li class="nav-item" role="presentation">
+							<button class="nav-link" id="tab-sinstock-tab" data-bs-toggle="tab"
+									data-bs-target="#tab-sinstock" type="button" role="tab">
+								Sin Stock
+							</button>
+						</li>
+					</ul>
+					<!-- BOTONES (cambian según el tab activo) -->
+					<div id="tabButtons" class="d-flex gap-2">
+						<!-- Se llenan dinámicamente -->
 					</div>
 				</div>
-				<div id="divNuevaAutListaProductos">
-					<div class="table-responsive text-nowrap table-wrapper">
-						<table class="table table-sm mb-0 table-hover table-golden" id="tbNuevaAutListaProductos">
-							<thead>
-								<tr class="header">
-									<th style="width:5%;" class="align-center">ID</th>
-									<th style="width:25%;" class="align-center">Descripción</th>
-									<th style="width:8%;" class="align-center">Id Prov</th>
-									<th style="width:8%;" class="align-center">PI</th>
-									<th style="width:8%;" class="align-center">Stk Suc</th>
-									<th style="width:8%;" class="align-center">Pedido</th>
-									<th style="width:8%;" class="align-center">A transf.</th>
-									<th style="width:10%;" class="align-center">Dif</th>
-									<th style="width:10%;" class="align-center">Box</th>
-									<th style="width:10%;" class="align-center">A transf. Box</th>
-									<th style="width:5%;" class="align-center">Nota</th>
-									<th style="width:0%; display:none;">sustituto</th>
-									<th style="width:0%; display:none;">adm_id</th>
-									<th style="width:0%; display:none;">depo_id</th>
-									<th style="width:0%; display:none;">depo_nombre</th>
-									<th style="width:0%; display:none;">rub_id</th>
-									<th style="width:0%; display:none;">rub_nombre</th>
-									<th style="width:0%; display:none;">box_id</th>
-								</tr>
-							</thead>
-							
-							<tbody>
-								@if (Model != null && Model.Detalle != null && Model.Detalle.ListaDatos != null && Model.Detalle.ListaDatos.Count > 0)
-								{
-									foreach (var item in Model.Detalle.ListaDatos)
-									{
-										var dif = item.pedido - item.a_transferir;
-
-										bool esRepetido = (ultimoProducto == item.p_id + "|" + item.p_desc);
-										ultimoProducto = item.p_id + "|" + item.p_desc;
-
-										if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
-
-										<tr data-pi-compte="@item.pi_compte" 
-											class="@clase" 
-											onclick="selectNuevaAutListaProductosRow(this)">
-											<td class="align-center">
-												@(esRepetido ? "" : item.p_id)
-											</td>
-											<td class="align-left">
-												@(esRepetido ? "" : item.p_desc)
-											</td>
-											<td class="align-center">
-												@(esRepetido ? "" : item.p_id_prov)
-											</td>
-											<td class="align-center">
-												@(esRepetido ? "" : item.pi_compte)
-											</td>
-											<td class="align-right">
-												@(esRepetido ? "" : GridHelper.FormatearDato(item.stk, GridHelper.FormatDato.Monto, item.PermiteDecimales))
-											</td>
-											<td class="align-right">
-												@(esRepetido ? "" : GridHelper.FormatearDato(item.pedido, GridHelper.FormatDato.Monto, item.PermiteDecimales))
-											</td>
-											<td class="align-right">
-												@(esRepetido ? "" : GridHelper.FormatearDato(item.a_transferir, GridHelper.FormatDato.Monto, item.PermiteDecimales))
-											</td>
-											<td class="align-right">
-												@(esRepetido ? "" : GridHelper.FormatearDato(dif, GridHelper.FormatDato.Monto, item.PermiteDecimales))
-											</td>
-											<td class="align-center">@item.box_id</td>
-											<td class="align-right">@GridHelper.FormatearDato(item.a_transferir_box, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
-											<td class="text-center align-middle">
-												@if (!string.IsNullOrEmpty(item.nota))
-												{
-													<button type="button" class="btn btn-info btn-sm btn-icon-compact"
-															data-interaction="@item.p_id"
-															data-adm_id="@item.adm_id"
-															data-autorizacion="@item.autorizacion"
-															onclick="verNotaEnProducto(this);">
-														<i class="bx bx-detail"></i>
-													</button>
-												}
-											</td>
-											@if (item.p_sustituto)
-											{
-												<td style="display:none;"><input type="checkbox" name="p_sustituto" value="@item.p_sustituto" checked disabled="disabled" /></td>
-											}
-											else
-											{
-												<td style="display:none;"><input type="checkbox" name="p_sustituto" value="@item.p_sustituto" disabled="disabled" /></td>
-											}
-											<td style="display:none;">@item.adm_id</td>
-											<td style="display:none;">@item.depo_id</td>
-											<td style="display:none;">@item.depo_nombre</td>
+				<!-- CONTENIDO DE LOS TABS -->
+				<div class="tab-content tab-content-no-padding" id="tabNuevaAutContent">
+					<!-- TAB #1: DETALLE -->
+					<div class="tab-pane fade show active" id="tab-detalle" role="tabpanel">
+						@* <div class="d-flex justify-content-between align-items-center mb-2 mt-2">
+							<div class="d-flex gap-2">
+								<button id="btnAgregar" class="btn btn-primary btn-sm"
+										onclick="abrirlModalAgregaProductoATR();" title="Agregar un nuevo producto">
+									<i class="bx bx-plus-circle"></i> Agregar
+								</button>
+								<button id="btnEliminar" class="btn btn-danger btn-sm"
+										onclick="eliminarProductoATR();" disabled title="Eliminar">
+									<i class="bx bx-trash"></i> Eliminar
+								</button>
+								<button id="btnModCantidad" class="btn btn-info btn-sm"
+										onclick="abrirlModalModCantDeProductoATR();" disabled title="Modificar">
+									<i class="bx bx-edit"></i> Modificar
+								</button>
+							</div>
+						</div> *@
+						<!-- Tabla original -->
+						<div id="divNuevaAutListaProductos">
+							<div class="table-responsive text-nowrap table-wrapper">
+								<table class="table table-sm mb-0 table-hover table-golden" id="tbNuevaAutListaProductos">
+									<thead>
+										<tr class="header">
+											<th style="width:5%;" class="align-center">ID</th>
+											<th style="width:25%;" class="align-center">Descripción</th>
+											<th style="width:8%;" class="align-center">Id Prov</th>
+											<th style="width:8%;" class="align-center">PI</th>
+											<th style="width:8%;" class="align-center">Stk Suc</th>
+											<th style="width:8%;" class="align-center">Pedido</th>
+											<th style="width:8%;" class="align-center">A transf.</th>
+											<th style="width:10%;" class="align-center">Dif</th>
+											<th style="width:10%;" class="align-center">Box</th>
+											<th style="width:10%;" class="align-center">A transf. Box</th>
+											<th style="width:5%;" class="align-center">Nota</th>
+											<th style="width:0%; display:none;">sustituto</th>
+											<th style="width:0%; display:none;">adm_id</th>
+											<th style="width:0%; display:none;">depo_id</th>
+											<th style="width:0%; display:none;">depo_nombre</th>
+											<th style="width:0%; display:none;">rub_id</th>
+											<th style="width:0%; display:none;">rub_nombre</th>
+											<th style="width:0%; display:none;">box_id</th>
 										</tr>
-									}
-								}
-							</tbody>
-						</table>
+									</thead>
+
+									<tbody>
+										@if (Model != null && Model.Detalle != null && Model.Detalle.ListaDatos != null && Model.Detalle.ListaDatos.Count > 0)
+										{
+											foreach (var item in Model.Detalle.ListaDatos)
+											{
+												var dif = item.pedido - item.a_transferir;
+
+												bool esRepetido = (ultimoProducto == item.p_id + "|" + item.p_desc);
+												ultimoProducto = item.p_id + "|" + item.p_desc;
+
+												if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+
+												<tr data-pi-compte="@item.pi_compte"
+													class="@clase"
+													onclick="selectNuevaAutListaProductosRow(this)">
+													<td class="align-center">
+														@(esRepetido ? "" : item.p_id)
+													</td>
+													<td class="align-left">
+														@(esRepetido ? "" : item.p_desc)
+													</td>
+													<td class="align-center">
+														@(esRepetido ? "" : item.p_id_prov)
+													</td>
+													<td class="align-center">
+														@(esRepetido ? "" : item.pi_compte)
+													</td>
+													<td class="align-right">
+														@(esRepetido ? "" : GridHelper.FormatearDato(item.stk, GridHelper.FormatDato.Monto, item.PermiteDecimales))
+													</td>
+													<td class="align-right">
+														@(esRepetido ? "" : GridHelper.FormatearDato(item.pedido, GridHelper.FormatDato.Monto, item.PermiteDecimales))
+													</td>
+													<td class="align-right">
+														@(esRepetido ? "" : GridHelper.FormatearDato(item.a_transferir, GridHelper.FormatDato.Monto, item.PermiteDecimales))
+													</td>
+													<td class="align-right">
+														@(esRepetido ? "" : GridHelper.FormatearDato(dif, GridHelper.FormatDato.Monto, item.PermiteDecimales))
+													</td>
+													<td class="align-center">@item.box_id</td>
+													<td class="align-right">@GridHelper.FormatearDato(item.a_transferir_box, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
+													<td class="text-center align-middle">
+														@if (!string.IsNullOrEmpty(item.nota))
+														{
+															<button type="button" class="btn btn-info btn-sm btn-icon-compact"
+																	data-interaction="@item.p_id"
+																	data-adm_id="@item.adm_id"
+																	data-autorizacion="@item.autorizacion"
+																	onclick="verNotaEnProducto(this);">
+																<i class="bx bx-detail"></i>
+															</button>
+														}
+													</td>
+													@if (item.p_sustituto)
+													{
+														<td style="display:none;"><input type="checkbox" name="p_sustituto" value="@item.p_sustituto" checked disabled="disabled" /></td>
+													}
+													else
+													{
+														<td style="display:none;"><input type="checkbox" name="p_sustituto" value="@item.p_sustituto" disabled="disabled" /></td>
+													}
+													<td style="display:none;">@item.adm_id</td>
+													<td style="display:none;">@item.depo_id</td>
+													<td style="display:none;">@item.depo_nombre</td>
+												</tr>
+											}
+										}
+										else
+										{
+											<tr>
+												<td colspan="11" class="text-center text-muted py-4">
+													<i class="bx bx-info-circle me-2"></i>
+													No se encontraron productos con los criterios especificados
+												</td>
+											</tr>
+										}
+									</tbody>
+								</table>
+							</div>
+						</div>
+					</div>
+					<!-- TAB #2: SIN STOCK -->
+					<div class="tab-pane fade" id="tab-sinstock" role="tabpanel">
+						@* <div class="d-flex justify-content-between align-items-center mb-2 mt-2">
+							<div class="d-flex gap-2">
+								<button id="btnAgregarSinStock" class="btn btn-primary btn-sm"
+										onclick="abrirlModalAgregaProductoATR();" title="Agregar un nuevo producto">
+									<i class="bx bx-plus-circle"></i> Agregar
+								</button>
+								<button id="btnModCantidadSinStock" class="btn btn-info btn-sm"
+										onclick="abrirlModalModCantDeProductoATR();" disabled title="Modificar">
+									<i class="bx bx-edit"></i> Modificar
+								</button>
+							</div>
+						</div> *@
+						<!-- Tabla Sin Stock -->
+						<div id="divNuevaAutListaProductosSinStock">
+							<div class="table-responsive text-nowrap table-wrapper">
+								<table class="table table-sm mb-0 table-hover table-golden" id="tbNuevaAutListaProductosSinStock">
+									<thead>
+										<tr class="header">
+											<th style="width:5%;" class="align-center">ID</th>
+											<th style="width:25%;" class="align-center">Descripción</th>
+											<th style="width:10%;" class="align-center">ID Prov.</th>
+											<th style="width:10%;" class="align-center">Comprobante</th>
+											<th style="width:10%;" class="align-center">Stock</th>
+											<th style="width:10%;" class="align-center">Pedido</th>
+										</tr>
+									</thead>
+									<tbody>
+										@if (Model != null && Model.DetalleSinStock != null &&
+																				Model.DetalleSinStock.ListaDatos != null &&
+																				Model.DetalleSinStock.ListaDatos.Count > 0)
+										{
+											productosSinStock = Model.DetalleSinStock.ListaDatos.OrderBy(x => x.adm_id).ToList();
+
+											foreach (var item in productosSinStock)
+											{
+												grupoActual = item.adm_id;
+												leyendaAgrupador = $"({item.adm_id}) {item.adm_nombre}";
+
+												if (grupoActual != grupoAnterior)
+												{
+													<tr class="table-secondary fw-bold">
+														<td colspan="6" class="text-center">
+															<i class="bx bx-folder me-1"></i>
+															@leyendaAgrupador
+														</td>
+													</tr>
+													grupoAnterior = grupoActual;
+													alt = true;
+												}
+
+												<tr onclick="selectNuevaAutListaProductosSinStockRow(this)">
+													<td class="align-center">@item.p_id</td>
+													<td class="align-left">@item.p_desc</td>
+													<td class="align-center">@item.p_id_prov</td>
+													<td class="align-center">@item.pi_compte</td>
+													<td class="align-right">@GridHelper.FormatearDato(item.stk, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
+													<td class="align-right">@GridHelper.FormatearDato(item.pedido, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
+												</tr>
+											}
+										}
+										else
+										{
+											<tr>
+												<td colspan="6" class="text-center text-muted py-4">
+													<i class="bx bx-info-circle me-2"></i>
+													No se encontraron productos con los criterios especificados
+												</td>
+											</tr>
+										}
+									</tbody>
+								</table>
+							</div>
+						</div>
 					</div>
 				</div>
 			</fieldset>
@@ -281,7 +406,7 @@
 					<div class="d-flex justify-content-start align-items-center gap-2 mt-3">
 
 						<div class="input-group" style="width: 200px;">
-							<span class="input-group-text">A Transferir</span>
+							<span class="input-group-text" id="lblCantidad">A Transferir</span>
 							<input type="number" id="txtAtransferir" class="form-control a-transferir" />
 						</div>
 
@@ -314,6 +439,8 @@
 		var idProdDeProdSeleccionado = "";
 		var sustituto = false;
 		var esProductoSustituto = false;
+		var prodSinStockSeleccionado = "";
+		var prodSinStockSeleccionadoNombre = "";
 		var TREditarNotaEnSucursalUrl = "@Url.Action("EditarNotaEnSucursal", "transferencia", new { area = "Compras" })";
 		var TRAgregarNotaASucursalNuevaAutUrl = "@Url.Action("AgregarNotaASucursalNuevaAutTR", "transferencia", new { area = "Compras" })";
 		var TREditarNotaEnProductoUrl = "@Url.Action("EditarNotaEnProducto", "transferencia", new { area = "Compras" })";
@@ -323,6 +450,7 @@
 		var TRExisteProductoEnTRUrl = "@Url.Action("ExisteProductoEnTR", "transferencia", new { area = "Compras" })";
 		var TRCargarListaProductoSustitutoUrl = "@Url.Action("CargarListaProductoSustituto", "transferencia", new { area = "Compras" })";
 		var TRFiltrarListaDeProductosPorSucursalUrl = "@Url.Action("FiltrarListaDeProductosPorSucursal", "transferencia", new { area = "Compras" })";
+		var obtenerListaDeProductosPorSucursalSinStockUrl = "@Url.Action("ObtenerListaDeProductosPorSucursalSinStock", "transferencia", new { area = "Compras" })";
 		var TRAgregarNuevoProductoUrl = "@Url.Action("AgregarNuevoProducto", "transferencia", new { area = "Compras" })";
 		var TRAgregarProductoSustitutoUrl = "@Url.Action("AgregarProductoSustituto", "transferencia", new { area = "Compras" })";
 		var TRInicializarModalAgregarProductoSustitutoATRUrl = "@Url.Action("InicializarModalAgregarProductoSustitutoATR", "transferencia", new { area = "Compras" })";

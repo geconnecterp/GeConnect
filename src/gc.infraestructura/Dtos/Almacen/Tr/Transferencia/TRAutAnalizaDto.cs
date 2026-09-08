@@ -19,7 +19,7 @@ namespace gc.infraestructura.Dtos.Almacen.Tr.Transferencia
 		public string pi_compte { get; set; } = string.Empty;
 		public int unidad_palet { get; set; }
 		public decimal palet { get; set; }
-		public int autorizacion { get; set; }
+		public int? autorizacion { get; set; }
 		public bool p_sustituto { get; set; }
 		public string p_id_sustituto { get; set; } = string.Empty;
 		public string nota { get; set; } = string.Empty;

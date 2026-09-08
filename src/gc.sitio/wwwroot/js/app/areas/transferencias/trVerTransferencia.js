@@ -16,8 +16,32 @@ function ValidarTipoTR() {
 
 function selectTRRow(x) {
 }
+function validarTablaConteos() {
+	const filas = document.querySelectorAll("#tbListaConteos tbody tr");
 
-function validarAutorizacion() {
+	let todasDiferenciasCero = true;
+	let existeConteoDistintoCero = false;
+
+	filas.forEach(fila => {
+		const diferencia = parseFloat(fila.dataset.diferencia || "0");
+		const conteo = parseFloat(fila.dataset.cantidad || "0");
+
+		if (diferencia !== 0) {
+			todasDiferenciasCero = false;
+		}
+
+		if (conteo !== 0) {
+			existeConteoDistintoCero = true;
+		}
+	});
+
+	if (todasDiferenciasCero && existeConteoDistintoCero) {
+		return false;
+	}
+
+	return true; // si no se cumple la condición, sigue normal
+}
+function iniciarValidarAutorizacion() {
 	var ti = $("#ti").val();
 	if (ti === "") {
 		AbrirMensaje("Atención", "La Transferencia seleccionado no es válida.", function () {
@@ -25,34 +49,53 @@ function validarAutorizacion() {
 			return false;
 		}, false, ["Aceptar"], "error!", null);
 	}
-	else {
-		AbrirWaiting();
-		var datos = { ti }
-		PostGen(datos, TRValidarTransferenciaUrl, function (o) {
-			if (o.error === true) {
-				CerrarWaiting();
-				AbrirMensaje("Atención", o.msg, function () {
-					$("#msjModal").modal("hide");
-					return true;
-				}, false, ["Aceptar"], "error!", null);
-			} else if (o.warn === true) {
-				CerrarWaiting();
-				AbrirMensaje("Atención", o.msg, function () {
-					$("#msjModal").modal("hide");
-					return true;
-				}, false, ["Aceptar"], "warn!", null);
-			} else if (o.msg !== "") {
-				CerrarWaiting();
-				AbrirMensaje("Atención", o.msg, function (e) {
-					$("#msjModal").modal("hide");
-					return true;
-				}, false, ["Aceptar"], "info!", null);
-			} else {
-				CerrarWaiting();
-				confirmarAutorizacion(ti);
+	else if (!validarTablaConteos()) {
+		AbrirMensaje("Confirmación", "Existen productos no colectados en la Autorización de TR. Si confirma no podrá operar más con esta Autorización de TR. ¿Está seguro de continuar?", function (e) {
+			$("#msjModal").modal("hide");
+			switch (e) {
+				case "SI": //
+					validar(ti);
+					break;
+				case "NO":
+					break;
+				default: //NO
+					break;
 			}
-		});
+			return true;
+		}, true, ["Aceptar", "Cancelar"], "info!", null);
 	}
+	else {
+		validar(ti);
+	}
+}
+
+function validar(ti) {
+	AbrirWaiting();
+	var datos = { ti }
+	PostGen(datos, TRValidarTransferenciaUrl, function (o) {
+		if (o.error === true) {
+			CerrarWaiting();
+			AbrirMensaje("Atención", o.msg, function () {
+				$("#msjModal").modal("hide");
+				return true;
+			}, false, ["Aceptar"], "error!", null);
+		} else if (o.warn === true) {
+			CerrarWaiting();
+			AbrirMensaje("Atención", o.msg, function () {
+				$("#msjModal").modal("hide");
+				return true;
+			}, false, ["Aceptar"], "warn!", null);
+		} else if (o.msg !== "") {
+			CerrarWaiting();
+			AbrirMensaje("Atención", o.msg, function (e) {
+				$("#msjModal").modal("hide");
+				return true;
+			}, false, ["Aceptar"], "info!", null);
+		} else {
+			CerrarWaiting();
+			confirmarAutorizacion(ti);
+		}
+	});
 }
 
 function confirmarAutorizacion(ti) {

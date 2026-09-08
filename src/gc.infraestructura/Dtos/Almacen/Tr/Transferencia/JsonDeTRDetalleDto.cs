@@ -57,7 +57,7 @@ namespace gc.infraestructura.Dtos.Almacen.Tr.Transferencia
 		public decimal palet { get; set; }
 		[DataMember]
 		[JsonProperty("autorizacion")]
-		public int autorizacion { get; set; }
+		public int? autorizacion { get; set; }
 		[DataMember]
 		[JsonProperty("p_sustituto")]
 		public bool p_sustituto { get; set; }

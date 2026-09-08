@@ -74,7 +74,7 @@ namespace gc.api.core.Contratos.Servicios
 		TIRespuestaDto TRNuevaSinAuto(string tipoIt, string adm, string usu);
 		TIRespuestaDto TRValidaPendiente(string usu);
 		RespuestaDto TR_Confirma(TIRequestConfirmaDto conf);
-		List<TRAutAnalizaDto> TRAutAnaliza(string listaPi, string listaDepo, bool stkExistente, bool sustituto, int palletNro);
+		List<TRAutAnalizaDto> TRAutAnaliza(string listaPi, string listaDepo, int palletNro);
 		List<TRProductoParaAgregar> TRObtenerSustituto(string pId, string listaDepo, string admIdDes, string tipo);
 		List<RespuestaDto> TRConfirmaAutorizaciones(TRConfirmaRequest request);
 		RespuestaDto ValidarProductoCarrito(TiProductoCarritoDto request);

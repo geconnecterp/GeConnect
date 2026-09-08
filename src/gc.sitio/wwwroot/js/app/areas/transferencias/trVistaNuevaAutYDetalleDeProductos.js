@@ -1,10 +1,58 @@
 ﻿$(function () {
 	AddEventListenerToGrid("tbNuevaAutListaSucursales");
 	AddEventListenerToGrid("tbNuevaAutListaProductos");
+	AddEventListenerToGrid("tbNuevaAutListaProductosSinStock");
 	$("#btnEditarCantidad").on("click", EditarCantidad);
 	$("#btnRegresarANuevaAut").on("click", RegresarANuevaAut);
 	$("#btnConfirmarAuto").on("click", ConfirmarAuto);
 	SeleccionarFila(1, "tbNuevaAutListaSucursales");
+
+	// ---------------------------------------------------------
+	// 🔥 INTEGRACIÓN DEL SCRIPT DE TABS + BOTONES DINÁMICOS
+	// ---------------------------------------------------------
+
+	function renderButtons(tab) {
+		const cont = document.getElementById("tabButtons");
+		cont.innerHTML = "";
+
+		if (tab === "detalle") {
+			cont.innerHTML = `
+                <button id="btnAgregar" class="btn btn-primary btn-sm"
+                        onclick="abrirlModalAgregaProductoATR();" title="Agregar un nuevo producto">
+                    <i class="bx bx-plus-circle"></i> Agregar
+                </button>
+                <button id="btnEliminar" class="btn btn-danger btn-sm"
+                        onclick="eliminarProductoATR();" disabled title="Eliminar">
+                    <i class="bx bx-trash"></i> Eliminar
+                </button>
+                <button id="btnModCantidad" class="btn btn-info btn-sm"
+                        onclick="abrirlModalModCantDeProductoATR();" disabled title="Modificar">
+                    <i class="bx bx-edit"></i> Modificar
+                </button>
+            `;
+		}
+
+		if (tab === "sinstock") {
+			cont.innerHTML = `
+                <button id="btnAgregarSinStock" class="btn btn-primary btn-sm"
+                        onclick="abrirlModalSustitutoDeProductoATR();" title="Agregar un nuevo producto">
+                    <i class="bx bx-plus-circle"></i> Sustituto
+                </button>
+            `;
+		}
+	}
+
+	// Inicial: Tab Detalle
+	renderButtons("detalle");
+
+	// Eventos de cambio de tab
+	document.getElementById("tab-detalle-tab").addEventListener("shown.bs.tab", function () {
+		renderButtons("detalle");
+	});
+
+	document.getElementById("tab-sinstock-tab").addEventListener("shown.bs.tab", function () {
+		renderButtons("sinstock");
+	});
 });
 
 function verificaEstado(e) {
@@ -175,6 +223,21 @@ function filtrarListaDeProductosPorSucursal() {
 	CerrarWaiting();
 }
 
+function obtenerListaDeProductosPorSucursalSinStock() {
+	AbrirWaiting();
+	var admId = admSeleccionado;
+	if (admId) {
+		var datos = { admId };
+		PostGenHtml(datos, obtenerListaDeProductosPorSucursalSinStockUrl, function (obj) {
+			$("#divNuevaAutListaProductosSinStock").html(obj);
+			AddEventListenerToGrid("tbNuevaAutListaProductosSinStock");
+			CerrarWaiting();
+			return true
+		});
+	}
+	CerrarWaiting();
+}
+
 function selectNuevaAutListaProductosRow(x) {
 	prodSeleccionado = x.cells[0].innerText.trim();
 	prodSeleccionadoNombre = x.cells[1].innerText.trim();
@@ -182,6 +245,12 @@ function selectNuevaAutListaProductosRow(x) {
 	$('#btnSustituto').prop('disabled', !sustituto);
 	$('#btnEliminar').prop('disabled', false);
 	$('#btnModCantidad').prop('disabled', false);
+}
+
+function selectNuevaAutListaProductosSinStockRow(x) {
+	prodSinStockSeleccionado = x.cells[0].innerText.trim();
+	prodSinStockSeleccionadoNombre = x.cells[1].innerText.trim();
+	$('#btnAgregarSinStock').prop('disabled', false);
 }
 
 function AddEventListenerToGrid(tabla) {
@@ -392,31 +461,41 @@ function abrirlModalAgregaProductoATR() {
 var pi_compte_para_agregar = "";
 
 function abrirlModalSustitutoDeProductoATR() {
-	AbrirWaiting();
-	var admId = admSeleccionado;
-	var pId = prodSeleccionado;
-	var listaDepo = "";
-	var tipo = "S";
-	var datos = { admId, prodSeleccionado, listaDepo, tipo };
-	PostGenHtml(datos, TRInicializarModalAgregarProductoSustitutoATRUrl, function (obj) {
-		$("#divListaProductosParaAgregar").html(obj);
-		document.getElementById("modalCenterTitle").outerHTML = "<h5 class=\"modal-title\" id=\"modalCenterTitle\"> Detalle de TR (" + admSeleccionado + ") " + admSeleccionadoNombre + "</h5>";
-		// document.getElementById("leyendaNuevoProducto").outerHTML = "<h5 id=\"leyendaNuevoProducto\"> Modificar el Valor a Transferir del Box</h5>";
-		document.getElementById("leyendaNuevoProducto").outerHTML = "<h5 id=\"leyendaNuevoProducto\"> Producto Sustituto de (" + prodSeleccionado + ") " + prodSeleccionadoNombre + "</h5>";
-		document.getElementById("divBusquedaProducto").style.display = 'none'
-		var modal = new bootstrap.Modal(document.getElementById('modalCargarNuevoProducto'), {
-			backdrop: 'static',
-			keyboard: false
+	if (!prodSinStockSeleccionado || prodSinStockSeleccionado == "") {
+		AbrirMensaje("Atención", "Debe seleccionar un producto SIN STOCK a sustituir.", function () {
+			$("#msjModal").modal("hide");
+			return true;
+		}, false, ["Aceptar"], "warn!", null);
+	}
+	else {
+		AbrirWaiting();
+		var admId = admSeleccionado;
+		var pId = prodSinStockSeleccionado;
+		var listaDepo = "";
+		var tipo = "S";
+		var datos = { admId, prodSinStockSeleccionado, listaDepo, tipo };
+		PostGenHtml(datos, TRInicializarModalAgregarProductoSustitutoATRUrl, function (obj) {
+			$("#divListaProductosParaAgregar").html(obj);
+			document.getElementById("modalCenterTitle").outerHTML = "<h5 class=\"modal-title\" id=\"modalCenterTitle\"> Detalle de TR (" + admSeleccionado + ") " + admSeleccionadoNombre + "</h5>";
+			// document.getElementById("leyendaNuevoProducto").outerHTML = "<h5 id=\"leyendaNuevoProducto\"> Modificar el Valor a Transferir del Box</h5>";
+			document.getElementById("leyendaNuevoProducto").outerHTML = "<h5 id=\"leyendaNuevoProducto\"> Producto Sustituto de (" + prodSinStockSeleccionado + ") " + prodSinStockSeleccionadoNombre + "</h5>";
+			document.getElementById("divBusquedaProducto").style.display = 'none'
+			$("#txtAtransferir").val(0);
+			var modal = new bootstrap.Modal(document.getElementById('modalCargarNuevoProducto'), {
+				backdrop: 'static',
+				keyboard: false
+			});
+			modal.show();
+			esProductoSustituto = true;
+			tipoFuncion = FuncionSobreProductosAAgregar.SUSTITUTO;
+			$("#btnAceptarNuevoProducto").off("click");
+			$("#btnAceptarNuevoProducto").on("click", EditarCantidad);
+			AddEventListenerToGrid("tbListaProductosParaAgregar");
+			CerrarWaiting();
+			return true
 		});
-		modal.show();
-		esProductoSustituto = true;
-		tipoFuncion = FuncionSobreProductosAAgregar.SUSTITUTO;
-		$("#btnAceptarNuevoProducto").off("click");
-		AddEventListenerToGrid("tbListaProductosParaAgregar");
 		CerrarWaiting();
-		return true
-	});
-	CerrarWaiting();
+	}
 }
 
 function abrirlModalModCantDeProductoATR() {
@@ -572,11 +651,26 @@ function EditarCantidad() {
 	if (cantidad === "") {
 		AbrirMensaje("Atención", "La cantidad ingresada no posee un formato válido.", function () {
 			$("#msjModal").modal("hide");
+			$("#txtAtransferir").trigger('focus');
+			return true;
+		}, false, ["Aceptar"], "warn!", null);
+	}
+	else if (cantidad == 0) {
+		AbrirMensaje("Atención", "Debe indicar un valor mayor a 0.", function () {
+			$("#msjModal").modal("hide");
+			$("#txtAtransferir").trigger('focus');
 			return true;
 		}, false, ["Aceptar"], "warn!", null);
 	}
 	else if (stkDeProdSeleccionado === "") {
 		AbrirMensaje("Atención", "El stock del producto seleccionado no posee un formato válido.", function () {
+			$("#msjModal").modal("hide");
+			$("#txtAtransferir").trigger('focus');
+			return true;
+		}, false, ["Aceptar"], "warn!", null);
+	}
+	else if (!idProvDeProdSeleccionado || idProvDeProdSeleccionado == "") {
+		AbrirMensaje("Atención", "Debe seleccionar un producto.", function () {
 			$("#msjModal").modal("hide");
 			return true;
 		}, false, ["Aceptar"], "warn!", null);
@@ -624,7 +718,7 @@ function EditarCantidad() {
 				});
 				break;
 			case FuncionSobreProductosAAgregar.SUSTITUTO:
-				var idProductoSustituto = prodSeleccionado;
+				var idProductoSustituto = prodSinStockSeleccionado;
 				var datos = {
 					idProdDeProdSeleccionado,
 					idProductoSustituto,
@@ -657,9 +751,10 @@ function EditarCantidad() {
 						}, false, ["Aceptar"], "info!", null);
 					} else {
 						//Cerrar modal y actualizar lista
-						CerrarWaiting();
 						$("#modalCargarNuevoProducto").modal("hide")
 						filtrarListaDeProductosPorSucursal();
+						obtenerListaDeProductosPorSucursalSinStock();
+						CerrarWaiting();
 					}
 					tipoFuncion = FuncionSobreProductosAAgregar.NOSELECTED;
 				});

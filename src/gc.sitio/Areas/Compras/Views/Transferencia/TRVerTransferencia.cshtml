@@ -5,11 +5,43 @@
 	Layout = "~/views/shared/_Layout.cshtml";
 }
 <style>
-	.table-golden thead th {
+
+	.card,
+	.card-body,
+	#formulario {
+		overflow: visible !important;
+	}
+
+	.table-wrapper {
+		max-height: 650px;
+		overflow-y: auto;
+		overflow-x: hidden;
+		position: relative;
+	}
+
+	.table-golden thead {
 		position: sticky;
 		top: 0;
-		z-index: 2;
+		z-index: 10;
 		background-color: inherit;
+	}
+
+	.diferencia-cero {
+		background-color: #d4edda !important; /* verde suave */
+		color: #155724 !important; /* texto verde oscuro */
+		font-weight: bold !important;
+	}
+
+	.diferencia-no-cero {
+		background-color: #f8d7da !important; /* rojo suave */
+		color: #721c24 !important; /* texto rojo oscuro */
+		font-weight: bold !important;
+	}
+
+	.icon-warning {
+		color: #dc3545; /* rojo Bootstrap */
+		margin-left: 6px;
+		cursor: pointer;
 	}
 </style>
 <div class="card w-75 mx-auto">
@@ -18,32 +50,39 @@
 			@Html.Hidden("ti", Model.ti)
 			@Html.Hidden("tipo", Model.Tipo)
 			<div>
-				<h5>Autorizaciones TR</h5>
-				<div class="input-group input-group-sm">
-					<span class="input-group-text">@Model.Autorizacion</span>
-					<span class="input-group-text">             </span>
-					<span class="input-group-text">@Model.TipoTR</span>
-					<span class="input-group-text">             </span>
-					<span class="input-group-text">@Model.Destino</span>
-					<div style="padding-left:50px;">
-						<button id="btnConfirmar" class="btn btn-success btn-sm mt-1 me-1" type="button" title="Confirmar Transferencia" onclick="validarAutorizacion();">
-							<i class="bx bx-badge-check"></i> Confirmar Transferencia
+				<h5 class="mb-1">Autorizaciones TR</h5>
+				<div class="d-flex align-items-center flex-wrap gap-2">
+					<span class="badge bg-primary">@Model.Autorizacion</span>
+					<span class="badge bg-info">@Model.TipoTR</span>
+					<span class="badge bg-secondary">@Model.Destino</span>
+
+					<div class="ms-auto">
+						<button id="btnConfirmar" style="width: 100px;" class="btn btn-success btn-sm me-1" type="button" title="Confirmar Transferencia" onclick="iniciarValidarAutorizacion();">
+							<i class="bx bx-badge-check"></i> Confirmar
 						</button>
-						@* <a href="#" class="btn btn-success btn-sm mt-1 me-1" id="btnConfirmar" onclick="validarAutorizacion();"><span class="bx bx-badge-check"> Confirmar</span></a> *@
-						<button id="btnRegresar" class="btn btn-success btn-sm mt-1 me-1" type="button" title="Volver" onclick="regresarATRLista();">
+						<button id="btnRegresar" style="width: 100px;" class="btn btn-secondary btn-sm" type="button" title="Volver" onclick="regresarATRLista();">
 							<i class="bx bx-chevron-left"></i> Volver
 						</button>
-						@* <a href="#" id="btnRegresar" class="btn btn-secondary btn-sm mt-1 me-1" onclick="regresarATRLista();" style="padding-left:5px;"><span class="bx bx-chevron-left"> Regresar</span></a> *@
 					</div>
 				</div>
 			</div>
 		</div>
-		<fieldset>
-			<legend>
-				<h5>Conteos</h5>
-			</legend>
-			<div id="divListaConteos">
-				<div class="table-responsive text-nowrap table-wrapper">
+		<div class="grid-golden mt-2">
+			<div class="grid-golden-header">
+				<div class="row align-items-md-center">
+					<div class="col-md-10 col-sm-6 d-flex align-items-center">
+						<h5 class="mb-0 flex-grow-1">
+							<i class="bx bx-package me-2"></i>
+							<strong>Conteos</strong>
+						</h5>
+					</div>
+					<div class="col-md-2 col-sm-6">
+						<div class="d-flex justify-content-sm-end"></div>
+					</div>
+				</div>
+			</div>
+			<div id="divListaConteos" class="grid-golden-body">
+				<div class="text-nowrap table-wrapper">
 					<table class="table table-sm mb-0 table-hover table-golden" id="tbListaConteos">
 						<thead>
 							<tr class="header">
@@ -63,21 +102,38 @@
 								@foreach (var item in Model.ListaTransferencias.ListaDatos)
 								{
 									if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
-									<tr class="@clase" onclick="selectTRRow(this)">
+									<tr class="@clase" 
+										data-p-id="@item.p_id"
+										data-cantidad-pi="@item.cantidad_pi"
+										data-cantidad="@item.cantidad"
+										data-cantidad-c="@item.cantidad_c"
+										data-diferencia="@item.Diferencia"
+										onclick="selectTRRow(this)">
 										<td class="align-center">@item.p_id</td>
-										<td>@item.p_desc</td>
+										<td>
+											@item.p_desc
+											@if (item.cantidad == 0 && item.cantidad_c == 0)
+											{
+												<i class="bx bx-error-circle icon-warning"
+												   title="Producto sin Conteos y Sin Control de Salida!"></i>
+											}
+										</td>
 										<td class="align-center">@item.p_id_prov</td>
 										<td style="text-align: right;">@item.unidad_pres</td>
-										<td style="text-align: right;">@GridHelper.FormatearDato(item.cantidad_pi, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
-										<td style="text-align: right;">@GridHelper.FormatearDato(item.cantidad, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
-										<td style="text-align: right;">@GridHelper.FormatearDato(item.cantidad_c, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
-										@if (item.Row_color != "")
+										<td style="text-align: right;font-weight: bold;">@GridHelper.FormatearDato(item.cantidad_pi, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
+										<td style="text-align: right;font-weight: bold;">@GridHelper.FormatearDato(item.cantidad, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
+										<td style="text-align: right;font-weight: bold;">@GridHelper.FormatearDato(item.cantidad_c, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
+										@if (item.Diferencia == 0)
 										{
-											<td class="table-fontsize" style="border-right: 5px solid @item.Row_color;text-align: right;">@GridHelper.FormatearDato(item.Diferencia, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
+											<td class="align-right table-fontsize diferencia-cero">
+												@GridHelper.FormatearDato(item.Diferencia, GridHelper.FormatDato.Monto, item.PermiteDecimales)
+											</td>
 										}
 										else
 										{
-											<td style="text-align: right;" class="table-fontsize">@item.Diferencia</td>
+											<td class="align-right table-fontsize diferencia-no-cero">
+												@GridHelper.FormatearDato(item.Diferencia, GridHelper.FormatDato.Monto, item.PermiteDecimales)
+											</td>
 										}
 									</tr>
 								}
@@ -86,7 +142,7 @@
 					</table>
 				</div>
 			</div>
-		</fieldset>
+		</div>
 	</div>
 </div>
 

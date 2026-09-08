@@ -817,15 +817,13 @@ namespace gc.api.core.Servicios
             return respuesta;
         }
 
-        public List<TRAutAnalizaDto> TRAutAnaliza(string listaPi, string listaDepo, bool stkExistente, bool sustituto, int palletNro)
+        public List<TRAutAnalizaDto> TRAutAnaliza(string listaPi, string listaDepo, int palletNro)
         {
             var sp = Constantes.ConstantesGC.StoredProcedures.SP_TR_Aut_Analiza;
             var ps = new List<SqlParameter>()
             {
                 new("@lista_pi",listaPi),
-                new("@lista_depo",listaDepo),
-                new("@stk_existente",stkExistente),
-                new("@sustituto",sustituto),
+                new("@json_depo",listaDepo),
                 new("@palet_nro",palletNro),
             };
             List<TRAutAnalizaDto> respuesta = _repository.EjecutarLstSpExt<TRAutAnalizaDto>(sp, ps, true);
@@ -851,7 +849,8 @@ namespace gc.api.core.Servicios
             var ps = new List<SqlParameter>()
             {
                 new("@json",request.json),
-                new("@adm_id",request.adm_id),
+				new("@json_sin_stock",request.json_sin_stock),
+				new("@adm_id",request.adm_id),
                 new("@usu_id",request.usu_id),
             };
             List<RespuestaDto> respuesta = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);

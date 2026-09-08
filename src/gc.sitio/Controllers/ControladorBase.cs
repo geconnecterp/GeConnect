@@ -871,10 +871,28 @@ namespace gc.sitio.Controllers
                 _context.HttpContext?.Session.SetString("TRNuevaAutDetallelLista", json);
             }
         }
-        #endregion
 
-        #region AJUSTES DE STOCK
-        protected List<AjustePrevioCargadoDto> AjustePrevioCargadoLista
+		protected List<TRNuevaAutDetalleDto> TRNuevaAutDetallelListaSinStock
+		{
+			get
+			{
+				string json = _context.HttpContext?.Session.GetString("TRNuevaAutDetallelListaSinStock") ?? string.Empty;
+				if (string.IsNullOrEmpty(json))
+				{
+					return new();
+				}
+				return JsonConvert.DeserializeObject<List<TRNuevaAutDetalleDto>>(json) ?? [];
+			}
+			set
+			{
+				var json = JsonConvert.SerializeObject(value);
+				_context.HttpContext?.Session.SetString("TRNuevaAutDetallelListaSinStock", json);
+			}
+		}
+		#endregion
+
+		#region AJUSTES DE STOCK
+		protected List<AjustePrevioCargadoDto> AjustePrevioCargadoLista
         {
             get
             {
