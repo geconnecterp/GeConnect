@@ -565,13 +565,16 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 (string.IsNullOrWhiteSpace(box) || x.Box_id == box));
             if (registro == null)
                 throw new NegocioException("El renglón ya no está disponible. Actualice el listado de la transferencia.");
-            if (("S".Equals(registro.Remplazo, StringComparison.OrdinalIgnoreCase) || registro.Resultado == "40") &&
+            var esReemplazo = "S".Equals(registro.Remplazo, StringComparison.OrdinalIgnoreCase) || registro.Resultado == "40";
+            if (esReemplazo &&
                 !string.Equals(registro.Remplazo_usu_id?.Trim(), UserName?.Trim(), StringComparison.OrdinalIgnoreCase))
                 throw new NegocioException("Sólo puede modificar o eliminar los reemplazos realizados por su usuario.");
             if (eliminar && registro.Colectado <= 0)
                 throw new NegocioException("Sólo puede eliminar productos con cantidades colectadas por su usuario.");
-            if (!eliminar && (registro.Resultado == "E1" || registro.Resultado == "21"))
+            if (!eliminar && esReemplazo && (registro.Resultado == "E1" || registro.Resultado == "21"))
                 throw new NegocioException($"Estado {registro.Resultado}: {registro.Resultado_msj}. No permite carga.");
+            if (!eliminar && !esReemplazo && registro.Colectado_x_p >= registro.Pedido && registro.Colectado <= 0)
+                throw new NegocioException("La cantidad pedida ya fue colectada por otros usuarios. Sólo quienes tengan una colección propia pueden modificarla.");
 
             _logger.LogInformation("[TR-TRACE][POCKET][RENGLON] TI={Ti} Item={Item} Producto={Producto} Resultado={Resultado} Eliminar={Eliminar}",
                 TIActual.Ti, registro.Item, registro.P_id, registro.Resultado, eliminar);

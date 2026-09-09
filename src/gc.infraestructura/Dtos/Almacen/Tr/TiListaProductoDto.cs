@@ -11,6 +11,7 @@
         public string Remplazo_usu_id { get; set; } = string.Empty;
         public decimal Colectado_x_box { get; set; }
         public decimal Colectado_x_p { get; set; }
+        public decimal Colectado_remplazo { get; set; }
         public string Ti { get; set; } = string.Empty;
         public string Rub_id { get; set; } = string.Empty;
         public string Rub_desc { get; set; } = string.Empty;

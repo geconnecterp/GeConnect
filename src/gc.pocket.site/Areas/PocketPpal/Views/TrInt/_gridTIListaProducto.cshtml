@@ -32,10 +32,24 @@
                 var esPropio = !(esReemplazo || item.Resultado == "40") ||
                     string.Equals(item.Remplazo_usu_id?.Trim(), usuarioActual.Trim(), StringComparison.OrdinalIgnoreCase);
                 var estadoBloqueaCarga = resultado == "E1" || resultado == "21";
-                var permiteCarga = !esSucursal || (esPropio && !estadoBloqueaCarga);
+                var diferenciaColectado = item.Pedido - item.Colectado_x_p;
+                var pedidoCumplido = diferenciaColectado <= 0;
+                var tieneColeccionPropia = item.Colectado > 0;
+                var permiteCarga = !esSucursal || (esReemplazo
+                    ? esPropio && !estadoBloqueaCarga
+                    : !pedidoCumplido || tieneColeccionPropia);
                 var permiteColeccion = permiteCarga && (!esSucursal || item.Pedido > 0 || item.Colectado > 0);
                 var permiteReemplazo = ViewBag.PermiteReemplazo == true && permiteCarga && !esReemplazo && item.Pedido > 0;
-                var totalBox = item.Colectado + item.Colectado_otros;
+                var estadoColeccionTexto = diferenciaColectado == 0
+                    ? "Pedido colectado"
+                    : diferenciaColectado > 0
+                        ? $"Falta colectar: {diferenciaColectado.ToString(formatoCantidad)}"
+                        : $"Colectado excedido: {Math.Abs(diferenciaColectado).ToString(formatoCantidad)}";
+                var estadoColeccionClase = diferenciaColectado == 0
+                    ? "bg-success"
+                    : diferenciaColectado > 0
+                        ? "bg-warning text-dark"
+                        : "bg-danger";
                 var estadoTexto = resultado switch
                 {
                     "PE" => "Pendiente sin colección",
@@ -80,13 +94,19 @@
                                 <div class="pocket-record__quantities">
                                     <div><span>Pedido</span><strong>@pedido</strong></div>
                                     <div><span>Colectado</span><strong>@colectado</strong></div>
+                                    @if (!esReemplazo)
+                                    {
+                                        <div><span>Colectado Reemplazo</span><strong>@item.Colectado_remplazo.ToString(formatoCantidad)</strong></div>
+                                    }
                                 </div>
                                 @if (esSucursal)
                                 {
                                     <div class="pocket-record__totals">
-                                        <span>Otros usuarios: <strong>@item.Colectado_otros.ToString(formatoCantidad)</strong></span>
-                                        <span>Total en este BOX: <strong>@totalBox.ToString(formatoCantidad)</strong></span>
-                                        <span>Total del producto en la TR: <strong>@item.Colectado_x_p.ToString(formatoCantidad)</strong></span>
+                                        <span>Colectado Otros: <strong>@item.Colectado_otros.ToString(formatoCantidad)</strong></span>
+                                        @if (!esReemplazo)
+                                        {
+                                            <span class="badge @estadoColeccionClase">@estadoColeccionTexto</span>
+                                        }
                                     </div>
                                     <div class="pocket-record__status">
                                         <span class="badge @estadoClase">@resultado · @estadoTexto</span>
