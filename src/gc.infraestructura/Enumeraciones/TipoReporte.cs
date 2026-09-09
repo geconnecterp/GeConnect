@@ -102,6 +102,7 @@ namespace gc.infraestructura.Enumeraciones
         R094_Reporte_Var_Vtas_Y_Comp_Ult_Doce_M = 94,
 		R095_Reporte_Eval_De_Nivel_De_Servicio = 95,
 		R096_Consulta_Movimiento_De_Stock = 96,
-        R097_Imprime_Etiquetas_UL
+		R097_Imprime_Etiquetas_UL = 97,
+		R098_Reporte_Prod_Sin_Stock_En_Transferencias = 98
 	}
 }

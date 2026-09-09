@@ -38,6 +38,9 @@
                         onclick="abrirlModalSustitutoDeProductoATR();" title="Agregar un nuevo producto">
                     <i class="bx bx-plus-circle"></i> Sustituto
                 </button>
+				<button class="btn btn-light btn-sm mt-1 me-1" type="button" id="btnImprimir" onclick="ImprimirReporteProdSinStockEnTransf();" title="Imprimir">
+					<i class="bx bx-printer"></i> Imprimir
+				</button>
             `;
 		}
 	}
@@ -140,6 +143,69 @@ function ControlarRetorno(value, msg, cant) {
 			return true;
 		}, true, ["Aceptar", "Cancelar"], "info!", null);
 	}
+}
+
+function ReseteoDeReportes() {
+	console.log("Reseto de reportes");
+	ReporteResetArre();
+}
+
+function ImprimirReporteProdSinStockEnTransf() {
+	ReseteoDeReportes();
+	setTimeout(() => {
+		let data = { tabla: obtenerProductosSinStockJson() };
+		cargarReporteEnArre(98, data, "REPORTE DE PRODUCTOS SIN STOCK EN TRANSFERENCIAS", "", "");
+		invocacionGestorDoc({});
+	}, 500);
+}
+
+function obtenerProductosSinStockJson() {
+	const filas = document.querySelectorAll("#tbNuevaAutListaProductosSinStock tbody tr");
+	const resultado = [];
+
+	let grupoActual = null;
+	let grupoNombre = null;
+
+	filas.forEach(fila => {
+
+		// Detectar fila agrupadora
+		if (fila.classList.contains("table-secondary")) {
+
+			const texto = fila.innerText.trim();
+			const match = texto.match(/\((.*?)\)\s*(.*)/);
+
+			if (match) {
+				grupoActual = match[1];
+				grupoNombre = match[2];
+			}
+
+		} else {
+
+			// Fila de producto
+			const celdas = fila.querySelectorAll("td");
+
+			// Nuevo: leer data-permite-decimales
+			const permiteDecimales = fila.dataset.permiteDecimales === "true";
+
+			const producto = {
+				adm_id: grupoActual || "",
+				adm_nombre: grupoNombre || "",
+				p_id: celdas[0].innerText.trim(),
+				p_desc: celdas[1].innerText.trim(),
+				p_id_prov: celdas[2].innerText.trim(),
+				pi_compte: celdas[3].innerText.trim(),
+				stk: parseFloat(celdas[4].innerText.replace(/\./g, "").replace(",", ".")) || 0,
+				pedido: parseFloat(celdas[5].innerText.replace(/\./g, "").replace(",", ".")) || 0,
+
+				// Nuevo campo enviado al backend
+				permiteDecimales: permiteDecimales
+			};
+
+			resultado.push(producto);
+		}
+	});
+
+	return JSON.stringify(resultado);
 }
 
 function ConfirmarAuto() {
