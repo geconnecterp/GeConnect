@@ -18,6 +18,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
     {
         private readonly MenuSettings _menuSettings;
         private readonly IORServicio _orServicio;
+        private readonly IProductoServicio _productoServicio;
         private readonly AppSettings _appSettings;
 
         public ORController(IOptions<AppSettings> options,
@@ -25,10 +26,12 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
             ILogger<TrIntController> logger,
             IOptions<MenuSettings> options1,
             IORServicio oRServicio,
+            IProductoServicio productoServicio,
             IOptions<AppSettings> options2) : base(options, context, logger)
         {
             _menuSettings = options1.Value;
             _orServicio = oRServicio;
+            _productoServicio = productoServicio;
             _appSettings = options2.Value;
         }
 
@@ -835,7 +838,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
         }
 
         [HttpGet]
-        public IActionResult ORValidaProducto(string p_id)
+        public IActionResult ORValidaProducto(string p_id, string? box_id = null, bool reemplazar = false)
         {
             var auth = EstaAutenticado;
             if (!auth.Item1 || auth.Item2 < DateTime.Now)
@@ -851,7 +854,8 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
 
             // ✅ REFACTORIZADO: Usar ORSession "7794000006294"
             var session = ORSession;
-            var producto = session.ORListaProductosActual?.FirstOrDefault(x => x.p_id == p_id);
+            var producto = session.ORListaProductosActual?.FirstOrDefault(x => x.p_id == p_id &&
+                (string.IsNullOrWhiteSpace(box_id) || x.box_id == box_id));
 
             if (producto == null)
             {
@@ -861,6 +865,11 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
 
             // ✅ Guardar producto seleccionado en sesión
             session.ORProductoSeleccionado = p_id;
+            session.EsReemplazo = reemplazar;
+            session.ReemplazarPId = reemplazar ? producto.p_id : null;
+            session.ReemplazarPDesc = reemplazar ? producto.p_desc : null;
+            session.ReemplazarBoxId = reemplazar ? producto.box_id : null;
+            session.BoxCargaId = reemplazar ? null : producto.box_id;
             session.UltimaActualizacion = DateTime.Now;
             ORSession = session;
 
@@ -887,6 +896,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
             //lo tengo que mandar para hacer la comparativa de si la cantidad 
             //solicitada es correcta o no.
             ViewBag.Producto = producto;
+            ViewBag.EsReemplazo = reemplazar;
 
             return View((string.Empty, session.ORComprobanteActual));
         }
@@ -901,6 +911,10 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
 
                 prod = sesion.ORProductoSeleccionado ?? "";
 
+                if (sesion.EsReemplazo)
+                {
+                    return Json(new { error = false, warn = false, msg = "Producto de reemplazo correcto" });
+                }
 
                 if (prod != null && prod.Equals(pId))
                 {
@@ -937,7 +951,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
         /// <param name="boxIngresado">Código de BOX escaneado por el usuario</param>
         /// <returns>Resultado de la validación</returns>
         [HttpPost]
-        public IActionResult ValidarBoxIngresado(string boxIngresado)
+        public async Task<IActionResult> ValidarBoxIngresado(string boxIngresado)
         {
             try
             {
@@ -974,6 +988,25 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                     {
                         success = false,
                         message = "No hay una orden de reparto activa en sesión"
+                    });
+                }
+
+                if (session.EsReemplazo)
+                {
+                    var validacion = await _productoServicio.ValidarBox(boxIngresado, AdministracionId, TokenCookie);
+                    if (validacion.Resultado != 0)
+                    {
+                        return Json(new { success = false, message = validacion.Resultado_msj });
+                    }
+
+                    session.BoxCargaId = validacion.Box_id_sugerido.ToUpper();
+                    session.UltimaActualizacion = DateTime.Now;
+                    ORSession = session;
+                    return Json(new
+                    {
+                        success = true,
+                        message = "BOX de reemplazo correcto",
+                        data = new { boxId = session.BoxCargaId, comprobante = session.ORComprobanteActual }
                     });
                 }
 
@@ -1120,13 +1153,17 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
             {
                 var sesion = ORSession;
 
-                var prod = sesion.ORListaProductosActual.FirstOrDefault(x => x.p_id == p_id);
+                var prod = sesion.ORListaProductosActual.FirstOrDefault(x => x.p_id == sesion.ORProductoSeleccionado);
 
                 if (prod == null)
                 {
                     return Json(new { error = false, warn = true, msg = $"No se encontró el producto en la lista actual." });
                 }
 
+                if (sesion.EsReemplazo && string.IsNullOrWhiteSpace(sesion.BoxCargaId))
+                {
+                    return Json(new { error = false, warn = true, msg = "Debe validar el BOX del producto de reemplazo." });
+                }
                 if (cantidad < 1)// && desarma)
                 {
                     return Json(new { error = false, warn = true, msg = $"La cantidades de los productos a cargar siempre tienen que ser positivas, mayores a 0 (cero)." });
@@ -1163,13 +1200,16 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 request.or_compte = prod.ti;
                 request.adm_id = AdministracionId;
                 request.usu_id = UserName;
-                request.box_id = prod.box_id;
+                request.box_id = sesion.EsReemplazo ? sesion.BoxCargaId! : prod.box_id;
                 request.desarma_box = true;
-                request.p_id = prod.p_id;
+                request.p_id = p_id;
                 request.unidad_pres = up;
                 request.bulto = bulto;
                 request.us = unid;
                 request.cantidad = cantidad;
+                request.remplazar = sesion.EsReemplazo;
+                request.remplazar_box_id = sesion.EsReemplazo ? sesion.ReemplazarBoxId : null;
+                request.remplazar_p_id = sesion.EsReemplazo ? sesion.ReemplazarPId : null;
 
                 if (fv.HasValue)
                 {
@@ -1187,6 +1227,15 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
 
                     if (resp.Ok)
                     {
+                        if (sesion.EsReemplazo)
+                        {
+                            sesion.EsReemplazo = false;
+                            sesion.ReemplazarPId = null;
+                            sesion.ReemplazarPDesc = null;
+                            sesion.ReemplazarBoxId = null;
+                            sesion.BoxCargaId = null;
+                            ORSession = sesion;
+                        }
                         return Json(new { error = false, warn = false, msg = $"Producto {ProductoBase.P_desc} fue cargado exitosamente" });
                     }
                     else { return Json(new { error = false, warn = true, msg = resp.Mensaje }); }

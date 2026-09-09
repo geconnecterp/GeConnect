@@ -12,6 +12,7 @@
         public string depo_nombre { get; set; } = string.Empty;
         public string p_id { get; set; } = string.Empty;
         public string p_desc { get; set; } = string.Empty;
+        public string up_id { get; set; } = string.Empty;
         public decimal pedido { get; set; }
         public decimal colectado { get; set; }
         public  int bulto { get; set; }

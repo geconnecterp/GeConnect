@@ -8,6 +8,9 @@
     var callback = Url.Action("ticargacarrito", "trint", new { area = "pocketppal", esrubro = Model.EsRubro, esbox = Model.EsBox, tiId = Model.TipoTI });
 
 }
+@section styles {
+    <link rel="stylesheet" href="~/css/pocket-records.css" asp-append-version="true" />
+}
 <div class="row">
     <div class="d-flex justify-content-center">
         <h3 class="text-black"><strong>Colector de Productos</strong></h3>
@@ -60,5 +63,6 @@
 
     </script>
 
-    <script src="~/js/app/ti/ti03.js"></script>
+    <script src="~/js/app/ti/ti03.js" asp-append-version="true"></script>
+    <script src="~/js/app/reemplazoProducto.js" asp-append-version="true"></script>
 }

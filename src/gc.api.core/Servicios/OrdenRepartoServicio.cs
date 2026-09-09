@@ -213,7 +213,10 @@ namespace gc.api.core.Servicios
                 new SqlParameter("@bulto", request.bulto),
                 new SqlParameter("@us", request.us),
                 new SqlParameter("@cantidad", request.cantidad),
-                new SqlParameter("@fv", request.fv)
+                new SqlParameter("@fv", request.fv),
+                new SqlParameter("@remplazar", request.remplazar),
+                new SqlParameter("@remplazar_box_id", (object?)request.remplazar_box_id ?? DBNull.Value),
+                new SqlParameter("@remplazar_p_id", (object?)request.remplazar_p_id ?? DBNull.Value)
             };
             var result = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
             if (result != null && result.Count > 0)

@@ -9,14 +9,13 @@
     string sortDirInv = Model.SortDir.Equals("ASC") ? "DESC" : "ASC";
     int cont = 0;
 }
-<div class="table-responsive table-wrapper">
-    <table class="table table-sm mb-0 table-hover table-wrapper-fixed-head" id="tbAuPend">
+<div class="pocket-grid-scroll table-responsive table-wrapper">
+    <table class="pocket-grid table table-sm mb-0 table-hover table-wrapper-fixed-head" id="tbAuPend">
         <thead>
             <tr class="header table-dark">
                 <th style="display:none;"></th>
-                <th scope="col" style="width:33%">Rubro</th>
+                <th scope="col">Rubro</th>
               
-                <th scope="col" style="width:33%">Estado</th>
             </tr>
         </thead>
         <tbody>
@@ -36,7 +35,6 @@
                         @Html.Hidden("rconteo" + cont, item.Conteo)
                     </td>
              
-                    <td>@item.Conteo</td>
                 </tr>
             }
         </tbody>

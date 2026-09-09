@@ -24,6 +24,11 @@
         /// ID del producto actualmente en proceso de validación
         /// </summary>
         public string? ORProductoSeleccionado { get; set; }
+        public bool EsReemplazo { get; set; }
+        public string? ReemplazarPId { get; set; }
+        public string? ReemplazarPDesc { get; set; }
+        public string? ReemplazarBoxId { get; set; }
+        public string? BoxCargaId { get; set; }
 
         /// <summary>
         /// Lista completa de productos de la OR (filtrados o no)
@@ -59,6 +64,11 @@
             ORBoxSeleccionado = null;
             ORRubroSeleccionado = null;
             ORProductoSeleccionado = null;
+            EsReemplazo = false;
+            ReemplazarPId = null;
+            ReemplazarPDesc = null;
+            ReemplazarBoxId = null;
+            BoxCargaId = null;
             ORListaProductosActual = new List<ORProductoDto>();
             FiltroEsBox = false;
             UltimaActualizacion = DateTime.Now;

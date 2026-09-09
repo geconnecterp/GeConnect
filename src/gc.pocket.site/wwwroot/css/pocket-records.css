@@ -1,0 +1,82 @@
+/* Operational records: reuse Golden identity; opt in per view. */
+.pocket-record-list {
+    --record-accent: var(--bs-golden-primary);
+    --record-tint: var(--bs-golden-bg-light);
+    --record-border: var(--bs-golden-bg-secondary);
+    --record-ink: #302d26;
+    --record-muted: #625c50;
+    border: 0;
+}
+.pocket-record-list #tbListaProd {
+    width: 100%;
+    table-layout: fixed;
+    border-collapse: separate;
+    border-spacing: 0 .625rem;
+}
+.pocket-record-list #tbListaProd thead th {
+    background: var(--record-ink);
+    color: var(--record-tint);
+    border: 0;
+    border-radius: .5rem;
+    padding: .625rem .875rem;
+}
+.pocket-record-list #tbListaProd tbody tr,
+.pocket-record-list #tbListaProd tbody tr.alt {
+    background: transparent !important;
+}
+.pocket-record-list #tbListaProd tbody td {
+    background: #fff;
+    color: var(--record-ink);
+    border: 1px solid var(--record-border);
+    border-left: 3px solid var(--record-accent);
+    border-radius: .625rem;
+    padding: .875rem;
+    box-shadow: none;
+    white-space: normal;
+}
+.pocket-record-list #tbListaProd tbody tr:hover td,
+.pocket-record-list #tbListaProd tbody tr:focus-within td {
+    border-color: var(--record-accent);
+}
+/* Alternate presentation only; keep the existing server-generated row order. */
+.pocket-record-list #tbListaProd tbody tr.alt td {
+    background: var(--record-tint);
+}
+.pocket-record-list #tbListaProd tbody tr.alt .pocket-record__quantities {
+    background: #fff;
+}
+.pocket-record-list #tbListaProd tbody tr.sel td {
+    background: var(--bs-golden-bg-secondary);
+    border-color: var(--record-accent);
+}
+.pocket-record { display: flex; align-items: center; gap: 1rem; }
+.pocket-record__body { flex: 1; min-width: 0; }
+.pocket-record-list .pocket-record,
+.pocket-record-list .pocket-record div { text-transform: none !important; }
+.pocket-record__title { font-size: .9375rem; line-height: 1.45; overflow-wrap: anywhere; }
+.pocket-record__code { color: var(--record-muted); font-variant-numeric: tabular-nums; margin-right: .375rem; }
+.pocket-record__context { display: flex; flex-wrap: wrap; gap: .25rem 1rem; color: var(--record-muted); font-size: .8125rem; margin-top: .25rem; }
+.pocket-record__quantities { display: flex; flex-wrap: wrap; gap: .5rem 1.5rem; margin: .625rem 0; padding: .5rem .75rem; background: var(--record-tint); border-radius: .375rem; }
+.pocket-record__quantities > div { display: flex; flex-wrap: wrap; align-items: baseline; gap: .5rem; min-width: 0; }
+.pocket-record__quantities span { font-size: .8125rem; color: var(--record-muted); }
+.pocket-record__quantities strong { font-size: 1.0625rem; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.pocket-record__totals { display: flex; flex-wrap: wrap; gap: .25rem 1rem; font-size: .8125rem; line-height: 1.5; color: var(--record-muted); }
+.pocket-record__totals strong { color: var(--record-ink); font-variant-numeric: tabular-nums; }
+.pocket-record__status { display: flex; flex-wrap: wrap; align-items: center; gap: .375rem; margin-top: .5rem; }
+.pocket-record__status .badge { white-space: normal; text-align: left; line-height: 1.4; font-size: .75rem; padding: .375rem .5rem; text-transform: none; }
+/* Keep the existing status classes, improving their contrast only here. */
+.pocket-record__status .badge.bg-success { background: #e8f4e8 !important; color: #245b2a !important; }
+.pocket-record__status .badge.bg-warning { background: #fff1cf !important; color: #705000 !important; }
+.pocket-record__status .badge.bg-danger { background: #fdebe7 !important; color: #9a2b1b !important; }
+.pocket-record__status .badge.bg-secondary { background: #efede7 !important; color: #514b3f !important; }
+.pocket-record__actions { display: flex; flex-wrap: wrap; gap: .5rem; flex-shrink: 0; }
+.pocket-record__actions:empty { display: none; }
+.pocket-record__actions .btn { min-width: 44px; min-height: 44px; display: inline-flex; align-items: center; justify-content: center; }
+.pocket-record__actions .btn:focus-visible { outline: 3px solid var(--record-ink); outline-offset: 3px; }
+@media (max-width: 575.98px) {
+    .pocket-record-list #tbListaProd tbody td { padding: .75rem; }
+    .pocket-record { flex-direction: column; align-items: stretch; gap: .625rem; }
+    .pocket-record__actions { justify-content: flex-end; }
+    .pocket-record__quantities { gap: .375rem 1rem; }
+    .pocket-record__totals { display: grid; grid-template-columns: minmax(0, 1fr); }
+}

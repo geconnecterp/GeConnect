@@ -40,7 +40,9 @@ function inicializarEventosValidacion() {
 }
 
 function validaInputBox() {
-    var inputLength = $(this).val().length; // Obtener la longitud del texto ingresado
+    var boxIngresado = $(this).val().replace(/\D/g, "").slice(0, 11);
+    $(this).val(boxIngresado);
+    var inputLength = boxIngresado.length;
 
     if (inputLength === 11) {
         // Si el texto tiene exactamente 11 caracteres, activar el botón
@@ -141,7 +143,7 @@ function validarBoxIngresado() {
                 
                 // Enfocar en el input de búsqueda de producto
                 setTimeout(function() {
-                    $("#txtBuscar").trigger("focus");
+                    $("#Busqueda").trigger("focus");
                 }, 120);
                 
             } else {
@@ -426,7 +428,7 @@ function cargarCarritoOR() {
         else {
             //ControlaMensajeSuccess("Cantidad correcta");
             //se procede a enviar el producto a cargar
-            var dato = { p_id: productoActualOR.p_id, up, bulto, unid, cantidad, fv }
+            var dato = { p_id: productoBase.p_id, up, bulto, unid, cantidad, fv }
             PostGen(dato, ResguardarProductoCarritoORUrl, function (obj) {
                 if (obj.error === true) {
                     CerrarWaiting();

@@ -12,11 +12,24 @@
     
 }
 <partial name="_tiNroAutorizacion" model="@Model.Ti" />
+@if (ViewBag.AvisoTR != null)
+{
+    <div class="alert alert-warning py-2" role="alert">@ViewBag.AvisoTR</div>
+}
+@if (Model.EsReemplazo)
+{
+    var pedidoOriginal = Model.PPedido.ToString(Model.PUpId == "07" ? "N0" : "N3");
+    <div class="alert alert-warning py-2" role="alert">
+        <div class="fw-bold"><i class="bx bx-transfer-alt"></i> MODO REEMPLAZO</div>
+        <div>Original: <strong>@Model.ReemplazarPId @Model.ReemplazarPDesc</strong></div>
+        <div>Pedido: <strong>@pedidoOriginal</strong> | BOX original: <strong>@Model.ReemplazarBoxId</strong></div>
+    </div>
+}
 <div class="row">
     <div class="col-sm-12">
         <div class="input-group input-group-sm">
             <span class="input-group-text">BOX:</span>
-            <input type="text" class="form-control inputEditable" id="txtBox" />
+            <input type="text" class="form-control inputEditable" id="txtBox" maxlength="11" inputmode="numeric" />
             <button type="button" class="btn btn-danger btn-sm" disabled id="btnValBox"><i class="bx bx-check-circle bx-sm"></i></button>
             <div class="form-check form-check-inline form-switch m-2 ">
                 <input class="form-check-input" type="checkbox" name="EstadoActivo" id="chkDesarma" checked disabled />

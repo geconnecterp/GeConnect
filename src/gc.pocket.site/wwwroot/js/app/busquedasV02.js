@@ -509,8 +509,8 @@ function generarGridDesdeProductoListaDto(productos, metadata) {
     }).join("");
 
     return `
-        <div class="table-responsive text-nowrap table-wrapper-400">
-            <table class="table table-sm mb-0 table-hover table-golden" id="tbGridBusquedaProductos">
+        <div class="pocket-grid-scroll table-responsive text-nowrap table-wrapper-400">
+            <table class="pocket-grid table table-sm mb-0 table-hover table-golden" id="tbGridBusquedaProductos">
                 <thead class="table-golden-header">
                     <tr class="header">
                         <th class="text-center"><input type="checkbox" class="form-check-input" id="checkAllBusqueda"></th>
