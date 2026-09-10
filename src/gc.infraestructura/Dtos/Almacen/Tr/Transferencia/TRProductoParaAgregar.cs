@@ -17,5 +17,6 @@
 		public string up_tipo { get; set; } = string.Empty;
 		public bool PermiteDecimales => up_tipo == "P";
 		public decimal pedido { get; set; } = 0;
+		public string p_id_prov { get; set; } = string.Empty;
 	}
 }

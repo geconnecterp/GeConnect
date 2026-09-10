@@ -230,7 +230,16 @@ function ocultarFilaPedidoSucursal(pi_compte) {
 
 function imprimirDetallePI(pi_compte) {
 	console.log(pi_compte);
-	///TODO MARCE: Meter reporte aca cuando lo pase CR
+	ReseteoDeReportes();
+	setTimeout(() => {
+		let data = { id: pi_compte };
+		cargarReporteEnArre(65, data, "PEDIDO INTERNO", "", "");
+		invocacionGestorDoc({});
+	}, 500);
+}
+function ReseteoDeReportes() {
+	console.log("Reseto de reportes");
+	ReporteResetArre();
 }
 
 function verDetalleDePedido(x) {
@@ -242,6 +251,7 @@ function verDetalleDePedido(x) {
 			$("#divDetalleDePedido").html(obj);
 			AddEventListenerToGrid("tbDetalleDePedido");
 			document.getElementById("btnImprimirDetallePI").addEventListener("click", function () {
+				$('#modalCenter').modal('hide')
 				imprimirDetallePI(picompte);
 			});
 

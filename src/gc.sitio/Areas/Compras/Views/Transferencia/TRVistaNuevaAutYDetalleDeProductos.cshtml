@@ -386,7 +386,7 @@
 
 						<div class="input-group" style="width: 200px;">
 							<span class="input-group-text" id="lblCantidad">A Transferir</span>
-							<input type="number" id="txtAtransferir" class="form-control a-transferir" />
+							<input type="number" id="txtAtransferir" class="form-control a-transferir text-end" />
 						</div>
 
 						<button type="button" class="btn btn-sm btn-success btn-modal" id="btnAceptarNuevoProducto">
@@ -429,6 +429,7 @@
 		var TRExisteProductoEnTRUrl = "@Url.Action("ExisteProductoEnTR", "transferencia", new { area = "Compras" })";
 		var TRCargarListaProductoSustitutoUrl = "@Url.Action("CargarListaProductoSustituto", "transferencia", new { area = "Compras" })";
 		var TRFiltrarListaDeProductosPorSucursalUrl = "@Url.Action("FiltrarListaDeProductosPorSucursal", "transferencia", new { area = "Compras" })";
+		var TRFiltrarListaDeProductosPorSucursalSinStockUrl = "@Url.Action("FiltrarListaDeProductosPorSucursalSinStock", "transferencia", new { area = "Compras" })";
 		var obtenerListaDeProductosPorSucursalSinStockUrl = "@Url.Action("ObtenerListaDeProductosPorSucursalSinStock", "transferencia", new { area = "Compras" })";
 		var TRAgregarNuevoProductoUrl = "@Url.Action("AgregarNuevoProducto", "transferencia", new { area = "Compras" })";
 		var TRAgregarProductoSustitutoUrl = "@Url.Action("AgregarProductoSustituto", "transferencia", new { area = "Compras" })";

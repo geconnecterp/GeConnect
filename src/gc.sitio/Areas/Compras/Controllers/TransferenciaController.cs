@@ -22,8 +22,10 @@ namespace gc.sitio.Areas.Compras.Controllers
 	{
 		//PARA MODULO DE IMPRESION
 		private readonly DocsManager _docsManager; //recupero los datos desde el appsettings.json
-		private AppModulo _modulo; //tengo el AppModulo que corresponde a la consulta de cuentas
+		private AppModulo _modulo; 
+		private AppModulo _modulo_2; 
 		private string APP_MODULO = AppModulos.REPORTE_PROD_SIN_STOCK_EN_TRANSFERENCIAS.ToString();
+		private string APP_MODULO_2 = AppModulos.PEDIDO_INTERNO.ToString();
 		private readonly IDocManagerServicio _docMSv;
 
 		//************************
@@ -39,7 +41,8 @@ namespace gc.sitio.Areas.Compras.Controllers
 
 			//PARA MODULO DE IMPRESION
 			_docsManager = docsManager.Value; //recupero los datos desde el appsettings.json
-			_modulo = _docsManager.Modulos.First(x => x.Id == APP_MODULO); //identifico los datos del modulo que necesito: COP
+			_modulo = _docsManager.Modulos.First(x => x.Id == APP_MODULO);
+			_modulo_2 = _docsManager.Modulos.First(x => x.Id == APP_MODULO_2);
 			_docMSv = docManager; //instancio el servicio de impresión
 		}
 
@@ -136,6 +139,15 @@ namespace gc.sitio.Areas.Compras.Controllers
 				}
 				var itemsAutDepo = await _productoServicio.TRObtenerAutDepositos(AdministracionId, TokenCookie);
 				model.ListaDepositosDeEnvio = ObtenerGridCoreSmart<TRAutDepoDto>(itemsAutDepo);
+
+				#region Gestor Impresion - Inicializacion de variables
+				//Inicializa el objeto MODAL del GESTOR DE IMPRESIÓN
+				DocumentManager = _docMSv.InicializaObjeto(titulo, _modulo_2);
+				// en este mismo acto se cargan los posibles documentos
+				//que se pueden imprimir, exportar, enviar por email o whatsapp
+				ArchivosCargadosModulo = _docMSv.GeneraArbolArchivos(_modulo_2);
+
+				#endregion
 			}
 			catch (Exception ex)
 			{
@@ -453,7 +465,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 				else
 				{
 					if (int.TryParse(aut, out int auto))
-						listaFiltrada = listaTemp.Where(x => x.adm_id == admId && x.autorizacion == auto).ToList();
+						listaFiltrada = listaTemp.Where(x => x.adm_id == admId && (x.autorizacion == auto || x.p_sustituto)).ToList();
 				}
 				model = ObtenerGridCoreSmart<TRNuevaAutDetalleDto>(listaFiltrada);
 			}
@@ -466,7 +478,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 			return PartialView("_trNuevaAutListaProductos", model);
 		}
 
-		public async Task<IActionResult> ObtenerListaDeProductosPorSucursalSinStock(string admId, string aut = "")
+		public async Task<IActionResult> FiltrarListaDeProductosPorSucursalSinStock(string admId, string aut = "")
 		{
 			var model = new GridCoreSmart<TRNuevaAutDetalleDto>();
 			try
@@ -475,7 +487,36 @@ namespace gc.sitio.Areas.Compras.Controllers
 				if (!auth.Item1 || auth.Item2 < DateTime.Now)
 					return RedirectToAction("Login", "Token", new { area = "seguridad" });
 
-				model = ObtenerGridCoreSmart<TRNuevaAutDetalleDto>(TRNuevaAutDetallelListaSinStock);
+				if (string.IsNullOrEmpty(admId))
+					return ObtenerMensajeDeError("Hubo algun problema al filtrar la lista de productos por sucursal sin stock. Si el problema persiste informe al Administrador");
+
+				var listaFiltrada = new List<TRNuevaAutDetalleDto>();
+				var listaTemp = TRNuevaAutDetallelListaSinStock;
+				listaFiltrada = listaTemp.Where(x => x.adm_id == admId).ToList();
+				model = ObtenerGridCoreSmart<TRNuevaAutDetalleDto>(listaFiltrada);
+			}
+			catch (Exception ex)
+			{
+				_logger?.LogError(ex, "Error al filtrar la lista de productos por sucursal sin stock.");
+				TempData["error"] = "Hubo algun problema al filtrar la lista de productos por sucursal sin stock. Si el problema persiste informe al Administrador";
+				return ObtenerMensajeDeError("Hubo algun problema al filtrar la lista de productos por sucursal sin stock. Si el problema persiste informe al Administrador");
+			}
+			return PartialView("_trListaProductosSinStock", model);
+		}
+
+		public async Task<IActionResult> ObtenerListaDeProductosPorSucursalSinStock(string admId, string aut = "")
+		{
+			var model = new GridCoreSmart<TRNuevaAutDetalleDto>();
+			try
+			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+					return RedirectToAction("Login", "Token", new { area = "seguridad" });
+				if (string.IsNullOrEmpty(admId))
+					return ObtenerMensajeDeError("Hubo algun problema al filtrar la lista de productos por sucursal sin stock. Si el problema persiste informe al Administrador");
+
+				var listaFiltrada = TRNuevaAutDetallelListaSinStock.Where(x => x.adm_id == admId).ToList();
+				model = ObtenerGridCoreSmart<TRNuevaAutDetalleDto>(listaFiltrada);
 			}
 			catch (Exception ex)
 			{
@@ -586,7 +627,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 			}
 		}
 
-		public async Task<JsonResult> AgregarProductoSustituto(string idProdDeProdSeleccionado, string idProductoSustituto, string idProvDeProdSeleccionado, string pedidoDeProdSeleccionado, string boxDeProdSeleccionado, string stkDeProdSeleccionado, string cantidad, string admSeleccionado, string admSeleccionadoNombre)
+		public async Task<JsonResult> AgregarProductoSustituto(string idProdDeProdSeleccionado, string idProductoSustituto, string idProvDeProdSeleccionado, string pedidoDeProdSeleccionado, string boxDeProdSeleccionado, string stkDeProdSeleccionado, string cantidad, string admSeleccionado, string admSeleccionadoNombre, int autAGenerarSeleccionado)
 		{
 			try
 			{
@@ -612,7 +653,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 					{
 						pedido = 0;
 					}
-					if (TRNuevaAutDetallelLista.Where(x => x.p_id == idProdDeProdSeleccionado).Any())
+					if (TRNuevaAutDetallelLista.Where(x => x.p_id == idProdDeProdSeleccionado && x.adm_id == admSeleccionado).Any())
 					{
 						return Json(new { error = true, warn = false, msg = $"El producto que esta intentando agregar como Sustituto ya existe en el pedido de transferencia. Id: {idProdDeProdSeleccionado}" });
 					}
@@ -630,6 +671,8 @@ namespace gc.sitio.Areas.Compras.Controllers
 						p_sustituto = true,
 						a_transferir = ctd,
 						p_id_sustituto = idProductoSustituto,
+						autorizacion = autAGenerarSeleccionado,
+						p_id_prov = productoBase.P_id_prov
 					};
 					var listaTemp = TRNuevaAutDetallelLista;
 					listaTemp.Add(nuevoProducto);

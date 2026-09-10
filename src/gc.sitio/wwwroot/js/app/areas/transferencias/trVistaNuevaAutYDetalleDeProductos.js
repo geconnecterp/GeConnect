@@ -151,6 +151,15 @@ function ReseteoDeReportes() {
 }
 
 function ImprimirReporteProdSinStockEnTransf() {
+	// Validar que existan filas reales
+	if (!existenProductosSinStockValidos()) {
+		AbrirMensaje("Atención", "No hay productos sin stock para generar el reporte.", function () {
+			$("#msjModal").modal("hide");
+			return;
+		}, false, ["Aceptar"], "error!", null);
+		return;
+	}
+
 	ReseteoDeReportes();
 	setTimeout(() => {
 		let data = { tabla: obtenerProductosSinStockJson() };
@@ -158,6 +167,29 @@ function ImprimirReporteProdSinStockEnTransf() {
 		invocacionGestorDoc({});
 	}, 500);
 }
+
+function existenProductosSinStockValidos() {
+	const filas = document.querySelectorAll("#tbNuevaAutListaProductosSinStock tbody tr");
+
+	for (const fila of filas) {
+
+		// Ignorar fila agrupadora
+		if (fila.classList.contains("table-secondary")) {
+			continue;
+		}
+
+		// Ignorar fila informativa (tiene un td con colspan)
+		if (fila.querySelector("td[colspan]")) {
+			continue;
+		}
+
+		// Si llega aquí, es una fila de producto real
+		return true;
+	}
+
+	return false;
+}
+
 
 function obtenerProductosSinStockJson() {
 	const filas = document.querySelectorAll("#tbNuevaAutListaProductosSinStock tbody tr");
@@ -250,16 +282,48 @@ function ConfirmarAuto() {
 }
 
 function selectNuevaAutListaSucursalesRow(x) {
+
+	// Validación del elemento seleccionado
+	if (!x || !x.cells || x.cells.length < 5) {
+		AbrirMensaje("Atención", "La fila seleccionada no es válida.", function () {
+			$("#msjModal").modal("hide");
+			return;
+		}, false, ["Aceptar"], "warn!", null);
+		return;
+	}
+
 	admSeleccionado = x.cells[4].innerText.trim();
 	admSeleccionadoNombre = x.cells[1].innerText.trim();
 	autAGenerarSeleccionado = x.cells[0].innerText.trim();
 
-	//filtrarListaDeProductosPorSucursal();
-	filtrarListaDeProductosPorSucursalYAutAGenerar();
+	if (!admSeleccionado) {
+		AbrirMensaje("Atención", "Sucursal seleccionada no válida.", function () {
+			$("#msjModal").modal("hide");
+			return;
+		}, false, ["Aceptar"], "warn!", null);
+		return;
+	}
+
+	// Abrimos el waiting UNA sola vez
+	AbrirWaiting();
+
+	// Contador de finalización
+	let pendientes = 2;
+
+	const finalizar = () => {
+		pendientes--;
+		if (pendientes === 0) {
+			CerrarWaiting();
+		}
+	};
+
+	// Ejecutamos ambas funciones y cerramos cuando ambas terminen
+	filtrarListaDeProductosPorSucursalYAutAGenerar(finalizar);
+	filtrarListaDeProductosPorSucursalYAutAGenerarSinStock(finalizar);
 }
 
-function filtrarListaDeProductosPorSucursalYAutAGenerar() {
-	AbrirWaiting();
+
+function filtrarListaDeProductosPorSucursalYAutAGenerar(callback) {
 	var admId = admSeleccionado;
 	var aut = autAGenerarSeleccionado;
 	if (admId) {
@@ -267,11 +331,28 @@ function filtrarListaDeProductosPorSucursalYAutAGenerar() {
 		PostGenHtml(datos, TRFiltrarListaDeProductosPorSucursalUrl, function (obj) {
 			$("#divNuevaAutListaProductos").html(obj);
 			AddEventListenerToGrid("tbNuevaAutListaProductos");
-			CerrarWaiting();
+			if (callback) callback();
 			return true
 		});
+	} else {
+		if (callback) callback();
 	}
-	CerrarWaiting();
+}
+
+function filtrarListaDeProductosPorSucursalYAutAGenerarSinStock(callback) {
+	var admId = admSeleccionado;
+	var aut = autAGenerarSeleccionado;
+	if (admId) {
+		var datos = { admId, aut };
+		PostGenHtml(datos, TRFiltrarListaDeProductosPorSucursalSinStockUrl, function (obj) {
+			$("#divNuevaAutListaProductosSinStock").html(obj);
+			AddEventListenerToGrid("tbNuevaAutListaProductosSinStock");
+			if (callback) callback();
+			return true
+		});
+	} else {
+		if (callback) callback();
+	}
 }
 
 function filtrarListaDeProductosPorSucursal() {
@@ -638,7 +719,18 @@ function SeleccionarFila(fila, tabla) {
 				admSeleccionado = grilla.rows[fila].cells[4].innerText.trim();
 				admSeleccionadoNombre = grilla.rows[fila].cells[1].innerText.trim();
 				autAGenerarSeleccionado = grilla.rows[fila].cells[0].innerText.trim();
-				filtrarListaDeProductosPorSucursalYAutAGenerar();
+				// Contador de finalización
+				let pendientes = 2;
+
+				const finalizar = () => {
+					pendientes--;
+					if (pendientes === 0) {
+						CerrarWaiting();
+					}
+				};
+
+				filtrarListaDeProductosPorSucursalYAutAGenerar(finalizar);
+				filtrarListaDeProductosPorSucursalYAutAGenerarSinStock(finalizar);
 			}
 		}
 	}
@@ -735,7 +827,7 @@ function EditarCantidad() {
 			return true;
 		}, false, ["Aceptar"], "warn!", null);
 	}
-	else if (!idProvDeProdSeleccionado || idProvDeProdSeleccionado == "") {
+	else if (!idProdDeProdSeleccionado || idProdDeProdSeleccionado == "") {
 		AbrirMensaje("Atención", "Debe seleccionar un producto.", function () {
 			$("#msjModal").modal("hide");
 			return true;
@@ -794,7 +886,8 @@ function EditarCantidad() {
 					stkDeProdSeleccionado,
 					cantidad,
 					admSeleccionado,
-					admSeleccionadoNombre
+					admSeleccionadoNombre,
+					autAGenerarSeleccionado
 				};
 				PostGen(datos, TRAgregarProductoSustitutoUrl, function (o) {
 					if (o.error === true) {
