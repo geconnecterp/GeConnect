@@ -33,14 +33,14 @@
         {
             if (!Model.Item2.Item2.Item2)
             {
-                <a href="@Model.Item2.Item2.Item1" class="btn btn-danger btn-sm">
-                    <i class="bx bx-left-arrow-alt me-1"></i>Volver
+                <a href="@Model.Item2.Item2.Item1" class="btn btn-danger btn-sm pocket-back-button" aria-label="Volver" title="Volver">
+                    <i class="bx bx-left-arrow-alt pocket-back-button__icon" aria-hidden="true"></i><span class="pocket-back-button__label">Volver</span>
                 </a>
             }
             else
             {
-                <button type="button" id="btnVolverGen" class="btn btn-danger btn-sm">
-                    <i class="bx bx-left-arrow-alt me-1"></i>Volver
+                <button type="button" id="btnVolverGen" class="btn btn-danger btn-sm pocket-back-button" aria-label="Volver" title="Volver">
+                    <i class="bx bx-left-arrow-alt pocket-back-button__icon" aria-hidden="true"></i><span class="pocket-back-button__label">Volver</span>
                 </button>
             }
         }

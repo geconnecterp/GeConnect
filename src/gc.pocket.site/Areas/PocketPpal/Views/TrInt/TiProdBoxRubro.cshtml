@@ -8,39 +8,26 @@
     var callback = Url.Action("tiprodboxrubro", "trint", new { area = "pocketppal" });
 
 }
-<div class="row">
-    <div class="d-inline-flex flex-row mb-3">
-        <div class="p-2">
-            <span class="text-info-emphasis">@Model.Ti</span>
-        </div>
-        <div class="p-2">
-            <span id="titVista" class="text-info-emphasis">Itinerario x Box</span>
-        </div>
+<div class="pocket-ti-itinerary">
+    <div class="pocket-ti-itinerary__heading text-info">
+        <span>Nro Auto. TI <strong class="text-nowrap">@Model.Ti</strong></span>
+        <span id="titVista">ITINERARIO X BOX</span>
     </div>
-</div>
-<div class="row mb-3">
-    <div class="d-flex justify-content-center">
-        <div class="m-2 form-check">
+    <div class="pocket-ti-itinerary__options">
+        <div class="form-check">
             <input name="rbVista" class="form-check-input" type="radio" value="B" id="rbBox" checked>
             <label class="form-check-label" for="rbBox">BOX</label>
         </div>
-        <div class="m-2 form-check">
+        <div class="form-check">
             <input name="rbVista" class="form-check-input" type="radio" value="B" id="rbRubro">
             <label class="form-check-label" for="rbRubro">Rubro</label>
         </div>
     </div>
-</div>
-<div class="row mb-3">
-    <div class="d-flex d-inline-flex">
-        <div class="input-group input-group-sm text-info">
-            <input id="txtData01" class="form-control" readonly />
-            <input id="txtData02" class="form-control" readonly />
-            <input id="txtData03" class="form-control" readonly />
-            <input id="txtData04" class="form-control" readonly />
-        </div>
+    <div class="input-group input-group-sm text-info">
+        <input id="txtData01" class="form-control" readonly aria-label="TI seleccionada" />
+        <input id="txtData02" class="form-control" readonly aria-label="BOX o rubro seleccionado" />
     </div>
-</div>
-<div id="divGrids">
+    <div id="divGrids"></div>
 </div>
 <div class="row mb-3">
     <div class="pocket-action-dock">
@@ -64,6 +51,6 @@
         
     </script>
 
-    <script src="~/js/app/ti/ti02.js"></script>
+    <script src="~/js/app/ti/ti02.js" asp-append-version="true"></script>
 }
 

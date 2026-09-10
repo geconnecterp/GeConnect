@@ -11,32 +11,30 @@
 @section styles {
     <link rel="stylesheet" href="~/css/pocket-records.css" asp-append-version="true" />
 }
-<div class="row">
+<div class="row pocket-mobile-redundant-title">
     <div class="d-flex justify-content-center">
         <h3 class="text-black"><strong>Colector de Productos</strong></h3>
     </div>
 </div>
 <partial name="_tiNroAutorizacion" model="@Model.Ti" />
-<div class="row mb-2">
-    <div class="d-flex justify-content-center">
-        <div class="m-2 form-check">
+<div class="pocket-ti-collection-options">
+        <div class="form-check">
             <input name="rbVista" class="form-check-input" type="radio" value="B" id="rbBox" checked>
             <label class="form-check-label" for="rbBox">BOX</label>
         </div>
-        <div class="m-2 form-check">
+        <div class="form-check">
             <input name="rbVista" class="form-check-input" type="radio" value="B" id="rbProd">
             <label class="form-check-label" for="rbProd">Prod</label>
         </div>
-        <div class="m-2 form-check">
+        <div class="form-check">
             <input name="rbVista" class="form-check-input" type="radio" value="B" id="rbRubro">
             <label class="form-check-label" for="rbRubro">Rubro</label>
         </div>
-        <div class="m-2">
+        @if (Model.TipoTI != "S")
+        {
             <a asp-action="TIValidaProducto" asp-controller="trint" asp-area="pocketppal" asp-route-pId="" id="btnCargaCarritoNuevo"
             class="btn btn-sm btn-success btnBarcode"><i class="bx bx-cart"></i><span> Carga</span></a>
-           
-        </div>
-    </div>
+        }
 </div>
 <div id="divti03"></div>
 <div class="row mb-3">

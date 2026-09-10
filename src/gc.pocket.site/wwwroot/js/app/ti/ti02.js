@@ -11,7 +11,7 @@ function seleccionVista(vista) {
     //se debe modificar el texto del span por la vista de datos a presentar
     if (vista === "B") {
         //se debe presenar la grilla de 
-        $("#titVista").val("Itinerario por BOX");
+        $("#titVista").text("ITINERARIO X BOX");
         datos = {};
         PostGenHtml(datos, presentarBoxDeProductosUrl, function (obj) {
 
@@ -21,7 +21,7 @@ function seleccionVista(vista) {
         });
     }
     else {
-        $("#titVista").val("Itinerario por RUBRO");
+        $("#titVista").text("ITINERARIO X RUBRO");
         datos = {};
         PostGenHtml(datos, presentarRubroDeProductosUrl, function (obj) {
 
@@ -43,8 +43,6 @@ function seleccionarRegistroTIBox(x) {
     var reg = parseInt(x.cells[0].innerText.trim());
     $("#txtData01").val($("#rTi" + reg).val());
     $("#txtData02").val(x.cells[2].innerText.trim()); //este input es comodin solo para visualizar. El nombre debo modificarlo
-    $("#txtData03").val("");
-    $("#txtData04").val("");
     //resguardo datos para mandar en el form
     $("#esbox").val(true);
     $("#esrubro").val(false);
@@ -64,8 +62,6 @@ function seleccionarRegistroTIRubro(x) {
     var reg = parseInt(x.cells[0].innerText.trim());
     $("#txtData01").val($("#rTi" + reg).val());
     $("#txtData02").val($("#rrub_desc" + reg).val());
-    $("#txtData03").val($("#rrubg_desc" + reg).val());
-    $("#txtData04").val($("#rconteo" + reg).val());
 
     //resguardo datos para mandar en el form
     $("#esbox").val(false);
@@ -79,8 +75,6 @@ function seleccionarRegistroTIRubro(x) {
 function InicializaControlesTI02() {
     $("#txtData01").val("");
     $("#txtData02").val("");
-    $("#txtData03").val("");
-    $("#txtData04").val("");
 
     $("#esrubro").val(false);
     $("#esbox").val(false);

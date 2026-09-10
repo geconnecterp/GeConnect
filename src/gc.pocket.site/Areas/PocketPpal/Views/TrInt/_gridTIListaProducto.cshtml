@@ -32,8 +32,10 @@
                 var esPropio = !(esReemplazo || item.Resultado == "40") ||
                     string.Equals(item.Remplazo_usu_id?.Trim(), usuarioActual.Trim(), StringComparison.OrdinalIgnoreCase);
                 var estadoBloqueaCarga = resultado == "E1" || resultado == "21";
-                var diferenciaColectado = item.Pedido - item.Colectado_x_p;
-                var pedidoCumplido = diferenciaColectado <= 0;
+                var totalColectadoVisible = item.Colectado + item.Colectado_remplazo + item.Colectado_otros;
+                var diferenciaColectado = item.Pedido - totalColectadoVisible;
+                // La leyenda resume las cantidades visibles; la habilitación conserva su regla vigente.
+                var pedidoCumplido = item.Colectado_x_p >= item.Pedido;
                 var tieneColeccionPropia = item.Colectado > 0;
                 var permiteCarga = !esSucursal || (esReemplazo
                     ? esPropio && !estadoBloqueaCarga
@@ -41,10 +43,10 @@
                 var permiteColeccion = permiteCarga && (!esSucursal || item.Pedido > 0 || item.Colectado > 0);
                 var permiteReemplazo = ViewBag.PermiteReemplazo == true && permiteCarga && !esReemplazo && item.Pedido > 0;
                 var estadoColeccionTexto = diferenciaColectado == 0
-                    ? "Pedido colectado"
+                    ? string.Empty
                     : diferenciaColectado > 0
                         ? $"Falta colectar: {diferenciaColectado.ToString(formatoCantidad)}"
-                        : $"Colectado excedido: {Math.Abs(diferenciaColectado).ToString(formatoCantidad)}";
+                        : $"Sobra: {Math.Abs(diferenciaColectado).ToString(formatoCantidad)}";
                 var estadoColeccionClase = diferenciaColectado == 0
                     ? "bg-success"
                     : diferenciaColectado > 0
@@ -78,11 +80,11 @@
                 <tr class="@clase" tiprod="@item.P_id">
                     <td style="display:none;">@cont</td>
                     <td>
-                        <div class="pocket-record">
+                        <div class="pocket-record @(esSucursal ? "pocket-record--collection" : "")">
                             <div class="pocket-record__body">
                                 <div class="pocket-record__title">
                                     <span class="pocket-record__code">@item.P_id</span>
-                                    <strong>@item.P_desc</strong>
+                                    <strong title="@item.P_desc">@item.P_desc</strong>
                                     @if (esReemplazo)
                                     {
                                         <span class="badge bg-warning text-dark ms-1" title="Producto cargado como reemplazo">
@@ -90,44 +92,47 @@
                                         </span>
                                     }
                                 </div>
-                                <div class="pocket-record__context"><span>BOX @item.Box_id</span><span>Rubro @item.Rub_id</span></div>
+                                <div class="pocket-record__context"><span class="pocket-record__box">BOX <strong>@item.Box_id</strong></span><span class="pocket-record__rubro" title="Rubro @item.Rub_id">Rubro <strong>@item.Rub_id</strong></span></div>
                                 <div class="pocket-record__quantities">
                                     <div><span>Pedido</span><strong>@pedido</strong></div>
                                     <div><span>Colectado</span><strong>@colectado</strong></div>
                                     @if (!esReemplazo)
                                     {
-                                        <div><span>Colectado Reemplazo</span><strong>@item.Colectado_remplazo.ToString(formatoCantidad)</strong></div>
+                                        <div><span>Reemplazo</span><strong>@item.Colectado_remplazo.ToString(formatoCantidad)</strong></div>
+                                    }
+                                    @if (esSucursal)
+                                    {
+                                        <div><span>Colectado Otros</span><strong>@item.Colectado_otros.ToString(formatoCantidad)</strong></div>
                                     }
                                 </div>
                                 @if (esSucursal)
                                 {
-                                    <div class="pocket-record__totals">
-                                        <span>Colectado Otros: <strong>@item.Colectado_otros.ToString(formatoCantidad)</strong></span>
-                                        @if (!esReemplazo)
-                                        {
-                                            <span class="badge @estadoColeccionClase">@estadoColeccionTexto</span>
-                                        }
-                                    </div>
+                                    @if (!esReemplazo && diferenciaColectado != 0)
+                                    {
+                                        <div class="pocket-record__totals">
+                                            <span class="badge @estadoColeccionClase" title="@estadoColeccionTexto">@estadoColeccionTexto</span>
+                                        </div>
+                                    }
                                     <div class="pocket-record__status">
-                                        <span class="badge @estadoClase">@resultado · @estadoTexto</span>
-                                        @if (esReemplazo && !string.IsNullOrWhiteSpace(item.Remplazo_p_id))
-                                        {
-                                            <small class="text-muted">
-                                                Reemplaza al producto @item.Remplazo_p_id
-                                                @if (!string.IsNullOrWhiteSpace(item.Remplazo_box))
-                                                {
-                                                    <text> del BOX @item.Remplazo_box</text>
-                                                }
-                                                @if (!string.IsNullOrWhiteSpace(item.Remplazo_usu_id))
-                                                {
-                                                    <text> · Operador @item.Remplazo_usu_id</text>
-                                                }
-                                            </small>
-                                        }
+                                        <span class="badge @estadoClase" title="@resultado · @estadoTexto">@resultado · @estadoTexto</span>
                                     </div>
+                                    @if (esReemplazo && !string.IsNullOrWhiteSpace(item.Remplazo_p_id))
+                                    {
+                                        <small class="text-muted pocket-record__reference">
+                                            <span class="pocket-record__reference-text" title="Reemplaza al producto @item.Remplazo_p_id">Reemplaza al producto @item.Remplazo_p_id</span>
+                                            @if (!string.IsNullOrWhiteSpace(item.Remplazo_box))
+                                            {
+                                                <span class="pocket-record__box">del BOX <strong>@item.Remplazo_box</strong></span>
+                                            }
+                                            @if (!string.IsNullOrWhiteSpace(item.Remplazo_usu_id))
+                                            {
+                                                <span class="pocket-record__reference-text" title="Operador @item.Remplazo_usu_id">· Operador @item.Remplazo_usu_id</span>
+                                            }
+                                        </small>
+                                    }
                                     @if (!permiteCarga)
                                     {
-                                        <small class="text-danger fw-semibold">@(esPropio ? "Este estado no permite realizar una nueva carga." : "El reemplazo pertenece a otro operador y no puede modificarse.")</small>
+                                        <small class="text-danger fw-semibold pocket-record__restriction">@(esPropio ? "Este estado no permite realizar una nueva carga." : "El reemplazo pertenece a otro operador y no puede modificarse.")</small>
                                     }
                                 }
                             </div>
