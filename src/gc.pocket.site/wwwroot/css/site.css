@@ -1120,6 +1120,19 @@ body.confirmacion-en-proceso #wWaiting {
     flex: 1 1 auto;
 }
 
+.pocket-back-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.25rem;
+    flex: 0 0 auto;
+}
+
+.pocket-back-button__icon {
+    font-size: 1.1rem;
+    line-height: 1;
+}
+
 /* Los controles heredados adoptan la misma identidad GOLDEN. */
 .pocket-view .input-group-text {
     color: var(--bs-golden-dark, #8b7355) !important;
@@ -1219,7 +1232,151 @@ body.confirmacion-en-proceso #wWaiting {
     .pocket-module-title {
         font-size: 0.875rem;
     }
+
+    .pocket-back-button {
+        width: 2.5rem;
+        height: 2.5rem;
+        padding: 0 !important;
+        border-radius: 0.5rem;
+    }
+
+    .pocket-back-button__icon {
+        margin: 0 !important;
+        font-size: 1.35rem;
+    }
+
+    .pocket-back-button__label {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+    }
 }
+/* Pocket: libera las cabeceras redundantes en el colector. */
+@media (max-width: 576px) {
+    .pocket-body .pocket-mobile-redundant-title,
+    .pocket-body .pocket-module-title {
+        display: none;
+    }
+
+    .pocket-body .pocket-header {
+        position: relative;
+    }
+
+    .pocket-body .pocket-header-branch {
+        flex-basis: calc(100% - 3.25rem);
+        max-width: calc(100% - 3.25rem);
+        min-height: 2.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        white-space: normal;
+    }
+
+    .pocket-body .pocket-header-module {
+        position: absolute;
+        right: 0.75rem;
+        bottom: 0.5rem;
+        padding: 0 !important;
+        background: transparent !important;
+    }
+}
+
+/* TR: cabecera, selección y grilla del itinerario en un bloque compacto. */
+.pocket-ti-itinerary {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    min-width: 0;
+}
+
+.pocket-ti-itinerary__heading {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    column-gap: 0.75rem;
+    row-gap: 0.125rem;
+    text-align: center;
+}
+
+.pocket-ti-itinerary > .input-group > .form-control[readonly],
+.pocket-ti-authorization-summary .input-group > .form-control[readonly] {
+    min-height: 1.875rem;
+    height: auto;
+    padding-top: 0.125rem;
+    padding-bottom: 0.125rem;
+}
+
+.pocket-ti-itinerary table.pocket-grid > thead > tr > th,
+.pocket-ti-authorizations table.pocket-grid > thead > tr > th {
+    padding-top: 0.25rem !important;
+    padding-bottom: 0.25rem !important;
+}
+
+.pocket-ti-itinerary table.pocket-grid > tbody > tr > td,
+.pocket-ti-authorizations table.pocket-grid > tbody > tr > td {
+    padding-top: 0.3125rem !important;
+    padding-bottom: 0.3125rem !important;
+}
+
+.pocket-ti-itinerary__options {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+}
+
+.pocket-ti-itinerary__options .form-check {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    min-height: 2.25rem;
+    margin: 0;
+    padding: 0;
+}
+
+.pocket-ti-itinerary__options .form-check-input {
+    float: none;
+    margin: 0;
+}
+
+.pocket-ti-itinerary__options .form-check-label {
+    padding-block: 0.375rem;
+}
+
+/* TR: selector compacto sobre el listado de productos a colectar. */
+.pocket-ti-collection-options {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    column-gap: 1rem;
+    row-gap: 0.25rem;
+    margin-bottom: 0;
+}
+
+.pocket-ti-collection-options .form-check {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    min-height: 2.25rem;
+    margin: 0;
+    padding: 0;
+}
+
+.pocket-ti-collection-options .form-check-input {
+    float: none;
+    margin: 0;
+}
+
+.pocket-ti-collection-options .form-check-label {
+    padding-block: 0.375rem;
+}
+
 /* Autocompletado de proveedores: razón social/cuenta + clasificación secundaria */
 .autocomplete-proveedor-principal {
     font-size: 14px;

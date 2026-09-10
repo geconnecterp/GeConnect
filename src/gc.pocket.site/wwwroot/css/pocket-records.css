@@ -79,4 +79,113 @@
     .pocket-record__actions { justify-content: flex-end; }
     .pocket-record__quantities { gap: .375rem 1rem; }
     .pocket-record__totals { display: grid; grid-template-columns: minmax(0, 1fr); }
+
+    /* Originales y reemplazos de TR: cantidades a la izquierda; acciones y estado a la derecha. */
+    .pocket-record-list #tbListaProd tbody td:has(.pocket-record--collection) { padding: .5rem; }
+    .pocket-record--collection {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(140px, 1.2fr);
+        gap: .25rem .5rem;
+        align-items: start;
+    }
+    .pocket-record--collection > .pocket-record__body { display: contents; }
+    .pocket-record--collection .pocket-record__title { grid-column: 1 / -1; grid-row: 1; }
+    .pocket-record--collection .pocket-record__context {
+        grid-column: 1 / -1;
+        grid-row: 2;
+        margin-top: 0;
+        gap: .125rem .5rem;
+    }
+    .pocket-record--collection .pocket-record__quantities {
+        grid-column: 1;
+        grid-row: 3 / 6;
+        display: flex;
+        flex-direction: column;
+        gap: .125rem;
+        margin: 0;
+        padding: .25rem;
+    }
+    .pocket-record--collection .pocket-record__quantities > div {
+        justify-content: space-between;
+        gap: 0 .25rem;
+        line-height: 1.35;
+    }
+    .pocket-record--collection .pocket-record__quantities span { font-size: .75rem; }
+    .pocket-record--collection .pocket-record__quantities strong { font-size: 1rem; }
+    .pocket-record--collection .pocket-record__actions {
+        grid-column: 2;
+        grid-row: 3;
+        gap: .25rem;
+        justify-content: flex-end;
+    }
+    .pocket-record--collection .pocket-record__actions .btn {
+        width: 44px;
+        height: 44px;
+        padding: 0;
+    }
+    .pocket-record--collection .pocket-record__totals { grid-column: 2; grid-row: 4; min-width: 0; }
+    .pocket-record--collection .pocket-record__totals .badge {
+        white-space: normal;
+        overflow-wrap: anywhere;
+        line-height: 1.35;
+        padding: .25rem;
+        font-size: .6875rem;
+        text-transform: none;
+    }
+    .pocket-record--collection .pocket-record__status {
+        grid-column: 2;
+        grid-row: 5;
+        min-width: 0;
+        margin-top: 0;
+    }
+    .pocket-record--collection .pocket-record__status .badge {
+        width: 100%;
+        padding: .25rem;
+        font-size: .6875rem;
+        overflow-wrap: anywhere;
+    }
+    .pocket-record--collection .pocket-record__reference {
+        grid-column: 1 / -1;
+        grid-row: 6;
+        min-width: 0;
+        font-size: .75rem;
+        line-height: 1.35;
+        overflow-wrap: anywhere;
+    }
+    .pocket-record--collection .pocket-record__restriction { grid-column: 1 / -1; grid-row: 7; }
+}
+
+/* TR: una sola línea por texto; reservar siempre el BOX completo. */
+.pocket-record--collection .pocket-record__title {
+    display: flex;
+    align-items: center;
+    gap: .25rem;
+    min-width: 0;
+}
+.pocket-record--collection .pocket-record__title > strong { flex: 1; }
+.pocket-record--collection .pocket-record__code,
+.pocket-record--collection .pocket-record__title > .badge,
+.pocket-record--collection .pocket-record__box { flex-shrink: 0; white-space: nowrap; }
+.pocket-record--collection .pocket-record__context { flex-wrap: nowrap; min-width: 0; }
+.pocket-record--collection .pocket-record__quantities { min-width: 0; }
+.pocket-record--collection .pocket-record__quantities > div { flex-wrap: nowrap; }
+.pocket-record--collection .pocket-record__reference {
+    display: flex;
+    align-items: baseline;
+    gap: .25rem;
+    min-width: 0;
+}
+.pocket-record--collection .pocket-record__title > strong,
+.pocket-record--collection .pocket-record__rubro,
+.pocket-record--collection .pocket-record__quantities span,
+.pocket-record--collection .pocket-record__quantities strong,
+.pocket-record--collection .pocket-record__totals .badge,
+.pocket-record--collection .pocket-record__status .badge,
+.pocket-record--collection .pocket-record__reference-text,
+.pocket-record--collection .pocket-record__restriction {
+    min-width: 0;
+    max-width: 100%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
