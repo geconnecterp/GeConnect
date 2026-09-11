@@ -14,7 +14,44 @@
 	var tipoRetGan = Model.ComboTipoRetGan;
 	var tipoRetIB = Model.ComboTipoRetIB;
 }
+<style>
+	.grid-en-tab-principal {
+		width: 100%;
+	}
 
+	.tab-en-grid-en-tab-principal {
+		padding-left: 5px;
+		padding-right: 5px;
+	}
+
+	.card-en-grid-en-tab-principal {
+		padding: 3px;
+	}
+
+	.estilos-en-h6 {
+		margin-bottom: 0px;
+		margin-top: 5px;
+	}
+
+	.check-styles {
+		width: 20px !important;
+	}
+
+	.style-descuentos-finan {
+		width: 50px !important;
+		max-width: 50px !important;
+	}
+
+	.style-plazo-compra {
+		width: 118px !important;
+		max-width: 118px !important;
+	}
+
+	.style-plazo-entrega {
+		width: 110px !important;
+		max-width: 110px !important;
+	}
+</style>
 <div class="row">
 	@Html.HiddenFor(x => x.Proveedor.Cta_Cuit_Vto)
 	<div class="col-md-4">
@@ -120,57 +157,12 @@
 				@Html.DropDownListFor(m => m.Proveedor.Ctag_Id, tipoGasto, "Seleccionar...", new { @id = "listaTipoGasto", @class = "form-control activable" })
 			</div>
 		</div>
-		<div class="row mt-1">
-			<div class="input-group input-group-sm">
-				<div class="form-check form-check-inline form-switch mb-2">
-					<input class="form-check-input activable" type="checkbox" asp-for="Proveedor.Ctap_Devolucion_bool" value="" id="chkCtapDevolucionBool">
-					<label class="form-check-label fixed-font-size-xmall" for="chkCtapDevolucionBool"> DV</label>
-				</div>
-				<div class="form-check form-check-inline form-switch mb-2">
-					<input class="form-check-input activable" type="checkbox" asp-for="Proveedor.Ctap_Devolucion_Flete_bool" value="" id="chkCtapDevolucionFleteBool">
-					<label class="form-check-label fixed-font-size-xmall fixed-lbl-for-abm-50-nodisp" for="chkCtapDevolucionFleteBool"> DV Flete</label>
-				</div>
-				<div class="form-check form-check-inline form-switch mb-2">
-					<input class="form-check-input activable" type="checkbox" asp-for="Proveedor.Ctap_Acuenta_Dev_bool" value="" id="chkCtapACuentaDevBool">
-					<label class="form-check-label fixed-font-size-xmall fixed-lbl-for-abm-70-nodisp" for="chkCtapACuentaDevBool"> DV no a Cuenta</label>
-				</div>
-				<div class="form-check form-check-inline form-switch mb-2">
-					<input class="form-check-input activable" type="checkbox" asp-for="Proveedor.Ctap_Pago_Susp_bool" value="" id="chkCtapPagoSuspBool">
-					<label class="form-check-label fixed-font-size-xmall fixed-lbl-for-abm-50-nodisp" for="chkCtapPagoSuspBool"> Pago Susp.</label>
-				</div>
-			</div>
-		</div>
-		<div class="row mt-1">
-			<div class="input-group input-group-sm">
-				<label class="form-check-label font-bold">Descuento Financieros</label>
-			</div>
-		</div>
-		<div class="row mt-1">
-			<div class="input-group input-group-sm">
-				<span class="input-group-text fixed-font-size-xmall fixed-lbl-for-abm-20">1°</span>
-				<input type="number" asp-for="Proveedor.Ctap_D1" class="form-control activable" />
-				<span class="input-group-text fixed-font-size-xmall fixed-lbl-for-abm-20">2°</span>
-				<input type="number" asp-for="Proveedor.Ctap_D2" class="form-control activable" />
-				<span class="input-group-text fixed-font-size-xmall fixed-lbl-for-abm-20">3°</span>
-				<input type="number" asp-for="Proveedor.Ctap_D3" class="form-control activable" />
-				<span class="input-group-text fixed-font-size-xmall fixed-lbl-for-abm-20">4°</span>
-				<input type="number" asp-for="Proveedor.Ctap_D4" class="form-control activable" />
-				<span class="input-group-text fixed-font-size-xmall fixed-lbl-for-abm-20">5°</span>
-				<input type="number" asp-for="Proveedor.Ctap_D5" class="form-control activable" />
-				<span class="input-group-text fixed-font-size-xmall fixed-lbl-for-abm-20">6°</span>
-				<input type="number" asp-for="Proveedor.Ctap_D6" class="form-control activable" />
-			</div>
-		</div>
-		<div class="row mt-1">
-			<div class="input-group input-group-sm">
-				<label class="form-check-label font-bold">Retenciones</label>
-			</div>
-		</div>
+		<h6 class="estilos-en-h6">Retenciones</h6>
 		<div class="row mt-1">
 			<div class="input-group input-group-sm">
 				<div class="form-check form-check-inline form-switch mb-2">
 					<input class="form-check-input activable" type="checkbox" asp-for="Proveedor.Ctap_Rgan_bool" value="" id="chkCtapRganBool">
-					<label class="form-check-label fixed-font-size-xmall" for="chkCtapRganBool"> GAN</label>
+					<label class="form-check-label fixed-font-size-xmall check-styles" for="chkCtapRganBool"> GAN</label>
 				</div>
 				@Html.DropDownListFor(m => m.Proveedor.Rgan_Id, tipoRetGan, "Seleccionar...", new { @id = "listaTipoRetGan", @class = "form-control activable" })
 			</div>
@@ -179,7 +171,7 @@
 			<div class="input-group input-group-sm">
 				<div class="form-check form-check-inline form-switch mb-2">
 					<input class="form-check-input activable" type="checkbox" asp-for="Proveedor.Ctap_Rgan_Cert_bool" value="" id="chkCtapRganCertBool">
-					<label class="form-check-label fixed-font-size-xmall" for="chkCtapRganCertBool"> CNR</label>
+					<label class="form-check-label fixed-font-size-xmall check-styles" for="chkCtapRganCertBool"> CNR</label>
 				</div>
 				@Html.TextBoxFor(t => t.Proveedor.Rgan_Cert_Vto, "{0:yyyy-MM-dd}", new { type = "date", @class = "form-control activable" })
 				<span class="input-group-text fixed-lbl-for-abm-20">%</span>
@@ -190,7 +182,7 @@
 			<div class="input-group input-group-sm">
 				<div class="form-check form-check-inline form-switch mb-2">
 					<input class="form-check-input activable" type="checkbox" asp-for="Proveedor.Ctap_Rib_bool" value="" id="chkCtapRibBool">
-					<label class="form-check-label fixed-font-size-xmall" for="chkCtapRibBool"> IB</label>
+					<label class="form-check-label fixed-font-size-xmall check-styles" for="chkCtapRibBool"> IB</label>
 				</div>
 				@Html.DropDownListFor(m => m.Proveedor.Rib_Id, tipoRetIB, "Seleccionar...", new { @id = "listaTipoRetIB", @class = "form-control activable" })
 			</div>
@@ -199,35 +191,29 @@
 			<div class="input-group input-group-sm">
 				<div class="form-check form-check-inline form-switch mb-2">
 					<input class="form-check-input activable" type="checkbox" asp-for="Proveedor.Ctap_Rib_Cert_bool" value="" id="chkCtapRibCertBool">
-					<label class="form-check-label fixed-font-size-xmall" for="chkCtapRibCertBool"> CNR</label>
+					<label class="form-check-label fixed-font-size-xmall check-styles" for="chkCtapRibCertBool"> CNR</label>
 				</div>
 				@Html.TextBoxFor(t => t.Proveedor.Rib_Cert_Vto, "{0:yyyy-MM-dd}", new { type = "date", @class = "form-control activable" })
 				<span class="input-group-text fixed-lbl-for-abm-20">%</span>
 				<input type="number" asp-for="Proveedor.Rib_Porc" class="form-control activable" />
 			</div>
 		</div>
-	</div>
-	<div class="col-md-4">
 		<div class="row mt-1">
 			<div class="input-group input-group-sm">
 				<div class="form-check form-check-inline form-switch mb-2">
 					<input class="form-check-input activable" type="checkbox" asp-for="Proveedor.Ctap_Ret_Iva_bool" value="" id="chkCtapRetIvaBool">
-					<label class="form-check-label fixed-font-size-xmall" for="chkCtapRetIvaBool"> IVA</label>
+					<label class="form-check-label fixed-font-size-xmall check-styles" for="chkCtapRetIvaBool"> IVA</label>
 				</div>
 				<span class="input-group-text fixed-lbl-for-abm-20">%</span>
 				<input type="number" asp-for="Proveedor.Ctap_Ret_Iva_Porc" class="form-control activable" />
 			</div>
 		</div>
-		<div class="row mt-1">
-			<div class="input-group input-group-sm">
-				<label class="form-check-label font-bold">Percepciones</label>
-			</div>
-		</div>
+		<h6 class="estilos-en-h6">Percepciones</h6>
 		<div class="row mt-1">
 			<div class="input-group input-group-sm">
 				<div class="form-check form-check-inline form-switch mb-2">
 					<input class="form-check-input activable" type="checkbox" asp-for="Proveedor.Ctap_Per_Ib_bool" value="" id="chkCtapPerIbBool">
-					<label class="form-check-label fixed-font-size-xmall" for="chkCtapPerIbBool"> IB</label>
+					<label class="form-check-label fixed-font-size-xmall check-styles" for="chkCtapPerIbBool"> IB</label>
 				</div>
 				<span class="input-group-text fixed-lbl-for-abm-20">%</span>
 				<input type="number" asp-for="Proveedor.Ctap_Per_Ib_Ali" class="form-control activable" />
@@ -239,10 +225,63 @@
 				<input type="number" asp-for="Proveedor.Ctap_Per_Iva_Ali" class="form-control activable" />
 			</div>
 		</div>
-		<div id="GridsEnTabPrincipal">
+	</div>
+	<div class="col-md-4">
+		<div class="row mt-1">
+			<div class="input-group input-group-sm">
+				<div class="form-check form-check-inline form-switch mb-2">
+					<input class="form-check-input activable" type="checkbox" asp-for="Proveedor.Ctap_Pago_Susp_bool" value="" id="chkCtapPagoSuspBool">
+					<label class="form-check-label fixed-font-size-xmall fixed-lbl-for-abm-50-nodisp" for="chkCtapPagoSuspBool"> Pago Susp.</label>
+				</div>
+				@if (Model.Proveedor.Ope_Iva == "BI")
+				{
+					<div class="form-check form-check-inline form-switch mb-2">
+						<input class="form-check-input activable" type="checkbox" asp-for="Proveedor.Ctap_Devolucion_bool" value="" id="chkCtapDevolucionBool">
+						<label class="form-check-label fixed-font-size-xmall" for="chkCtapDevolucionBool"> DV</label>
+					</div>
+					<div class="form-check form-check-inline form-switch mb-2">
+						<input class="form-check-input activable" type="checkbox" asp-for="Proveedor.Ctap_Devolucion_Flete_bool" value="" id="chkCtapDevolucionFleteBool">
+						<label class="form-check-label fixed-font-size-xmall fixed-lbl-for-abm-50-nodisp" for="chkCtapDevolucionFleteBool"> DV Flete</label>
+					</div>
+					<div class="form-check form-check-inline form-switch mb-2">
+						<input class="form-check-input activable" type="checkbox" asp-for="Proveedor.Ctap_Acuenta_Dev_bool" value="" id="chkCtapACuentaDevBool">
+						<label class="form-check-label fixed-font-size-xmall fixed-lbl-for-abm-70-nodisp" for="chkCtapACuentaDevBool"> DV no a Cuenta</label>
+					</div>					
+				}
+			</div>
+		</div>
+		@if (Model.Proveedor.Ope_Iva == "BI")
+		{
+			<h6 class="estilos-en-h6">Descuentos Financieros</h6>
 			<div class="row mt-1">
-				<div class="card">
-					<div class="card-body mt-1-ctm">
+				<div class="input-group input-group-sm">
+					<span class="input-group-text fixed-font-size-xmall fixed-lbl-for-abm-20">1°</span>
+					<input type="number" asp-for="Proveedor.Ctap_D1" class="form-control activable style-descuentos-finan" />
+					<span class="input-group-text fixed-font-size-xmall fixed-lbl-for-abm-20">2°</span>
+					<input type="number" asp-for="Proveedor.Ctap_D2" class="form-control activable style-descuentos-finan" />
+					<span class="input-group-text fixed-font-size-xmall fixed-lbl-for-abm-20">3°</span>
+					<input type="number" asp-for="Proveedor.Ctap_D3" class="form-control activable style-descuentos-finan" />
+					<span class="input-group-text fixed-font-size-xmall fixed-lbl-for-abm-20">4°</span>
+					<input type="number" asp-for="Proveedor.Ctap_D4" class="form-control activable style-descuentos-finan" />
+					<span class="input-group-text fixed-font-size-xmall fixed-lbl-for-abm-20">5°</span>
+					<input type="number" asp-for="Proveedor.Ctap_D5" class="form-control activable style-descuentos-finan" />
+					<span class="input-group-text fixed-font-size-xmall fixed-lbl-for-abm-20">6°</span>
+					<input type="number" asp-for="Proveedor.Ctap_D6" class="form-control activable style-descuentos-finan" />
+				</div>
+			</div>
+			<div class="row mt-1">
+				<div class="input-group input-group-sm">
+					<span class="input-group-text fixed-lbl-for-abm-90">Plazo Compra:</span>
+					<input type="number" asp-for="Proveedor.Ctap_Rp_Plazo_Compra" class="form-control activable style-plazo-compra" min="0" max="365"/>
+					<span class="input-group-text fixed-lbl-for-abm-90">Plazo Entrega:</span>
+					<input type="number" asp-for="Proveedor.Ctap_Rp_Plazo_Entrega" class="form-control activable style-plazo-entrega" min="0" max="365" />
+				</div>
+			</div>
+		}
+		<div id="GridsEnTabPrincipal">
+			<div class="row mt-1 grid-en-tab-principal">
+				<div class="card tab-en-grid-en-tab-principal">
+					<div class="card-body mt-1-ctm card-en-grid-en-tab-principal">
 						<div class="table-responsive text-nowrap table-wrapper-200-full">
 							<table class="table table-sm mb-0 table-hover table-golden" id="tbFormaPagoEnTabDeProv">
 								<thead>
@@ -268,9 +307,9 @@
 					</div>
 				</div>
 			</div>
-			<div class="row mt-1">
-				<div class="card">
-					<div class="card-body mt-1-ctm">
+			<div class="row mt-1 grid-en-tab-principal">
+				<div class="card tab-en-grid-en-tab-principal">
+					<div class="card-body mt-1-ctm card-en-grid-en-tab-principal">
 						<div class="table-responsive text-nowrap table-wrapper-200-full">
 							<table class="table table-sm mb-0 table-hover table-golden" id="tbOtroContactoEnTabDeProv">
 								<thead>
@@ -302,7 +341,7 @@
 					</div>
 				</div>
 			</div>
-			<div class="row mt-1">
+			@* <div class="row mt-1">
 				<div class="card">
 					<div class="card-body mt-1-ctm">
 						<div class="table-responsive text-nowrap table-wrapper-200-full">
@@ -359,7 +398,7 @@
 						</div>
 					</div>
 				</div>
-			</div>
+			</div> *@
 		</div>
 	</div>
 </div>

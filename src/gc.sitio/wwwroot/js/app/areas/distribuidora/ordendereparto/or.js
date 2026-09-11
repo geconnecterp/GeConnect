@@ -1792,7 +1792,7 @@ function ConfirmarPonerEnCursoOrdenDeReparto(orCompteSeleccionado) {
 }
 
 function CargarVistaNuevaOrdenDeReparto(abm, orCompte) {
-	if (orCompte == null || orCompte == undefined || orCompte == "") {
+	if (abm == "M" && (orCompte == null || orCompte == undefined || orCompte == "")) {
 		AbrirMensaje("ATENCIÓN", 'Debe seleccionar una Orden de Reparto', function () {
 			$("#msjModal").modal("hide");
 			return true;

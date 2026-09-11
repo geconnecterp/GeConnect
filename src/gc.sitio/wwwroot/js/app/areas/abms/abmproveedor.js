@@ -32,7 +32,7 @@
 	$("#btnAbmAceptar").on("click", function () { btnSubmitClick(); });
 	$("#btnAbmCancelar").on("click", function () { btnCancelClick(); });
 
-	$("#btnDetalle").on("mousedown", analizaEstadoBtnDetalle); 
+	$("#btnDetalle").on("mousedown", analizaEstadoBtnDetalle);
 
 	$("#btnDetalle").prop("disabled", true);
 	$("#btnCancel").on("click", function () {
@@ -279,7 +279,7 @@ function buscarProveedores(pag, esBaja = false) {
 		id2 = $("#Id2").val();
 	}
 	if ($("#chkRel01").is(":checked")) {
-		$("#Rel01List").children().each(function (i, item) { r01.push($(item).val()) });
+		$("#Rel02List").children().each(function (i, item) { r01.push($(item).val()) });
 	}
 
 	var data1 = {
@@ -342,6 +342,25 @@ function buscarProveedores(pag, esBaja = false) {
 	});
 
 }
+
+function validarRangoNumero(input, min, max) {
+	let valor = parseInt(input.value, 10);
+
+	if (isNaN(valor)) {
+		input.value = "";
+		return;
+	}
+
+	if (valor < min || valor > max) {
+		AbrirMensaje("ATENCIÓN", `El valor debe estar entre ${min} y ${max}.`, function () {
+			$("#msjModal").modal("hide");
+			return true;
+		}, false, ["Aceptar"], "warn!", null);
+		input.value = min;   // o 0, según tu preferencia
+		input.focus();
+	}
+}
+
 
 function BuscarFamiliasTabClick() {
 	if ($(".nav-link").prop("disabled")) {
@@ -521,11 +540,27 @@ function BuscarProveedor(ctaId) {
 		$("#divDatosProveedor").html(obj);
 		$("#IdSelected").val($("#ProveedorGrupo_Pg_Id").val());
 		$(".activable").prop("disabled", true);
+		handlerEnPLazos();
 		CerrarWaiting();
 	}, function (obj) {
 		ControlaMensajeError(obj.message);
 		CerrarWaiting();
 	});
+}
+
+function handlerEnPLazos() {
+	const plazoCompra = document.querySelector("#Proveedor_Ctap_Rp_Plazo_Compra");
+	const plazoEntrega = document.querySelector("#Proveedor_Ctap_Rp_Plazo_Entrega");
+
+	if (plazoCompra) {
+		plazoCompra.addEventListener("input", () => validarRangoNumero(plazoCompra, 0, 365));
+		plazoCompra.addEventListener("blur", () => validarRangoNumero(plazoCompra, 0, 365));
+	}
+
+	if (plazoEntrega) {
+		plazoEntrega.addEventListener("input", () => validarRangoNumero(plazoEntrega, 0, 365));
+		plazoEntrega.addEventListener("blur", () => validarRangoNumero(plazoEntrega, 0, 365));
+	}
 }
 
 function controlaValorFP() {
@@ -663,11 +698,11 @@ function ObtenerDatosDeProveedorParaJson(destinoDeOperacion, tipoDeOperacion) {
 	var ctap_habilitada = "N";
 	if ($("#chkCtaActiva")[0].checked)
 		ctap_habilitada = "S";
-	
+
 	var data = {
 		cta_id, cta_denominacion, tdoc_id, tdoc_desc, cta_documento, cta_domicilio, cta_localidad, cta_cpostal, prov_id, prov_nombre, dep_id, dep_nombre, cta_www, afip_id, afip_desc, nj_id, nj_desc, cta_ib_nro,
-		ib_id, ib_desc, cta_alta, cta_cuit_vto, cta_emp, cta_emp_legajo, cta_emp_ctaf, cta_actu_fecha, cta_actu, tp_id, ctap_ean, ctap_id_externo, ctap_rgan, rgan_id, rgan_cert, rgan_cert_vto, rgan_porc, 
-		ctap_rib, rib_id, rib_cert, rib_cert_vto, rib_porc, ctap_ret_iva, ctap_ret_iva_porc, ctap_per_iva, ctap_per_iva_ali, ctap_per_ib, ctap_per_ib_ali, ctap_pago_susp, ctap_devolucion, ctap_devolucion_flete, 
+		ib_id, ib_desc, cta_alta, cta_cuit_vto, cta_emp, cta_emp_legajo, cta_emp_ctaf, cta_actu_fecha, cta_actu, tp_id, ctap_ean, ctap_id_externo, ctap_rgan, rgan_id, rgan_cert, rgan_cert_vto, rgan_porc,
+		ctap_rib, rib_id, rib_cert, rib_cert_vto, rib_porc, ctap_ret_iva, ctap_ret_iva_porc, ctap_per_iva, ctap_per_iva_ali, ctap_per_ib, ctap_per_ib_ali, ctap_pago_susp, ctap_devolucion, ctap_devolucion_flete,
 		ctap_acuenta_dev, ctap_d1, ctap_d2, ctap_d3, ctap_d4, ctap_d5, ctap_d6, ope_iva, ope_iva_descripcion, ctag_id, ctag_denominacion, ctap_habilitada, destinoDeOperacion, tipoDeOperacion
 	};
 	return data;

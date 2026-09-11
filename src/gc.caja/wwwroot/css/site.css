@@ -1972,6 +1972,13 @@ tr[title]:hover {
     text-align: right;
 }
 
+.fixed-lbl-for-abm-90 {
+    width: 90px;
+    display: block;
+    float: right;
+    text-align: right;
+}
+
 .fixed-lbl-for-abm-100 {
     width: 100px;
     display: block;

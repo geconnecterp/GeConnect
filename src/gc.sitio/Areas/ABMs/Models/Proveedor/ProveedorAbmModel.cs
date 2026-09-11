@@ -20,8 +20,8 @@ namespace gc.sitio.Areas.ABMs.Models
 		public ProveedorABMDto Proveedor { get; set; }
 		public GridCoreSmart<CuentaFPDto> CuentaFormasDePago { get; set; }
 		public GridCoreSmart<CuentaContactoDto> CuentaContactos { get; set; }
-		public GridCoreSmart<CuentaObsDto> CuentaObs { get; set; }
-		public GridCoreSmart<CuentaNotaDto> CuentaNota { get; set; }
+		//public GridCoreSmart<CuentaObsDto> CuentaObs { get; set; }
+		//public GridCoreSmart<CuentaNotaDto> CuentaNota { get; set; }
 
 		public ProveedorAbmModel()
 		{
