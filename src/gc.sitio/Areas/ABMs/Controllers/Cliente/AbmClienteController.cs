@@ -280,8 +280,8 @@ namespace gc.sitio.Areas.ABMs.Controllers
 
                 var cfp = _cuentaServicio.GetCuentaFormaDePago(ctaId, TokenCookie);
                 var ccon = _cuentaServicio.GetCuentaContactos(ctaId, TokenCookie);
-                var cobs = _cuentaServicio.GetCuentaObsLista(ctaId, TokenCookie);
-                var cnota = _cuentaServicio.GetCuentaNota(ctaId, TokenCookie);
+                //var cobs = _cuentaServicio.GetCuentaObsLista(ctaId, TokenCookie);
+                //var cnota = _cuentaServicio.GetCuentaNota(ctaId, TokenCookie);
 
                 var provId = res.First()?.Prov_Id?.ToString();
                 var ClienteModel = new CuentaAbmModel()
@@ -305,8 +305,8 @@ namespace gc.sitio.Areas.ABMs.Controllers
 					ComboFinancieros = ComboFinanciero2("BA"),
 					CuentaFormasDePago = ObtenerGridCoreSmart<CuentaFPDto>(cfp),
                     CuentaContactos = ObtenerGridCoreSmart<CuentaContactoDto>(ccon),
-                    CuentaObs = ObtenerGridCoreSmart<CuentaObsDto>(cobs),
-                    CuentaNota = ObtenerGridCoreSmart<CuentaNotaDto>(cnota)
+                    //CuentaObs = ObtenerGridCoreSmart<CuentaObsDto>(cobs),
+                    //CuentaNota = ObtenerGridCoreSmart<CuentaNotaDto>(cnota)
                 };
                 return PartialView("_tabDatosCliente", ClienteModel);
             }
@@ -717,8 +717,8 @@ namespace gc.sitio.Areas.ABMs.Controllers
                     ComboFinancieros = ComboFinanciero(),
                     CuentaFormasDePago = ObtenerGridCoreSmart<CuentaFPDto>(cfp),
                     CuentaContactos = ObtenerGridCoreSmart<CuentaContactoDto>(ccon),
-                    CuentaObs = ObtenerGridCoreSmart<CuentaObsDto>(cobs),
-                    CuentaNota = ObtenerGridCoreSmart<CuentaNotaDto>(cnota)
+                    //CuentaObs = ObtenerGridCoreSmart<CuentaObsDto>(cobs),
+                    //CuentaNota = ObtenerGridCoreSmart<CuentaNotaDto>(cnota)
                 };
                 return PartialView("_tabDatosCliente", ClienteModel);
             }

@@ -1483,6 +1483,12 @@ fieldset {
     overflow: auto;
 }
 
+.table-wrapper-400-full {
+    max-height: 400px;
+    max-width: 100%;
+    overflow: auto;
+}
+
 .table-wrapper-440-full {
     max-height: 440px;
     max-width: 100%;
@@ -1981,6 +1987,13 @@ tr[title]:hover {
 
 .fixed-lbl-for-abm-100 {
     width: 100px;
+    display: block;
+    float: right;
+    text-align: right;
+}
+
+.fixed-lbl-for-abm-100 {
+    width: 110px;
     display: block;
     float: right;
     text-align: right;

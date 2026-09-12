@@ -2,7 +2,12 @@
 @{
     
 }
-
+<style>
+    .style-stk-min-max{
+        width: 65px !important;
+        max-width: 65px !important;
+    }
+</style>
 <div class="col-md-6">
     <div class="row mt-1">
         <div id="divLimite2"></div>
@@ -13,12 +18,16 @@
             @* <select id="adm_id" class="form-control">@Model</select> *@
             @Html.DropDownList("adm_id",null,"Seleccionar...",new{@class="form-control", disabled="disabled"})
             <span class="input-group-text">Stk Min</span>
-            <input type="number" id="p_stk_min" class="form-control inputEditable barr" min="0" max="99999" disabled />
+            <input type="number" id="p_stk_min" class="form-control inputEditable barr text-end style-stk-min-max" min="0" max="99999" disabled />
             <span class="input-group-text">Stk Max</span>
-            <input type="number" id="p_stk_max" class="form-control inputEditable barr" min="0" max="99999" disabled />
-            <div class="form-check form-check-inline form-switch ms-3">
+            <input type="number" id="p_stk_max" class="form-control inputEditable barr text-end style-stk-min-max" min="0" max="99999" disabled />
+            <div class="form-check form-check-inline form-switch ms-2">
                 <input class="form-check-input" type="checkbox" id="aplica_todas" disabled />
                 <label class="form-check-label" for="aplica_todas">Aplicar a todas</label>
+            </div>
+            <div class="form-check form-check-inline form-switch ms-1">
+                <input class="form-check-input" type="checkbox" id="p_excluye" disabled />
+                <label class="form-check-label" for="p_excluye">Excluye</label>
             </div>
         </div>
     </div>

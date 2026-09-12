@@ -10,5 +10,6 @@
         public string adm_lista { get; set; } = string.Empty;
         public bool aplica_todas { get; set; }
         public char accion  { get; set; }
-    }
+		public char p_excluye { get; set; }
+	}
 }

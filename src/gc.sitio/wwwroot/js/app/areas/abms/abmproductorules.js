@@ -299,6 +299,7 @@ function activarControles(act) {
                 $("#p_stk_min").prop("disabled", act);
                 $("#p_stk_max").prop("disabled", act);
                 $("#aplica_todas").prop("disabled", act);
+                $("#p_excluye").prop("disabled", act);
                 break;
             default:
                 return false;
@@ -710,14 +711,15 @@ function confirmarDatosTab03() {
     var p_stk_min = $("#p_stk_min").val();
     var p_stk_max = $("#p_stk_max").val();
     let aplica_todas = $("#aplica_todas").is(":checked");
-
+    let p_excluye = $("#p_excluye").is(":checked") ? 'S' : 'N';
     return { 
         adm_id, 
         adm_nombre, 
         adm_lista, 
         p_stk_min, 
         p_stk_max, 
-        aplica_todas 
+        aplica_todas,
+        p_excluye
     };
 }
 

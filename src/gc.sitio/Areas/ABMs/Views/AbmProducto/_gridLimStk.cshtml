@@ -27,6 +27,7 @@
                         <th class="text-center th-compact" scope="col">Nombre</th>
                         <th class="text-center th-compact" scope="col">Stk Min</th>
                         <th class="text-center th-compact" scope="col">Stk Max</th>
+                        <th class="text-center th-compact" scope="col">Excluye</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -39,6 +40,7 @@
                             <td class="text-sm-start">@item.adm_lista</td>
                             <td class="text-sm-end">@item.p_stk_min</td>
                             <td class="text-sm-end">@item.p_stk_max</td>
+                            <td class="text-sm-center">@((item.p_excluye == 'S') ? "SI" : "NO")</td>
                         </tr>
                     }
                 </tbody>

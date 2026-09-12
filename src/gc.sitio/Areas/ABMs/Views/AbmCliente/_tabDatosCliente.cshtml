@@ -18,7 +18,30 @@
 	var repartidor = Model.ComboRepartidores;
 	var financieros = Model.ComboFinancieros;
 }
+<style>
+	.grid-en-tab-principal {
+		width: 100%;
+	}
 
+	.tab-en-grid-en-tab-principal {
+		padding-left: 5px;
+		padding-right: 5px;
+	}
+
+	.card-en-grid-en-tab-principal {
+		padding: 3px;
+	}
+
+	.style-campos-fecha {
+		width: 130px !important;
+		max-width: 130px !important;
+	}
+
+	.style-legajo{
+		width: 80px !important;
+		max-width: 80px !important;
+	}
+</style>
 <div class="row">
 	@* @Html.HiddenFor(x => x.Cliente.Cta_Emp) *@
 	@Html.HiddenFor(x => x.Cliente.Cta_Alta)
@@ -157,42 +180,38 @@
 		</div>
 		<div class="row mt-1">
 			<div class="input-group input-group-sm">
-				<div class="form-check form-check-inline form-switch mb-2">
+				<div class="form-check form-check-inline form-switch mb-2" style="width: 217px;">
 					<input class="form-check-input activable" type="checkbox" asp-for="Cliente.Piva_Cert_Activa" value="" id="chkPivaCertActiva">
 					<label class="form-check-label" for="chkPivaCertActiva"> Cert. No Percep. IVA</label>
 				</div>
 				<span class="input-group-text fixed-lbl-for-abm-70">Vto:</span>
-				@Html.TextBoxFor(t => t.Cliente.Piva_Cert_Vto, "{0:yyyy-MM-dd}", new { type = "date", @class = "form-control activable inputEditable" })
+				@Html.TextBoxFor(t => t.Cliente.Piva_Cert_Vto, "{0:yyyy-MM-dd}", new { type = "date", @class = "form-control activable inputEditable style-campos-fecha" })
 			</div>
 		</div>
 		<div class="row mt-1">
 			<div class="input-group input-group-sm">
-				<div class="form-check form-check-inline form-switch mb-2">
+				<div class="form-check form-check-inline form-switch mb-2" style="width: 217px;">
 					<input class="form-check-input activable" type="checkbox" asp-for="Cliente.Pib_Cert_Activa" value="" id="chkIbCertActiva">
 					<label class="form-check-label" for="chkIbCertActiva"> Cert. No Percep IB</label>
 				</div>
 				<span class="input-group-text fixed-lbl-for-abm-70">Vto:</span>
-				@Html.TextBoxFor(t => t.Cliente.Pib_Cert_Vto, "{0:yyyy-MM-dd}", new { type = "date", @class = "form-control activable inputEditable" })
+				@Html.TextBoxFor(t => t.Cliente.Pib_Cert_Vto, "{0:yyyy-MM-dd}", new { type = "date", @class = "form-control activable inputEditable style-campos-fecha" })
 			</div>
 		</div>
 		<div class="row mt-1">
 			<div class="input-group input-group-sm">
-				@* <div class="form-check form-check-inline form-switch mb-2">
-					<input class="form-check-input activable" type="checkbox" asp-for="Cliente.Cta_Emp_Activa" value="" id="chkCtaEmpActiva">
-					<label class="form-check-label" for="chkCtaEmpActiva"> Legajo Emp</label>
-				</div> *@
 				<span class="input-group-text fixed-lbl-for-abm-70">Leg. Emp:</span>
-				<input type="text" asp-for="Cliente.Cta_Emp_Legajo" class="form-control activable inputEditable" />
+				<input type="text" asp-for="Cliente.Cta_Emp_Legajo" class="form-control activable inputEditable style-legajo" />
 				<span class="input-group-text fixed-lbl-for-abm-70">Bco:</span>
 				@Html.DropDownListFor(m => m.Cliente.Cta_Emp_Ctaf, financieros, "Seleccionar...", new { @id = "listaFinancieros", @class = "form-control activable" })
 			</div>
 		</div>
 	</div>
 	<div class="col-md-4" id="GridsEnTabPrincipal">
-		<div class="row mt-1">
-			<div class="card">
-				<div class="card-body mt-1-ctm">
-					<div class="table-responsive text-nowrap table-wrapper-100-full">
+		<div class="row mt-1 grid-en-tab-principal">
+			<div class="card tab-en-grid-en-tab-principal">
+				<div class="card-body mt-1-ctm card-en-grid-en-tab-principal">
+					<div class="table-responsive text-nowrap table-wrapper-200-full">
 						<table class="table table-sm mb-0 table-hover table-golden" id="tbClienteFormaPagoEnTabDeCli">
 							<thead>
 								<tr class="header">
@@ -217,10 +236,10 @@
 				</div>
 			</div>
 		</div>
-		<div class="row mt-1" style="padding-top: 10px;">
-			<div class="card">
-				<div class="card-body mt-1-ctm">
-					<div class="table-responsive text-nowrap table-wrapper-100-full">
+		<div class="row mt-1 grid-en-tab-principal">
+			<div class="card tab-en-grid-en-tab-principal">
+				<div class="card-body mt-1-ctm card-en-grid-en-tab-principal">
+					<div class="table-responsive text-nowrap table-wrapper-200-full">
 						<table class="table table-sm mb-0 table-hover table-golden" id="tbClienteOtroContactoEnTabDeCli">
 							<thead>
 								<tr class="header">
@@ -251,7 +270,7 @@
 				</div>
 			</div>
 		</div>
-		<div class="row mt-1" style="padding-top: 10px;">
+		@* <div class="row mt-1" style="padding-top: 10px;">
 			<div class="card">
 				<div class="card-body mt-1-ctm">
 					<div class="table-responsive text-nowrap table-wrapper-100-full">
@@ -308,6 +327,6 @@
 					</div>
 				</div>
 			</div>
-		</div>
+		</div> *@
 	</div>
 </div>

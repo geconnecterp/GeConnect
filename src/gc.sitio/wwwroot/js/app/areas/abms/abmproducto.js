@@ -682,6 +682,7 @@ function buscarDatoslimiteStock(x, abrirTab = false) {
                 $("#p_stk_min").val(obj.datos.p_stk_min);
                 $("#p_stk_max").val(obj.datos.p_stk_max);
                 $("#aplica_todas").prop("checked", false);
+                $("#p_excluye").prop("checked", obj.datos.p_excluye === 'S');
                 // Activar los botones de acción
                 activarBotones(true);
             }

@@ -38,8 +38,9 @@
 	}
 
 	.style-descuentos-finan {
-		width: 50px !important;
-		max-width: 50px !important;
+		width: 52px !important;
+		max-width: 52px !important;
+		text-align: end;
 	}
 
 	.style-plazo-compra {
@@ -48,8 +49,23 @@
 	}
 
 	.style-plazo-entrega {
-		width: 110px !important;
-		max-width: 110px !important;
+		width: 112px !important;
+		max-width: 112px !important;
+	}
+
+	.style-percepciones{
+		width: 70px !important;
+		max-width: 70px !important;
+		text-align: end;
+	}
+
+	.style-campos-fecha{
+		width: 130px !important;
+		max-width: 130px !important;
+	}
+
+	.style-porcent{
+		padding-left: 5px !important;
 	}
 </style>
 <div class="row">
@@ -173,9 +189,9 @@
 					<input class="form-check-input activable" type="checkbox" asp-for="Proveedor.Ctap_Rgan_Cert_bool" value="" id="chkCtapRganCertBool">
 					<label class="form-check-label fixed-font-size-xmall check-styles" for="chkCtapRganCertBool"> CNR</label>
 				</div>
-				@Html.TextBoxFor(t => t.Proveedor.Rgan_Cert_Vto, "{0:yyyy-MM-dd}", new { type = "date", @class = "form-control activable" })
-				<span class="input-group-text fixed-lbl-for-abm-20">%</span>
-				<input type="number" asp-for="Proveedor.Rgan_Porc" class="form-control activable" />
+				@Html.TextBoxFor(t => t.Proveedor.Rgan_Cert_Vto, "{0:yyyy-MM-dd}", new { type = "date", @class = "form-control activable style-campos-fecha" })
+				<span class="input-group-text fixed-lbl-for-abm-20 ms-5 style-porcent">%</span>
+				<input type="number" asp-for="Proveedor.Rgan_Porc" class="form-control activable style-percepciones" />
 			</div>
 		</div>
 		<div class="row mt-1">
@@ -193,9 +209,9 @@
 					<input class="form-check-input activable" type="checkbox" asp-for="Proveedor.Ctap_Rib_Cert_bool" value="" id="chkCtapRibCertBool">
 					<label class="form-check-label fixed-font-size-xmall check-styles" for="chkCtapRibCertBool"> CNR</label>
 				</div>
-				@Html.TextBoxFor(t => t.Proveedor.Rib_Cert_Vto, "{0:yyyy-MM-dd}", new { type = "date", @class = "form-control activable" })
-				<span class="input-group-text fixed-lbl-for-abm-20">%</span>
-				<input type="number" asp-for="Proveedor.Rib_Porc" class="form-control activable" />
+				@Html.TextBoxFor(t => t.Proveedor.Rib_Cert_Vto, "{0:yyyy-MM-dd}", new { type = "date", @class = "form-control activable style-campos-fecha" })
+				<span class="input-group-text fixed-lbl-for-abm-20 ms-5 style-porcent">%</span>
+				<input type="number" asp-for="Proveedor.Rib_Porc" class="form-control activable style-percepciones" />
 			</div>
 		</div>
 		<div class="row mt-1">
@@ -204,8 +220,8 @@
 					<input class="form-check-input activable" type="checkbox" asp-for="Proveedor.Ctap_Ret_Iva_bool" value="" id="chkCtapRetIvaBool">
 					<label class="form-check-label fixed-font-size-xmall check-styles" for="chkCtapRetIvaBool"> IVA</label>
 				</div>
-				<span class="input-group-text fixed-lbl-for-abm-20">%</span>
-				<input type="number" asp-for="Proveedor.Ctap_Ret_Iva_Porc" class="form-control activable" />
+				<span class="input-group-text fixed-lbl-for-abm-20 style-porcent">%</span>
+				<input type="number" asp-for="Proveedor.Ctap_Ret_Iva_Porc" class="form-control activable style-percepciones" />
 			</div>
 		</div>
 		<h6 class="estilos-en-h6">Percepciones</h6>
@@ -215,14 +231,14 @@
 					<input class="form-check-input activable" type="checkbox" asp-for="Proveedor.Ctap_Per_Ib_bool" value="" id="chkCtapPerIbBool">
 					<label class="form-check-label fixed-font-size-xmall check-styles" for="chkCtapPerIbBool"> IB</label>
 				</div>
-				<span class="input-group-text fixed-lbl-for-abm-20">%</span>
-				<input type="number" asp-for="Proveedor.Ctap_Per_Ib_Ali" class="form-control activable" />
-				<div class="form-check form-check-inline form-switch mb-2">
+				<span class="input-group-text fixed-lbl-for-abm-20 style-porcent">%</span>
+				<input type="number" asp-for="Proveedor.Ctap_Per_Ib_Ali" class="form-control activable style-percepciones" />
+				<div class="form-check form-check-inline form-switch mb-2 ms-5">
 					<input class="form-check-input activable" type="checkbox" asp-for="Proveedor.Ctap_Per_Iva_bool" value="" id="chkCtapPerIvaBool">
 					<label class="form-check-label fixed-font-size-xmall" for="chkCtapPerIvaBool"> IVA</label>
 				</div>
-				<span class="input-group-text fixed-lbl-for-abm-20">%</span>
-				<input type="number" asp-for="Proveedor.Ctap_Per_Iva_Ali" class="form-control activable" />
+				<span class="input-group-text fixed-lbl-for-abm-20 style-porcent">%</span>
+				<input type="number" asp-for="Proveedor.Ctap_Per_Iva_Ali" class="form-control activable style-percepciones" />
 			</div>
 		</div>
 	</div>
@@ -271,9 +287,9 @@
 			</div>
 			<div class="row mt-1">
 				<div class="input-group input-group-sm">
-					<span class="input-group-text fixed-lbl-for-abm-90">Plazo Compra:</span>
+					<span class="input-group-text fixed-lbl-for-abm-110">Plazo Compra:</span>
 					<input type="number" asp-for="Proveedor.Ctap_Rp_Plazo_Compra" class="form-control activable style-plazo-compra" min="0" max="365"/>
-					<span class="input-group-text fixed-lbl-for-abm-90">Plazo Entrega:</span>
+					<span class="input-group-text fixed-lbl-for-abm-110">Plazo Entrega:</span>
 					<input type="number" asp-for="Proveedor.Ctap_Rp_Plazo_Entrega" class="form-control activable style-plazo-entrega" min="0" max="365" />
 				</div>
 			</div>
