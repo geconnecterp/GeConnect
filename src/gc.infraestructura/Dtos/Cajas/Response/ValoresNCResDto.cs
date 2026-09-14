@@ -16,6 +16,7 @@
         public string? cm_compte { get; set; }
         public string? cm_compte_cuota { get; set; }
         public string? cv_fecha_vto { get; set; }
+        public DateTime? cv_fecha_carga { get; set; }
         public string? cv_importe { get; set; }
         public string? cv_importe_ori { get; set; }
         public string? cv_concepto { get; set; }

@@ -101,10 +101,21 @@ namespace gc.caja.Areas.Facturacion.Controllers
         private static bool TieneIdentidadNc(Json_Union union)
         {
             return !string.IsNullOrWhiteSpace(union.cta_id) &&
-                   !string.IsNullOrWhiteSpace(union.dia_movi) &&
                    !string.IsNullOrWhiteSpace(union.tco_id) &&
                    !string.IsNullOrWhiteSpace(union.cm_compte) &&
                    !string.IsNullOrWhiteSpace(union.cm_compte_cuota);
+        }
+
+        private static bool TieneIdentidadNcVigente(ValoresNCResDto credito, string coTipo)
+        {
+            // El segundo SELECT del SP devuelve devoluciones CD sin dia_movi.
+            var esDevolucionDiferida = coTipo == "CD" &&
+                NormalizarClaveNc(credito.ctacte) == "N" &&
+                NormalizarClaveNc(credito.carga) == "S" &&
+                NormalizarClaveNc(credito.carga_obligatoria) == "S";
+
+            return TieneIdentidadNc(credito) &&
+                (!string.IsNullOrWhiteSpace(credito.dia_movi) || esDevolucionDiferida);
         }
 
         private static string CrearClaveNc(Json_Union union)
@@ -132,23 +143,17 @@ namespace gc.caja.Areas.Facturacion.Controllers
                 return false;
             }
 
-            var texto = valor.Trim();
+            var texto = valor.Trim().Replace(',', '.');
 
+            // Los importes del contrato no llevan separadores de miles.
             var estilos =
                 NumberStyles.AllowLeadingSign |
-                NumberStyles.AllowDecimalPoint |
-                NumberStyles.AllowThousands;
+                NumberStyles.AllowDecimalPoint;
 
             return decimal.TryParse(
                        texto,
                        estilos,
                        CultureInfo.InvariantCulture,
-                       out importe)
-                   ||
-                   decimal.TryParse(
-                       texto,
-                       estilos,
-                       CultureInfo.GetCultureInfo("es-AR"),
                        out importe);
         }
 
@@ -162,14 +167,10 @@ namespace gc.caja.Areas.Facturacion.Controllers
 
         private static Json_Union CrearUnionNcCanonica(
             ValoresNCResDto creditoVigente,
-            decimal importeImputado)
+            decimal importeImputado,
+            decimal importeOriginal,
+            DateTime fechaVencimiento)
         {
-            var importeOriginal = !string.IsNullOrWhiteSpace(
-                creditoVigente.cv_importe_ori
-            )
-                ? creditoVigente.cv_importe_ori
-                : creditoVigente.cv_importe;
-
             return new Json_Union
             {
                 cta_id = creditoVigente.cta_id,
@@ -177,7 +178,8 @@ namespace gc.caja.Areas.Facturacion.Controllers
                 tco_id = creditoVigente.tco_id,
                 cm_compte = creditoVigente.cm_compte,
                 cm_compte_cuota = creditoVigente.cm_compte_cuota,
-                cv_fecha_vto = creditoVigente.cv_fecha_vto,
+                cv_fecha_vto = fechaVencimiento.ToString("yyyy-MM-ddTHH:mm:ss.fff", CultureInfo.InvariantCulture),
+                cv_fecha_carga = creditoVigente.cv_fecha_carga,
 
                 // Crédito aplicado, con signo contable negativo.
                 cv_importe = FormatearImporteNcJson(
@@ -185,12 +187,25 @@ namespace gc.caja.Areas.Facturacion.Controllers
                 ),
 
                 // Crédito original informado por SP.
-                cv_importe_ori = importeOriginal,
+                cv_importe_ori = FormatearImporteNcJson(importeOriginal),
 
                 cv_concepto = creditoVigente.cv_concepto,
                 ve_id = creditoVigente.ve_id,
                 ccb_id = creditoVigente.ccb_id
             };
+        }
+
+        private static bool TryParseFechaNc(string? valor, out DateTime fecha)
+        {
+            // El DTO legado transporta fechas SQL como texto regional o ISO, sin zona horaria.
+            string[] formatos =
+            [
+                "d/M/yyyy H:mm:ss", "d/M/yyyy H:mm:ss.FFFFFFF", "d/M/yyyy",
+                "yyyy-MM-ddTHH:mm:ss", "yyyy-MM-ddTHH:mm:ss.FFFFFFF",
+                "yyyy-MM-dd HH:mm:ss", "yyyy-MM-dd HH:mm:ss.FFFFFFF", "yyyy-MM-dd"
+            ];
+            return DateTime.TryParseExact(valor?.Trim(), formatos,
+                CultureInfo.InvariantCulture, DateTimeStyles.None, out fecha);
         }
 
         private static decimal ObtenerTotalValoresConvencionales(
@@ -389,10 +404,13 @@ namespace gc.caja.Areas.Facturacion.Controllers
 
             foreach (var credito in creditosVigentes)
             {
-                if (!TieneIdentidadNc(credito))
+                if (!TieneIdentidadNcVigente(credito, coTipoNormalizado))
                 {
                     _logger?.LogError(
-                        "[NC] SP devolvió un crédito sin identidad completa."
+                        "[NC] Crédito sin identidad completa. CoTipo={CoTipo}, Cuenta={Cuenta}, Movimiento={Movimiento}, Tipo={Tipo}, Comprobante={Comprobante}, Cuota={Cuota}, Ctacte={Ctacte}, Carga={Carga}, Obligatoria={Obligatoria}",
+                        coTipoNormalizado, credito.cta_id, credito.dia_movi,
+                        credito.tco_id, credito.cm_compte, credito.cm_compte_cuota,
+                        credito.ctacte, credito.carga, credito.carga_obligatoria
                     );
 
                     return new ValidacionUnionesNcResult
@@ -462,6 +480,16 @@ namespace gc.caja.Areas.Facturacion.Controllers
                         Ok = false,
                         Mensaje =
                             "Uno de los créditos seleccionados ya no está disponible. Recargue la operación."
+                    };
+                }
+
+                if (!creditoVigente.cv_fecha_carga.HasValue)
+                {
+                    _logger?.LogError("[NC] Falta cv_fecha_carga en SPGECO_CAJA_Valores_NC. Clave={Clave}", clave);
+                    return new ValidacionUnionesNcResult
+                    {
+                        Ok = false,
+                        Mensaje = $"El crédito {creditoVigente.cm_compte} no tiene fecha de carga. Recargue la operación; si persiste, revise la respuesta de Valores NC."
                     };
                 }
 
@@ -544,10 +572,29 @@ namespace gc.caja.Areas.Facturacion.Controllers
                     };
                 }
 
+                var textoImporteOriginal = string.IsNullOrWhiteSpace(creditoVigente.cv_importe_ori)
+                    ? creditoVigente.cv_importe
+                    : creditoVigente.cv_importe_ori;
+
+                if (!TryParseImporteNc(textoImporteOriginal, out var importeOriginal) ||
+                    !TryParseFechaNc(creditoVigente.cv_fecha_vto, out var fechaVencimiento))
+                {
+                    _logger?.LogError(
+                        "[NC] Datos no convertibles al contrato SQL. Clave={Clave}, ImporteOriginal={ImporteOriginal}, FechaVencimiento={FechaVencimiento}",
+                        clave, textoImporteOriginal, creditoVigente.cv_fecha_vto);
+                    return new ValidacionUnionesNcResult
+                    {
+                        Ok = false,
+                        Mensaje = $"El crédito {creditoVigente.cm_compte} tiene un importe original o vencimiento inválido. Revise la respuesta de Valores NC."
+                    };
+                }
+
                 unionesCanonicas.Add(
                     CrearUnionNcCanonica(
                         creditoVigente,
-                        importeImputado
+                        importeImputado,
+                        importeOriginal,
+                        fechaVencimiento
                     )
                 );
 
@@ -1025,6 +1072,18 @@ namespace gc.caja.Areas.Facturacion.Controllers
                     _logger?.LogInformation("═══════════════════════════════════════════════════");
                     _logger?.LogInformation($"✅ TOTAL FACTURAS A PROCESAR: {obligacionACancelar.Count}");
                     _logger?.LogInformation("═══════════════════════════════════════════════════");
+
+                    var sinFechaCarga = obligacionACancelar.FirstOrDefault(x => !x.cv_fecha_carga.HasValue);
+                    if (sinFechaCarga != null)
+                    {
+                        _logger?.LogError("[Cobranza] Falta fecha de carga para json_cancela. Modulo={Modulo}, Tipo={Tipo}, Comprobante={Comprobante}",
+                            moduloOrigen, sinFechaCarga.tco_id, sinFechaCarga.cm_compte);
+                        return Json(new
+                        {
+                            ok = false,
+                            mensaje = $"El comprobante {sinFechaCarga.cm_compte} no tiene la fecha requerida para cancelar. Recargue la consulta."
+                        });
+                    }
 
                     // ✅ SERIALIZAR json_cancela
                     jsonCancela = JsonConvert.SerializeObject(obligacionACancelar, Formatting.None, JsonSettings);
@@ -1616,7 +1675,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
 
                         // ✅ Valores por defecto para campos no disponibles en origen
                         cv_estado = "A", // A = Aplicado/Activo
-                        cv_fecha_carga = DateTime.Now,
+                        cv_fecha_carga = cc.cv_fecha_carga,
 
                         cv_concepto = cc.cv_concepto,
 
@@ -1696,7 +1755,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
 
                         // ✅ Valores por defecto para campos no disponibles en origen
                         cv_estado = "A", // A = Aplicado/Activo
-                        cv_fecha_carga = DateTime.Now,
+                        cv_fecha_carga = factura.cv_fecha_vto,
 
                         cv_concepto = factura.cv_concepto,
 
@@ -1978,6 +2037,15 @@ namespace gc.caja.Areas.Facturacion.Controllers
 
                 var creditos = res.ListaEntidad ?? [];
                 var sinCreditos = creditos.Count == 0;
+
+                foreach (var credito in creditos)
+                {
+                    _logger?.LogInformation(
+                        "[ObtenerValoresNC] Cuenta={Cuenta}, CoTipo={CoTipo}, Comprobante={Comprobante}, Movimiento={Movimiento}, Ctacte={Ctacte}, Carga={Carga}, Obligatoria={Obligatoria}, FechaCarga={FechaCarga}, Importe={Importe}",
+                        req.cta_id, req.co_tipo, credito.cm_compte, credito.dia_movi,
+                        credito.ctacte, credito.carga, credito.carga_obligatoria,
+                        credito.cv_fecha_carga, credito.cv_importe);
+                }
 
                 _logger?.LogInformation(
                     "[ObtenerValoresNC] Resultado={Resultado}. Cantidad={Cantidad}. Cuenta={Cuenta}. CoTipo={CoTipo}",

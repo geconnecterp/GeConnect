@@ -24,6 +24,8 @@
         /// ID del producto actualmente en proceso de validación
         /// </summary>
         public string? ORProductoSeleccionado { get; set; }
+        public short? ORItemSeleccionado { get; set; }
+        public string? ORProductoBoxSeleccionado { get; set; }
         public bool EsReemplazo { get; set; }
         public string? ReemplazarPId { get; set; }
         public string? ReemplazarPDesc { get; set; }
@@ -64,6 +66,8 @@
             ORBoxSeleccionado = null;
             ORRubroSeleccionado = null;
             ORProductoSeleccionado = null;
+            ORItemSeleccionado = null;
+            ORProductoBoxSeleccionado = null;
             EsReemplazo = false;
             ReemplazarPId = null;
             ReemplazarPDesc = null;

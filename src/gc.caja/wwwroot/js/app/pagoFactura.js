@@ -10543,6 +10543,7 @@ function construirJsonUnionesNC() {
             cm_compte: original.cm_compte ?? null,
             cm_compte_cuota: original.cm_compte_cuota ?? null,
             cv_fecha_vto: original.cv_fecha_vto ?? null,
+            cv_fecha_carga: original.cv_fecha_carga ?? null,
 
             // Crédito efectivamente aplicado.
             cv_importe: formatearImporteJsonNC(

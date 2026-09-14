@@ -52,7 +52,7 @@
                     : diferenciaColectado > 0
                         ? "bg-warning text-dark"
                         : "bg-danger";
-                var estadoTexto = resultado switch
+                var estadoTextoRespaldo = resultado switch
                 {
                     "PE" => "Pendiente sin colección",
                     "E0" => "Colección compartida en este BOX",
@@ -67,8 +67,12 @@
                     "11" => "Colección de otros usuarios incompleta",
                     "20" => "Cantidad propia mayor al pedido",
                     "21" => "Cantidad de otros usuarios mayor al pedido",
-                    _ => string.IsNullOrWhiteSpace(item.Resultado_msj) ? "Estado informado por el servidor" : item.Resultado_msj
+                    _ => "Estado informado por el servidor"
                 };
+                // El SP define el mensaje; los textos locales se conservan solo como respaldo.
+                var estadoTexto = string.IsNullOrWhiteSpace(item.Resultado_msj)
+                    ? estadoTextoRespaldo
+                    : item.Resultado_msj.Trim();
                 var estadoClase = resultado switch
                 {
                     "00" or "01" or "02" or "03" or "04" => "bg-success",
@@ -119,14 +123,14 @@
                                     @if (esReemplazo && !string.IsNullOrWhiteSpace(item.Remplazo_p_id))
                                     {
                                         <small class="text-muted pocket-record__reference">
-                                            <span class="pocket-record__reference-text" title="Reemplaza al producto @item.Remplazo_p_id">Reemplaza al producto @item.Remplazo_p_id</span>
+                                            <span class="pocket-record__reference-text" title="Reemplaza al producto @item.Remplazo_p_id">Rem. @item.Remplazo_p_id</span>
                                             @if (!string.IsNullOrWhiteSpace(item.Remplazo_box))
                                             {
-                                                <span class="pocket-record__box">del BOX <strong>@item.Remplazo_box</strong></span>
+                                                <span class="pocket-record__box" title="BOX original"><strong>@item.Remplazo_box</strong></span>
                                             }
                                             @if (!string.IsNullOrWhiteSpace(item.Remplazo_usu_id))
                                             {
-                                                <span class="pocket-record__reference-text" title="Operador @item.Remplazo_usu_id">· Operador @item.Remplazo_usu_id</span>
+                                                <span class="pocket-record__reference-text" title="Operador @item.Remplazo_usu_id">- (@item.Remplazo_usu_id)</span>
                                             }
                                         </small>
                                     }

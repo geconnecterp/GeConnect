@@ -1287,6 +1287,82 @@ body.confirmacion-en-proceso #wWaiting {
     }
 }
 
+/* TR y OR: cabecera móvil compacta, con Inicio y Volver de 44 px. */
+@media (max-width: 576px) {
+    .pocket-body .pocket-header--collection {
+        margin-bottom: .25rem !important;
+    }
+
+    .pocket-body .pocket-header--collection .pocket-header-main {
+        display: grid !important;
+        grid-template-columns: 44px minmax(0, 1fr);
+        grid-template-rows: 22px 22px;
+        gap: 0 .25rem !important;
+        padding: 4px 56px 4px 4px !important;
+        min-height: 52px;
+    }
+
+    .pocket-header--collection .pocket-header-brand {
+        grid-column: 1;
+        grid-row: 1 / 3;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 44px;
+        height: 44px;
+        font-size: 0;
+    }
+
+    .pocket-header--collection .pocket-header-brand .bx {
+        font-size: 1.25rem;
+        margin: 0 !important;
+    }
+
+    .pocket-body .pocket-header--collection .pocket-header-branch {
+        grid-column: 2;
+        grid-row: 1;
+        order: 0;
+        display: block;
+        min-width: 0;
+        min-height: 0;
+        max-width: 100%;
+        padding: 0 !important;
+        background: transparent !important;
+        text-align: left;
+        font-size: .75rem;
+        line-height: 22px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .pocket-header--collection .pocket-header-user {
+        grid-column: 2;
+        grid-row: 2;
+        max-width: 100%;
+        font-size: .75rem;
+        line-height: 22px;
+        text-align: left;
+    }
+
+    .pocket-body .pocket-header--collection .pocket-header-module {
+        top: 4px;
+        right: 4px;
+        bottom: auto;
+    }
+
+    .pocket-header--collection .pocket-back-button {
+        width: 44px;
+        height: 44px;
+    }
+
+    .pocket-header--collection .pocket-header-brand:focus-visible,
+    .pocket-header--collection .pocket-back-button:focus-visible {
+        outline: 2px solid var(--bs-golden-dark, #8b7355);
+        outline-offset: -2px;
+    }
+}
+
 /* TR: cabecera, selección y grilla del itinerario en un bloque compacto. */
 .pocket-ti-itinerary {
     display: flex;

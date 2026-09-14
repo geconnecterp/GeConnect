@@ -8,6 +8,7 @@
         public string cm_compte { get; set; } = string.Empty;
         public int cm_compte_cuota { get; set; }
         public DateTime cv_fecha_vto { get; set; }
+        public DateTime? cv_fecha_carga { get; set; }
         public decimal cv_importe { get; set; }
         public decimal cv_importe_ori { get; set; }
         public string cv_concepto { get; set; } = string.Empty;

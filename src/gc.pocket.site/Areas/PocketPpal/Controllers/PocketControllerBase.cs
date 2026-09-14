@@ -88,11 +88,13 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
         public ORProductoDto? ObtenerProductoActualOR()
         {
             var session = ORSession;
-            if (string.IsNullOrEmpty(session?.ORProductoSeleccionado))
+            if (string.IsNullOrEmpty(session?.ORProductoSeleccionado) || !session.ORItemSeleccionado.HasValue)
                 return null;
 
             return session.ORListaProductosActual?
-                .FirstOrDefault(x => x.p_id == session.ORProductoSeleccionado);
+                .SingleOrDefault(x => x.item == session.ORItemSeleccionado &&
+                    x.p_id == session.ORProductoSeleccionado && x.box_id == session.ORProductoBoxSeleccionado &&
+                    x.or_compte == session.ORComprobanteActual);
         }
 
         #endregion
