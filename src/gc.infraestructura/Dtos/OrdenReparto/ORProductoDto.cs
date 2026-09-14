@@ -2,7 +2,18 @@
 {
     public class ORProductoDto
     {
-        public string ti { get; set; } = string.Empty;
+        public string or_compte { get; set; } = string.Empty;
+        public short? item { get; set; }
+        public string remplazo { get; set; } = "N";
+        public string remplazo_box { get; set; } = string.Empty;
+        public string remplazo_p_id { get; set; } = string.Empty;
+        public string remplazo_usu_id { get; set; } = string.Empty;
+        public decimal colectado_otros { get; set; }
+        public decimal colectado_x_box { get; set; }
+        public decimal colectado_x_p { get; set; }
+        public decimal colectado_remplazo { get; set; }
+        public string resultado { get; set; } = "PE";
+        public string resultado_msj { get; set; } = string.Empty;
         public string rub_id { get; set; } = string.Empty;
         public string rub_desc { get; set; } = string.Empty;
         public string rubg_id { get; set; } = string.Empty;

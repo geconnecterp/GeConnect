@@ -247,6 +247,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
                         cm_compte = registroOriginal.cm_compte,
                         cm_compte_cuota = registroOriginal.cm_compte_cuota,
                         cv_fecha_vto = registroOriginal.cv_fecha_vto,
+                        cv_fecha_carga = registroOriginal.cv_fecha_carga,
 
                         // Este es el valor que el usuario decidió cobrar.
                         cv_importe = registroSolicitado.cv_importe,

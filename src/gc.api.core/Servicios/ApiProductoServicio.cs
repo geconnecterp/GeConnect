@@ -700,30 +700,6 @@ namespace gc.api.core.Servicios
         }
 
 
-        public RespuestaDto ValidaProductoCarrito(TiProductoCarritoDto request)
-        {
-            var sp = Constantes.ConstantesGC.StoredProcedures.SP_TR_Carrito_Valida;
-            var ps = new List<SqlParameter>()
-            {
-                new("@ti", request.Ti),
-                new("@adm_id",request.AdmId),
-                new("@usu_id",request.UsuId),
-                new("@box_id",request.BoxId),
-                new("@desarma_box",request.Desarma),
-                new("@p_id",request.Pid),
-                new("@unidad_pres",request.Unidad_pres),
-                new("@bulto",request.Bulto),
-                new("@us",request.Us),
-                new("@cantidad",request.Cantidad),
-                new("@fv",request.Fvto),
-                new("@remplazar",request.Remplazar),
-                new("@remplazar_box_id",(object?)request.RemplazarBoxId ?? DBNull.Value),
-                new("@remplazar_p_id",(object?)request.RemplazarPId ?? DBNull.Value)
-            };
-            List<RespuestaDto> resp = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
-            return resp.First();
-        }
-
         public RespuestaDto ValidarProductoCarrito(TiProductoCarritoDto request)
         {
             var sp = Constantes.ConstantesGC.StoredProcedures.SP_TR_Carrito_Valida;
@@ -746,7 +722,7 @@ namespace gc.api.core.Servicios
                 new("@remplazar_p_id",(object?)request.RemplazarPId ?? DBNull.Value)
             };
             _logger.LogInformation(
-                    $"{MethodBase.GetCurrentMethod().Name} -> Par·metros: {JsonConvert.SerializeObject(request)}");
+                    $"{MethodBase.GetCurrentMethod().Name} -> Par√°metros: {JsonConvert.SerializeObject(request)}");
             List<RespuestaDto> resp = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
             return resp.First();
         }
@@ -1287,7 +1263,7 @@ namespace gc.api.core.Servicios
         /// <summary>
         /// para generar una nueva TI para tr sin autorizacion
         /// </summary>
-        /// <param name="ti">(tipo de TR, pasar ìEî 'DepÛsitos Sin AutorizaciÛn y ìOî  Box Sin AutorizaciÛn)</param>
+        /// <param name="ti">(tipo de TR, pasar ‚ÄúE‚Äù 'Dep√≥sitos Sin Autorizaci√≥n y ‚ÄúO‚Äù  Box Sin Autorizaci√≥n)</param>
         /// <param name="adm"></param>
         /// <param name="usu"></param>
         /// <returns></returns>
@@ -1595,7 +1571,7 @@ namespace gc.api.core.Servicios
             List<ProductoBarradoDto> resp = _repository.EjecutarLstSpExt<ProductoBarradoDto>(sp, ps, true);
             if (resp.Count == 0)
             {
-                //throw new NegocioException("No se encontrol la informaciÛn del barrado. Verifique los datos.");
+                //throw new NegocioException("No se encontrol la informaci√≥n del barrado. Verifique los datos.");
                 return new ProductoBarradoDto();
             }
             return resp.First();
@@ -1800,10 +1776,10 @@ namespace gc.api.core.Servicios
         public ProductoResponsePVta ObtenerPrecioVentaBase(decimal pcosto,decimal prevision_tot,
             decimal prevision_pin, decimal margen, char iva_situacion, decimal iva_alicuota,decimal in_alicuota)
         {
-            // Construir la llamada a la funciÛn SQL
+            // Construir la llamada a la funci√≥n SQL
             var functionCall = $"select * from {ConstantesGC.StoredFunctions.FX_PROD_PVTA_LISTA_BASE}({pcosto.ToString().Replace(",",".")},{prevision_tot.ToString().Replace(",", ".")},{prevision_pin.ToString().Replace(",", ".")},{margen.ToString().Replace(",", ".")},'{iva_situacion}',{iva_alicuota.ToString().Replace(",", ".")},{in_alicuota.ToString().Replace(",", ".")})";
 
-            // Llamar al nuevo mÈtodo
+            // Llamar al nuevo m√©todo
             List<ProductoResponsePVta> resp = _repository.EjecutarLstFunction<ProductoResponsePVta>(functionCall);
             if (resp.Count == 0)
             {

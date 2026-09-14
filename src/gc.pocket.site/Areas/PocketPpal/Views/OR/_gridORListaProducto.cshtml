@@ -69,6 +69,7 @@
                                                asp-area="pocketppal" 
                                                asp-route-p_id="@item.p_id" 
                                                asp-route-box_id="@item.box_id"
+                                               asp-route-item="@item.item"
                                                class="btn btn-sm btn-success">
                                                 <i class="bx bx-barcode"></i>
                                             </a>
@@ -78,6 +79,7 @@
                                                asp-route-p_id="@item.p_id"
                                                asp-route-box_id="@item.box_id"
                                                asp-route-reemplazar="true"
+                                               asp-route-item="@item.item"
                                                class="btn btn-sm btn-warning btnReemplazarProducto"
                                                title="Reemplazar producto"
                                                aria-label="Reemplazar @item.p_id @item.p_desc"
@@ -102,7 +104,7 @@
                                             {
                                                 <button type="button" 
                                                         class="btn btn-sm btn-danger" 
-                                                        onclick="limpiaProductoCarritoOR('@item.p_id','@item.box_id')">
+                                                        onclick="limpiaProductoCarritoOR('@item.p_id','@item.box_id',@(item.item?.ToString() ?? "null"))">
                                                     <i class="bx bx-eraser"></i>
                                                 </button>
                                             }

@@ -136,12 +136,12 @@ function mostrarMensaje(nota) {
  * @param {string} p_id - ID del producto
  * @param {string} boxId - ID del BOX
  */
-function limpiaProductoCarritoOR(p_id, boxId) {
+function limpiaProductoCarritoOR(p_id, boxId, item) {
     console.log(`🧹 Limpiando producto del carrito - P_ID: ${p_id}, BOX: ${boxId}`);
     
     AbrirWaiting('Limpiando producto del carrito...');
 
-    const datos = { p_id: p_id, boxId: boxId };
+    const datos = { p_id: p_id, boxId: boxId, item: item };
 
     PostGen(datos, LimpiaProductoCarritoORUrl, function (obj) {
         CerrarWaiting();
