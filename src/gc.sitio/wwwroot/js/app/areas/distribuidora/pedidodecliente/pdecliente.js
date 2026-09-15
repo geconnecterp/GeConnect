@@ -1438,6 +1438,7 @@ function cancelarOperacion(e) {
 	$("#divPedido")
 		.removeClass("table-wrapper-small")
 		.addClass("table-wrapper-full");
+	$("#divFiltro").collapse("show");
 	activarTablaPedidos();
 }
 
