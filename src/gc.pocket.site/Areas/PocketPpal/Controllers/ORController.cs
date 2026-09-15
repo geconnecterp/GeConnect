@@ -838,7 +838,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
         }
 
         [HttpGet]
-        public IActionResult ORValidaProducto(string p_id, string? box_id = null, bool reemplazar = false)
+        public IActionResult ORValidaProducto(string p_id, string? box_id = null, bool reemplazar = false, short? item = null)
         {
             var auth = EstaAutenticado;
             if (!auth.Item1 || auth.Item2 < DateTime.Now)
@@ -854,8 +854,13 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
 
             // ✅ REFACTORIZADO: Usar ORSession "7794000006294"
             var session = ORSession;
-            var producto = session.ORListaProductosActual?.FirstOrDefault(x => x.p_id == p_id &&
-                (string.IsNullOrWhiteSpace(box_id) || x.box_id == box_id));
+            if (!item.HasValue || string.IsNullOrWhiteSpace(box_id))
+            {
+                TempData["warn"] = "Actualice el listado y seleccione nuevamente el renglón de la OR con su ítem y BOX.";
+                return RedirectToAction("ORCargaCarrito");
+            }
+            var producto = session.ORListaProductosActual?.SingleOrDefault(x => x.item == item &&
+                x.p_id == p_id && x.box_id == box_id && x.or_compte == session.ORComprobanteActual);
 
             if (producto == null)
             {
@@ -865,6 +870,8 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
 
             // ✅ Guardar producto seleccionado en sesión
             session.ORProductoSeleccionado = p_id;
+            session.ORItemSeleccionado = producto.item;
+            session.ORProductoBoxSeleccionado = producto.box_id;
             session.EsReemplazo = reemplazar;
             session.ReemplazarPId = reemplazar ? producto.p_id : null;
             session.ReemplazarPDesc = reemplazar ? producto.p_desc : null;
@@ -1021,7 +1028,9 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 {
                     // Si se filtró por rubro, obtener el box del producto seleccionado
                     var productoActual = session.ORListaProductosActual?
-                        .FirstOrDefault(p => p.p_id == session.ORProductoSeleccionado);
+                        .SingleOrDefault(p => session.ORItemSeleccionado.HasValue &&
+                            p.item == session.ORItemSeleccionado && p.p_id == session.ORProductoSeleccionado &&
+                            p.box_id == session.ORProductoBoxSeleccionado && p.or_compte == session.ORComprobanteActual);
 
                     if (productoActual != null)
                     {
@@ -1087,13 +1096,16 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> LimpiaProductoCarritoOR(string p_id, string boxId = "")
+        public async Task<IActionResult> LimpiaProductoCarritoOR(string p_id, string boxId = "", short? item = null)
         {
             try
             {
                 var sesion = ORSession;
 
-                var prod = sesion.ORListaProductosActual.FirstOrDefault(x => x.p_id == p_id);
+                if (!item.HasValue || string.IsNullOrWhiteSpace(boxId))
+                    return Json(new { error = false, warn = true, msg = "Actualice el listado y seleccione nuevamente el ítem y BOX de la OR." });
+                var prod = sesion.ORListaProductosActual.SingleOrDefault(x => x.item == item &&
+                    x.p_id == p_id && x.box_id == boxId && x.or_compte == sesion.ORComprobanteActual);
 
                 if (prod == null)
                 {
@@ -1101,7 +1113,8 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 }
 
                 ORCargaCarritoRequest request = new ORCargaCarritoRequest();
-                request.or_compte = prod.ti;
+                request.item = prod.item;
+                request.or_compte = prod.or_compte;
                 request.adm_id = AdministracionId;
                 request.usu_id = UserName;
                 request.box_id = prod.box_id;
@@ -1147,13 +1160,17 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> ResguardarProductoCarritoOR(string p_id, int up, int bulto, decimal unid, decimal cantidad, DateTime? fv)//, bool desarma = true)
+        public async Task<IActionResult> ResguardarProductoCarritoOR(string p_id, int up, int bulto, decimal unid, decimal cantidad, DateTime? fv, short? item = null)//, bool desarma = true)
         {
             try
             {
                 var sesion = ORSession;
 
-                var prod = sesion.ORListaProductosActual.FirstOrDefault(x => x.p_id == sesion.ORProductoSeleccionado);
+                if (!item.HasValue || item != sesion.ORItemSeleccionado)
+                    return Json(new { error = false, warn = true, msg = "El ítem seleccionado cambió. Actualice el listado de la OR y selecciónelo nuevamente." });
+                var prod = sesion.ORListaProductosActual.SingleOrDefault(x => x.item == item &&
+                    x.p_id == sesion.ORProductoSeleccionado && x.box_id == sesion.ORProductoBoxSeleccionado &&
+                    x.or_compte == sesion.ORComprobanteActual);
 
                 if (prod == null)
                 {
@@ -1197,7 +1214,8 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
 
                 ORCargaCarritoRequest request = new ORCargaCarritoRequest();
 
-                request.or_compte = prod.ti;
+                request.item = prod.item;
+                request.or_compte = prod.or_compte;
                 request.adm_id = AdministracionId;
                 request.usu_id = UserName;
                 request.box_id = sesion.EsReemplazo ? sesion.BoxCargaId! : prod.box_id;

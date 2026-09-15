@@ -166,11 +166,14 @@ namespace gc.api.core.Servicios
 
         public RespuestaDto ValidaProductoCarritoOR(ORCargaCarritoRequest request)
         {
+            if (!request.item.HasValue)
+                throw new ArgumentException("Debe especificar el ítem de la OR.", nameof(request));
             var sp = ConstantesGC.StoredProcedures.SP_OR_CARRITO_VALIDA;
 
             var ps = new List<SqlParameter>()
             {
                 new SqlParameter("@or_compte", request.or_compte),
+                new SqlParameter("@item", request.item.Value),
                 new SqlParameter("@adm_id", request.adm_id),
                 new SqlParameter("@usu_id", request.usu_id),
                 new SqlParameter("@box_id", request.box_id),
@@ -180,7 +183,10 @@ namespace gc.api.core.Servicios
                 new SqlParameter("@bulto", request.bulto),
                 new SqlParameter("@us", request.us),
                 new SqlParameter("@cantidad", request.cantidad),
-                new SqlParameter("@fv", request.fv)
+                new SqlParameter("@fv", request.fv),
+                new SqlParameter("@remplazar", request.remplazar),
+                new SqlParameter("@remplazar_box_id", (object?)request.remplazar_box_id ?? DBNull.Value),
+                new SqlParameter("@remplazar_p_id", (object?)request.remplazar_p_id ?? DBNull.Value)
             };
             var result = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
             if(result != null && result.Count > 0)
@@ -199,11 +205,14 @@ namespace gc.api.core.Servicios
 
         public RespuestaDto ResguardarProductoCarrito(ORCargaCarritoRequest request)
         {
+            if (!request.item.HasValue)
+                throw new ArgumentException("Debe especificar el ítem de la OR.", nameof(request));
             var sp = ConstantesGC.StoredProcedures.SP_OR_CARRITO_CARGA;
 
             var ps = new List<SqlParameter>()
             {
                 new SqlParameter("@or_compte", request.or_compte),
+                new SqlParameter("@item", request.item.Value),
                 new SqlParameter("@adm_id", request.adm_id),
                 new SqlParameter("@usu_id", request.usu_id),
                 new SqlParameter("@box_id", request.box_id),

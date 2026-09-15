@@ -3,18 +3,23 @@
 @{
     string a = User.Claims.First(c => c.Type.Contains("AdmId")).Value;
     var adm = a.Split("#");
+    var areaActual = ViewContext.RouteData.Values["area"]?.ToString();
+    var controladorActual = ViewContext.RouteData.Values["controller"]?.ToString();
+    var cabeceraCompacta = string.Equals(areaActual, "PocketPpal", StringComparison.OrdinalIgnoreCase) &&
+        (string.Equals(controladorActual, "TrInt", StringComparison.OrdinalIgnoreCase) ||
+         string.Equals(controladorActual, "OR", StringComparison.OrdinalIgnoreCase));
 }
 
 <!-- Header Golden Minimalista -->
-<div class="card-golden pocket-header mb-3">
+<div class="card-golden pocket-header mb-3 @(cabeceraCompacta ? "pocket-header--collection" : "")">
     <!-- Barra Superior -->
     <div class="card-golden-header pocket-header-main d-flex flex-wrap justify-content-between align-items-center gap-2 py-2 px-3">
         <a asp-action="index" asp-controller="home" asp-area="" 
-           class="btn btn-link text-white text-decoration-none p-0 fw-bold pocket-header-brand">
+           class="btn btn-link text-white text-decoration-none p-0 fw-bold pocket-header-brand" aria-label="Inicio GECO Pocket" title="Inicio GECO Pocket">
             <i class="bx bx-home-alt me-1"></i>GECOPocket
         </a>
         
-        <span class="badge bg-golden-light text-golden-dark px-3 py-2 pocket-header-branch">
+        <span class="badge bg-golden-light text-golden-dark px-3 py-2 pocket-header-branch" title="Sucursal @adm[1]">
             <i class="bx bx-building me-1"></i>Sucursal @adm[1]
         </span>
 

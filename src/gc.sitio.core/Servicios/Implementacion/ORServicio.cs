@@ -321,8 +321,8 @@ namespace gc.sitio.core.Servicios.Implementacion
 
                     return new RespuestaGenerica<RespuestaDto>
                     {
-                        Ok = true,
-                        Mensaje = "OK",
+                        Ok = apiResponse.Data.resultado == 0,
+                        Mensaje = apiResponse.Data.resultado_msj,
                         Entidad = apiResponse.Data
                         // Nota: si necesitas la metadata (apiResponse.Meta), amplía RespuestaGenerica para incluirla.
                     };
@@ -366,8 +366,8 @@ namespace gc.sitio.core.Servicios.Implementacion
 
                     return new RespuestaGenerica<RespuestaDto>
                     {
-                        Ok = true,
-                        Mensaje = "OK",
+                        Ok = apiResponse.Data.resultado == 0,
+                        Mensaje = apiResponse.Data.resultado_msj,
                         Entidad = apiResponse.Data
                         // Nota: si necesitas la metadata (apiResponse.Meta), amplía RespuestaGenerica para incluirla.
                     };

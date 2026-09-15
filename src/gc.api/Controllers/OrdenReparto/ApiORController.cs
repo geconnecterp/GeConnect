@@ -219,6 +219,8 @@ namespace gc.api.Controllers.OrdenReparto
                 _logger.LogWarning("Solicitud de validación de producto en carrito vacía o nula.");
                 return BadRequest(new ApiResponse<string>("La solicitud no puede estar vacía."));
             }
+            if (!request.item.HasValue)
+                return BadRequest(new ApiResponse<string>("Debe especificar el ítem de la OR."));
             if (string.IsNullOrWhiteSpace(request.or_compte))
             {
                 _logger.LogWarning("Parámetro or_compte se encuentra vacío o nulo.");
@@ -254,6 +256,8 @@ namespace gc.api.Controllers.OrdenReparto
                 _logger.LogWarning("Solicitud de resguardo de producto en carrito vacía o nula.");
                 return BadRequest(new ApiResponse<string>("La solicitud no puede estar vacía."));
             }
+            if (!request.item.HasValue)
+                return BadRequest(new ApiResponse<string>("Debe especificar el ítem de la OR."));
             if (string.IsNullOrWhiteSpace(request.or_compte))
             {
                 _logger.LogWarning("Parámetro or_compte se encuentra vacío o nulo.");

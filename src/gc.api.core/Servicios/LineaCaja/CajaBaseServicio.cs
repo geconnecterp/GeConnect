@@ -28,12 +28,12 @@ namespace gc.api.core.Servicios.LineaCaja
         {
             var sp = ConstantesGC.StoredProcedures.SP_CAJA_OPE_CONFIRMAR;
 
-            var json_sorteo = req.json_sorteo.Replace("\\", "");
-            var json_union = req.json_union.Replace("\\", "");
-            var json_valores = req.json_valores.Replace("\\", "");
-            var json_subtotal = req.json_subtotal.Replace("\\", "");
-            var json_p = req.json_p.Replace("\\", "");
-            var json_cancela = req.json_cancela.Replace("\\", "");
+            var json_sorteo = CajaConfirmacionJson.Normalizar(req.json_sorteo);
+            var json_union = CajaConfirmacionJson.Normalizar(req.json_union);
+            var json_valores = CajaConfirmacionJson.Normalizar(req.json_valores);
+            var json_subtotal = CajaConfirmacionJson.Normalizar(req.json_subtotal);
+            var json_p = CajaConfirmacionJson.Normalizar(req.json_p);
+            var json_cancela = CajaConfirmacionJson.Normalizar(req.json_cancela);
 
             _logger.Log(System.Diagnostics.TraceEventType.Information,$"json_sorteo: {json_sorteo}");
             _logger.Log(System.Diagnostics.TraceEventType.Information,$"json_union: {json_union}");

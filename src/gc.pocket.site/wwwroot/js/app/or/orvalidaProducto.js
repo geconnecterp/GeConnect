@@ -428,7 +428,7 @@ function cargarCarritoOR() {
         else {
             //ControlaMensajeSuccess("Cantidad correcta");
             //se procede a enviar el producto a cargar
-            var dato = { p_id: productoBase.p_id, up, bulto, unid, cantidad, fv }
+            var dato = { p_id: productoBase.p_id, item: productoActualOR.item, up, bulto, unid, cantidad, fv }
             PostGen(dato, ResguardarProductoCarritoORUrl, function (obj) {
                 if (obj.error === true) {
                     CerrarWaiting();
@@ -457,7 +457,7 @@ function cargarCarritoOR() {
     } else {
         //ControlaMensajeSuccess("Cantidad correcta");
         //se procede a enviar el producto a cargar
-        var dato = { p_id: productoActualOR.pId, up: 0, bulto: 0, unid: 0, cantidad: 0, fv: null, desarma }
+        var dato = { p_id: productoActualOR.p_id, item: productoActualOR.item, up: 0, bulto: 0, unid: 0, cantidad: 0, fv: null, desarma }
         PostGen(dato, ResguardarProductoCarritoORUrl, function (obj) {
             if (obj.error === true) {
                 CerrarWaiting();

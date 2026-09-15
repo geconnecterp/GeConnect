@@ -2,6 +2,7 @@
 {
     public class ORCargaCarritoRequest
     {
+        public short? item { get; set; }
         public string or_compte { get; set; } = string.Empty;
         public string adm_id { get; set; } = string.Empty;
         public string usu_id { get; set; } = string.Empty;
