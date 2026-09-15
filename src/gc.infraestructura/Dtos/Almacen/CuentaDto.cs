@@ -46,7 +46,8 @@ namespace gc.infraestructura.Dtos.Almacen
 		/// </summary>
 		public decimal Monto { get; set; }
         public string MontoEtiqueta { get; set; } = string.Empty;
-    }
+		public string Cta_Lista => $"{Cta_Denominacion} {Cta_Id}";
+	}
 
     public partial class  CuentaABMDto : CuentaDto
 	{

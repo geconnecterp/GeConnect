@@ -39,9 +39,11 @@ namespace gc.sitio.Areas.Distribuidora.Controllers
 		private readonly DocsManager _docsManager; //recupero los datos desde el appsettings.json
 		private AppModulo _modulo_1;
 		private AppModulo _modulo_2;
+		private AppModulo _modulo_3;
 		private AppModulo _modulo_4;
 		private string APP_MODULO_1 = AppModulos.ORDEN_DE_REPARTO_HOJA_DE_RUTA.ToString();
 		private string APP_MODULO_2 = AppModulos.ORDEN_DE_REPARTO_HOJA_DE_PRODUCTO.ToString();
+		private string APP_MODULO_3 = AppModulos.REPORTE_ORDENES_DE_REPARTO.ToString();
 		private string APP_MODULO_4 = AppModulos.PEDIDO_DE_CLIENTE.ToString();
 		private readonly IDocManagerServicio _docMSv;
 
@@ -61,6 +63,7 @@ namespace gc.sitio.Areas.Distribuidora.Controllers
 			_docsManager = docsManager.Value; //recupero los datos desde el appsettings.json
 			_modulo_1 = _docsManager.Modulos.First(x => x.Id == APP_MODULO_1);
 			_modulo_2 = _docsManager.Modulos.First(x => x.Id == APP_MODULO_2);
+			_modulo_3 = _docsManager.Modulos.First(x => x.Id == APP_MODULO_3);
 			_modulo_4 = _docsManager.Modulos.First(x => x.Id == APP_MODULO_4);
 			_docMSv = docManager; //instancio el servicio de impresión
 			_rubroServicio = rubroServicio;
@@ -911,9 +914,9 @@ namespace gc.sitio.Areas.Distribuidora.Controllers
 						break;
 					case TipoDeReporte.RepoOrdenDeReparto:
 						#region Gestor Impresion - Inicializacion de variables
-						//titulo = "Valorizado por Rubros";
-						//DocumentManager = _docMSv.InicializaObjeto(titulo, _modulo_3);
-						//ArchivosCargadosModulo = _docMSv.GeneraArbolArchivos(_modulo_3);
+						titulo = "Reporte de Ordenes de Reparto";
+						DocumentManager = _docMSv.InicializaObjeto(titulo, _modulo_3);
+						ArchivosCargadosModulo = _docMSv.GeneraArbolArchivos(_modulo_3);
 						#endregion
 						break;
 					case TipoDeReporte.RepoPedidoDeCliente:

@@ -144,7 +144,8 @@ namespace gc.api.core.Servicios.Reportes
 				{ InfoReporte.R095_Reporte_Eval_De_Nivel_De_Servicio, new R095_Reporte_Eval_De_Nivel_De_Servicio(uow,consSv,empresa,ctaSv, logger) },
 				{ InfoReporte.R096_Consulta_Movimiento_De_Stock, new R096_Consulta_Movimiento_De_Stock(uow,consSv,empresa,ctaSv, logger) },
 				{ InfoReporte.R097_Imprime_Etiquetas_UL, new R097_Impresion_De_Etiquetas_UL(uow,apiProdSv,empresa,ctaSv, logger) },
-				{ InfoReporte.R098_Reporte_Prod_Sin_Stock_En_Transferencias, new R098_Reporte_Prod_Sin_Stock_En_Transferencias(uow,apiProdSv,empresa,ctaSv, logger) }
+				{ InfoReporte.R098_Reporte_Prod_Sin_Stock_En_Transferencias, new R098_Reporte_Prod_Sin_Stock_En_Transferencias(uow,apiProdSv,empresa,ctaSv, logger) },
+				{ InfoReporte.R099_Reporte_Ordenes_De_Reparto, new R099_Reporte_Ordenes_De_Reparto(uow,ordRepSv,empresa,ctaSv, logger) },
 			}; 
             _logger = logger;
         }

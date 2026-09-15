@@ -234,51 +234,55 @@ function CargarOrdenesDeReparto(filtros, url) {
 		});
 	});
 }
-
+$(document).off("click", "#btnAgregarOR");
 $(document).on("click", "#btnAgregarOR", function () {
 	CargarVistaNuevaOrdenDeReparto("A", "");
 });
-
+$(document).off("click", "#btnModificarOR");
 $(document).on("click", "#btnModificarOR", function () {
 	CargarVistaNuevaOrdenDeReparto("M", orCompteSeleccionado);
 });
-
+$(document).off("click", "#btnEnCurso");
 $(document).on("click", "#btnEnCurso", function () {
 	CargarVistaAnalizaAutEnOrdenDeReparto(orCompteSeleccionado);
 });
-
+$(document).off("click", "#btnConsolidar");
 $(document).on("click", "#btnConsolidar", function () {
 	CargarVistConsolidarOrdenDeReparto(orCompteSeleccionado);
 });
-
+$(document).off("click", "#btnCambioPrecio");
 $(document).on("click", "#btnCambioPrecio", function () {
 	CargarVistCambioPrecioOrdenDeReparto(orCompteSeleccionado);
 });
-
+$(document).off("click", "#btnAFacturar");
 $(document).on("click", "#btnAFacturar", function () {
 	PonerAFacturarOrdenDeReparto(orCompteSeleccionado);
 });
-
+$(document).off("click", "#btnVolverCurso");
 $(document).on("click", "#btnVolverCurso", function () {
 	VolverAEnCursoOrdenDeReparto(orCompteSeleccionado);
 });
-
+$(document).off("click", "#btnHojaRuta");
 $(document).on("click", "#btnHojaRuta", function () {
 	ControlaImprimirHojaDeRutaDeOrdenDeReparto();
 });
-
+$(document).off("click", "#btnHojaProd");
 $(document).on("click", "#btnHojaProd", function () {
 	ControlaImprimirHojaDeProductoDeOrdenDeReparto();
 });
-
+$(document).off("click", "#btnImprimir");
+$(document).on("click", "#btnImprimir", function () {
+	ControlaImprimirReporteDeOrdenDeReparto();
+});
+$(document).off("click", "#btnCF");
 $(document).on("click", "#btnCF", function () {
 	PonerCFPedidoDeCliente(pcCompteSeleccionado);
 });
-
+$(document).off("click", "#btnPedido");
 $(document).on("click", "#btnPedido", function () {
 	ControlaImprimirPedidoDeLaOrdenDeReparto();
 });
-
+$(document).off("click", "#btnDividir");
 $(document).on("click", "#btnDividir", function () {
 	DividirPedidoDeCliente(pcCompteSeleccionado);
 });
@@ -580,6 +584,104 @@ function ControlaImprimirHojaDeProductoDeOrdenDeReparto() {
 			}
 		});
 	}
+}
+
+function ControlaImprimirReporteDeOrdenDeReparto() {
+	let hayDatos = $("#tbGridOrdenDeReparto tbody tr").not(".fila-vacia").length > 0;
+	if (!hayDatos) {
+		AbrirMensaje("ATENCIÓN", "No hay datos para generar el reporte.", function () {
+			$("#msjModal").modal("hide");
+			return true;
+		}, false, ["Aceptar"], "error!", null);
+	}
+	else {
+		AbrirWaiting("Imprimiendo ...");
+		var tipoReporte = 3;
+		var data = { tipoReporte };
+		PostGen(data, setearTipoDeReporteUrl, function (obj) {
+			CerrarWaiting();
+			if (obj.error === true) {
+				CerrarWaiting();
+				AbrirMensaje("ATENCIÓN", obj.msg, function () {
+					$("#msjModal").modal("hide");
+					return true;
+				}, false, ["Aceptar"], "error!", null);
+			}
+			else {
+				CerrarWaiting();
+				ImprimirReporteDeOrdenDeReparto();
+			}
+		});
+	}
+}
+
+function ImprimirReporteDeOrdenDeReparto() {
+	ReseteoDeReportes();
+	setTimeout(() => {
+		const usaPeriodo = $("#chkDesdeHasta").is(":checked");
+		const fechaD = usaPeriodo ? $("#Desde").val() : null;
+		const fechaH = usaPeriodo ? $("#Hasta").val() : null;
+
+		// 🔥 Construcción del string de filtros
+		var filtrosDesc = [];
+		filtrosDesc.push(`Desde: ${fechaD}`);
+		filtrosDesc.push(`Hasta: ${fechaH}`);
+		filtrosDesc.push(ConstruirDescripcionFiltro("Estado", "#chkEstados", "#EstadosList"));
+		filtrosDesc.push(ConstruirDescripcionFiltro("Repartidores", "#chkRepartidores", "#RepartidoresList"));
+		// Limpieza: eliminar vacíos
+		filtrosDesc = filtrosDesc.filter(x => x !== "");
+
+		var rel01 = [];
+		$("#EstadosList").children().each(function (i, item) { rel01.push($(item).val()) });
+
+		var rel02 = [];
+		$("#RepartidoresList").children().each(function (i, item) { rel02.push($(item).val()) });
+
+		// String final
+		var filtrosString = filtrosDesc.join(" | ");
+
+		var data = {
+			registros: 999999,
+			pagina: 1,
+			desde: fechaD || null,
+			hasta: fechaH || null,
+			ore_list: rel01.length ? rel01.join(",") : null,
+			rp_list: rel02.length ? rel02.join(",") : null,
+			filtrosString
+		};
+		cargarReporteEnArre(99, data, "Reporte Ordenes de Reparto", "", "");
+		invocacionGestorDoc({});
+	}, 500);
+}
+
+function ConstruirDescripcionFiltro(nombre, idCheckbox, idListBox) {
+
+	const activo = $(idCheckbox).is(":checked");
+
+	// Si NO está activo → devolver "Todos"
+	if (!activo) {
+		return `${nombre}: Todos`;
+	}
+
+	// Si está activo → obtener valores
+	const valores = [];
+	$(idListBox + " option").each(function () {
+		const txt = $(this).text().trim();
+
+		// Si viene "%" → reemplazar por "Todos"
+		if (txt === "%" || txt === "") {
+			valores.push("Todos");
+		} else {
+			valores.push(txt);
+		}
+	});
+
+	// Si no hay valores → "Todos"
+	if (valores.length === 0) {
+		return `${nombre}: Todos`;
+	}
+
+	return `${nombre}: ${valores.join(", ")}`;
 }
 
 function ImprimirHojaDeProductoDeOrdenDeReparto() {

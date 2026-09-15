@@ -1,4 +1,6 @@
 ﻿
+using gc.infraestructura.Dtos.Almacen;
+
 namespace gc.infraestructura.Dtos.Productos.Pedidos
 {
 	public class PedidoListDto : PedidoDto
@@ -43,7 +45,7 @@ namespace gc.infraestructura.Dtos.Productos.Pedidos
 		public string facturado => $"{tco_desc} {cm_compte}";
 	}
 
-	public class PedidoProductoDto : PedidoDto
+	public class PedidoProductoDto : PedidoDto, IProductoConUnidad
 	{
 		public int pcd_item { get; set; }
 		public string p_id { get; set; } = string.Empty;
@@ -62,6 +64,11 @@ namespace gc.infraestructura.Dtos.Productos.Pedidos
 		public bool pcd_origen_bool => pcd_origen == 'S';
 		public string rub_id { get; set; } = string.Empty;
 		public string rub_desc { get; set; } = string.Empty;
+		public string up_id { get; set; } = string.Empty;
+		public string up_desc { get; set; } = string.Empty;
+		public string up_tipo { get; set; } = string.Empty;
+		public bool PermiteDecimales => up_tipo == "P";
+
 	}
 
 	public class PedidoElementoDto : Dto 

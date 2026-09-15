@@ -2981,7 +2981,7 @@ namespace gc.sitio.Controllers
         [HttpPost]
         public JsonResult BuscarCuentas(string prefix)
         {
-            var cta = CuentasLista.Where(x => x.Cta_Denominacion.ToUpperInvariant().Contains(prefix.ToUpperInvariant()));
+            var cta = CuentasLista.Where(x => x.Cta_Lista.ToUpperInvariant().Contains(prefix.ToUpperInvariant()));
             var cuentas = cta.Select(x => new
             {
                 Id = x.Cta_Id,

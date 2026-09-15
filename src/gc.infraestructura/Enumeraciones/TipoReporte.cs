@@ -103,6 +103,7 @@ namespace gc.infraestructura.Enumeraciones
 		R095_Reporte_Eval_De_Nivel_De_Servicio = 95,
 		R096_Consulta_Movimiento_De_Stock = 96,
 		R097_Imprime_Etiquetas_UL = 97,
-		R098_Reporte_Prod_Sin_Stock_En_Transferencias = 98
+		R098_Reporte_Prod_Sin_Stock_En_Transferencias = 98,
+		R099_Reporte_Ordenes_De_Reparto = 99
 	}
 }
