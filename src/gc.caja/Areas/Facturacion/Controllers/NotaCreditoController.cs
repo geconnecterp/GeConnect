@@ -1361,10 +1361,12 @@ namespace gc.caja.Areas.Facturacion.Controllers
                 var advertencias = new List<object>();
                 var rechazos = new List<object>();
 
+                // Validar el lote completo antes de modificar el detalle de la sesion.
                 foreach (var producto in respuestaSp)
                 {
                     if (producto == null)
                     {
+                        rechazos.Add(new { mensaje = "La respuesta contiene una fila de producto vacia." });
                         continue;
                     }
 
@@ -1414,18 +1416,13 @@ namespace gc.caja.Areas.Facturacion.Controllers
                         continue;
                     }
 
-                    var productoIntegrado = IntegrarProductoManual(
-                        contexto.ProductosDevolucion,
-                        producto
-                    );
-
-                    productosAceptados.Add(productoIntegrado);
+                    productosAceptados.Add(producto);
 
                     if (respuesta.Value > 0)
                     {
                         advertencias.Add(
                             CrearResultadoProductoMensaje(
-                                productoIntegrado,
+                                producto,
                                 string.IsNullOrWhiteSpace(producto.respuesta_msj)
                                     ? "El producto fue agregado con advertencia."
                                     : producto.respuesta_msj
@@ -1434,18 +1431,36 @@ namespace gc.caja.Areas.Facturacion.Controllers
                     }
                 }
 
+                if (rechazos.Count > 0)
+                {
+                    _logger?.LogWarning(
+                        "NC Devolucion: carga manual rechazada sin modificar el detalle. " +
+                        "FilasSP={FilasSP}, FilasValidasDescartadas={Descartadas}, Rechazos={Rechazos}, CorrelationId={CorrelationId}",
+                        respuestaSp.Count, productosAceptados.Count, rechazos.Count, correlationId);
+                    productosAceptados.Clear();
+                    advertencias.Clear();
+                }
+
                 if (productosAceptados.Count > 0)
                 {
+                    foreach (var producto in productosAceptados)
+                    {
+                        IntegrarProductoManual(contexto.ProductosDevolucion, producto);
+                    }
+
                     RenumerarProductosDevolucion(contexto.ProductosDevolucion);
+                    contexto.CoTipo = string.Empty;
+                    contexto.JsonProductosCalculado = string.Empty;
+                    contexto.JsonSubtotal = string.Empty;
+                    contexto.JsonSorteo = string.Empty;
+                    contexto.FechaUltimoCalculoUtc = null;
                     contexto.FechaUltimaCargaProductosUtc = DateTime.UtcNow;
 
                     GuardarContextoDevolucion(contexto);
                 }
 
                 var codigoRespuesta = productosAceptados.Count > 0
-                    ? rechazos.Count > 0
-                        ? "PRODUCTO_AGREGADO_PARCIAL"
-                        : "PRODUCTO_AGREGADO"
+                    ? "PRODUCTO_AGREGADO"
                     : "PRODUCTO_RECHAZADO";
 
                 var mensajeRespuesta = productosAceptados.Count > 0
@@ -1453,7 +1468,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
                         ? "Producto agregado correctamente."
                         : $"{productosAceptados.Count} productos fueron agregados correctamente."
                     : rechazos.Count > 0
-                        ? "El producto no pudo agregarse a la devolución."
+                        ? "No se incorporaron productos de esta carga. El detalle anterior se conserva sin cambios."
                         : "La búsqueda no devolvió productos para incorporar.";
 
                 var respuestaHttp = new
@@ -2134,13 +2149,6 @@ namespace gc.caja.Areas.Facturacion.Controllers
                 );
             }
 
-            if (comprobante.nc_ya_emitida == 1)
-            {
-                motivos.Add(
-                    "El comprobante original ya posee una Nota de Crédito emitida."
-                );
-            }
-
             if (motivos.Count == 0)
             {
                 return string.Empty;
@@ -2201,6 +2209,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
                 nc_tco_desc = comprobante.nc_tco_desc,
 
                 nc_ctacte = comprobante.nc_ctacte,
+                nc_ya_emitida = comprobante.nc_ya_emitida,
                 nc_dv_dist = comprobante.nc_dv_dist,
                 nc_dv_pago_diferido = comprobante.nc_dv_pago_diferido
             };
