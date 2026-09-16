@@ -1,6 +1,6 @@
 ﻿namespace gc.infraestructura.Dtos.Almacen.Tr
 {
-    public class TiListaProductoDto
+    public class TiListaProductoDto : Dto
     {
         public short Item { get; set; }
         public decimal Colectado_otros { get; set; }

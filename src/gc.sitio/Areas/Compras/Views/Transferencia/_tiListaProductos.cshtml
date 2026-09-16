@@ -1,0 +1,37 @@
+﻿@using gc.infraestructura.Dtos.Almacen.Tr
+@model GridCoreSmart<TiListaProductoDto>
+@{
+	var alt = true;
+	string clase = string.Empty;
+}
+<div class="table-responsive text-nowrap table-wrapper">
+	<table class="table table-sm mb-0 table-hover table-golden" id="tbTIListaProductos">
+		<thead>
+			<tr class="header">
+				<th style="width:10%;" class="align-center">ID</th>
+				<th style="width:50%;" class="align-center">Descripción</th>
+				<th style="width:10%;" class="align-center">Box</th>
+				<th style="width:10%;" class="align-center">Colectado</th>
+				<th style="width:20%;" class="align-center">Remplazo</th>
+			</tr>
+		</thead>
+		<tbody>
+			@if (Model != null && Model.ListaDatos != null && Model.ListaDatos.Count > 0)
+			{
+				@foreach (var item in Model.ListaDatos)
+				{
+					var colTotal = item.Colectado + item.Colectado_otros;
+					var rem = $"{item.P_id} {item.Remplazo_box}";
+					if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+					<tr class="@clase" onclick="selectTRRow(this)">
+						<td class="align-center">@item.P_id</td>
+						<td class="align-left">@item.P_desc</td>
+						<td class="align-center">@item.Box_id</td>
+						<td class="align-right">@colTotal</td>
+						<td class="align-left">@rem</td>
+					</tr>
+				}
+			}
+		</tbody>
+	</table>
+</div>

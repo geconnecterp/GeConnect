@@ -43,14 +43,53 @@
 		margin-left: 6px;
 		cursor: pointer;
 	}
+
+	.icon-arrow {
+		font-size: 0.75rem !important;
+		line-height: 0 !important;
+		padding: 0 !important;
+		margin: 0 !important;
+		border: none !important;
+		display: inline-flex !important;
+		align-items: center !important;
+	}
+
+	.td-conteo {
+		display: table;
+		width: 100%;
+	}
+
+	.td-icon {
+		display: table-cell;
+		vertical-align: middle;
+		width: 1%;
+	}
+
+	.td-value {
+		display: table-cell;
+		vertical-align: middle;
+		text-align: right;
+		padding-left: 4px;
+	}
+
+	.tr-detalle {
+		background-color: #f8f9fa;
+	}
+
+	.subtabla-wrapper {
+		padding: 4px 8px;
+		background-color: #ffffff;
+		border-left: 3px solid #0dc556; /* verde Golden */
+		border-right: 3px solid #0dc556;
+		border-bottom: 3px solid #0dc556;
+	}
 </style>
 <div class="card w-75 mx-auto">
-	<div class="card-body">
+	<div class="card-body" style="padding: 5px;">
 		<div class="row">
 			@Html.Hidden("ti", Model.ti)
 			@Html.Hidden("tipo", Model.Tipo)
 			<div>
-				<h5 class="mb-1">Autorizaciones TR</h5>
 				<div class="d-flex align-items-center flex-wrap gap-2">
 					<span class="badge bg-primary">@Model.Autorizacion</span>
 					<span class="badge bg-info">@Model.TipoTR</span>
@@ -88,8 +127,9 @@
 							<tr class="header">
 								<th style="width:8%;" class="align-center">ID</th>
 								<th style="width:40%;text-align: center;">Descripcion</th>
-								<th style="width:10%;" class="align-center">ID Prov</th>
-								<th style="width:10%;" class="align-center">UxB</th>
+								<th style="width:7%;" class="align-center">ID Prov</th>
+								<th style="width:6%;" class="align-center"></th>
+								<th style="width:7%;" class="align-center">UxB</th>
 								<th style="width:8%;" class="align-center">Pedido</th>
 								<th style="width:8%;" class="align-center">CONTEOS</th>
 								<th style="width:8%;" class="align-center">CTL Salida</th>
@@ -108,7 +148,8 @@
 										data-cantidad="@item.cantidad"
 										data-cantidad-c="@item.cantidad_c"
 										data-diferencia="@item.Diferencia"
-										onclick="selectTRRow(this)">
+										onclick="selectTRRow(this)"
+										ondblclick="dblClickTRRow(this)">
 										<td class="align-center">@item.p_id</td>
 										<td>
 											@item.p_desc
@@ -119,19 +160,60 @@
 											}
 										</td>
 										<td class="align-center">@item.p_id_prov</td>
+										<td class="text-center">
+											@if (item.remplazo == 'S')
+											{
+												<span class="badge bg-danger" title="Producto con reemplazo">Reemp</span>
+											}
+										</td>
 										<td style="text-align: right;">@item.unidad_pres</td>
 										<td style="text-align: right;font-weight: bold;">@GridHelper.FormatearDato(item.cantidad_pi, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
-										<td style="text-align: right;font-weight: bold;">@GridHelper.FormatearDato(item.cantidad, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
-										<td style="text-align: right;font-weight: bold;">@GridHelper.FormatearDato(item.cantidad_c, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
+										<td class="table-fontsize" style="font-weight: bold;">
+											<div class="td-conteo">
+												<span class="td-icon">
+													@if (item.cantidad > item.cantidad_pi)
+													{
+														<i class="bx bx-up-arrow-alt text-info icon-arrow"></i>
+													}
+													else if (item.cantidad < item.cantidad_pi)
+													{
+														<i class="bx bx-down-arrow-alt text-danger icon-arrow"></i>
+													}
+												</span>
+
+												<span class="td-value">
+													@GridHelper.FormatearDato(item.cantidad, GridHelper.FormatDato.Monto, item.PermiteDecimales)
+												</span>
+											</div>
+										</td>
+										<td class="table-fontsize" style="font-weight: bold;">
+											<div class="td-conteo">
+												<span class="td-icon">
+													@if (item.cantidad_c == item.cantidad && item.cantidad > 0)
+													{
+														<i class="bx bx-check-circle text-success"></i>
+													}
+												</span>
+
+												<span class="td-value">
+													@GridHelper.FormatearDato(item.cantidad_c, GridHelper.FormatDato.Monto, item.PermiteDecimales)
+												</span>
+											</div>
+										</td>
 										@if (item.Diferencia == 0)
 										{
-											<td class="align-right table-fontsize diferencia-cero">
-												@GridHelper.FormatearDato(item.Diferencia, GridHelper.FormatDato.Monto, item.PermiteDecimales)
+											<td class="table-fontsize diferencia-cero d-flex justify-content-between align-items-center">
+												<span>
+													<i class="bx bx-check-circle text-success" title="Sin diferencia"></i>
+												</span>
+												<span class="ms-auto">
+													@GridHelper.FormatearDato(item.Diferencia, GridHelper.FormatDato.Monto, item.PermiteDecimales)
+												</span>
 											</td>
 										}
 										else
 										{
-											<td class="align-right table-fontsize diferencia-no-cero">
+											<td class="table-fontsize diferencia-no-cero text-end">
 												@GridHelper.FormatearDato(item.Diferencia, GridHelper.FormatDato.Monto, item.PermiteDecimales)
 											</td>
 										}
@@ -151,6 +233,7 @@
 		var TRRegresarAAutorizacionesListaUrl = "@Url.Action("TRAutorizacionesLista", "transferencia", new { area = "Compras" })";
 		var TRValidarTransferenciaUrl = "@Url.Action("ValidarTransferencia", "transferencia", new { area = "Compras" })";
 		var TRConfirmarAutorizacionUrl = "@Url.Action("ConfirmarAutorizacion", "transferencia", new { area = "Compras" })";
+		var TIVerProductosUrl = "@Url.Action("TIVerProductos", "transferencia", new { area = "Compras" })";
 	</script>
 	@* <script src="~/js/app/areas/transferencias/trAutorizacionesLista.js"></script> *@
 	<script src="~/js/app/areas/transferencias/trVerTransferencia.js"></script>

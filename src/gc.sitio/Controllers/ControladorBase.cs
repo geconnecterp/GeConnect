@@ -8,6 +8,7 @@ using gc.infraestructura.Dtos.Almacen;
 using gc.infraestructura.Dtos.Almacen.AjusteDeStock;
 using gc.infraestructura.Dtos.Almacen.DevolucionAProveedor;
 using gc.infraestructura.Dtos.Almacen.Rpr;
+using gc.infraestructura.Dtos.Almacen.Tr;
 using gc.infraestructura.Dtos.Almacen.Tr.Transferencia;
 using gc.infraestructura.Dtos.Asientos;
 using gc.infraestructura.Dtos.Consultas;
@@ -803,7 +804,24 @@ namespace gc.sitio.Controllers
                 _context.HttpContext?.Session.SetString("TRAutPedidosIncluidosILista", json);
             }
         }
-        protected List<TRAutSucursalesDto> TRSucursalesLista
+		protected List<TiListaProductoDto> TiListaProductoLista
+		{
+			get
+			{
+				string json = _context.HttpContext?.Session.GetString("TiListaProductoLista") ?? string.Empty;
+				if (string.IsNullOrEmpty(json))
+				{
+					return new();
+				}
+				return JsonConvert.DeserializeObject<List<TiListaProductoDto>>(json) ?? [];
+			}
+			set
+			{
+				var json = JsonConvert.SerializeObject(value);
+				_context.HttpContext?.Session.SetString("TiListaProductoLista", json);
+			}
+		}
+		protected List<TRAutSucursalesDto> TRSucursalesLista
         {
             get
             {

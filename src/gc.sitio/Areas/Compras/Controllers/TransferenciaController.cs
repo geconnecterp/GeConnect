@@ -22,8 +22,8 @@ namespace gc.sitio.Areas.Compras.Controllers
 	{
 		//PARA MODULO DE IMPRESION
 		private readonly DocsManager _docsManager; //recupero los datos desde el appsettings.json
-		private AppModulo _modulo; 
-		private AppModulo _modulo_2; 
+		private AppModulo _modulo;
+		private AppModulo _modulo_2;
 		private string APP_MODULO = AppModulos.REPORTE_PROD_SIN_STOCK_EN_TRANSFERENCIAS.ToString();
 		private string APP_MODULO_2 = AppModulos.PEDIDO_INTERNO.ToString();
 		private readonly IDocManagerServicio _docMSv;
@@ -1102,7 +1102,8 @@ namespace gc.sitio.Areas.Compras.Controllers
 				model.ti = ti;
 				var lista = await _productoServicio.TRVerConteos(ti, TokenCookie);
 				model.ListaTransferencias = ObtenerGridCoreSmart<TRVerConteosDto>(lista);
-
+				var listaConteoProductos = await _productoServicio.BuscaTIListaProductos(ti, AdministracionId, "%", "%", "%", TokenCookie);
+				TiListaProductoLista = listaConteoProductos;
 				var titulo = "VER TRANSFERENCIA";
 				ViewData["Titulo"] = titulo;
 			}
@@ -1113,6 +1114,29 @@ namespace gc.sitio.Areas.Compras.Controllers
 				return ObtenerMensajeDeError("Hubo algun problema al intentar obtener el detalle de la transferencia. Si el problema persiste informe al Administrador.");
 			}
 			return PartialView("TRVerTransferencia", model);
+		}
+
+		public async Task<IActionResult> TIVerProductos(string ti, string p_id)
+		{
+			var model = new TRVerTransferenciaDto();
+			try
+			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+					return RedirectToAction("Login", "Token", new { area = "seguridad" });
+				if (TiListaProductoLista == null || TiListaProductoLista.Count <= 0)
+					return PartialView("_tiListaProductos", ObtenerGridCoreSmart<TiListaProductoDto>(new List<TiListaProductoDto>()));
+
+				var temp = TiListaProductoLista;
+				var listaFiltrada = temp.Where(x => x.P_id == p_id || x.Remplazo_p_id == p_id).ToList();
+				return PartialView("_tiListaProductos", ObtenerGridCoreSmart<TiListaProductoDto>(listaFiltrada));
+			}
+			catch (Exception ex)
+			{
+				_logger?.LogError(ex, "Error al obtener el detalle de conteos.");
+				TempData["error"] = "Hubo algun problema al intentar obtener el detalle de conteos. Si el problema persiste informe al Administrador";
+				return ObtenerMensajeDeError("Hubo algun problema al intentar obtener el detalle de conteos. Si el problema persiste informe al Administrador.");
+			}
 		}
 
 		public async Task<JsonResult> ValidarTransferencia(string ti)
@@ -1202,7 +1226,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 		private string GenerarJsonDesdeListaDeProductosSinStock()
 		{
 			var listaJsonDeTRSinStock = new List<AuxiliarSinStock>();
-			
+
 			foreach (var item in TRNuevaAutDetallelListaSinStock)
 			{
 				listaJsonDeTRSinStock.Add(new AuxiliarSinStock()

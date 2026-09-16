@@ -122,6 +122,7 @@ function InicializaPantallaPedido() {
 	$(document).on("change", "#listaEstados", ControlalistaEstadosSelected);
 	$(document).on("change", "#listaVendedores", ControlalistaVendedoresSelected);
 	$(document).on("change", "#listaRepartidores", ControlalistaRepartidoresSelected);
+	$("#btnDetalle").on("mousedown", analizaEstadoBtnDetalle);
 
 	// intentar mostrar al cargar
 	try { MostrarFiltrosAplicados(); } catch (e) { }
@@ -136,6 +137,28 @@ function InicializaPantallaPedido() {
 		}
 	});
 	$("#btnImprimir").removeClass("btn-light").addClass("btn-primary");
+
+}
+
+function analizaEstadoBtnDetalle() {
+	$("#divPedidoDatos").empty();
+	$("#divPedProds").empty();
+	$("#divPedidoDatos").hide();
+	$("#divPedProds").hide();
+	// Ocultar detalle y mostrar filtro
+	$("#divDetalle").collapse("show");
+	//$("#divFiltro").collapse("show");
+
+	// Desactivar botón detalle
+	$("#btnDetalle").prop("disabled", true);
+
+	// Activar grilla
+	activarTablaPedidos();
+	$("#divPedido")
+		.removeClass("table-wrapper-small")
+		.addClass("table-wrapper-full");
+	// Limpiar selección visual
+	$("#tbGridPedido tbody tr").removeClass("selected-row");
 
 }
 
@@ -1611,7 +1634,9 @@ function configurarEventosSeleccionPedido() {
 			if (!$grid.hasClass("table-wrapper-100")) {
 				$grid.removeClass("table-wrapper-full").addClass("table-wrapper-small");
 			}
-
+			desactivarTablaPedidos();
+			// Desactivar botón detalle
+			$("#btnDetalle").prop("disabled", false);
 			// Reposicionar fila seleccionada
 			setTimeout(() => {
 				posicionarRegOnTop($this, ".table-wrapper-small");

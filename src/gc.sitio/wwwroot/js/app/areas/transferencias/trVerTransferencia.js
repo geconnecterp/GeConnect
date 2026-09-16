@@ -14,6 +14,40 @@ function ValidarTipoTR() {
 	}
 }
 
+function dblClickTRRow(x) {
+	var $fila = $(x);
+	var pId = $fila.data('p-id');
+
+	// 🔥 Si la fila YA tiene un detalle justo debajo → cerrarlo
+	var $next = $fila.next("tr.tr-detalle");
+	if ($next.length > 0) {
+		$next.remove();
+		return; // ⬅️ Toggle: si estaba abierto, lo cerramos y terminamos
+	}
+
+	// 🔥 Cerrar cualquier otro detalle abierto en la tabla
+	$("#tbListaConteos tr.tr-detalle").remove();
+
+	// 🔥 Llamar al backend
+	PostGenHtml({ p_id: pId }, TIVerProductosUrl, function (html) {
+
+		// Crear fila de detalle
+		var detalle = `
+            <tr class="tr-detalle">
+                <td colspan="9" style="padding:0;">
+                    <div class="subtabla-wrapper">
+                        ${html}
+                    </div>
+                </td>
+            </tr>
+        `;
+
+		// Insertar debajo de la fila clickeada
+		$fila.after(detalle);
+	});
+}
+
+
 function selectTRRow(x) {
 }
 function validarTablaConteos() {

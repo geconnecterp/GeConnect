@@ -53,5 +53,9 @@ namespace gc.infraestructura.Dtos.Almacen.Tr.Transferencia
 		}
 
 		public bool PermiteDecimales => up_tipo == "P";
+		public char remplazo { get; set; }
+		public string remplazo_p_id { get; set; } = string.Empty;
+		public string remplazo_box_id { get; set; } = string.Empty;
+		public string remplazo_pi_compte { get; set; } = string.Empty;
 	}
 }
