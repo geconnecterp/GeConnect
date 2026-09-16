@@ -31,6 +31,11 @@ namespace gc.infraestructura.Dtos.Cajas
         public string cm_compte { get; set; } = string.Empty;
 
         /// <summary>
+        /// Numero de recibo devuelto por la confirmacion de cobranzas.
+        /// </summary>
+        public string rb_compte { get; set; } = string.Empty;
+
+        /// <summary>
         /// Indicador de comprobante repetido ("0" = no, "1" = sí)
         /// </summary>
         public string cm_repetido { get; set; } = string.Empty;

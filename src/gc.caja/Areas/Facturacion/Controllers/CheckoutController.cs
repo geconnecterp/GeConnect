@@ -1532,6 +1532,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
                 _logger?.LogInformation($"   Letra: {comprobante.tco_letra}");
                 _logger?.LogInformation($"   ID Tipo: {comprobante.tco_id}");
                 _logger?.LogInformation($"   Número: {comprobante.cm_compte}");
+                _logger?.LogInformation("   Recibo: {Recibo}", comprobante.rb_compte);
                 _logger?.LogInformation($"   Repetido: {(comprobante.EsRepetido ? "SÍ" : "NO")}");
                 _logger?.LogInformation($"   Mensaje: {respuestaDto.resultado_msj}");
                 _logger?.LogInformation("═══════════════════════════════════════════════════");
@@ -1561,10 +1562,13 @@ namespace gc.caja.Areas.Facturacion.Controllers
                 _logger?.LogInformation("✅ Sesión de factura limpiada");
 
                 // ⓴ RETORNAR RESPUESTA CORRECTA PARA FRONTEND
+                var numeroRecibo = string.IsNullOrWhiteSpace(comprobante.rb_compte)
+                    ? comprobante.cm_compte
+                    : comprobante.rb_compte;
                 var mensajeExito = esCobranzaDiferida
-                    ? $"Cobro de facturas procesado exitosamente. Recibo {comprobante.tco_letra} Nro {comprobante.cm_compte}"
+                    ? $"Cobro de facturas procesado exitosamente. Recibo Nro {numeroRecibo}"
                     : esCobranzaCtaCteTemporal
-                        ? $"Cobro de Cuenta Corriente procesado exitosamente. Recibo {comprobante.tco_letra} Nro {comprobante.cm_compte}"
+                        ? $"Cobro de Cuenta Corriente procesado exitosamente. Recibo Nro {numeroRecibo}"
                         : $"Factura {comprobante.tco_letra} Nro {comprobante.cm_compte} emitida y pagada exitosamente";
 
                 var respuestaFinal = new
@@ -1579,6 +1583,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
                             tco_letra = comprobante.tco_letra,
                             tco_id = comprobante.tco_id,
                             cm_compte = comprobante.cm_compte,
+                            rb_compte = comprobante.rb_compte,
                             cm_repetido = comprobante.cm_repetido,
 
                             modulo_origen = moduloOrigen,

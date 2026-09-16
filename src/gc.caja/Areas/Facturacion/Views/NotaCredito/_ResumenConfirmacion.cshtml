@@ -92,6 +92,18 @@
                             </div>
 
                             <div class="card-body text-center">
+                                <div class="table-responsive mb-3">
+                                    <table class="table table-sm mb-0" aria-label="Desglose de la Nota de Crédito">
+                                        <thead>
+                                            <tr>
+                                                <th scope="col" class="text-start">Concepto</th>
+                                                <th scope="col" class="text-end">Importe</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="tbodyNcDevolucionConceptosCalculo"></tbody>
+                                    </table>
+                                </div>
+
                                 <div id="ncDevolucionResumenMontoLabel"
                                      class="text-muted fw-semibold mb-1">
                                 </div>
@@ -111,7 +123,7 @@
 
             </div>
 
-            <div class="modal-footer bg-golden-light border-top border-golden">
+            <div class="modal-footer justify-content-between bg-golden-light border-top border-golden">
                 <button type="button"
                         id="btnVolverNcDevolucionResumenFinal"
                         class="btn btn-outline-secondary btn-lg">
