@@ -1,7 +1,7 @@
 ﻿namespace gc.infraestructura.Dtos.Almacen.Tr
 {
-    public class TiListaProductoDto : Dto
-    {
+    public class TiListaProductoDto : Dto, IProductoConUnidad
+	{
         public short Item { get; set; }
         public decimal Colectado_otros { get; set; }
         public string Resultado { get; set; } = "PE";
@@ -22,8 +22,10 @@
         public string Depo_nombre { get; set; } = string.Empty;
         public string P_id { get; set; } = string.Empty;
         public string P_desc { get; set; } = string.Empty;
-        public string Up_id { get; set; } = string.Empty;
-        public string Remplazo { get; set; } = "N";
+        public string up_id { get; set; } = string.Empty;
+		public string up_tipo { get; set; } = string.Empty;
+		public bool PermiteDecimales => up_tipo == "P";
+		public string Remplazo { get; set; } = "N";
         public decimal Colectado { get; set; }
         public decimal Pedido { get; set; }
         public short Bulto { get; set; }

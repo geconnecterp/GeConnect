@@ -4,6 +4,11 @@
 	var alt = true;
 	string clase = string.Empty;
 }
+<style>
+	.rem-label {
+		font-weight: 700;
+	}
+</style>
 <div class="table-responsive text-nowrap table-wrapper">
 	<table class="table table-sm mb-0 table-hover table-golden" id="tbTIListaProductos">
 		<thead>
@@ -21,14 +26,19 @@
 				@foreach (var item in Model.ListaDatos)
 				{
 					var colTotal = item.Colectado + item.Colectado_otros;
-					var rem = $"{item.P_id} {item.Remplazo_box}";
+					var rem = item.Remplazo_p_id != "" ? $"ID: {item.Remplazo_p_id} BOX: {item.Remplazo_box}" : "";
 					if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
 					<tr class="@clase" onclick="selectTRRow(this)">
 						<td class="align-center">@item.P_id</td>
 						<td class="align-left">@item.P_desc</td>
 						<td class="align-center">@item.Box_id</td>
-						<td class="align-right">@colTotal</td>
-						<td class="align-left">@rem</td>
+						<td class="align-right">@GridHelper.FormatearDato(colTotal, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
+						<td class="align-center">
+							@if (!string.IsNullOrEmpty(item.Remplazo_p_id))
+							{
+								<span class="rem-label">ID:</span> @item.Remplazo_p_id <span class="rem-label">BOX:</span> @item.Remplazo_box
+							}
+						</td>
 					</tr>
 				}
 			}

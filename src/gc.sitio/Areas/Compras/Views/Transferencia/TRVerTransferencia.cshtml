@@ -33,9 +33,9 @@
 	}
 
 	.diferencia-no-cero {
-		background-color: #f8d7da !important; /* rojo suave */
-		color: #721c24 !important; /* texto rojo oscuro */
-		font-weight: bold !important;
+		background-color: #dc3545 !important; /* rojo Bootstrap */
+		color: #ffffff !important; /* blanco */
+		font-weight: 700 !important; /* gruesa */
 	}
 
 	.icon-warning {
@@ -45,13 +45,14 @@
 	}
 
 	.icon-arrow {
-		font-size: 0.75rem !important;
-		line-height: 0 !important;
+		font-size: 1.2rem !important;
+		line-height: 1 !important; /* mantiene compactación */
 		padding: 0 !important;
 		margin: 0 !important;
 		border: none !important;
-		display: inline-flex !important;
-		align-items: center !important;
+		display: inline-block !important;
+		vertical-align: middle !important;
+		transform: translateY(2px); /* 🔥 ajuste fino sin aumentar altura */
 	}
 
 	.td-conteo {
@@ -187,7 +188,8 @@
 											</div>
 										</td>
 										<td class="table-fontsize" style="font-weight: bold;">
-											<div class="td-conteo">
+											@GridHelper.FormatearDato(item.cantidad_c, GridHelper.FormatDato.Monto, item.PermiteDecimales)
+											@* <div class="td-conteo">
 												<span class="td-icon">
 													@if (item.cantidad_c == item.cantidad && item.cantidad > 0)
 													{
@@ -198,7 +200,7 @@
 												<span class="td-value">
 													@GridHelper.FormatearDato(item.cantidad_c, GridHelper.FormatDato.Monto, item.PermiteDecimales)
 												</span>
-											</div>
+											</div> *@
 										</td>
 										@if (item.Diferencia == 0)
 										{
