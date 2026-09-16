@@ -3971,8 +3971,12 @@ function procesarPagoExitoso(comprobante, esCobranzaDiferida = false) {
     console.log('   Comprobante:', comprobante.cm_compte);
     console.log(`   Es Cobranza Diferida: ${esCobranzaDiferida ? 'SÍ' : 'NO'}`);
 
-    const tipoComprobante = obtenerTipoComprobante(comprobante.tco_letra, comprobante.tco_id);
-    const numeroComprobante = comprobante.cm_compte || 'Sin número';
+    const esRecibo = Boolean(comprobante.rb_compte) || esCobranzaDiferida ||
+        comprobante.es_cobranza_cuenta_corriente === true;
+    const tipoComprobante = esRecibo
+        ? 'Recibo de cobranza'
+        : obtenerTipoComprobante(comprobante.tco_letra, comprobante.tco_id);
+    const numeroComprobante = (esRecibo ? comprobante.rb_compte || comprobante.cm_compte : comprobante.cm_compte) || 'Sin número';
     const esRepetido = comprobante.cm_repetido === "1" || comprobante.cm_repetido === 1;
 
     console.log(`   Tipo: ${tipoComprobante}`);
@@ -3987,7 +3991,7 @@ function procesarPagoExitoso(comprobante, esCobranzaDiferida = false) {
     let mensajePrincipal = 'Factura emitida y pagada exitosamente';
     let iconoColor = 'text-golden'; // Color del título (opcional)
 
-    if (esCobranzaDiferida) {
+    if (esRecibo) {
         console.log('   📋 Contexto: COBRANZA DIFERIDA');
         tituloMensaje = '¡Cobro Procesado Exitosamente!';
         mensajePrincipal = 'Recibo de cobranza emitido y registrado correctamente';
@@ -4007,18 +4011,18 @@ function procesarPagoExitoso(comprobante, esCobranzaDiferida = false) {
             
             <div class="alert alert-success mb-3">
                 <div class="mb-2">
-                    <strong class="d-block text-uppercase">${tipoComprobante}</strong>
-                    <span class="badge bg-primary fs-6">${comprobante.tco_letra}</span>
+                    <strong class="d-block text-uppercase">${escapeHtml(tipoComprobante)}</strong>
+                    ${!esRecibo && comprobante.tco_letra ? `<span class="badge bg-primary fs-6">${escapeHtml(comprobante.tco_letra)}</span>` : ''}
                 </div>
                 <div class="mt-2">
                     <small class="text-muted">Número:</small><br>
-                    <strong class="fs-5">${numeroComprobante}</strong>
+                    <strong class="fs-5">${escapeHtml(numeroComprobante)}</strong>
                 </div>
                 ${esRepetido ? '<div class="mt-2"><span class="badge bg-warning">Comprobante Repetido</span></div>' : ''}
             </div>
             
             <p class="text-muted mb-0">
-                <i class='bx bx-check-circle'></i> El comprobante fue visualizado exitosamente
+                <i class='bx bx-check-circle'></i> ${esRecibo ? 'La cobranza fue registrada correctamente' : 'El comprobante fue visualizado exitosamente'}
             </p>
         </div>`,
         function () {

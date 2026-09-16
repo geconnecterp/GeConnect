@@ -18,7 +18,6 @@ window.NCDevolucion = window.NCDevolucion || {};
         /^(\d+(?:\.\d{1,3})?)\+(.+)$/;
 
     let modalProductos = null;
-    let modalCalculo = null;
     let modalResumenFinal = null;
     let comprobanteOrigen = null;
     let modalidadActual = null;
@@ -30,10 +29,10 @@ window.NCDevolucion = window.NCDevolucion || {};
     let finalizacionEnCurso = false;
     let productosActuales = [];
     let calculoActual = null;
+    const temporizadoresMensajes = new Map();
 
     const SELECTORES = {
         modal: '#modalProductoDevolucion',
-        modalCalculo: '#modalNcDevolucionCalculo',
         modalResumenFinal: '#modalNcDevolucionResumenFinal',
 
         modalidadBadge: '#ncDevolucionModalidadBadge',
@@ -76,29 +75,12 @@ window.NCDevolucion = window.NCDevolucion || {};
         rechazos: '#ncDevolucionRechazosProductos',
         listaRechazos: '#ncDevolucionListaRechazosProductos',
 
-        destinoOperacion: '#ncDevolucionDestinoOperacion',
         conceptosCalculo: '#tbodyNcDevolucionConceptosCalculo',
-        totalFinalCalculo: '#tdNcDevolucionTotalFinal',
-        calculoResumenOrigen: '#ncDevolucionCalculoResumenOrigen',
-        calculoResumenNc: '#ncDevolucionCalculoResumenNc',
-        calcClienteNombre: '#txtNcCalcClienteNombre',
-        calcClienteId: '#txtNcCalcClienteId',
-        calcClienteDomicilio: '#txtNcCalcClienteDomicilio',
-        calcComprobanteOrigen: '#txtNcCalcComprobanteOrigen',
-        calcTipoNc: '#txtNcCalcTipoNc',
-        calcCondicionAfip: '#txtNcCalcCondicionAfip',
-        calcDocumento: '#txtNcCalcDocumento',
-        calcEmail: '#txtNcCalcEmail',
-        calcMovil: '#txtNcCalcMovil',
 
         btnCancelar: '#btnCancelarNcDevolucionProductos',
         btnSeguir: '#btnNcDevolucionSeguir',
         spinnerSeguir: '#spnNcDevolucionSeguir',
         iconoSeguir: '#icoNcDevolucionSeguir',
-        btnVolverCalculo: '#btnVolverNcDevolucionCalculo',
-        btnContinuarResumen: '#btnNcDevolucionContinuarResumen',
-        spinnerContinuarResumen: '#spnNcDevolucionContinuarResumen',
-        iconoContinuarResumen: '#icoNcDevolucionContinuarResumen',
         btnVolverResumenFinal: '#btnVolverNcDevolucionResumenFinal',
         btnFinalizar: '#btnNcDevolucionFinalizar',
         spinnerFinalizar: '#spnNcDevolucionFinalizar',
@@ -146,23 +128,9 @@ window.NCDevolucion = window.NCDevolucion || {};
             elementoModal
         );
 
-        const elementoModalCalculo = document.querySelector(
-            SELECTORES.modalCalculo
-        );
         const elementoModalResumenFinal = document.querySelector(
             SELECTORES.modalResumenFinal
         );
-
-        if (elementoModalCalculo) {
-            modalCalculo = bootstrap.Modal.getOrCreateInstance(
-                elementoModalCalculo
-            );
-        } else {
-            logAdvertencia('PRODUCTOS - INICIALIZACIÓN', {
-                mensaje: 'No se encontró el modal de cálculo de NC.',
-                selector: SELECTORES.modalCalculo
-            });
-        }
 
         if (elementoModalResumenFinal) {
             modalResumenFinal = bootstrap.Modal.getOrCreateInstance(
@@ -195,13 +163,7 @@ window.NCDevolucion = window.NCDevolucion || {};
                 });
 
                 ocultarTecladoNc();
-            }
-        );
-
-        $(elementoModalCalculo).on(
-            'hidden.bs.modal',
-            function () {
-                ocultarTecladoNc();
+                limpiarMensajesTemporales();
             }
         );
 
@@ -214,6 +176,10 @@ window.NCDevolucion = window.NCDevolucion || {};
     }
 
     function registrarEventos() {
+        $(SELECTORES.modal).on('click', '[data-ncdev-cerrar-mensaje]', function () {
+            ocultarMensajeTemporal($(this).attr('data-ncdev-cerrar-mensaje'));
+        });
+
         document.addEventListener(
             EVENTO_COMPROBANTE_VALIDADO,
             function (event) {
@@ -308,17 +274,9 @@ window.NCDevolucion = window.NCDevolucion || {};
 
         $(document).on(
             'click',
-            SELECTORES.btnContinuarResumen,
-            function () {
-                abrirResumenFinal();
-            }
-        );
-
-        $(document).on(
-            'click',
             SELECTORES.btnVolverResumenFinal,
             function () {
-                volverACalculoDesdeResumenFinal();
+                volverACargaProductos();
             }
         );
 
@@ -327,14 +285,6 @@ window.NCDevolucion = window.NCDevolucion || {};
             SELECTORES.btnFinalizar,
             function () {
                 confirmarFinalizacion();
-            }
-        );
-
-        $(document).on(
-            'click',
-            SELECTORES.btnVolverCalculo,
-            function () {
-                volverACargaProductos();
             }
         );
 
@@ -1194,6 +1144,8 @@ window.NCDevolucion = window.NCDevolucion || {};
     }
 
     function mostrarEstadoEntradaManual(mensaje, tipo) {
+        clearTimeout(temporizadoresMensajes.get(SELECTORES.estadoEntradaManual));
+        temporizadoresMensajes.delete(SELECTORES.estadoEntradaManual);
         const clases = {
             info: 'text-info',
             success: 'text-success',
@@ -1212,18 +1164,51 @@ window.NCDevolucion = window.NCDevolucion || {};
         const icono = iconos[tipo] || iconos.info;
 
         $(SELECTORES.estadoEntradaManual)
+            .removeClass('d-none')
             .removeClass(
                 'text-muted text-info text-success text-warning text-danger'
             )
             .addClass(clase)
             .html(
                 `<i class="bx ${icono} me-1"></i>` +
-                escaparHtml(mensaje)
+                escaparHtml(mensaje) +
+                (tipo === 'danger' ? crearCierreMensaje(SELECTORES.estadoEntradaManual) : '')
             );
+        if (tipo === 'danger') {
+            programarOcultamientoMensaje(SELECTORES.estadoEntradaManual);
+        }
+    }
+
+    function crearCierreMensaje(selector) {
+        return `<button type="button" class="btn-close ncdev-cerrar-mensaje"
+                    data-ncdev-cerrar-mensaje="${selector}"
+                    aria-label="Cerrar mensaje" title="Cerrar mensaje"></button>`;
+    }
+
+    function ocultarMensajeTemporal(selector) {
+        clearTimeout(temporizadoresMensajes.get(selector));
+        temporizadoresMensajes.delete(selector);
+        $(selector).addClass('d-none');
+    }
+
+    function programarOcultamientoMensaje(selector) {
+        clearTimeout(temporizadoresMensajes.get(selector));
+        temporizadoresMensajes.set(selector, setTimeout(function () {
+            ocultarMensajeTemporal(selector);
+        }, 10000));
+    }
+
+    function limpiarMensajesTemporales() {
+        for (const selector of temporizadoresMensajes.keys()) {
+            ocultarMensajeTemporal(selector);
+        }
     }
 
     function limpiarEstadoEntradaManual() {
+        clearTimeout(temporizadoresMensajes.get(SELECTORES.estadoEntradaManual));
+        temporizadoresMensajes.delete(SELECTORES.estadoEntradaManual);
         $(SELECTORES.estadoEntradaManual)
+            .removeClass('d-none')
             .removeClass(
                 'text-info text-success text-warning text-danger'
             )
@@ -1543,13 +1528,10 @@ window.NCDevolucion = window.NCDevolucion || {};
                     producto.cmd_cmb_desc || ''
                 ).trim();
 
-                const descripcion = combo
-                    ? `${escaparHtml(producto.p_desc || '')}
-                       <div class="small text-muted mt-1">
-                           <i class="bx bx-package me-1"></i>
-                           ${escaparHtml(combo)}
-                       </div>`
-                    : escaparHtml(producto.p_desc || '');
+                const descripcionCompleta = [producto.p_desc || '', combo]
+                    .filter(Boolean).join(' - ');
+                const descripcion = `<span class="ncdev-producto-descripcion"
+                    title="${escaparHtml(descripcionCompleta)}">${escaparHtml(descripcionCompleta)}</span>`;
 
                 const botonAdvertencia = tieneAdvertencia
                     ? `
@@ -1613,6 +1595,7 @@ window.NCDevolucion = window.NCDevolucion || {};
         advertencias,
         rechazos
     ) {
+        ocultarMensajeTemporal(SELECTORES.rechazos);
         renderizarListaMensajes(
             SELECTORES.advertencias,
             SELECTORES.listaAdvertencias,
@@ -1624,6 +1607,11 @@ window.NCDevolucion = window.NCDevolucion || {};
             SELECTORES.listaRechazos,
             rechazos
         );
+        if (rechazos.length > 0) {
+            $(SELECTORES.rechazos).find('[data-ncdev-cerrar-mensaje]').remove();
+            $(SELECTORES.rechazos).append(crearCierreMensaje(SELECTORES.rechazos));
+            programarOcultamientoMensaje(SELECTORES.rechazos);
+        }
     }
 
     function renderizarListaMensajes(
@@ -1714,6 +1702,7 @@ window.NCDevolucion = window.NCDevolucion || {};
     }
 
     function limpiarEstadoVisual() {
+        limpiarMensajesTemporales();
         productosActuales = [];
         calculoActual = null;
 
@@ -1721,10 +1710,7 @@ window.NCDevolucion = window.NCDevolucion || {};
         $(SELECTORES.error).addClass('d-none').empty();
         $(SELECTORES.manual).addClass('d-none');
         $(SELECTORES.resultado).addClass('d-none');
-        $(SELECTORES.destinoOperacion).empty();
         $(SELECTORES.conceptosCalculo).empty();
-        $(SELECTORES.totalFinalCalculo).text('$ 0,00');
-        $(SELECTORES.btnContinuarResumen).prop('disabled', true);
         $(SELECTORES.btnFinalizar).prop('disabled', true);
         $(SELECTORES.btnSeguir).prop('disabled', true);
 
@@ -1753,10 +1739,7 @@ window.NCDevolucion = window.NCDevolucion || {};
     function limpiarCalculoActual() {
         calculoActual = null;
 
-        $(SELECTORES.destinoOperacion).empty();
         $(SELECTORES.conceptosCalculo).empty();
-        $(SELECTORES.totalFinalCalculo).text('$ 0,00');
-        $(SELECTORES.btnContinuarResumen).prop('disabled', true);
         $(SELECTORES.btnFinalizar).prop('disabled', true);
         $(SELECTORES.btnSeguir).prop('disabled', productosActuales.length === 0);
 
@@ -1933,7 +1916,9 @@ window.NCDevolucion = window.NCDevolucion || {};
 
                 response.subtotales = subtotales;
                 calculoActual = response;
-                renderizarCalculo(response);
+                if (!abrirResumenFinal()) {
+                    limpiarCalculoActual();
+                }
             })
             .fail(function (xhr, status, error) {
                 logError('PRODUCTOS - SEGUIR', {
@@ -2124,65 +2109,7 @@ window.NCDevolucion = window.NCDevolucion || {};
         return Number.isFinite(numero) ? numero : 0;
     }
 
-    function renderizarCalculo(response) {
-        const destino = response?.destino || '';
-        const coTipo = response?.co_tipo || '';
-        const subtotales = Array.isArray(response?.subtotales)
-            ? response.subtotales
-            : [];
-        const total = obtenerTotalCalculo(subtotales);
 
-        $(SELECTORES.destinoOperacion)
-            .removeClass('bg-light text-dark bg-success bg-info')
-            .addClass(coTipo === 'DV' ? 'bg-info' : 'bg-success')
-            .text(destino || coTipo);
-
-        renderizarDatosCalculo();
-        renderizarConceptosCalculo(subtotales);
-        $(SELECTORES.totalFinalCalculo).text(`$ ${formatearImporte(total)}`);
-        $(SELECTORES.btnSeguir).prop('disabled', true);
-        $(SELECTORES.btnContinuarResumen)
-            .prop('disabled', false);
-        $(SELECTORES.btnFinalizar).prop('disabled', false);
-
-        bloquearEntradaManual(true);
-
-        $(SELECTORES.estado)
-            .removeClass('d-none alert-info alert-warning alert-danger')
-            .addClass('alert-success')
-            .html(
-                '<i class="bx bx-check-circle me-1"></i>' +
-                'Totales calculados. Verifique la información y continúe al resumen final.'
-            );
-
-        abrirModalCalculo();
-    }
-
-    function renderizarDatosCalculo() {
-        const origen = comprobanteOrigen || {};
-
-        $(SELECTORES.calcClienteNombre).val(
-            origen.cm_nombre || 'Consumidor Final'
-        );
-        $(SELECTORES.calcClienteId).val(origen.cta_id || '');
-        $(SELECTORES.calcClienteDomicilio).val(origen.cm_domicilio || '');
-        $(SELECTORES.calcComprobanteOrigen).val(
-            `${origen.tco_id || ''} ${origen.cm_compte || ''}`.trim()
-        );
-        $(SELECTORES.calcTipoNc).val(
-            `${origen.nc_tco_id || ''} ${origen.nc_tco_desc || ''}`.trim()
-        );
-        $(SELECTORES.calcCondicionAfip).val(origen.afip_desc || '');
-        $(SELECTORES.calcDocumento).val(origen.cm_cuit || '');
-        $(SELECTORES.calcEmail).val(origen.cm_email || '');
-        $(SELECTORES.calcMovil).val(origen.cm_movil || '');
-
-        const resumenOrigenHtml = crearHtmlResumenOrigen(origen);
-        const resumenNcHtml = crearHtmlResumenNc(origen);
-
-        $(SELECTORES.calculoResumenOrigen).html(resumenOrigenHtml);
-        $(SELECTORES.calculoResumenNc).html(resumenNcHtml);
-    }
 
     function renderizarConceptosCalculo(subtotales) {
         $(SELECTORES.conceptosCalculo).html(
@@ -2224,95 +2151,46 @@ window.NCDevolucion = window.NCDevolucion || {};
     }
 
     function volverACargaProductos() {
-        if (!modalCalculo || !modalProductos) {
+        if (finalizacionEnCurso || !modalResumenFinal || !modalProductos) {
             return;
         }
-
-        $(SELECTORES.modalCalculo).one('hidden.bs.modal', function () {
+        limpiarCalculoActual();
+        $(SELECTORES.modalResumenFinal).one('hidden.bs.modal', function () {
             modalProductos.show();
         });
-
-        modalCalculo.hide();
+        modalResumenFinal.hide();
     }
 
-    function abrirModalCalculo() {
-        if (!modalCalculo) {
-            mostrarMensaje(
-                'Error',
-                'No se encontró la pantalla de cálculo de la Nota de Crédito.',
-                'error!'
-            );
-
-            return;
-        }
-
-        if (!modalProductos) {
-            modalCalculo.show();
-            return;
-        }
-
-        const $modalProductos = $(SELECTORES.modal);
-
-        if (!$modalProductos.hasClass('show')) {
-            modalCalculo.show();
-            return;
-        }
-
-        $(SELECTORES.modal).one('hidden.bs.modal', function () {
-            modalCalculo.show();
-        });
-
-        modalProductos.hide();
-    }
 
     function abrirResumenFinal() {
-        if (!calculoActual) {
+        if (!calculoActual || !modalResumenFinal) {
             mostrarMensaje(
                 'Atención',
-                'Debe calcular los totales antes de continuar al resumen final.',
+                !calculoActual
+                    ? 'Debe calcular los totales antes de finalizar.'
+                    : 'No se encontró la pantalla de finalización de la Nota de Crédito.',
                 'warn!'
             );
-
-            return;
-        }
-
-        if (!modalResumenFinal) {
-            mostrarMensaje(
-                'Error',
-                'No se encontró la pantalla de resumen final de la Nota de Crédito.',
-                'error!'
-            );
-
-            return;
+            return false;
         }
 
         renderizarResumenFinal();
+        $(SELECTORES.btnFinalizar).prop('disabled', false);
+        $(SELECTORES.btnSeguir).prop('disabled', true);
+        bloquearEntradaManual(true);
 
-        const $modalCalculo = $(SELECTORES.modalCalculo);
-
-        if (!$modalCalculo.hasClass('show')) {
+        const $modalProductos = $(SELECTORES.modal);
+        if (modalProductos && $modalProductos.hasClass('show')) {
+            $modalProductos.one('hidden.bs.modal', function () {
+                modalResumenFinal.show();
+            });
+            modalProductos.hide();
+        } else {
             modalResumenFinal.show();
-            return;
         }
-
-        $modalCalculo.one('hidden.bs.modal', function () {
-            modalResumenFinal.show();
-        });
-
-        modalCalculo.hide();
+        return true;
     }
 
-    function volverACalculoDesdeResumenFinal() {
-        if (!modalResumenFinal || !modalCalculo) {
-            return;
-        }
-
-        $(SELECTORES.modalResumenFinal).one('hidden.bs.modal', function () {
-            modalCalculo.show();
-        });
-
-        modalResumenFinal.hide();
-    }
 
     function renderizarResumenFinal() {
         const origen = comprobanteOrigen || {};
@@ -2320,6 +2198,7 @@ window.NCDevolucion = window.NCDevolucion || {};
         const subtotales = Array.isArray(calculoActual?.subtotales)
             ? calculoActual.subtotales
             : [];
+        renderizarConceptosCalculo(subtotales);
         const total = obtenerTotalCalculo(subtotales);
         const esCuentaCorriente = coTipo === 'DV';
         const destino = esCuentaCorriente
@@ -2558,6 +2437,34 @@ window.NCDevolucion = window.NCDevolucion || {};
             });
     }
 
+    function renderizarMensajeEmisionExitosa(response, comprobante) {
+        const letra = String(comprobante?.tco_letra || '').trim();
+        const numero = String(comprobante?.cm_compte || '').trim() || 'Sin número';
+        const esRepetido = String(comprobante?.cm_repetido) === '1';
+        const mensaje = response.mensaje || 'La Nota de Crédito fue emitida correctamente.';
+
+        return `
+            <div class="text-center">
+                <div class="mb-3">
+                    <i class="bx bx-check-circle text-golden" style="font-size: 4rem;" aria-hidden="true"></i>
+                </div>
+                <h4 class="text-golden mb-3">Nota de Crédito emitida exitosamente</h4>
+                <div class="alert alert-success mb-3">
+                    <div class="mb-2">
+                        <strong class="d-block text-uppercase">Nota de Crédito</strong>
+                        ${letra ? `<span class="badge bg-primary fs-6">${escaparHtml(letra)}</span>` : ''}
+                    </div>
+                    <div class="mt-2">
+                        <small class="text-muted">Número:</small><br>
+                        <strong class="fs-5 text-break">${escaparHtml(numero)}</strong>
+                    </div>
+                    ${esRepetido ? '<div class="mt-2"><span class="badge bg-warning">Comprobante Repetido</span></div>' : ''}
+                </div>
+                <p class="text-muted text-break mb-0">${escaparHtml(mensaje)}</p>
+            </div>
+        `;
+    }
+
     function procesarFinalizacionExitosa(response) {
         const comprobante = Array.isArray(response?.data)
             ? response.data[0]
@@ -2567,18 +2474,16 @@ window.NCDevolucion = window.NCDevolucion || {};
             .trim()
             .toUpperCase();
 
+        const volverAlMenu = function () {
+            window.location.href = window.ncDevolucionMenuCajaUrl || '/';
+        };
+
         const cerrarConExito = function () {
             mostrarMensaje(
                 'Nota de Crédito emitida',
-                response.mensaje ||
-                'La Nota de Crédito fue emitida correctamente.',
+                renderizarMensajeEmisionExitosa(response, comprobante),
                 'succ!',
-                function () {
-                    window.location.href =
-                        window.ncDevolucionIndexUrl ||
-                        window.ncDevolucionMenuCajaUrl ||
-                        window.location.href;
-                }
+                volverAlMenu
             );
         };
 
@@ -2590,15 +2495,10 @@ window.NCDevolucion = window.NCDevolucion || {};
         if (!comprobante) {
             mostrarMensaje(
                 'Nota de Crédito emitida',
-                `${response.mensaje || 'La Nota de Crédito fue emitida correctamente.'}<br>` +
+                `${escaparHtml(response.mensaje || 'La Nota de Crédito fue emitida correctamente.')}<br>` +
                 'No se recibieron datos suficientes para generar el comprobante en pantalla.',
                 'warn!',
-                function () {
-                    window.location.href =
-                        window.ncDevolucionIndexUrl ||
-                        window.ncDevolucionMenuCajaUrl ||
-                        window.location.href;
-                }
+                volverAlMenu
             );
             return;
         }
@@ -2606,15 +2506,10 @@ window.NCDevolucion = window.NCDevolucion || {};
         if (typeof ModuloReportes === 'undefined') {
             mostrarMensaje(
                 'Nota de Crédito emitida',
-                `${response.mensaje || 'La Nota de Crédito fue emitida correctamente.'}<br>` +
+                `${escaparHtml(response.mensaje || 'La Nota de Crédito fue emitida correctamente.')}<br>` +
                 'No se encontró el módulo de reportes para presentar la NC.',
                 'warn!',
-                function () {
-                    window.location.href =
-                        window.ncDevolucionIndexUrl ||
-                        window.ncDevolucionMenuCajaUrl ||
-                        window.location.href;
-                }
+                volverAlMenu
             );
             return;
         }

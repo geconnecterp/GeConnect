@@ -13,6 +13,7 @@ window.NCDevolucion = window.NCDevolucion || {};
 
     let trazabilidadHabilitada = true;
     let trazabilidadDetallada = true;
+    let comprobanteConNcPrevia = false;
 
     const TRAZA = {
         operacionId: crearIdOperacion(),
@@ -1127,6 +1128,12 @@ window.NCDevolucion = window.NCDevolucion || {};
                 ¿Desea cargar todo el detalle del comprobante original?
             </p>
 
+            ${comprobanteConNcPrevia ? `<div class="alert alert-warning text-start" role="alert">
+                <i class="bx bx-info-circle me-1"></i>
+                Este comprobante ya tiene una Nota de Crédito asociada.
+                Puede continuar: se validarán los productos y las cantidades pendientes de devolución.
+            </div>` : ''}
+
             <small class="text-muted">
                 Si selecciona <strong>Sí</strong>, el sistema cargará todos los productos
                 facturados. Si selecciona <strong>No</strong>, podrá seleccionar los
@@ -1373,6 +1380,7 @@ window.NCDevolucion = window.NCDevolucion || {};
     }
 
     function procesarComprobanteSeleccionado(comprobante) {
+        comprobanteConNcPrevia = Number(comprobante.nc_ya_emitida) === 1;
         logInfo('ETAPA 4', {
             accion: 'Comprobante seleccionado correctamente.',
             comprobante: resumirComprobante(comprobante)
