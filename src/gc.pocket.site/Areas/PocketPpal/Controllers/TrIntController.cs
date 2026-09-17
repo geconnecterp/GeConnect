@@ -634,14 +634,14 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                     sel.PBoxId = reemplazar ? string.Empty : prod.Box_id;
                     sel.PUnidPres = prod.Unidad_pres;
                     sel.PPedido = prod.Pedido;
-                    sel.PUpId = prod.Up_id;
+                    sel.PUpId = prod.up_id;
                     sel.PColectado = prod.Colectado;
                     sel.PBulto = prod.Bulto;
                     sel.PUs = prod.Us;
                     sel.EsReemplazo = reemplazar;
                     _logger.LogInformation(
                         "[TR-TRACE][POCKET][CONTEXTO] TI={Ti} Item={Item} EsReemplazo={EsReemplazo} ProductoOriginal={ProductoOriginal} BoxOriginal={BoxOriginal} PedidoOriginal={PedidoOriginal} ColectadoUsuario={ColectadoUsuario} BultosUsuario={BultosUsuario} UnidadesUsuario={UnidadesUsuario} UpIdOriginal={UpIdOriginal}",
-                        sel.Ti, prod.Item, sel.EsReemplazo, prod.P_id, prod.Box_id, prod.Pedido, prod.Colectado, prod.Bulto, prod.Us, prod.Up_id);
+                        sel.Ti, prod.Item, sel.EsReemplazo, prod.P_id, prod.Box_id, prod.Pedido, prod.Colectado, prod.Bulto, prod.Us, prod.up_id);
                     sel.ReemplazarPId = reemplazar ? prod.P_id : string.Empty;
                     sel.ReemplazarPDesc = reemplazar ? prod.P_desc : string.Empty;
                     sel.ReemplazarBoxId = reemplazar ? prod.Box_id : string.Empty;
