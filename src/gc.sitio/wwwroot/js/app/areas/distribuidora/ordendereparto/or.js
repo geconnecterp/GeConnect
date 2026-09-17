@@ -173,6 +173,7 @@ function InicializaEventosOrdenDeReparto() {
 	$("#btnBuscar").on("click", function () {
 		try { MostrarFiltrosAplicados(); } catch (e) { console.warn('MostrarFiltrosAplicados no disponible:', e); }
 		buscarOrdenesDeReparto(1);
+		orCompte = "";
 	});
 	funcCallBack = buscarOrdenesDeReparto;
 }
@@ -340,7 +341,7 @@ function DividirPedidoDeCliente(pcCompteSeleccionado) {
 				$('#msjModal').modal('hide');
 			},
 			true,
-			['Confirmar', 'Cancelar'],
+			['SI', 'NO'],
 			'info!',
 			null
 		);
@@ -430,7 +431,7 @@ function PonerCFPedidoDeCliente(pcCompteSeleccionado) {
 				$('#msjModal').modal('hide');
 			},
 			true,
-			['Confirmar', 'Cancelar'],
+			['SI', 'NO'],
 			'info!',
 			null
 		);
@@ -494,7 +495,7 @@ function VolverAEnCursoOrdenDeReparto(orCompteSeleccionado) {
 				$('#msjModal').modal('hide');
 			},
 			true,
-			['Confirmar', 'Cancelar'],
+			['SI', 'NO'],
 			'info!',
 			null
 		);
@@ -550,11 +551,11 @@ function PonerAFacturarOrdenDeReparto(orCompteSeleccionado) {
 				$('#msjModal').modal('hide');
 			},
 			true,
-			['Confirmar', 'Cancelar'],
+			['SI', 'NO'],
 			'info!',
 			null
 		);
-		
+
 	}
 }
 
@@ -733,26 +734,35 @@ function ImprimirHojaDeRutaDeOrdenDeReparto() {
 }
 
 function CargarVistCambioPrecioOrdenDeReparto(orCompteSeleccionado) {
-	AbrirWaiting("Cargando vista para cambio de precio en Orden de Reparto...");
-	PostGenHtml({ or_compte: orCompteSeleccionado, lp_id: '003' }, cargarVistCambioPrecioOrdenDeRepartoUrl, function (html) {
-		CerrarWaiting();
-		$("#vistaCambioPrecioOR").html(html);
-		$("#vistaListaOR").addClass("d-none");
-		$("#vistaCambioPrecioOR").removeClass("d-none");
+	if (orCompteSeleccionado == null || orCompteSeleccionado == undefined || orCompteSeleccionado == "") {
+		AbrirMensaje("ATENCIÓN", 'Debe seleccionar una Orden de Reparto', function () {
+			$("#msjModal").modal("hide");
+			return true;
+		}, false, ["Aceptar"], "error!", null);
+	}
+	else {
+		AbrirWaiting("Cargando vista para cambio de precio en Orden de Reparto...");
+		PostGenHtml({ or_compte: orCompteSeleccionado, lp_id: '003' }, cargarVistCambioPrecioOrdenDeRepartoUrl, function (html) {
+			CerrarWaiting();
+			$("#vistaCambioPrecioOR").html(html);
+			$("#vistaListaOR").addClass("d-none");
+			$("#vistaCambioPrecioOR").removeClass("d-none");
 
-		// ================================
-		// VALIDAR SI LA TABLA TIENE DATOS
-		// ================================
-		let hayDatos = $("#tbCambioDePrecio tbody tr").not(".fila-vacia").length > 0;
+			// ================================
+			// VALIDAR SI LA TABLA TIENE DATOS
+			// ================================
+			let hayDatos = $("#tbCambioDePrecio tbody tr").not(".fila-vacia").length > 0;
 
-		if (!hayDatos) {
-			$("#btnAnalizarCambioPrecio").prop("disabled", true);
-		} else {
-			$("#btnAnalizarCambioPrecio").prop("disabled", false);
-		}
+			if (!hayDatos) {
+				$("#btnAnalizarCambioPrecio").prop("disabled", true);
+			} else {
+				$("#btnAnalizarCambioPrecio").prop("disabled", false);
+			}
 
-		ConfigurarEventosEnCambioPrecio();
-	});
+			ConfigurarEventosEnCambioPrecio();
+			setTituloTabOrdenesDeReparto(tab_cambio_de_precios, true, false);
+		});
+	}
 }
 
 function ConfigurarEventosEnCambioPrecio() {
@@ -811,7 +821,7 @@ function ConfigurarEventosEnCambioPrecio() {
 					$('#msjModal').modal('hide');
 				},
 				true,
-				['Confirmar', 'Cancelar'],
+				['SI', 'NO'],
 				'info!',
 				null
 			);
@@ -832,6 +842,7 @@ function ConfigurarEventosEnCambioPrecio() {
 			// Opcional: limpiar contenido de edición
 			document.querySelector("#vistaCambioPrecioOR").innerHTML = "";
 			habilitarTabPedidos();
+			setTituloTabOrdenesDeReparto(tab_orden_de_reparto, true, false);
 		}
 		else {
 			AbrirMensaje(
@@ -846,6 +857,7 @@ function ConfigurarEventosEnCambioPrecio() {
 						// Opcional: limpiar contenido de edición
 						document.querySelector("#vistaCambioPrecioOR").innerHTML = "";
 						habilitarTabPedidos();
+						setTituloTabOrdenesDeReparto(tab_orden_de_reparto, true, false);
 					}
 					$('#msjModal').modal('hide');
 				},
@@ -951,18 +963,28 @@ function confirmarCambiosDePrecioEnOrdenDeReparto() {
 }
 
 function CargarVistConsolidarOrdenDeReparto(orCompte) {
-	AbrirWaiting("Cargando vista para consolidar Orden de Reparto...");
-	PostGenHtml({ orCompte: orCompte }, cargarVistaConsolidarOrdenDeRepartoUrl, function (html) {
-		CerrarWaiting();
-		$("#vistaConsolidarOR").html(html);
-		$("#vistaListaOR").addClass("d-none");
-		$("#vistaConsolidarOR").removeClass("d-none");
-		ConfigurarEventosEnPonerEnConsolidar();
-		CargarConteosEnConsolidar(orCompteSeleccionado);
+	if (orCompte == null || orCompte == undefined || orCompte == "") {
+		AbrirMensaje("ATENCIÓN", 'Debe seleccionar una Orden de Reparto', function () {
+			$("#msjModal").modal("hide");
+			return true;
+		}, false, ["Aceptar"], "error!", null);
+	}
+	else {
+		AbrirWaiting("Cargando vista para consolidar Orden de Reparto...");
+		PostGenHtml({ orCompte: orCompte }, cargarVistaConsolidarOrdenDeRepartoUrl, function (html) {
+			CerrarWaiting();
+			$("#vistaConsolidarOR").html(html);
+			$("#vistaListaOR").addClass("d-none");
+			$("#vistaConsolidarOR").removeClass("d-none");
+			ConfigurarEventosEnPonerEnConsolidar();
+			CargarConteosEnConsolidar(orCompteSeleccionado);
 
-		// Seleccionar automáticamente el primer pedido
-		SeleccionarPrimerPedidoEnConsolidar();
-	});
+			// Seleccionar automáticamente el primer pedido
+			SeleccionarPrimerPedidoEnConsolidar();
+
+			setTituloTabOrdenesDeReparto(tab_a_consolidar, true, false);
+		});
+	}
 }
 
 function SeleccionarPrimerPedidoEnConsolidar() {
@@ -1032,7 +1054,7 @@ function ConfigurarEventosEnPonerEnConsolidar() {
 				$('#msjModal').modal('hide');
 			},
 			true,
-			['Confirmar', 'Cancelar'],
+			['SI', 'NO'],
 			'info!',
 			null
 		);
@@ -1053,11 +1075,12 @@ function ConfigurarEventosEnPonerEnConsolidar() {
 					// Opcional: limpiar contenido de edición
 					document.querySelector("#vistaConsolidarOR").innerHTML = "";
 					habilitarTabPedidos();
+					setTituloTabOrdenesDeReparto(tab_orden_de_reparto, true, false);
 				}
 				$('#msjModal').modal('hide');
 			},
 			true,
-			['Confirmar', 'Cancelar'],
+			['SI', 'NO'],
 			'info!',
 			null
 		);
@@ -1724,15 +1747,65 @@ function ConfigurarEventosEnPedidosDeLaOrdenEnConsolidar() {
 }
 
 function CargarVistaAnalizaAutEnOrdenDeReparto(orCompte) {
-	AbrirWaiting("Cargando vista de análisis de autorización de Orden de Reparto...");
-	PostGenHtml({ orCompte: orCompte }, cargarVistaAnalizaAutEnOrdenDeRepartoUrl, function (html) {
-		CerrarWaiting();
-		$("#vistaPonerEnCursoOR").html(html);
-		$("#vistaListaOR").addClass("d-none");
-		$("#vistaPonerEnCursoOR").removeClass("d-none");
-		ConfigurarEventosEnPonerEnCurso();
-	});
+	if (orCompte == null || orCompte == undefined || orCompte == "") {
+		AbrirMensaje("ATENCIÓN", 'Debe seleccionar una Orden de Reparto', function () {
+			$("#msjModal").modal("hide");
+			return true;
+		}, false, ["Aceptar"], "error!", null);
+	}
+	else {
+		AbrirWaiting("Cargando vista de análisis de autorización de Orden de Reparto...");
+		PostGenHtml({ orCompte: orCompte }, cargarVistaAnalizaAutEnOrdenDeRepartoUrl, function (html) {
+			CerrarWaiting();
+			$("#vistaPonerEnCursoOR").html(html);
+			$("#vistaListaOR").addClass("d-none");
+			$("#vistaPonerEnCursoOR").removeClass("d-none");
+			ConfigurarEventosEnPonerEnCurso();
+			setTituloTabOrdenesDeReparto(tab_poner_en_curso, true, false);
+		});
+	}
 }
+
+// Constantes para el manejo de titulo del tab Orden de Reparto
+const tab_orden_de_reparto = "Ordenes de Reparto";
+const tab_poner_en_curso = "Poner en Curso";
+const tab_a_consolidar = "A Consolidar";
+const tab_cambio_de_precios = "Cambio de Precios";
+
+/**
+ * Cambia el título del botón del tab "Pedidos de Cliente" y controla su visibilidad/activación.
+ * @param {string} title - Texto a mostrar en el botón.
+ * @param {boolean} show - true => eliminar clase d-none; false => agregar d-none.
+ * @param {boolean} activate - true => activar la pestaña (mostrarla).
+ */
+function setTituloTabOrdenesDeReparto(title, show = true, activate = false) {
+	const li = document.getElementById('tabOrdenesDeReparto');
+	const btn = document.getElementById('btnTabOrdenesDeReparto');
+	if (!btn || !li) return;
+
+	// Actualizar texto (si el botón tuviera HTML complejo, ajustar aquí)
+	btn.textContent = title;
+
+	// Visibilidad
+	if (show) li.classList.remove('d-none'); else li.classList.add('d-none');
+
+	// Activar la pestaña con la API de Bootstrap 5 si se solicita
+	if (activate) {
+		try {
+			const tab = bootstrap.Tab.getOrCreateInstance(btn);
+			tab.show();
+		} catch (e) {
+			// Fallback simple
+			btn.click();
+		}
+	}
+}
+
+// Funciones exportadas para poder llamarlas desde otras partes
+window.setTituloTabOrdenesDeReparto = setTituloTabOrdenesDeReparto;
+window.restaurarTituloTabOrdenesDeReparto = function () {
+	setTituloTabOrdenesDeReparto(tab_orden_de_reparto, false, false);
+};
 
 function ConfigurarEventosEnPonerEnCurso() {
 	$(document).off("click", "#btnAnalizarPonerEnCurso");
@@ -1764,9 +1837,15 @@ function ConfigurarEventosEnPonerEnCurso() {
 		var data = { orCompte: orCompteSeleccionado, listaDepo: cadenaDepositos }
 		PostGenHtml(data, actualizarGrillaAnalizaAutoEnOrdenDeRepartoUrl, function (html) {
 			CerrarWaiting();
-			$("#tbGrillaAnalizaAut").html(html);
+			$("#cardGrillaAnalizaAut").html(html);
 			configurarEventosSeleccionListaAnalisisAutOR();
 			AgregarHanlderColumnaDescripcion();
+			const $filasDatos = $('#tbGrillaAnalizaAut tbody tr.row-analisis');
+			if ($filasDatos.length > 0) {
+				$("#btnConfirmarPonerEnCurso").prop('disabled', false);
+			} else {
+				$("#btnConfirmarPonerEnCurso").prop('disabled', true);
+			}
 		});
 	});
 
@@ -1814,11 +1893,12 @@ function ConfigurarEventosEnPonerEnCurso() {
 					// Opcional: limpiar contenido de edición
 					document.querySelector("#vistaPonerEnCursoOR").innerHTML = "";
 					habilitarTabPedidos();
+					setTituloTabOrdenesDeReparto(tab_orden_de_reparto, true, false);
 				}
 				$('#msjModal').modal('hide');
 			},
 			true,
-			['Confirmar', 'Cancelar'],
+			['SI', 'NO'],
 			'info!',
 			null
 		);
@@ -1906,6 +1986,7 @@ function CargarVistaNuevaOrdenDeReparto(abm, orCompte) {
 			CerrarWaiting();
 			$("#vistaEditarOR").html(html);
 			$("#vistaListaOR").addClass("d-none");
+			$("#tabPedidosDeCliente").addClass("d-none");
 			$("#vistaEditarOR").removeClass("d-none");
 			activarSeleccionDeFilas("#tbPedidosOR tbody");
 			activarSeleccionDeFilas("#tbPedidosPendientes tbody");
@@ -1994,6 +2075,7 @@ $(document).on("click", "#btnConfirmarORenABM", function () {
 
 function confirmarOrdenDeReparto() {
 	// Aquí hacés tu PostGenHtml o AJAX
+	AbrirWaiting("Confirmando Orden de Reparto...");
 	let accion = $("#accion").val(); // "A" o "M"
 	let or_compte = $("#or_compte").val(); // Solo para modificación
 	let or_obs = $("#OrdenDeReparto_or_obs").val().trim();
@@ -2095,16 +2177,6 @@ function cancelarOperacion() {
 	document.querySelector("#vistaEditarOR").innerHTML = "";
 }
 
-//$(document).on("click", "#btnConsolidar", function () {
-//	$("#vistaListaOR").addClass("d-none");
-//	$("#vistaConsolidarOR").removeClass("d-none");
-//});
-
-//$(document).on("click", "#btnConfirmarReasignacion, #btnCancelarReasignacion", function () {
-//	$("#vistaConsolidarOR").addClass("d-none");
-//	$("#vistaListaOR").removeClass("d-none");
-//});
-
 function obtenerListaPedidosOR() {
 	const filas = document.querySelectorAll("#tbPedidosOR tbody tr:not(.fila-vacia)");
 	const lista = [];
@@ -2135,6 +2207,8 @@ document.addEventListener("click", function (e) {
 		fecha: btn.dataset.fecha,
 		vendedor: btn.dataset.vendedor,
 		repartidor: btn.dataset.repartidor,
+		rpId: btn.dataset.rpId,
+		eId: btn.dataset.eid,
 		importe: parseFloat(btn.dataset.importe).toFixed(2)
 	};
 
@@ -2167,15 +2241,22 @@ document.addEventListener("click", function (e) {
         <td class="text-end">${pedido.importe}</td>
         <td class="text-center">
             <div class="d-flex justify-content-center gap-1">
-                <button class="btn btn-danger btn-table btn-sm btnQuitarPedido"
-                        data-id="${pedido.id}">
+				<button class="btn btn-danger btn-table btn-sm btnQuitarPedido"
+                        data-id="${pedido.id}"
+                        data-cliente="${pedido.cliente}"
+                        data-fecha="${pedido.fecha}"
+                        data-vendedor="${pedido.vendedor}"
+                        data-repartidor="${pedido.repartidor}"
+                        data-rp-id="${pedido.rpId}"
+                        data-importe="${pedido.importe}">
                     <i class="bx bx-minus"></i>
                 </button>
-
-                <button class="btn btn-secondary btn-table btn-sm btnEditarPedido"
-                        data-id="${pedido.id}">
-                    <i class="bx bx-edit"></i>
-                </button>
+				<button class="btn btn-secondary btn-table btn-sm btnEditarPedido"
+						data-id="${pedido.id}"
+						data-eid="${pedido.eid}"
+						title="Editar pedido">
+					<i class="bx bx-edit"></i>
+				</button>
             </div>
         </td>
     `;
@@ -2312,6 +2393,9 @@ document.addEventListener("click", function (e) {
 	const filaVaciaIzq = tablaIzquierda.querySelector(".fila-vacia");
 	if (filaVaciaIzq) filaVaciaIzq.remove();
 
+	// Colección para IDs duplicados encontrados (no movidos)
+	const duplicados = [];
+
 	// Mover filas
 	filasAMover.forEach(fila => {
 
@@ -2324,8 +2408,21 @@ document.addEventListener("click", function (e) {
 			vendedor: btn.dataset.vendedor,
 			repartidor: btn.dataset.repartidor,
 			rpId: btn.dataset.rpId,
+			eId: btn.dataset.eid,
 			importe: parseFloat(btn.dataset.importe).toFixed(2)
 		};
+
+		// Verificar si el pedido ya existe en la tabla destino (buscar por primera columna / td)
+		const existe = Array.from(tablaIzquierda.querySelectorAll("tr:not(.fila-vacia)")).some(r => {
+			const td = r.querySelector("td");
+			return td && td.textContent.trim() === pedido.id;
+		});
+
+		if (existe) {
+			duplicados.push(pedido.id);
+			// No mover esta fila (la dejamos en la tabla derecha)
+			return;
+		}
 
 		// Crear nueva fila en la izquierda
 		const tr = document.createElement("tr");
@@ -2348,6 +2445,12 @@ document.addEventListener("click", function (e) {
                         data-importe="${pedido.importe}">
                     <i class="bx bx-minus"></i>
                 </button>
+				<button class="btn btn-secondary btn-table btn-sm btnEditarPedido"
+						data-id="${pedido.id}"
+						data-eid="${pedido.eid}"
+						title="Editar pedido">
+					<i class="bx bx-edit"></i>
+				</button>
             </td>
         `;
 
@@ -2374,6 +2477,16 @@ document.addEventListener("click", function (e) {
 
 	});
 
+	// Si hubo duplicados, informar al usuario (una sola alerta)
+	if (duplicados.length > 0) {
+		const lista = duplicados.join(", ");
+		AbrirMensaje("ATENCIÓN", `Los siguientes pedidos ya existen en la tabla destino y no fueron movidos: ${lista}`, function () {
+			$("#msjModal").modal("hide");
+			$("#RepartidorSeleccionado").trigger("focus");
+			return true;
+		}, false, ["Aceptar"], "warning!", null);
+	}
+
 	setTimeout(() => {
 		desbloquearTablas();
 	}, 350);
@@ -2397,7 +2510,7 @@ function CerrarTabEdicionPedido() {
 	// 4) Limpiar contenido del tab de edición (opcional)
 	document.querySelector("#divEditarPedido").innerHTML = "";
 
-	ActualizarListaPedidosDeLaOrdenDeReparto();
+	//ActualizarListaPedidosDeLaOrdenDeReparto();
 }
 
 function ActualizarListaPedidosDeLaOrdenDeReparto() {
@@ -2659,7 +2772,7 @@ function ConfigurarEventosEnEdicionDePedidoDeCliente() {
 				$('#msjModal').modal('hide');
 			},
 			true,
-			['Confirmar', 'Cancelar'],
+			['SI', 'NO'],
 			'info!',
 			null
 		);
@@ -3257,12 +3370,14 @@ function crearSelectReemplazo(p_id_actual, p_id_remplazo) {
 	let html = `<select class="form-select form-select-sm input-pcd_reemplazo">
                     <option value="">-- Seleccionar --</option>`;
 
-	window.productosReemplazables.forEach(prod => {
-		if (prod.p_id !== p_id_actual) {
-			const selected = (prod.p_id === p_id_remplazo) ? "selected" : "";
-			html += `<option value="${prod.p_id}" ${selected}>${prod.p_id} - ${prod.p_desc}</option>`;
-		}
-	});
+	if (window.productosReemplazables && window.productosReemplazables != undefined) {
+		window.productosReemplazables.forEach(prod => {
+			if (prod.p_id !== p_id_actual) {
+				const selected = (prod.p_id === p_id_remplazo) ? "selected" : "";
+				html += `<option value="${prod.p_id}" ${selected}>${prod.p_id} - ${prod.p_desc}</option>`;
+			}
+		});
+	}
 
 	html += `</select>`;
 	return html;
@@ -3373,7 +3488,9 @@ function normalizarDatosProducto(producto) {
 		cantidad: 1,
 		pcd_pedida: 1,
 		pcd_enviada: 0,
-		pcd_origen_bool: true,
+		pcd_origen: 'N',
+		pcd_origen_bool: false,
+		PermiteDecimales: producto.up_id != '07',
 		// Impuestos
 		//ivaSituacion: String(producto.iva_situacion || 'E').trim(),
 		iva_situacion: producto.iva_situacion,
@@ -3820,7 +3937,7 @@ document.addEventListener("click", function (e) {
 			$('#msjModal').modal('hide');
 		},
 		true,
-		['Confirmar', 'Cancelar'],
+		['SI', 'NO'],
 		'info!',
 		null
 	);
@@ -3989,7 +4106,7 @@ function CargarPedidosDelReparto(orCompte) {
 		$("#divListaPedidosDeCliente").html(header + html);
 		CerrarWaiting();
 		configurarEventosSeleccionListaPedidosDeOR();
-		ConfigurarEstadoDeBotonesEnTabPedidosDeLaOrdenDeReparto("","")
+		ConfigurarEstadoDeBotonesEnTabPedidosDeLaOrdenDeReparto("", "")
 	});
 }
 
@@ -4322,10 +4439,12 @@ const maskConfigEnteros = {
 
 function deshabilitarTabPedidos() {
 	$("#tabPedidosDeCliente").addClass("tab-disabled");
+	$("#tabPedidosDeCliente").addClass("d-none");
 }
 
 function habilitarTabPedidos() {
 	$("#tabPedidosDeCliente").removeClass("tab-disabled");
+	$("#tabPedidosDeCliente").removeClass("d-none");
 }
 
 

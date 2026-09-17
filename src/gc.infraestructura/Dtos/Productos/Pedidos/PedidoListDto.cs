@@ -43,6 +43,7 @@ namespace gc.infraestructura.Dtos.Productos.Pedidos
 			set => pc_cf = value ? 'S' : 'N';
 		}
 		public string facturado => $"{tco_desc} {cm_compte}";
+		public string or_compte { get; set; } = string.Empty;
 	}
 
 	public class PedidoProductoDto : PedidoDto, IProductoConUnidad

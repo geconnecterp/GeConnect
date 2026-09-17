@@ -132,8 +132,9 @@ namespace gc.sitio.Areas.Distribuidora.Controllers
 		{
 			try
 			{
-				if (!VerificarAutenticacion(out IActionResult redirectResult))
-					return redirectResult;
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+					return RedirectToAction("Login", "Token", new { area = "seguridad" });
 
 				if (filters == null)
 				{

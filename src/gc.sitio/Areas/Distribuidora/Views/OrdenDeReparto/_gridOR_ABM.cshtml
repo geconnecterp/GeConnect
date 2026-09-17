@@ -16,21 +16,21 @@
             <div class="row g-3">
 
                 <input type="hidden" id="accion" name="accion" value="@Model?.Accion" />
-
-                <div class="col-md-2">
+                <input type="hidden" id="OreId" name="accion" value="@Model?.OrdenDeReparto.ore_id" />
+                <div class="col-1">
                     <label class="form-label fw-bold">ID OR</label>
                     <input type="text" class="form-control form-control-sm" id="or_compte"
                            value="@Model.OrdenDeReparto.or_compte" readonly>
                 </div>
 
-                <div class="col-md-2">
+                <div class="col-2">
                     <input type="hidden" id="ore_id" name="ore_id" value="@Model?.OrdenDeReparto.ore_id" />
                     <label class="form-label fw-bold">Estado</label>
                     <input type="text" class="form-control form-control-sm"
                            value="@Model.OrdenDeReparto.ore_desc" readonly>
                 </div>
 
-                <div class="col-md-2">
+                <div class="col-1">
                     <label class="form-label fw-bold">Fecha</label>
                     <input type="text" class="form-control form-control-sm"
                            value="@Model.OrdenDeReparto.or_fecha.ToString("dd/MM/yyyy")" readonly>
@@ -39,7 +39,7 @@
                 <!-- ===========================
                      REPARTIDOR (editable SIEMPRE)
                 ============================ -->
-                <div class="col-md-3">
+                <div class="col-3">
                     <label class="form-label fw-bold">Repartidor</label>
 
                     @if (Model.Accion == 'A')
@@ -66,7 +66,7 @@
                 <!-- ===========================
                      OBSERVACIONES (editable SIEMPRE)
                 ============================ -->
-                <div class="col-md-3">
+                <div class="col-2">
                     <label class="form-label fw-bold">Observaciones</label>
                     @Html.TextAreaFor(
                         m => m.OrdenDeReparto.or_obs,
@@ -74,17 +74,21 @@
                     )
                 </div>
 
+
+                <div class="col-3 gap-2 mt-5" style="text-align: center;">
+                    <button class="btn btn-success btn-sm btn-or" id="btnConfirmarORenABM">
+                        <i class="bx bx-check-circle"></i> Confirmar OR
+                    </button>
+
+                    <button class="btn btn-danger btn-sm btn-or" id="btnCancelarORenABM">
+                        <i class="bx bx-x-circle"></i> Cancelar
+                    </button>
+                </div>
             </div>
 
-            <div class="d-flex gap-2">
-                <button class="btn btn-success btn-sm btn-or" id="btnConfirmarORenABM">
-                    <i class="bx bx-check-circle"></i> Confirmar OR
-                </button>
-
-                <button class="btn btn-danger btn-sm btn-or" id="btnCancelarORenABM">
-                    <i class="bx bx-x-circle"></i> Cancelar
-                </button>
-            </div>
+@*             <div class="d-flex gap-2">
+                
+            </div> *@
 
         </div>
     </div>
@@ -96,11 +100,11 @@
     <div class="row g-3">
 
         <div class="col-md-6" id="divListaPedidosDeLaOrden">
-            @await Html.PartialAsync("_gridOR_ABM_PedidosEnOR", Model.ListaPedidosEnOrdenDeReparto)
+            @await Html.PartialAsync("_gridOR_ABM_PedidosEnOR", Model)
         </div>
 
         <div class="col-md-6">
-            @await Html.PartialAsync("_gridOR_ABM_PedidosPendientes", Model.ListaPedidosPendientes)
+            @await Html.PartialAsync("_gridOR_ABM_PedidosPendientes", Model)
         </div>
 
     </div>

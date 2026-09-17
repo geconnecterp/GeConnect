@@ -55,7 +55,7 @@ namespace gc.api.core.Servicios
 
 		public List<PedidoListDto> ObtenerListaPedidos(PedidoRequest req)
 		{
-			var sp = Constantes.ConstantesGC.StoredProcedures.SP_PC_LISTA_2;
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_PC_LISTA;
 
 			var ps = new List<SqlParameter>();
 			if (string.IsNullOrEmpty(req.cli_list))
