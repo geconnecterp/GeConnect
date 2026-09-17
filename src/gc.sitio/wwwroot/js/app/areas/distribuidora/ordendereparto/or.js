@@ -1811,9 +1811,9 @@ function ConfigurarEventosEnPonerEnCurso() {
 	$(document).off("click", "#btnAnalizarPonerEnCurso");
 	$(document).on("click", "#btnAnalizarPonerEnCurso", function () {
 		// Obtener depósitos seleccionados
-		//const depositosSeleccionados = [...document.querySelectorAll(".chk-depo:checked")]
+		//const depositosSeleccionados = [...document.querySelectorAll(".chkDeposito:checked")]
 		//	.map(chk => chk.closest("tr").dataset.depoId);
-		const depositosSeleccionados = $("#tbDepositos tbody .chk-depo:checked")
+		const depositosSeleccionados = $("#tbDepositos tbody .chkDeposito:checked")
 			.map(function () {
 				return $(this).closest("tr").data("depoId");
 			}).get();
@@ -1828,7 +1828,7 @@ function ConfigurarEventosEnPonerEnCurso() {
 		}
 
 		// Armar string con @
-		const cadenaDepositos = depositosSeleccionados.join("@");
+		const cadenaDepositos = JSON.stringify(ObtenerDepositosSeleccionadosJSON());
 
 		console.log("Depósitos seleccionados:", cadenaDepositos);
 
@@ -1907,19 +1907,113 @@ function ConfigurarEventosEnPonerEnCurso() {
 	$(document).off("change", "#chkDepoMaster");
 	$(document).on("change", "#chkDepoMaster", function () {
 		const checked = $(this).is(":checked");
-		$("#tbDepositos tbody .chk-depo").prop("checked", checked);
+		$("#tbDepositos tbody .chkDeposito").prop("checked", checked);
 	});
 
-	$(document).off("change", "#tbDepositos tbody .chk-depo");
-	$(document).on("change", "#tbDepositos tbody .chk-depo", function () {
+	$(document).off("change", "#tbDepositos tbody .chkDeposito");
+	$(document).on("change", "#tbDepositos tbody .chkDeposito", function () {
 
-		const total = $("#tbDepositos tbody .chk-depo").length;
-		const marcados = $("#tbDepositos tbody .chk-depo:checked").length;
+		const total = $("#tbDepositos tbody .chkDeposito").length;
+		const marcados = $("#tbDepositos tbody .chkDeposito:checked").length;
 
 		$("#chkDepoMaster").prop("checked", total > 0 && total === marcados);
 	});
 
 	deshabilitarTabPedidos();
+	addEventListenersToTablaDepositos();
+}
+
+function addEventListenersToTablaDepositos() {
+	var table = document.getElementById('tbDepositos');
+	if (!table) return;
+
+	var headerChk = document.getElementById('chkDepoMaster');
+	var rowParentChecks = table.querySelectorAll('tbody .chkDeposito');
+
+	rowParentChecks.forEach(function (chk) {
+		var row = chk.closest('tr');
+		updateRowChild(row);
+
+		chk.addEventListener('change', function () {
+			var row = chk.closest('tr');
+			if (chk.checked) {
+				updateRowChild(row);
+			} else {
+				removeChildCheckbox(row);
+			}
+		});
+	});
+
+	if (headerChk) {
+		headerChk.addEventListener('change', function () {
+			var checked = headerChk.checked;
+			rowParentChecks.forEach(function (chk) {
+				chk.checked = checked;
+				chk.dispatchEvent(new Event('change'));
+			});
+		});
+	}
+}
+
+function ObtenerDepositosSeleccionadosJSON() {
+	var lista = [];
+
+	$("#tbDepositos tbody tr").each(function () {
+		var row = this;
+		var chkParent = $(row).find(".chkDeposito");
+
+		if (chkParent.length && chkParent.is(":checked")) {
+
+			// depo_id está en la columna oculta (última)
+			var depoId = $(row).find("td:eq(3)").text().trim();
+
+			// obtener checkbox hijo
+			var chkChild = getChildCheckbox(row);
+
+			var soloSiNoHayStk = (chkChild && chkChild.checked) ? "S" : "N";
+
+			lista.push({
+				depo_id: depoId,
+				solo_sino_hay_stk: soloSiNoHayStk
+			});
+		}
+	});
+
+	return lista;
+}
+function getChildCheckbox(row) {
+	return row.querySelector('.chkSoloSiNoHayStk');
+}
+
+function getChildCell(row) {
+	return row.querySelector('.td-solo-si-no-hay-stk');
+}
+
+function createChildCheckbox(row, depoId) {
+	var cell = getChildCell(row);
+	if (!cell) return;
+	if (cell.querySelector('input.chkSoloSiNoHayStk')) return;
+
+	var name = 'soloSiNoHayStk_' + (depoId || '');
+	cell.innerHTML = '<input type="checkbox" class="chkSoloSiNoHayStk" name="' + name + '" />';
+}
+
+function removeChildCheckbox(row) {
+	var cell = getChildCell(row);
+	if (!cell) return;
+	cell.innerHTML = '';
+}
+
+function updateRowChild(row) {
+	var parentChk = row.querySelector('.chkDeposito');
+	if (!parentChk) return;
+	var depoIdTd = row.querySelector('td[style*="display:none"]') || row.querySelector('td:last-child');
+	var depoId = depoIdTd ? depoIdTd.textContent.trim() : '';
+	if (parentChk.checked) {
+		createChildCheckbox(row, depoId);
+	} else {
+		removeChildCheckbox(row);
+	}
 }
 
 function ConfirmarPonerEnCursoOrdenDeReparto(orCompteSeleccionado) {
@@ -4274,7 +4368,7 @@ function activarSeleccionDeFilas(selectorTabla) {
 $(document).on("click", "#btnAnalizar", function () {
 
 	// Obtener depósitos seleccionados
-	const seleccionados = [...document.querySelectorAll(".chk-depo:checked")]
+	const seleccionados = [...document.querySelectorAll(".chkDeposito:checked")]
 		.map(chk => chk.closest("tr").dataset.depoId);
 
 	if (seleccionados.length === 0) {

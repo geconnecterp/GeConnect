@@ -97,8 +97,13 @@
 			}
 			else
 			{
+				string ultimoProducto = null;
+
 				foreach (var item in Model.ListaDatos)
 				{
+					bool esRepetido = (ultimoProducto == item.p_id + "|" + item.p_desc + "|" + item.p_id_prov);
+					ultimoProducto = item.p_id + "|" + item.p_desc + "|" + item.p_id_prov;
+
 					var dif = @item.a_enviar - @item.pedido;
 					var claseDif = dif > 0 ? "dif-positivo" : (dif < 0 ? "dif-negativo" : "");
 
@@ -109,10 +114,15 @@
 						data-box-id="@item.box_id"
 						data-sustituto="@item.p_sustituto"
 						data-p-id-sustituto="@item.p_id_sustituto">
-
-						<td class="text-center">@item.p_id</td>
-						<td>@item.p_desc</td>
-						<td class="text-center">@item.p_id_prov</td>
+						<td class="text-center">
+							@(esRepetido ? "" : item.p_id)
+						</td>
+						<td>
+							@(esRepetido ? "" : item.p_desc)
+						</td>
+						<td class="text-center">
+							@(esRepetido ? "" : item.p_id_prov)
+						</td>
 						<td class="text-center">@item.pc_compte</td>
 						<td class="text-end col-num">@GridHelper.FormatearDato(item.stk, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
 						<td class="text-end col-num">@GridHelper.FormatearDato(item.pedido, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>

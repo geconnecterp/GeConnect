@@ -2,6 +2,8 @@
 @model OrdenDeRepartoPonerEnCursoModel
 
 @{
+	var alt = true;
+	string clase = string.Empty;
 	var or = Model.OrdenDeReparto;
 	var listaDepositos = Model.ListaDepositos?.ListaDatos?.ToList() ?? new List<TRAutDepoDto>();
 }
@@ -58,18 +60,26 @@
 									<th class="text-center">
 										<input type="checkbox" id="chkDepoMaster" class="form-check-input" />
 									</th>
+									<th style="width:10%;" class="align-center">Solo si<br />no hay stk</th>
+									<th style="width:0%; display:none;">depo_id</th>
 								</tr>
 							</thead>
 							<tbody>
 								@foreach (var d in listaDepositos)
 								{
-									<tr data-depo-id="@d.depo_id">
+									if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+									<tr class="@clase"
+										data-depo-id="@d.depo_id">
 										<td>@d.depo_nombre</td>
 										<td class="text-center">
 											<input type="checkbox"
-												   class="form-check-input chk-depo"
+												   class="form-check-input chkDeposito"
 												   @(d.seleccionado ? "checked" : "") />
 										</td>
+										<td class="text-center td-solo-si-no-hay-stk">
+											@* Celda gestionada por JS: si el checkbox de la fila está marcado, se inserta aquí un checkbox hijo (inicialmente desmarcado). *@
+										</td>
+										<td style="width:0%; display:none;">@d.depo_id</td>
 									</tr>
 								}
 							</tbody>

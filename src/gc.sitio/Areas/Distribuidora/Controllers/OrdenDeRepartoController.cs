@@ -392,7 +392,7 @@ namespace gc.sitio.Areas.Distribuidora.Controllers
 				if (string.IsNullOrEmpty(listaDepo))
 					return PartialView("_gridMensaje", CrearRespuestaError("No se han provisto los datos necesarios: Debe seleccionar al menos un depósito."));
 
-				var itemsAnaliza = await _ordenDeRepartoServicio.AnalizarAutOrdenDeReparto(new AnalizarAutOrdenDeRepartoRequest() { or_compte = orCompte, dep_ids = listaDepo, palet_nro = 0, stk_existente = false, sustituto = false }, TokenCookie);
+				var itemsAnaliza = await _ordenDeRepartoServicio.AnalizarAutOrdenDeReparto(new AnalizarAutOrdenDeRepartoRequest() { or_compte = orCompte, dep_ids = listaDepo, palet_nro = 0 }, TokenCookie);
 				AnalizarAutOrdenDeRepartoLista = itemsAnaliza.ListaEntidad ?? [];
 				return PartialView("_gridOR_PonerEnCurso_TablaAnalizaAut", ObtenerGridCoreSmart<AnalizarAutOrdenDeRepartoDto>(itemsAnaliza.ListaEntidad == null ? [] : itemsAnaliza.ListaEntidad.ToList()));
 			}

@@ -115,9 +115,7 @@ namespace gc.api.core.Servicios
 
 			var ps = new List<SqlParameter>() {
 				new("@or_compte", req.or_compte),
-				new("@lista_depo", req.dep_ids),
-				new("@stk_existente", req.stk_existente),
-				new("@sustituto", req.sustituto),
+				new("@json_depo", req.dep_ids),
 				new("@palet_nro", req.palet_nro),
 				};
 
