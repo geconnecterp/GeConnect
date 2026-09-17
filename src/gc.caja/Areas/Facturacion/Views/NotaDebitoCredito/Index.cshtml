@@ -82,6 +82,11 @@
 @await Html.PartialAsync("~/Areas/Facturacion/Views/NotaDebitoCredito/_OperacionConceptos.cshtml")
 @await Html.PartialAsync("~/Areas/Facturacion/Views/NotaDebitoCredito/_Calculo.cshtml")
 
+@section styles {
+    <link rel="stylesheet" href="~/css/cuentaResumenCompacto.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/ndNcFs.css" asp-append-version="true" />
+}
+
 @section Scripts {
     <script>
         var BuscarClienteUrl =

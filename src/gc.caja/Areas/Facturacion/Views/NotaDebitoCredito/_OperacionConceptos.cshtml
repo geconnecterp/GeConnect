@@ -6,7 +6,7 @@
      data-bs-backdrop="static"
      data-bs-keyboard="false">
     <div class="modal-dialog modal-fullscreen">
-        <div class="modal-content">
+        <div class="modal-content ndcfs-compacto">
             <div class="modal-header bg-gradient-golden text-white">
                 <div>
                     <h5 class="modal-title mb-0" id="modalNdcfsConceptosLabel">
@@ -17,59 +17,22 @@
                 </div>
             </div>
 
-            <div class="modal-body p-4">
-                <div class="row g-3 mb-3">
-                    <div class="col-md-3">
-                        <label class="form-label">Nombre</label>
-                        <input type="text" class="form-control" id="txtNdcfsNombreConceptos" readonly />
-                    </div>
-                    <div class="col-md-2">
-                        <label class="form-label">ID</label>
-                        <input type="text" class="form-control" id="txtNdcfsIdConceptos" readonly />
-                    </div>
-                    <div class="col-md-3">
-                        <label class="form-label">Domicilio</label>
-                        <input type="text" class="form-control" id="txtNdcfsDomicilioConceptos" readonly />
-                    </div>
-                    <div class="col-md-2">
-                        <label class="form-label">Tipo/Nro</label>
-                        <input type="text" class="form-control" id="txtNdcfsTipoNumeroConceptos" readonly />
-                    </div>
-                    <div class="col-md-2">
-                        <label class="form-label">Emite</label>
-                        <input type="text" class="form-control fw-bold text-golden-dark" id="txtNdcfsEmiteConceptos" readonly />
-                    </div>
-                    <div class="col-md-3">
-                        <label class="form-label">Condicion AFIP</label>
-                        <input type="text" class="form-control" id="txtNdcfsAfipConceptos" readonly />
-                    </div>
-                    <div class="col-md-3">
-                        <label class="form-label">Email</label>
-                        <input type="text" class="form-control" id="txtNdcfsEmailConceptos" readonly />
-                    </div>
-                    <div class="col-md-3">
-                        <label class="form-label">Movil</label>
-                        <input type="text" class="form-control" id="txtNdcfsMovilConceptos" readonly />
-                    </div>
-                    <div class="col-md-3">
-                        <label class="form-label">Cuenta</label>
-                        <input type="text" class="form-control" id="txtNdcfsOrigenConceptos" readonly />
-                    </div>
-                </div>
+            <div class="modal-body ndcfs-body">
+                @await Html.PartialAsync("~/Areas/Facturacion/Views/Shared/_ResumenCuentaCompacto.cshtml", (Prefijo: "txtNdcfs", Sufijo: "Conceptos"))
 
-                <div class="row g-3 align-items-end mb-3">
-                    <div class="col-md-3">
-                        <label class="form-label">Emite</label>
+                <div class="ndcfs-editor">
+                    <div class="ndcfs-emite">
+                        <label class="form-label" for="cmbNdcfsOperacion">Emite</label>
                         <select class="form-select" id="cmbNdcfsOperacion"></select>
                     </div>
-                    <div class="col-md-3 ndcfs-origen-nc d-none">
-                        <label class="form-label">T. Comp. Ori.</label>
+                    <div class="ndcfs-tipo-origen ndcfs-origen-nc d-none">
+                        <label class="form-label" for="cmbNdcfsTcoOri">T. Comp. Ori.</label>
                         <select class="form-select" id="cmbNdcfsTcoOri">
                             <option value="">Cargando...</option>
                         </select>
                     </div>
-                    <div class="col-md-2 ndcfs-origen-nc d-none">
-                        <label class="form-label">PV Ori.</label>
+                    <div class="ndcfs-pv-origen ndcfs-origen-nc d-none">
+                        <label class="form-label" for="txtNdcfsPuntoVentaOri">PV Ori.</label>
                         <input type="text"
                                class="form-control input-integer text-center"
                                id="txtNdcfsPuntoVentaOri"
@@ -78,8 +41,8 @@
                                autocomplete="off"
                                placeholder="0000" />
                     </div>
-                    <div class="col-md-3 ndcfs-origen-nc d-none">
-                        <label class="form-label">Nro. Comp. Ori.</label>
+                    <div class="ndcfs-numero-origen ndcfs-origen-nc d-none">
+                        <label class="form-label" for="txtNdcfsNumeroCompteOri">Nro. Comp. Ori.</label>
                         <input type="text"
                                class="form-control input-integer text-center"
                                id="txtNdcfsNumeroCompteOri"
@@ -91,31 +54,28 @@
                     <input type="hidden" id="txtNdcfsTcoOri" />
                     <input type="hidden" id="txtNdcfsCompteOri" />
                     <input type="hidden" id="txtNdcfsRepetidoOri" value="0" />
-                </div>
-
-                <div class="row g-3 align-items-end mb-3">
-                    <div class="col-md-2">
-                        <label class="form-label">Neto</label>
+                    <div class="ndcfs-neto">
+                        <label class="form-label" for="txtNdcfsNeto">Neto</label>
                         <input type="text" class="form-control input-decimal text-end" id="txtNdcfsNeto" />
                     </div>
-                    <div class="col-md-2">
-                        <label class="form-label">IVA</label>
+                    <div class="ndcfs-iva">
+                        <label class="form-label" for="cmbNdcfsIva">IVA</label>
                         <select class="form-select text-end ndcfs-select-numero" id="cmbNdcfsIva">
                             <option value="">Cargando...</option>
                         </select>
                     </div>
-                    <div class="col-md-2">
-                        <label class="form-label">Cantidad</label>
+                    <div class="ndcfs-cantidad">
+                        <label class="form-label" for="txtNdcfsCantidad">Cantidad</label>
                         <input type="text" class="form-control input-integer text-end" id="txtNdcfsCantidad" value="1" />
                     </div>
-                    <div class="col-md-5">
-                        <label class="form-label">Concepto</label>
+                    <div class="ndcfs-concepto">
+                        <label class="form-label" for="txtNdcfsConcepto">Concepto</label>
                         <input type="text" class="form-control input-text" id="txtNdcfsConcepto" maxlength="120" />
                         <input type="hidden" id="txtNdcfsAlicuota" value="0.00" />
                         <input type="hidden" id="txtNdcfsPerIb" value="0.00" />
                         <input type="hidden" id="txtNdcfsPerIva" value="0.00" />
                     </div>
-                    <div class="col-md-1 d-grid">
+                    <div class="ndcfs-agregar d-grid">
                         <button type="button" class="btn btn-golden" id="btnNdcfsAgregarConcepto" title="Agregar concepto">
                             <i class="bx bx-plus-circle fs-4"></i>
                         </button>
@@ -124,7 +84,7 @@
 
                 <div class="alert alert-warning border-golden py-2 d-none" id="ndcfsMensajeConcepto"></div>
 
-                <div class="card card-golden shadow-sm">
+                <div class="card card-golden ndcfs-grid">
                     <div class="card-header d-flex justify-content-between align-items-center">
                         <h6 class="mb-0">
                             <i class="bx bx-list-ul"></i>
@@ -137,15 +97,17 @@
                                 <thead class="table-golden-header">
                                     <tr>
                                         <th>Concepto</th>
+                                        <th class="text-end">Neto Unitario</th>
+                                        <th class="text-end">IVA %</th>
+                                        <th class="text-end">P. Venta Unitario</th>
                                         <th class="text-end">Cantidad</th>
-                                        <th class="text-end">Precio Uni</th>
-                                        <th class="text-end">Precio TOT</th>
+                                        <th class="text-end">Precio Total</th>
                                         <th class="text-center">Accion</th>
                                     </tr>
                                 </thead>
                                 <tbody id="tbodyNdcfsConceptos">
                                     <tr id="rowNdcfsSinConceptos">
-                                        <td colspan="5" class="text-center text-muted py-4">
+                                        <td colspan="7" class="text-center text-muted py-4">
                                             <i class="bx bx-info-circle"></i>
                                             Sin conceptos cargados
                                         </td>
@@ -157,7 +119,7 @@
                     <div class="card-footer bg-golden-light border-top border-golden ndcfs-total-footer">
                         <div class="row g-2 align-items-center">
                             <div class="col-md-8 text-end">
-                                <span class="fw-bold text-golden-dark fs-4">TOTAL:</span>
+                                <span class="fw-bold text-golden-dark">TOTAL:</span>
                             </div>
                             <div class="col-md-4">
                                 <div class="form-control form-control-lg text-end fw-bold text-success ndcfs-total-display" id="lblNdcfsTotalConceptos">$ 0.00</div>

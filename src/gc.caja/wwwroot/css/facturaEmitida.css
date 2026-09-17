@@ -1,0 +1,35 @@
+#modalFacturaEmitida {
+    z-index: 5050;
+}
+
+#modalFacturaEmitida .modal-content {
+    border-radius: 8px;
+}
+
+#modalFacturaEmitida .form-label {
+    font-weight: 600;
+}
+
+#modalFacturaEmitida input {
+    font-variant-numeric: tabular-nums;
+}
+
+#txtFacturaEmitidaPv,
+#txtFacturaEmitidaNumero {
+    text-align: center;
+}
+
+#estadoFacturaEmitida {
+    min-height: 1.5rem;
+    max-height: 8rem;
+    overflow-y: auto;
+    white-space: pre-line;
+    overflow-wrap: anywhere;
+}
+
+@media (max-width: 575.98px) {
+    #modalFacturaEmitida .modal-dialog {
+        align-items: flex-start;
+        padding-top: 0.5rem;
+    }
+}
