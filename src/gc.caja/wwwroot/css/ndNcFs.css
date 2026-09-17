@@ -1,0 +1,131 @@
+.ndcfs-compacto .modal-header { padding: 8px 16px; flex-shrink: 0; }
+.ndcfs-compacto .modal-title { font-size: 1.125rem; }
+.ndcfs-compacto .modal-header small { font-size: .75rem; }
+.ndcfs-compacto .ndcfs-body {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 10px 16px;
+    min-height: 0;
+    overflow: auto;
+}
+.ndcfs-compacto .modal-footer { padding: 8px 16px; flex-shrink: 0; }
+.ndcfs-compacto .modal-footer .btn { min-height: 40px; font-size: 1rem; padding: 6px 16px !important; }
+.ndcfs-editor {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    align-items: end;
+    gap: 6px 10px;
+    flex-shrink: 0;
+}
+.ndcfs-editor > div { min-width: 0; }
+.ndcfs-editor .form-label { display: block; font-size: .8125rem; line-height: 1.2; margin-bottom: 3px; }
+.ndcfs-editor .form-control,
+.ndcfs-editor .form-select { height: 36px; min-height: 36px; padding-top: 4px; padding-bottom: 4px; font-size: .875rem; }
+.ndcfs-editor .btn { height: 36px; padding: 4px 10px; }
+.ndcfs-emite { grid-column: span 3; }
+.ndcfs-neto { grid-column: span 2; }
+.ndcfs-iva, .ndcfs-cantidad, .ndcfs-agregar { grid-column: span 1; }
+.ndcfs-concepto { grid-column: span 4; }
+.ndcfs-tipo-origen { grid-column: span 4; }
+.ndcfs-pv-origen { grid-column: span 2; }
+.ndcfs-numero-origen { grid-column: span 3; }
+.ndcfs-editor:has(.ndcfs-origen-nc:not(.d-none)) .ndcfs-iva,
+.ndcfs-editor:has(.ndcfs-origen-nc:not(.d-none)) .ndcfs-cantidad { grid-column: span 2; }
+.ndcfs-editor:has(.ndcfs-origen-nc:not(.d-none)) .ndcfs-concepto { grid-column: span 5; }
+.ndcfs-compacto #ndcfsMensajeConcepto { margin: 0; flex-shrink: 0; }
+
+.ndcfs-compacto .ndcfs-grid { flex: 1 1 0; min-height: 180px; overflow: hidden; border-radius: 4px; box-shadow: none; }
+.ndcfs-compacto .ndcfs-grid > .card-body { display: flex; min-height: 0; overflow: hidden; }
+.ndcfs-compacto .card-header { padding: 7px 10px; }
+.ndcfs-compacto .card-header h6 { font-size: .875rem; }
+#modalNdcfsConceptos .ndcfs-tabla-conceptos,
+#modalNdcfsCalculo .table-calc-conceptos { flex: 1; min-height: 0; max-height: none; overflow: auto; }
+.ndcfs-compacto .table { table-layout: auto; width: 100%; }
+/* Solo Concepto absorbe el espacio restante; los numeros no cambian al cargar filas. */
+#tbNdcfsConceptos { table-layout: fixed; min-width: 1066px; }
+#tbNdcfsConceptos th:first-child { width: auto; }
+#tbNdcfsConceptos th:nth-child(2),
+#tbNdcfsConceptos th:nth-child(4) { width: 190px; }
+#tbNdcfsConceptos th:nth-child(3) { width: 72px; }
+#tbNdcfsConceptos th:nth-child(5) { width: 120px; }
+#tbNdcfsConceptos th:nth-child(6) { width: 210px; }
+#tbNdcfsConceptos th:nth-child(7) { width: 64px; }
+#tbNdcfsConceptos td.ndcfs-descripcion { min-width: 0; max-width: none; }
+#tbNdcfsSubtotales { min-width: 330px; }
+.ndcfs-compacto .table th,
+.ndcfs-compacto .table td { width: 1%; white-space: nowrap; vertical-align: middle; font-variant-numeric: tabular-nums; }
+.ndcfs-compacto .table tbody td { padding: 3px 8px !important; line-height: 1.25; font-size: 14px !important; }
+.ndcfs-compacto .table th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    padding: 7px 8px !important;
+    font-size: 13px !important;
+    color: #29251b !important;
+    background: #e8c65a !important;
+}
+.ndcfs-compacto .table th:first-child,
+.ndcfs-compacto .table td.ndcfs-descripcion { width: 100%; }
+.ndcfs-compacto .table td.ndcfs-descripcion { max-width: 0; min-width: 150px; }
+.ndcfs-descripcion span { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#txtNdcfsConcepto { text-transform: uppercase; }
+#ndcfsEsperaFinalizacion {
+    position: fixed;
+    inset: 0;
+    z-index: 2147483000;
+    display: grid;
+    place-items: center;
+    padding: 16px;
+    background: rgba(0, 0, 0, .5);
+    pointer-events: auto;
+    cursor: wait;
+}
+.ndcfs-espera-contenido {
+    display: grid;
+    gap: 10px;
+    width: min(100%, 460px);
+    padding: 24px;
+    border: 2px solid var(--bs-golden-primary);
+    border-radius: 6px;
+    background: #fff;
+    color: #29251b;
+    text-align: center;
+}
+.ndcfs-compacto .btn-ndcfs-eliminar-concepto { min-width: 32px; height: 30px; padding: 3px 7px; }
+#modalNdcfsConceptos .ndcfs-total-footer { padding: 5px 10px; flex-shrink: 0; }
+#modalNdcfsConceptos .ndcfs-total-footer .row { display: flex; flex-wrap: nowrap; justify-content: flex-end; margin: 0; gap: 12px; }
+#modalNdcfsConceptos .ndcfs-total-footer .row > div { width: auto; padding: 0; margin: 0; }
+#modalNdcfsConceptos .ndcfs-total-display { min-height: 32px; height: auto; padding: 2px 10px; font-size: 1.25rem; line-height: 1.3; border-width: 1px; box-shadow: none; }
+.ndcfs-calculo-layout { display: grid; grid-template-columns: minmax(0, 2fr) minmax(280px, 1fr); gap: 10px; flex: 1; min-height: 180px; }
+.ndcfs-calculo-detalle { display: flex; min-height: 0; min-width: 0; }
+.ndcfs-calculo-operacion { min-width: 0; }
+.ndcfs-calculo-operacion .card-body { padding: 8px 12px; }
+.ndcfs-compacto .ndcfs-operacion-item { padding: 5px 0; }
+.ndcfs-compacto .table tfoot td { position: sticky; bottom: 0; background: #fff2bf !important; font-size: 1.125rem !important; line-height: 1.3; padding: 6px 8px !important; }
+
+@media (max-width: 1199.98px) {
+    .ndcfs-emite { grid-column: span 6; }
+    .ndcfs-editor:has(.ndcfs-origen-nc:not(.d-none)) .ndcfs-emite { grid-column: span 4; }
+    .ndcfs-neto, .ndcfs-iva, .ndcfs-cantidad { grid-column: span 2; }
+    .ndcfs-concepto { grid-column: span 10; }
+    .ndcfs-agregar { grid-column: span 2; }
+    .ndcfs-tipo-origen { grid-column: span 4; }
+    .ndcfs-pv-origen, .ndcfs-numero-origen { grid-column: span 2; }
+    .ndcfs-editor:has(.ndcfs-origen-nc:not(.d-none)) .ndcfs-concepto { grid-column: span 4; }
+}
+@media (max-width: 767.98px) {
+    .ndcfs-compacto .ndcfs-body { padding: 8px; }
+    .ndcfs-compacto .modal-footer > .d-flex { flex-direction: row !important; gap: 8px; }
+    .ndcfs-compacto .modal-title { font-size: 1rem; }
+    .ndcfs-compacto .ndcfs-grid { flex: none; height: 320px; }
+    .ndcfs-editor { grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 6px; }
+    .ndcfs-emite, .ndcfs-tipo-origen,
+    .ndcfs-editor:has(.ndcfs-origen-nc:not(.d-none)) .ndcfs-emite { grid-column: span 6; }
+    .ndcfs-pv-origen, .ndcfs-numero-origen { grid-column: span 3; }
+    .ndcfs-concepto,
+    .ndcfs-editor:has(.ndcfs-origen-nc:not(.d-none)) .ndcfs-concepto { grid-column: span 5; }
+    .ndcfs-agregar { grid-column: span 1; }
+    .ndcfs-calculo-layout { display: flex; flex-direction: column; flex: none; }
+    .ndcfs-calculo-detalle .ndcfs-grid { width: 100%; }
+}

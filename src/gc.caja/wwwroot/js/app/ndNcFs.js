@@ -58,6 +58,9 @@
     let calculoActual = null;
     let calculoEnCurso = false;
     let confirmacionEnCurso = false;
+    let confirmacionPendiente = false;
+    let operacionFinalizada = false;
+    let estadoBloqueoPantalla = null;
     let ivaAlicuotasCargadas = false;
     let tiposComprobanteOrigenCargados = false;
 
@@ -172,7 +175,32 @@
         });
         $(document).on('focus', SELECTORES.cantidad, function () {
             normalizarInputParaEdicion($(this));
+            this.select();
         });
+        $(document).on('focus', SELECTORES.concepto, function () {
+            this.select();
+        });
+        // Enter recorre los campos de carga y termina en el boton Agregar.
+        const recorridoConcepto = [
+            SELECTORES.neto, SELECTORES.iva, SELECTORES.cantidad,
+            SELECTORES.concepto, SELECTORES.btnAgregarConcepto
+        ];
+        $(SELECTORES.modalConceptos).on('keydown.ndcfsNavegacion',
+            recorridoConcepto.slice(0, -1).join(', '), function (event) {
+                if (event.key !== 'Enter' || event.ctrlKey || event.altKey ||
+                    event.metaKey || event.shiftKey || event.originalEvent?.isComposing) {
+                    return;
+                }
+
+                event.preventDefault();
+                event.stopPropagation();
+                if (event.originalEvent?.repeat) {
+                    return;
+                }
+
+                const indice = recorridoConcepto.indexOf(`#${this.id}`);
+                $(recorridoConcepto[indice + 1]).trigger('focus');
+            });
         $(document).on('click', SELECTORES.btnAgregarConcepto, agregarConcepto);
         $(document).on('click', '.btn-ndcfs-eliminar-concepto', function () {
             eliminarConcepto($(this).data('index'));
@@ -752,7 +780,7 @@
 
     function agregarConcepto() {
         const concepto = {
-            concepto: String($(SELECTORES.concepto).val() || '').trim(),
+            concepto: String($(SELECTORES.concepto).val() || '').trim().toUpperCase(),
             cantidad: parsearNumero($(SELECTORES.cantidad).val(), 1),
             netoGravado: parsearNumero($(SELECTORES.neto).val(), 0),
             alicuotaIva: parsearNumero($(SELECTORES.iva).val(), 0),
@@ -818,7 +846,7 @@
         if (conceptos.length === 0) {
             $tbody.html(`
                 <tr id="rowNdcfsSinConceptos">
-                    <td colspan="5" class="text-center text-muted py-4">
+                    <td colspan="7" class="text-center text-muted py-4">
                         <i class="bx bx-info-circle"></i>
                         Sin conceptos cargados
                     </td>
@@ -832,14 +860,17 @@
 
         let total = 0;
         conceptos.forEach(function (item, index) {
-            const totalItem = item.netoGravado * item.cantidad;
+            const precioUnitario = calcularPrecioUnitario(item);
+            const totalItem = redondearImporte(precioUnitario * item.cantidad);
             total += totalItem;
 
             $tbody.append(`
                 <tr>
-                    <td>${escaparHtml(item.concepto)}</td>
-                    <td class="text-end">${formatearNumero(item.cantidad, 0)}</td>
+                    <td class="ndcfs-descripcion"><span title="${escaparHtml(item.concepto.toUpperCase())}">${escaparHtml(item.concepto.toUpperCase())}</span></td>
                     <td class="text-end">${formatearMoneda(item.netoGravado)}</td>
+                    <td class="text-end">${formatearPorcentaje(item.alicuotaIva)}</td>
+                    <td class="text-end">${formatearMoneda(precioUnitario)}</td>
+                    <td class="text-end">${formatearNumero(item.cantidad, 0)}</td>
                     <td class="text-end fw-bold">${formatearMoneda(totalItem)}</td>
                     <td class="text-center">
                         <button type="button"
@@ -907,6 +938,7 @@
 
         logPaso('Request calculo de conceptos', request);
         calculoEnCurso = true;
+        calculoActual = null;
         mostrarLoaderNdcfs('Calculando operacion...');
         $(SELECTORES.btnSeguirConceptos).prop('disabled', true).html('<i class="bx bx-loader-alt bx-spin"></i> CALCULANDO');
 
@@ -922,6 +954,7 @@
                 logPaso('Response calculo de conceptos', response);
                 if (!response || response.ok !== true) {
                     mostrarMensajeConcepto(response?.mensaje || 'No se pudo calcular la operacion.');
+                    mostrarMensaje('Error de calculo', response?.mensaje || 'No se pudo calcular la operacion.', 'error!');
                     return;
                 }
 
@@ -976,7 +1009,7 @@
                 const importe = parsearNumero(item.importe, 0);
                 $tbody.append(`
                     <tr>
-                        <td>${escaparHtml(item.concepto || item.tipo || '-')}</td>
+                        <td class="ndcfs-descripcion"><span title="${escaparHtml(item.concepto || item.tipo || '-')}">${escaparHtml(item.concepto || item.tipo || '-')}</span></td>
                         <td class="text-end ${esTotal(item) ? 'fw-bold text-success' : ''}">
                             ${formatearMoneda(importe)}
                         </td>
@@ -1067,7 +1100,7 @@
     }
 
     function confirmarOperacion() {
-        if (confirmacionEnCurso) {
+        if (confirmacionEnCurso || confirmacionPendiente || operacionFinalizada) {
             logWarn('Confirmacion ignorada: ya existe una en curso');
             return;
         }
@@ -1079,6 +1112,7 @@
         }
 
         logPaso('Solicitando confirmacion final al operador', calculoActual);
+        confirmacionPendiente = true;
         AbrirMensaje(
             'Confirmar Operacion',
             `
@@ -1088,6 +1122,7 @@
                 </div>
             `,
             function (respuesta) {
+                confirmacionPendiente = false;
                 $('#msjModal').modal('hide');
                 if (respuesta !== 'SI') {
                     return;
@@ -1103,6 +1138,9 @@
     }
 
     function ejecutarConfirmacion() {
+        if (confirmacionEnCurso || operacionFinalizada) {
+            return;
+        }
         const url = String(window.ndcfsConfirmarOperacionUrl || '').trim();
         if (!url) {
             logError('Confirmacion cancelada: URL no encontrada');
@@ -1112,7 +1150,6 @@
 
         logPaso('Ejecutando confirmacion de operacion', { url: url, calculoActual: calculoActual });
         confirmacionEnCurso = true;
-        mostrarLoaderNdcfs('Finalizando operacion. Aguarde, no toque nada hasta que el proceso termine...');
         mostrarEsperaFinalizacion();
         $(SELECTORES.btnFinalizar).prop('disabled', true).html('<i class="bx bx-loader-alt bx-spin"></i> FINALIZANDO');
 
@@ -1124,6 +1161,8 @@
         })
             .done(function (response) {
                 logPaso('Response confirmacion de operacion', response);
+                ocultarEsperaFinalizacion();
+                operacionFinalizada = response?.ok === true || response?.operacion_confirmada === true;
                 if (!response || response.ok !== true) {
                     mostrarMensaje('Atencion', response?.mensaje || 'No se pudo confirmar la operacion.', 'warn!');
                     return;
@@ -1132,38 +1171,55 @@
                 procesarConfirmacionExitosa(response);
             })
             .fail(function (xhr) {
+                ocultarEsperaFinalizacion();
+                // Sin respuesta concluyente no se permite reenviar una emision fiscal.
+                operacionFinalizada = true;
                 logError('Error AJAX confirmando operacion', {
                     status: xhr?.status,
                     response: xhr?.responseJSON || xhr?.responseText
                 });
-                mostrarMensaje('Error de Comunicacion', xhr?.responseJSON?.mensaje || 'Ocurrio un error al confirmar.', 'error!');
+                mostrarMensaje('Resultado no verificado', 'No se pudo verificar si el comprobante fue emitido. No repita la operacion; verifique el resultado antes de continuar.', 'error!');
             })
             .always(function () {
                 confirmacionEnCurso = false;
-                ocultarLoaderNdcfs();
                 ocultarEsperaFinalizacion();
-                $(SELECTORES.btnFinalizar).prop('disabled', false).html('<i class="bx bx-check-circle"></i> FINALIZAR');
+                $(SELECTORES.btnFinalizar).prop('disabled', operacionFinalizada).html('<i class="bx bx-check-circle"></i> FINALIZAR');
+                $(SELECTORES.btnVolverCalculo).prop('disabled', operacionFinalizada);
             });
     }
 
     function mostrarEsperaFinalizacion() {
-        const $modal = $(SELECTORES.modalCalculo);
-        if ($modal.find('#ndcfsEsperaFinalizacion').length > 0) {
+        if (estadoBloqueoPantalla) {
             return;
         }
-        $modal.find('.modal-body').prepend(`
-            <div id="ndcfsEsperaFinalizacion" class="alert alert-warning border-golden d-flex align-items-center mb-3" role="alert">
-                <i class="bx bx-loader-alt bx-spin fs-3 me-2"></i>
-                <div>
+        if (typeof cerrarTecladoDigital === 'function') cerrarTecladoDigital();
+        estadoBloqueoPantalla = [...document.body.children].map(elemento => ({ elemento, inert: elemento.inert }));
+        if (document.activeElement instanceof HTMLElement) document.activeElement.blur();
+        estadoBloqueoPantalla.forEach(({ elemento }) => { elemento.inert = true; });
+        $('body').append(`
+            <div id="ndcfsEsperaFinalizacion" role="status" aria-live="polite" tabindex="-1">
+                <div class="ndcfs-espera-contenido">
+                    <i class="bx bx-loader-alt bx-spin fs-3" aria-hidden="true"></i>
                     <strong>Finalizando operacion.</strong>
-                    <div class="small">Aguarde sin tocar la pantalla hasta que el proceso termine.</div>
+                    <div>Aguarde hasta que el proceso termine.</div>
                 </div>
             </div>
         `);
+        document.getElementById('ndcfsEsperaFinalizacion').focus();
+        document.addEventListener('keydown', impedirTecladoDuranteConfirmacion, true);
     }
 
     function ocultarEsperaFinalizacion() {
+        if (!estadoBloqueoPantalla) return;
+        document.removeEventListener('keydown', impedirTecladoDuranteConfirmacion, true);
         $('#ndcfsEsperaFinalizacion').remove();
+        estadoBloqueoPantalla.forEach(({ elemento, inert }) => { elemento.inert = inert; });
+        estadoBloqueoPantalla = null;
+    }
+
+    function impedirTecladoDuranteConfirmacion(event) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
     }
 
     function obtenerUrlReinicioModulo() {
@@ -1288,6 +1344,8 @@
     }
     function actualizarVisibilidadOrigenNc() {
         const coTipo = String($(SELECTORES.operacion).val() || '').trim().toUpperCase();
+        const descripcion = obtenerDescripcionOperacion(coTipo);
+        $('#txtNdcfsEmiteConceptos').val(descripcion).attr('title', descripcion);
         logPaso('Cambio de operacion', { coTipo: coTipo });
         $('.ndcfs-origen-nc').toggleClass('d-none', coTipo !== 'NC');
 
@@ -1310,15 +1368,15 @@
         const emite = obtenerDescripcionOperacion(String($(SELECTORES.operacion).val() || ''));
         const origen = cuenta.origen_desc || cuenta.origenDesc || cuenta.origen || '';
 
-        $(`#txtNdcfsNombre${sufijo}`).val(nombre);
-        $(`#txtNdcfsId${sufijo}`).val(id);
-        $(`#txtNdcfsDomicilio${sufijo}`).val(domicilio);
-        $(`#txtNdcfsTipoNumero${sufijo}`).val(tipoNumero);
-        $(`#txtNdcfsAfip${sufijo}`).val(afip);
-        $(`#txtNdcfsEmail${sufijo}`).val(email);
-        $(`#txtNdcfsMovil${sufijo}`).val(movil);
-        $(`#txtNdcfsEmite${sufijo}`).val(emite);
-        $(`#txtNdcfsOrigen${sufijo}`).val(origen);
+        $(`#txtNdcfsNombre${sufijo}`).val(nombre).attr('title', nombre);
+        $(`#txtNdcfsId${sufijo}`).val(id).attr('title', id);
+        $(`#txtNdcfsDomicilio${sufijo}`).val(domicilio).attr('title', domicilio);
+        $(`#txtNdcfsTipoNumero${sufijo}`).val(tipoNumero).attr('title', tipoNumero);
+        $(`#txtNdcfsAfip${sufijo}`).val(afip).attr('title', afip);
+        $(`#txtNdcfsEmail${sufijo}`).val(email).attr('title', email);
+        $(`#txtNdcfsMovil${sufijo}`).val(movil).attr('title', movil);
+        $(`#txtNdcfsEmite${sufijo}`).val(emite).attr('title', emite);
+        $(`#txtNdcfsOrigen${sufijo}`).val(origen).attr('title', origen);
     }
 
     function limpiarInputsConcepto() {
@@ -1571,19 +1629,29 @@
     }
 
     function calcularIva(neto, alicuota) {
-        return Math.round((Number(neto || 0) * Number(alicuota || 0) / 100) * 100) / 100;
+        return redondearImporte(Number(neto || 0) * Number(alicuota || 0) / 100);
     }
 
     function calcularTotalConceptos() {
         return conceptos.reduce(function (total, item) {
-            return total + (item.netoGravado * item.cantidad);
+            return redondearImporte(total + calcularPrecioUnitario(item) * item.cantidad);
         }, 0);
+    }
+
+    function redondearImporte(valor) {
+        return Math.round((Number(valor) + Number.EPSILON) * 100) / 100;
+    }
+
+    function calcularPrecioUnitario(item) {
+        return redondearImporte(Number(item.netoGravado) + calcularIva(item.netoGravado, item.alicuotaIva)
+            + Number(item.percepcionIb || 0) + Number(item.percepcionIva || 0));
     }
 
     function formatearMoneda(valor) {
         return new Intl.NumberFormat('en-US', {
             style: 'currency',
             currency: 'ARS',
+            currencyDisplay: 'narrowSymbol',
             minimumFractionDigits: 2
         }).format(Number(valor || 0));
     }

@@ -1,0 +1,41 @@
+.cuenta-resumen-compacto {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    gap: 5px 10px;
+    flex-shrink: 0;
+}
+
+.cuenta-resumen-campo { grid-column: span 3; min-width: 0; }
+.cuenta-resumen-id,
+.cuenta-resumen-documento,
+.cuenta-resumen-emite { grid-column: span 2; }
+
+.cuenta-resumen-campo label {
+    display: block;
+    margin: 0 0 2px;
+    color: #495057;
+    font-size: .75rem;
+    line-height: 1.2;
+}
+
+.cuenta-resumen-campo .form-control {
+    min-height: 30px;
+    height: 30px;
+    padding: 3px 8px;
+    font-size: .8125rem;
+    line-height: 1.3;
+    text-overflow: ellipsis;
+    border-radius: 4px;
+}
+
+@media (max-width: 1199.98px) {
+    .cuenta-resumen-compacto { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .cuenta-resumen-campo { grid-column: auto; }
+}
+
+@media (max-width: 575.98px) {
+    .cuenta-resumen-compacto { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .cuenta-resumen-nombre,
+    .cuenta-resumen-domicilio,
+    .cuenta-resumen-email { grid-column: span 2; }
+}

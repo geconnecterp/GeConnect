@@ -6,7 +6,7 @@
      data-bs-backdrop="static"
      data-bs-keyboard="false">
     <div class="modal-dialog modal-fullscreen">
-        <div class="modal-content">
+        <div class="modal-content ndcfs-compacto">
             <div class="modal-header bg-gradient-golden text-white">
                 <div>
                     <h5 class="modal-title mb-0" id="modalNdcfsCalculoLabel">
@@ -17,49 +17,12 @@
                 </div>
             </div>
 
-            <div class="modal-body p-4">
-                <div class="row g-3 mb-3">
-                    <div class="col-md-3">
-                        <label class="form-label">Nombre</label>
-                        <input type="text" class="form-control" id="txtNdcfsNombreCalculo" readonly />
-                    </div>
-                    <div class="col-md-2">
-                        <label class="form-label">ID</label>
-                        <input type="text" class="form-control" id="txtNdcfsIdCalculo" readonly />
-                    </div>
-                    <div class="col-md-3">
-                        <label class="form-label">Domicilio</label>
-                        <input type="text" class="form-control" id="txtNdcfsDomicilioCalculo" readonly />
-                    </div>
-                    <div class="col-md-2">
-                        <label class="form-label">Tipo/Nro</label>
-                        <input type="text" class="form-control" id="txtNdcfsTipoNumeroCalculo" readonly />
-                    </div>
-                    <div class="col-md-2">
-                        <label class="form-label">Emite</label>
-                        <input type="text" class="form-control fw-bold text-golden-dark" id="txtNdcfsEmiteCalculo" readonly />
-                    </div>
-                    <div class="col-md-3">
-                        <label class="form-label">Condicion AFIP</label>
-                        <input type="text" class="form-control" id="txtNdcfsAfipCalculo" readonly />
-                    </div>
-                    <div class="col-md-3">
-                        <label class="form-label">Email</label>
-                        <input type="text" class="form-control" id="txtNdcfsEmailCalculo" readonly />
-                    </div>
-                    <div class="col-md-3">
-                        <label class="form-label">Movil</label>
-                        <input type="text" class="form-control" id="txtNdcfsMovilCalculo" readonly />
-                    </div>
-                    <div class="col-md-3">
-                        <label class="form-label">Cuenta</label>
-                        <input type="text" class="form-control" id="txtNdcfsOrigenCalculo" readonly />
-                    </div>
-                </div>
+            <div class="modal-body ndcfs-body">
+                @await Html.PartialAsync("~/Areas/Facturacion/Views/Shared/_ResumenCuentaCompacto.cshtml", (Prefijo: "txtNdcfs", Sufijo: "Calculo"))
 
-                <div class="row g-3">
-                    <div class="col-md-8">
-                        <div class="card card-golden shadow-sm h-100">
+                <div class="ndcfs-calculo-layout">
+                    <div class="ndcfs-calculo-detalle">
+                        <div class="card card-golden ndcfs-grid">
                             <div class="card-header">
                                 <h6 class="mb-0">
                                     <i class="bx bx-list-ul"></i>
@@ -95,8 +58,8 @@
                         </div>
                     </div>
 
-                    <div class="col-md-4">
-                        <div class="card card-golden shadow-sm h-100">
+                    <div class="ndcfs-calculo-operacion">
+                        <div class="card card-golden">
                             <div class="card-header">
                                 <h6 class="mb-0">
                                     <i class="bx bx-info-circle"></i>

@@ -1104,7 +1104,8 @@ function agregarProductoAGrilla(producto) {
     const esDePresupuesto = origenCargaActual === 'presupuesto';
     const esDeCotizacion = origenCargaActual === 'cotizacion';
 
-    const tieneExcepcionAcumulacion = esProductoPesable || esDePrefactura || esDePresupuesto || esDeCotizacion;
+    const esDeFacturaEmitida = origenCargaActual === 'facturaEmitida';
+    const tieneExcepcionAcumulacion = !esDeFacturaEmitida && (esProductoPesable || esDePrefactura || esDePresupuesto || esDeCotizacion);
 
     console.log('═══════════════════════════════════════════════════');
     console.log('🔍 VERIFICANDO EXCEPCIONES DE ACUMULACIÓN v13.0');
