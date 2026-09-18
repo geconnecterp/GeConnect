@@ -300,6 +300,9 @@ const RESULTADO_CONSULTA_NC = Object.freeze({
 });
 
 let estadoNC = crearEstadoNCVacio();
+let pagoParaRetomar = null;
+let revisionPago = 0;
+let claveCreditoNCEnEdicion = null;
 
 function crearEstadoNCVacio() {
     return {
@@ -322,6 +325,8 @@ function crearEstadoNCVacio() {
         // Indica que el catálogo de medios habilitó NC
         // para el contexto actual.
         tipoMedioPagoNcDisponible: false,
+        imputacionOpcionalInicializada: false,
+        seleccionManual: false,
 
         conflictoObligatorios: null,
 
@@ -464,6 +469,7 @@ function limpiarEstadoNC() {
 }
 
 function cargarValoresNC(coTipo) {
+    const revision = revisionPago;
     const deferred = $.Deferred();
     const tipoOperacion = normalizarTextoUpper(coTipo);
 
@@ -538,6 +544,7 @@ function cargarValoresNC(coTipo) {
         })
     })
         .done(function (response) {
+            if (revision !== revisionPago) { deferred.reject({ cancelada: true }); return; }
             console.group('[NC] RESPUESTA OBTENIDA');
             console.log(response);
             console.groupEnd();
@@ -624,6 +631,7 @@ function cargarValoresNC(coTipo) {
             });
         })
         .fail(function (jqXHR, textStatus, errorThrown) {
+            if (revision !== revisionPago) { deferred.reject({ cancelada: true }); return; }
             const mensaje =
                 jqXHR?.responseJSON?.mensaje ||
                 `No fue posible consultar los créditos disponibles (${textStatus || errorThrown || 'sin detalle'}).`;
@@ -915,13 +923,19 @@ function renderizarCreditosNCEnGrillaPago() {
                 </span>
             `
             : `
-                <button type="button"
-                        class="btn btn-sm btn-outline-primary"
-                        onclick="editarCreditosNC()"
-                        title="Editar créditos seleccionados">
-                    <i class="bx bx-edit-alt me-1"></i>
-                    Editar
-                </button>
+                <span class="d-inline-flex align-items-center text-nowrap">
+                    <button type="button" class="btn btn-xs btn-success"
+                            data-nc-clave="${escapeHtml(credito.clave)}" data-accion-nc="modificar"
+                            title="Modificar importe imputado" aria-label="Modificar importe imputado">
+                        <i class="bx bx-edit-alt" style="font-size: 0.9rem;" aria-hidden="true"></i>
+                    </button>
+                    <button type="button" class="btn btn-xs btn-danger ms-1"
+                            data-nc-clave="${escapeHtml(credito.clave)}" data-accion-nc="quitar"
+                            title="Quitar imputación y devolver el importe al saldo disponible"
+                            aria-label="Quitar imputación del crédito">
+                        <i class="bx bx-undo" style="font-size: 0.9rem;" aria-hidden="true"></i>
+                    </button>
+                </span>
             `;
 
         const filaHtml = `
@@ -1034,15 +1048,19 @@ function inicializarModales() {
  * NUEVO: Agregado evento de limpieza del modal de Vale de Compra
  */
 function inicializarEventosPago() {
+    registrarEventosInicioOperacionPago();
     console.log('🔧 Vinculando eventos de pago...');
 
     // ❶ Botones del modal principal
     $('#btnAgregarPago').off('click').on('click', agregarFormaPago);
+    $('#btnCreditosPago').off('click.nc').on('click.nc', abrirModalDetalleCtaCte);
     $('#btnVolverPago').off('click').on('click', volverACalculoFactura);
     $('#btnFinalizarPago').off('click').on('click', finalizarPago);
 
     // ❷ Eventos del modal principal
-    $('#modalPago').off('hidden.bs.modal').on('hidden.bs.modal', limpiarModalPago);
+    $('#modalPago').off('hidden.bs.modal').on('hidden.bs.modal', function (event) {
+        if (event.target === this) limpiarModalPago();
+    });
     $('#modalPago').off('shown.bs.modal').on('shown.bs.modal', function () {
         setTimeout(() => $('#btnAgregarPago').trigger('focus'), 300);
     });
@@ -1745,6 +1763,7 @@ function iniciarProcesoPago(config) {
  * @param {Object} datosFactura - Objeto con totales y datos del cliente
  */
 function abrirModalPago(datosFactura) {
+    revisionPago++;
     console.log('═══════════════════════════════════════════════════');
     console.log('🔓 ABRIR MODAL DE PAGO v27.0');
     console.log('═══════════════════════════════════════════════════');
@@ -1787,9 +1806,17 @@ function abrirModalPago(datosFactura) {
 
         hidratarDatosClientePago(fuenteCliente);
 
+        const retomado = consumirBorradorPago(coTipo);
         cargarConceptosPago(datosFactura?.totales || {});
-
         limpiarTablaFormasPago();
+        valoresMPCache = null;
+        valoresMPCargados = false;
+        if (retomado) {
+            valoresPago = retomado.valores;
+            valoresPago.forEach(agregarFilaValor);
+        }
+        $('#btnVolverPago small').text(coTipo === 'CD' ? 'A las facturas' :
+            coTipo === 'CC' ? 'A los comprobantes' : 'Al cálculo');
 
         // ═══════════════════════════════════════════════════════════
         // ✅ NUEVO v27.0: ACTUALIZAR TÍTULO DEL MODAL DINÁMICAMENTE
@@ -1810,11 +1837,7 @@ function abrirModalPago(datosFactura) {
         // ❻ Mostrar modal
         modalPagoInstance.show();
 
-        // ❼ Ajustar z-index
-        setTimeout(() => {
-            $('#modalPago').css('z-index', '1060');
-            $('.modal-backdrop').last().css('z-index', '1059');
-        }, 100);
+        // La jerarquía de ventanas de pago se define en site.css.
 
         //se oculta el titulo de FACTURACION Y SU TIPO DE FACTURA
         setTimeout(() => {
@@ -1831,7 +1854,7 @@ function abrirModalPago(datosFactura) {
         console.log('═══════════════════════════════════════════════════');
 
         // ❽ Esperar a que el modal de pago esté completamente visible
-        inicializarNCAntesDeAbrirMediosPago();
+        inicializarNCAntesDeAbrirMediosPago(retomado?.creditos || null);
 
         // setTimeout(() => {
         //     console.log('⏳ Modal de pago visible - Abriendo modal de agregar...');
@@ -1855,7 +1878,8 @@ function abrirModalPago(datosFactura) {
     }
 }
 
-function inicializarNCAntesDeAbrirMediosPago() {
+function inicializarNCAntesDeAbrirMediosPago(seleccionPrevia = null) {
+    const revision = revisionPago;
     const coTipo = normalizarTextoUpper(window._coTipoActual);
 
     console.log('═══════════════════════════════════════════════════');
@@ -1868,10 +1892,12 @@ function inicializarNCAntesDeAbrirMediosPago() {
 
     cargarValoresNC(coTipo)
         .done(function () {
+            if (revision !== revisionPago) return;
             const imputacionValida = aplicarImputacionInicialNC({
                 incluirOpcionales: false
             });
 
+            if (seleccionPrevia) restaurarSeleccionNC(seleccionPrevia);
             renderizarCreditosNCEnGrillaPago();
             actualizarTotalesPago();
 
@@ -1924,9 +1950,18 @@ function inicializarNCAntesDeAbrirMediosPago() {
                 return;
             }
 
-            abrirModalTipoMedioPagoDespuesDeNC();
+            cargarValoresMP().then(function (medios) {
+                if (revision !== revisionPago) return;
+                sincronizarDisponibilidadNCConMediosPago(medios);
+                actualizarTotalesPago();
+                if (!seleccionPrevia && conceptosPago.diferencia > 0.009) abrirModalTipoMedioPagoDespuesDeNC();
+            }).fail(function () {
+                if (revision !== revisionPago) return;
+                mostrarMensajeError('No se pudieron consultar los medios de pago. Puede reintentar con Agregar.');
+            });
         })
         .fail(function (error) {
+            if (revision !== revisionPago || error?.cancelada) return;
             actualizarTotalesPago();
 
             const mensaje = error?.mensaje ||
@@ -1959,9 +1994,11 @@ function inicializarNCAntesDeAbrirMediosPago() {
 
 
 function abrirModalTipoMedioPagoDespuesDeNC() {
+    const revision = revisionPago;
     const abrir = function () {
         setTimeout(function () {
-            if (estadoNC.errorCarga || estadoNC.conflictoObligatorios) {
+            if (revision !== revisionPago || !$('#modalPago').hasClass('show') ||
+                estadoNC.errorCarga || estadoNC.conflictoObligatorios || conceptosPago.diferencia <= 0.009) {
                 return;
             }
 
@@ -2114,9 +2151,12 @@ function sincronizarDisponibilidadNCConMediosPago(valoresMP) {
     // cada vez que el usuario vuelve a abrir el selector.
     if (
         cambioDisponibilidad &&
+        !estadoNC.seleccionManual &&
+        !estadoNC.imputacionOpcionalInicializada &&
         estadoNC.cargado &&
         !estadoNC.errorCarga
     ) {
+        estadoNC.imputacionOpcionalInicializada = true;
         const imputacionValida =
             aplicarImputacionInicialNC({
                 incluirOpcionales:
@@ -2153,6 +2193,7 @@ function sincronizarDisponibilidadNCConMediosPago(valoresMP) {
  * Carga los datos desde el servidor
  */
 function abrirModalTipoMedioPago() {
+    const revision = revisionPago;
     console.log('═══════════════════════════════════════════════════');
     console.log('🔓 ABRIR MODAL TIPO MEDIO DE PAGO v16.1');
     console.log('═══════════════════════════════════════════════════');
@@ -2194,6 +2235,7 @@ function abrirModalTipoMedioPago() {
     // ❺ Cargar datos desde el servidor
     cargarValoresMP()
         .then(function (valoresMP) {
+            if (revision !== revisionPago) return;
             console.log('✅ Valores MP obtenidos:', valoresMP);
 
             // ❻ Renderizar opciones en el modal
@@ -2252,6 +2294,7 @@ function abrirModalTipoMedioPago() {
  * @returns {Promise<Array>} - Array de valores MP
  */
 function cargarValoresMP() {
+    const revision = revisionPago;
     console.log('═══════════════════════════════════════════════════');
     console.log('📡 CARGAR VALORES MP v27.0 (CO_TIPO DINÁMICO)');
     console.log('═══════════════════════════════════════════════════');
@@ -2354,6 +2397,7 @@ function cargarValoresMP() {
         timeout: 10000
     })
         .then(function (response) {
+            if (revision !== revisionPago) return [];
             console.log('✅ Respuesta recibida:', response);
 
             if (!response || !response.ok) {
@@ -2454,26 +2498,31 @@ function renderizarOpcionesMP(valoresMP) {
  * Vuelve al modal de cálculo de factura
  */
 function volverACalculoFactura() {
-    console.log('🔙 Volviendo al modal de cálculo...');
-
-    if (modalPagoInstance) {
-        modalPagoInstance.hide();
+    if (estadoNC.cargando) return;
+    const coTipo = normalizarTextoUpper(window._coTipoActual);
+    const destino = coTipo === 'CD' ? '#modalFacturasPendientes' :
+        coTipo === 'CC' ? '#modalCuentaCorriente' : '#modalCalculoFactura';
+    if (!$(destino).length) {
+        mostrarMensajeError('No se encuentra la pantalla anterior de esta operación.');
+        return;
     }
-
-    switch (window._coTipoActual) {
-        case "CC":
-            setTimeout(() => {
-                reiniciaPantallaAlVolver();
-            },200);
-            break;
-        default:
-            setTimeout(() => {
-                $('#modalCalculoFactura').modal('show');
-            }, 300);
-    }
-
-
-   
+    const volver = async function () {
+        pagoParaRetomar = {
+            coTipo, cliente: obtenerIdentidadClientePago(),
+            valores: clonarObjetoNC(valoresPago), creditos: clonarObjetoNC(estadoNC.disponibles)
+        };
+        for (const selector of ['#msjModal', '#modalEditarCreditoNC', '#modalDetalleCtaCte',
+            '#modalDetalleEfectivo', '#modalDetalleCheque', '#modalDetalleTransferencia',
+            '#modalDetalleValeCompra', '#modalDetalleCuponEmpresa', '#modalInstrumentos',
+            '#modalTipoMedioPago', '#modalPago']) await ocultarVentanaPago(selector);
+        if (coTipo === 'CC' && typeof calcularTotalCC === 'function') calcularTotalCC();
+        $(destino).modal('show');
+    };
+    if (valoresPago.length || obtenerCantidadCreditosNCImputados()) {
+        AbrirMensaje('Volver', 'Los valores y las imputaciones se conservarán al reingresar para el mismo cliente. Los créditos se volverán a validar.',
+            function (respuesta) { if (respuesta === 'SI') volver(); else $('#msjModal').modal('hide'); },
+            true, ['Volver', 'Continuar aquí'], 'warn!', null);
+    } else volver();
 }
 
 // ════════════════════════════════════════════════════════════
@@ -4504,6 +4553,7 @@ function ocultarModalCalculoFactura() {
  * NUEVO: Destruir todos los tooltips activos
  */
 function limpiarModalPago() {
+    revisionPago++;
     console.log('🧹 Limpiando modal de pago v24.0...');
 
     // ✅ NUEVO v25.0: Ocultar teclado si está visible
@@ -5053,9 +5103,7 @@ function puedeEditarCreditoNC(credito) {
         return false;
     }
 
-    //return estadoNC.autorizacionOpcionalesConcedida === true;
-
-    return true;
+    return estadoNC.tipoMedioPagoNcDisponible === true;
 }
 
 
@@ -5086,8 +5134,7 @@ function formatearFechaNC(valor) {
     }).format(fecha);
 }
 
-function validarBorradorNC(mostrarErrores) {
-    const creditos = obtenerCreditosBorradorNC();
+function validarBorradorNC(mostrarErrores, creditos = obtenerCreditosBorradorNC()) {
     const errores = [];
 
     if (estadoNC.conflictoObligatorios) {
@@ -5145,6 +5192,7 @@ function validarBorradorNC(mostrarErrores) {
         // }
 
         if (credito.seleccionado) {
+            if (!puedeEditarCreditoNC(credito)) errores.push('El medio de pago NC no está habilitado para este crédito.');
             if (credito.importeImputadoCentavos <= 0) {
                 errores.push(
                     'Todo crédito seleccionado debe tener un importe mayor a cero.'
@@ -5368,6 +5416,10 @@ function renderizarDetalleCtaCte() {
                         Máx.: ${formatearMoneda(maximoImputable)}
                     </small>
                 </td>
+                <td class="text-end align-middle">
+                    ${formatearMoneda(desdeCentavosNC(credito.saldoDisponibleCentavos -
+                        (credito.seleccionado ? credito.importeImputadoCentavos : 0)))}
+                </td>
             </tr>
         `;
 
@@ -5434,55 +5486,18 @@ function editarCreditosNC() {
 }
 
 function guardarDetalleCtaCte() {
-    const validacion = validarBorradorNC(true);
-
-    if (!validacion.esValido) {
-        return;
-    }
-
-    const porClave = new Map(
-        obtenerCreditosBorradorNC().map(function (credito) {
-            return [credito.clave, credito];
-        })
-    );
-
-    estadoNC.disponibles.forEach(function (credito) {
-        const borrador = porClave.get(credito.clave);
-
-        if (!borrador) {
-            return;
-        }
-
-        credito.seleccionado = borrador.seleccionado === true;
-        credito.importeImputadoCentavos =
-            borrador.importeImputadoCentavos;
-    });
-
-    actualizarSeleccionadosNC();
-
-    renderizarCreditosNCEnGrillaPago();
-    actualizarTotalesPago();
-
-    if (modalDetalleCtaCteInstance) {
-        modalDetalleCtaCteInstance.hide();
-    }
-
-    if (typeof toastr !== 'undefined') {
-        toastr.success(
-            'La imputación de créditos fue actualizada.',
-            'Créditos en Cuenta Corriente'
-        );
-    }
+    if (!guardarImputacionesNC(obtenerCreditosBorradorNC())) return;
+    modalDetalleCtaCteInstance?.hide();
 }
 
 function inicializarEventosDetalleCtaCte() {
+    registrarAccionesIndividualesNC();
     console.log('🔧 Vinculando eventos de créditos NC...');
 
     $('#modalDetalleCtaCte')
         .off('shown.bs.modal.nc')
         .on('shown.bs.modal.nc', function () {
-            $(this).css('z-index', '1080');
-            $('.modal-backdrop').last().css('z-index', '1075');
+            elevarModalCreditoNC(this);
         });
 
     $('#modalDetalleCtaCte')
@@ -7271,6 +7286,8 @@ function actualizarTotalesPago() {
         }
     }
 
+    $('#btnCreditosPago').toggleClass('d-none', !hayCreditosNCDisponibles())
+        .prop('disabled', !estadoNC.cargado || estadoNC.cargando || estadoNC.errorCarga);
     $('#btnAgregarPago').prop('disabled', !puedeAgregar);
     $('#btnFinalizarPago').prop('disabled', !puedeFinalizar);
 
@@ -7485,7 +7502,7 @@ function eliminarValor(valorId) {
 
                     // Si no quedan valores, mostrar mensaje
                     if (valoresPago.length === 0) {
-                        limpiarTablaFormasPago(false);
+                        renderizarCreditosNCEnGrillaPago();
                     }
 
                     // Segunda pasada: asegura que la limpieza visual no deje botones viejos.
@@ -10664,6 +10681,9 @@ function validarSeleccionNCParaFinalizar() {
         );
     }
 
+    if (creditosSeleccionados.some(c => !c.obligatorio && !puedeEditarCreditoNC(c))) {
+        errores.push('El medio de pago NC no está habilitado para los créditos opcionales seleccionados.');
+    }
     const totalNCCentavos = obtenerTotalCreditosNCCentavos();
 
     const saldoMaximoParaNcCentavos = Math.max(
@@ -10726,3 +10746,134 @@ function validarSeleccionNCParaFinalizar() {
 
 
 
+
+// Acciones comunes de imputación para Facturación, Cobranza Diferida y CtaCte.
+// Volver al paso anterior conserva el borrador; identificar cliente inicia otra operación.
+function descartarBorradorPago() {
+    pagoParaRetomar = null;
+}
+
+function consumirBorradorPago(coTipo) {
+    const retomado = pagoParaRetomar?.coTipo === coTipo &&
+        pagoParaRetomar?.cliente === obtenerIdentidadClientePago() ? pagoParaRetomar : null;
+    pagoParaRetomar = null;
+    return retomado;
+}
+
+function registrarEventosInicioOperacionPago() {
+    $('#modalIdentificarCliente')
+        .off('show.bs.modal.inicioOperacionPago')
+        .on('show.bs.modal.inicioOperacionPago', function (event) {
+            if (event.target === this) descartarBorradorPago();
+        });
+
+    // En el acceso por "Ver Facturas Pendientes", Identificar Cliente puede seguir
+    // abierto debajo: al volver a él Bootstrap no vuelve a emitir show.bs.modal.
+    const inicios = '#btnCancelarSeleccionFacturas, #btnCancelarCC, #btnCancelarCliente, #btnCobrarSeleccionVFP';
+    $(document).off('click.inicioOperacionPago', inicios)
+        .on('click.inicioOperacionPago', inicios, descartarBorradorPago);
+}
+
+function obtenerIdentidadClientePago() {
+    return JSON.stringify([normalizarTexto($('#txtClienteIdPago').val()), normalizarTexto($('#txtClienteCuitPago').val())]);
+}
+
+function ocultarVentanaPago(selector) {
+    return new Promise(function (resolve) {
+        const modal = $(selector);
+        if (!modal.length || !modal.hasClass('show')) { resolve(); return; }
+        modal.one('hidden.bs.modal.retornoPago', function (event) { if (event.target === this) resolve(); });
+        modal.modal('hide');
+    });
+}
+
+function restaurarSeleccionNC(anteriores) {
+    const porClave = new Map(anteriores.map(c => [c.clave, c]));
+    estadoNC.disponibles.forEach(function (credito) {
+        if (credito.obligatorio) return;
+        const anterior = porClave.get(credito.clave);
+        credito.seleccionado = anterior?.seleccionado === true;
+        // Mantener lo editado; si el saldo cambió, la validación exige revisarlo.
+        credito.importeImputadoCentavos = credito.seleccionado ? anterior.importeImputadoCentavos : 0;
+    });
+    estadoNC.seleccionManual = true;
+    actualizarSeleccionadosNC();
+}
+
+function guardarImputacionesNC(creditos) {
+    if (estadoNC.cargando || !estadoNC.cargado || estadoNC.errorCarga) return false;
+    if (!validarBorradorNC(true, creditos).esValido) return false;
+    const porClave = new Map(creditos.map(c => [c.clave, c]));
+    estadoNC.disponibles.forEach(function (credito) {
+        const cambio = porClave.get(credito.clave);
+        if (!cambio) return;
+        credito.seleccionado = cambio.seleccionado === true;
+        credito.importeImputadoCentavos = credito.seleccionado ? cambio.importeImputadoCentavos : 0;
+    });
+    estadoNC.seleccionManual = true;
+    actualizarSeleccionadosNC();
+    renderizarCreditosNCEnGrillaPago();
+    actualizarTotalesPago();
+    return true;
+}
+
+function cambiarImputacionIndividualNC(clave, importeCentavos) {
+    const credito = estadoNC.disponibles.find(c => c.clave === clave);
+    if (!credito || !puedeEditarCreditoNC(credito) || !Number.isSafeInteger(importeCentavos) || importeCentavos < 0) return false;
+    const propuesta = clonarObjetoNC(estadoNC.disponibles);
+    const cambio = propuesta.find(c => c.clave === clave);
+    cambio.seleccionado = importeCentavos > 0;
+    cambio.importeImputadoCentavos = importeCentavos;
+    return guardarImputacionesNC(propuesta);
+}
+
+function elevarModalCreditoNC(elemento) {
+    elemento.style.setProperty('z-index', '5100', 'important');
+    const fondo = $('.modal-backdrop').last().get(0);
+    if (fondo) fondo.style.setProperty('z-index', '5099', 'important');
+}
+
+function abrirEdicionIndividualNC(clave) {
+    const credito = estadoNC.disponibles.find(c => c.clave === clave);
+    if (!credito || !puedeEditarCreditoNC(credito)) return;
+    claveCreditoNCEnEdicion = clave;
+    $('#lblComprobanteEditarNC').text(obtenerDescripcionCreditoNC(credito));
+    $('#lblSaldoEditarNC').text(formatearMoneda(desdeCentavosNC(credito.saldoDisponibleCentavos)));
+    $('#txtImporteEditarNC').val(desdeCentavosNC(credito.importeImputadoCentavos).toFixed(2));
+    $('#errorImporteEditarNC').text('').addClass('d-none');
+    $('#modalEditarCreditoNC').modal('show');
+}
+
+function guardarEdicionIndividualNC() {
+    cerrarTecladoPago();
+    const texto = normalizarTexto($('#txtImporteEditarNC').val());
+    const importe = convertirMontoIngresadoNC(texto);
+    if (!texto || importe <= 0 || /-/.test(texto) || /[^0-9.,\s$]/.test(texto)) {
+        $('#errorImporteEditarNC').text('Ingrese un importe mayor a cero. Para retirar el crédito use Quitar.').removeClass('d-none');
+        return;
+    }
+    if (cambiarImputacionIndividualNC(claveCreditoNCEnEdicion, Math.round(importe * 100))) $('#modalEditarCreditoNC').modal('hide');
+}
+
+function registrarAccionesIndividualesNC() {
+    $(document).off('click.ncFila', '#tbodyFormasPago [data-accion-nc]')
+        .on('click.ncFila', '#tbodyFormasPago [data-accion-nc]', function () {
+            const clave = $(this).attr('data-nc-clave');
+            if ($(this).attr('data-accion-nc') === 'quitar') cambiarImputacionIndividualNC(clave, 0);
+            else abrirEdicionIndividualNC(clave);
+        });
+    $('#modalEditarCreditoNC').off('.ncIndividual')
+        .on('shown.bs.modal.ncIndividual', function () {
+            elevarModalCreditoNC(this);
+            $('#txtImporteEditarNC').trigger('focus').trigger('select');
+        }).on('hidden.bs.modal.ncIndividual', function () {
+            claveCreditoNCEnEdicion = null;
+            cerrarTecladoPago();
+        });
+    $('#btnGuardarImporteNC').off('click.ncIndividual').on('click.ncIndividual', guardarEdicionIndividualNC);
+    $('#txtImporteEditarNC').off('.ncIndividual')
+        .on('focus.ncIndividual', function () { this.select(); })
+        .on('keydown.ncIndividual', function (event) {
+            if (event.key === 'Enter') { event.preventDefault(); guardarEdicionIndividualNC(); }
+        });
+}
