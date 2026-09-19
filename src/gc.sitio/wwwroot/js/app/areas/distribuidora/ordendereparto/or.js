@@ -200,6 +200,8 @@ async function buscarOrdenesDeReparto(pag = 1) {
 			$("#divFiltro").collapse("hide");
 			CerrarWaiting();
 			CargarOrdenesDeReparto(filtros, url);
+		}, function (obj) {
+			CerrarWaiting();
 		});
 
 
@@ -233,6 +235,8 @@ function CargarOrdenesDeReparto(filtros, url) {
 				$("#pagEstado").val(true).trigger("change");
 			}
 		});
+	}, function (obj) {
+		CerrarWaiting();
 	});
 }
 $(document).off("click", "#btnAgregarOR");
@@ -443,6 +447,8 @@ function CargarPedidosDeLaOrdenesDeReparto(orCompte) {
 	PostGenHtml({ orCompte }, cargarPedidosDeLaOrdenDeRepartoUrl, function (html) {
 		CerrarWaiting();
 		$("#divPedidosDeLaOrdenDeReparto").html(html).collapse("show");
+	}, function (obj) {
+		CerrarWaiting();
 	});
 }
 
@@ -761,6 +767,8 @@ function CargarVistCambioPrecioOrdenDeReparto(orCompteSeleccionado) {
 
 			ConfigurarEventosEnCambioPrecio();
 			setTituloTabOrdenesDeReparto(tab_cambio_de_precios, true, false);
+		}, function (obj) {
+			CerrarWaiting();
 		});
 	}
 }
@@ -983,6 +991,8 @@ function CargarVistConsolidarOrdenDeReparto(orCompte) {
 			SeleccionarPrimerPedidoEnConsolidar();
 
 			setTituloTabOrdenesDeReparto(tab_a_consolidar, true, false);
+		}, function (obj) {
+			CerrarWaiting();
 		});
 	}
 }
@@ -1026,6 +1036,9 @@ function ConfigurarEventosEnPonerEnConsolidar() {
 
 	$(document).off("click", "#tbConsolidarConteos tbody tr");
 	$(document).on("click", "#tbConsolidarConteos tbody tr", function (e) {
+		// Evitar ejecutar lógica sobre filas agrupadoras
+		if ($(this).hasClass("tr-rubro")) return;
+
 		if (!$(e.target).is("button, a, .btn, i")) {
 			var $this = $(this);
 			var fueSeleccionado = $this.hasClass("selected-row");
@@ -1136,7 +1149,7 @@ function ConfigurarEventosEnPonerEnConsolidar() {
 					$('#msjModal').modal('hide');
 				},
 				true,
-				['Confirmar', 'Cancelar'],
+				['SI', 'NO'],
 				'info!',
 				null
 			);
@@ -1403,6 +1416,8 @@ function CargarDetalleDelProductoSeleccionadoEnConteo(orCompte, pId) {
 			EvaluarHabilitarReasignar(),
 			EstadoInicialBotonesOKCancelEnDetalleDeConteos(),
 			500);
+	}, function (obj) {
+		CerrarWaiting();
 	});
 }
 
@@ -1697,6 +1712,8 @@ function CargarDetalleDelPedidoDeLaOrdenEnConsolidar(orCompte, pcCompte) {
 		CerrarWaiting();
 		$("#divConsolidarDetallesPedido").html(html);
 		ConfigurarEventosEnPedidosDeLaOrdenEnConsolidar();
+	}, function (obj) {
+		CerrarWaiting();
 	});
 }
 
@@ -1706,12 +1723,17 @@ function CargarConteosEnConsolidar(orCompte) {
 		CerrarWaiting();
 		$("#divConsolidarConteos").html(html);
 		ConfigurarEventosEnConteosEnConsolidar();
+	}, function (obj) {
+		CerrarWaiting();
 	});
 }
 
 function ConfigurarEventosEnConteosEnConsolidar() {
 	$(document).off("click", "#tbConsolidarConteos tbody tr");
 	$(document).on("click", "#tbConsolidarConteos tbody tr", function (e) {
+		// Evitar ejecutar lógica sobre filas agrupadoras
+		if ($(this).hasClass("tr-rubro")) return;
+
 		if (!$(e.target).is("button, a, .btn, i")) {
 			var $this = $(this);
 			var fueSeleccionado = $this.hasClass("selected-row");
@@ -1762,6 +1784,8 @@ function CargarVistaAnalizaAutEnOrdenDeReparto(orCompte) {
 			$("#vistaPonerEnCursoOR").removeClass("d-none");
 			ConfigurarEventosEnPonerEnCurso();
 			setTituloTabOrdenesDeReparto(tab_poner_en_curso, true, false);
+		}, function (obj) {
+			CerrarWaiting();
 		});
 	}
 }
@@ -1846,6 +1870,8 @@ function ConfigurarEventosEnPonerEnCurso() {
 			} else {
 				$("#btnConfirmarPonerEnCurso").prop('disabled', true);
 			}
+		}, function (obj) {
+			CerrarWaiting();
 		});
 	});
 
@@ -1995,7 +2021,7 @@ function createChildCheckbox(row, depoId) {
 	if (cell.querySelector('input.chkSoloSiNoHayStk')) return;
 
 	var name = 'soloSiNoHayStk_' + (depoId || '');
-	cell.innerHTML = '<input type="checkbox" class="chkSoloSiNoHayStk" name="' + name + '" />';
+	cell.innerHTML = '<input type="checkbox" class="form-check-input chkSoloSiNoHayStk" name="' + name + '" />';
 }
 
 function removeChildCheckbox(row) {
@@ -2085,6 +2111,8 @@ function CargarVistaNuevaOrdenDeReparto(abm, orCompte) {
 			activarSeleccionDeFilas("#tbPedidosOR tbody");
 			activarSeleccionDeFilas("#tbPedidosPendientes tbody");
 			deshabilitarTabPedidos();
+		}, function (obj) {
+			CerrarWaiting();
 		});
 	}
 }
@@ -2161,7 +2189,7 @@ $(document).on("click", "#btnConfirmarORenABM", function () {
 			$("#msjModal").modal("hide");
 		},
 		true,
-		["Confirmar", "Cancelar"],
+		["SI", "NO"],
 		"info",
 		null
 	);
@@ -2612,6 +2640,8 @@ function ActualizarListaPedidosDeLaOrdenDeReparto() {
 	PostGenHtml(data, actualizarListaPedidosDeLaOrdenDeReparto, function (html) {
 		$("#divListaPedidosDeLaOrden").html(html);
 		activarSeleccionDeFilas("#tbPedidosOR tbody");
+	}, function (obj) {
+		CerrarWaiting();
 	});
 }
 
@@ -2672,6 +2702,8 @@ function CargarFormularioEdicionDePedidoDeCliente(pedidoId, pedidoEstadoId) {
 			setTimeout(() => $primer.trigger("focus"), 50);
 		}
 
+		CerrarWaiting();
+	}, function (obj) {
 		CerrarWaiting();
 	});
 }
@@ -2847,7 +2879,7 @@ function ConfigurarEventosEnEdicionDePedidoDeCliente() {
 					}
 				},
 				true,
-				['Confirmar', 'Cancelar'],
+				['SI', 'NO'],
 				'info!',
 				null
 			);
@@ -4201,6 +4233,8 @@ function CargarPedidosDelReparto(orCompte) {
 		CerrarWaiting();
 		configurarEventosSeleccionListaPedidosDeOR();
 		ConfigurarEstadoDeBotonesEnTabPedidosDeLaOrdenDeReparto("", "")
+	}, function (obj) {
+		CerrarWaiting();
 	});
 }
 

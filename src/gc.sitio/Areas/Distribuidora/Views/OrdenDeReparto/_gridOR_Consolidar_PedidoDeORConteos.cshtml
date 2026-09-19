@@ -6,14 +6,18 @@
     string clase = string.Empty;
 }
 <style>
-    .cell-zero {
-        background-color: #b6f7b6 !important;
-        color: #0f4d0f !important;
-        font-weight: bold;
-        text-align: center;
+    #containerTbConsolidarConteos {
+        max-width: 100% !important;
+        overflow-x: hidden !important;
     }
 
-    /* DIF > 0 → celeste fuerte */
+    .cell-zero {
+        background-color: #d4edda !important; /* verde suave */
+        color: #155724 !important; /* texto verde oscuro */
+        font-weight: bold !important;
+    }
+
+    /* DIF mayor a 0 → celeste fuerte */
     .cell-up {
         background-color: #79bff2 !important; /* celeste intenso */
         color: #003B57 !important; /* azul oscuro para contraste */
@@ -21,24 +25,42 @@
         text-align: center;
     }
 
-    /* DIF < 0 → rojo */
+    /* DIF menor a 0 → rojo */
     .cell-down {
-        background-color: #ffb3b3 !important;
-        color: #7a0000 !important;
-        font-weight: bold;
-        text-align: center;
+        background-color: #dc3545 !important; /* rojo Bootstrap */
+        color: #ffffff !important; /* blanco */
+        font-weight: 700 !important; /* gruesa */
     }
+
+    .tr-rubro {
+        padding-top: 2px !important;
+        padding-bottom: 2px !important;
+        line-height: 1.1 !important;
+        font-size: 0.80rem !important;
+        text-align: left !important;
+    }
+
+        .tr-rubro td {
+            padding-top: 1px !important;
+            padding-bottom: 1px !important;
+            vertical-align: middle !important;
+        }
+
+        .tr-rubro i {
+            vertical-align: middle !important;
+            transform: translateY(1px); /* ajuste fino del baseline */
+        }
 </style>
-<div class="table-responsive table-wrapper-400">
+<div class="table-responsive table-wrapper-400" id="containerTbConsolidarConteos">
     <table class="table table-sm table-hover mb-0 table-golden" id="tbConsolidarConteos">
         <thead class="sticky-top table-golden-header-compact">
             <tr class="header">
-                <th>Código</th>
-                <th>Descripción</th>
-                <th>Pedido</th>
-                <th>a Enviar</th>
-                <th>Ctrl. Salida</th>
-                <th>Dif.</th>
+                <th class="text-center">Código</th>
+                <th class="text-center">Descripción</th>
+                <th class="text-center">Pedido</th>
+                <th class="text-center">a Enviar</th>
+                <th class="text-center">Ctrl. Salida</th>
+                <th class="text-center">Dif.</th>
             </tr>
         </thead>
 
@@ -54,13 +76,14 @@
             }
             else
             {
-                foreach (var item in Model.ListaDatos)
+                var productos = Model.ListaDatos.OrderBy(x => x.rub_desc).ToList();
+                foreach (var item in productos)
                 {
                     rubActual = item.rub_id;
                     if (rubActual != rubAnterior)
                     {
-                        <tr class="table-secondary fw-bold">
-                            <td colspan="13" class="text-center">
+                        <tr class="table-secondary fw-bold tr-rubro">
+                            <td colspan="13" class="text-start">
                                 <i class="bx bx-folder me-1"></i>
                                 @item.rub_desc
                             </td>
@@ -74,8 +97,8 @@
                     <tr class="@clase row-conteo"
                         data-or-compte="@item.or_compte"
                         data-p-id="@item.p_id">
-                        <td>@item.p_id</td>
-                        <td>@item.p_desc</td>
+                        <td class="text-center">@item.p_id</td>
+                        <td class="text-start">@item.p_desc</td>
                         <td class="text-end">@GridHelper.FormatearDato(item.pcd_pedida, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
                         <td class="text-end">@GridHelper.FormatearDato(item.cantidad, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
                         <td class="text-end">@GridHelper.FormatearDato(item.cantidad_ctl, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>

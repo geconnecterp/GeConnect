@@ -18,6 +18,11 @@
 		text-align: center;
 	} */
 	/* DIF = 0 → verde */
+	#containerTbConsolidarDetallesPedido {
+		max-width: 100% !important;
+		overflow-x: hidden !important;
+	}
+
 	.cell-zero {
 		background-color: #b6f7b6 !important;
 		color: #0f4d0f !important;
@@ -42,17 +47,17 @@
 	}
 
 </style>
-<div class="table-responsive table-wrapper-400">
+<div class="table-responsive table-wrapper-400" id="containerTbConsolidarDetallesPedido">
 	<table class="table table-sm table-hover mb-0 table-golden" id="tbConsolidarDetallesPedido">
 		<thead class="sticky-top table-golden-header-compact">
 			<tr class="header">
-				<th>Item</th>
-				<th>Código</th>
-				<th>Descripción</th>
-				<th>Ori</th>
-				<th>Pedido</th>
-				<th>A Enviar</th>
-				<th>Dif.</th>
+				<th class="text-center">Item</th>
+				<th class="text-center">Código</th>
+				<th class="text-center">Descripción</th>
+				<th class="text-center">Ori</th>
+				<th class="text-center">Pedido</th>
+				<th class="text-center">A Enviar</th>
+				<th class="text-center">Dif.</th>
 			</tr>
 		</thead>
 
@@ -77,10 +82,17 @@
 						data-p-id="@item.p_id"
 						data-permite-decimales="@(item.PermiteDecimales.ToString().ToLower())">
 
-						<td>@item.pcd_item</td>
-						<td>@item.p_id</td>
+						<td class="text-center">@item.pcd_item</td>
+						<td class="text-center">@item.p_id</td>
 						<td>@item.p_desc</td>
-						<td>@item.pcd_origen</td>
+						@if (item.pcd_origen == 'P')
+						{
+							<td>Vendedor</td>
+						}
+						else
+						{
+							<td>Cliente</td>
+						}
 						<td class="text-end">@GridHelper.FormatearDato(item.pcd_pedida, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
 						<td class="text-end">@GridHelper.FormatearDato(item.cantidad, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
 						<td class="text-end

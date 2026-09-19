@@ -1167,9 +1167,9 @@ namespace gc.sitio.Areas.Distribuidora.Controllers
 				if (pedido == null)
 					continue;
 
-				if (productosDelPedido.Where(x => (x.pcd_pedida - x.cantidad) < 0).Any())
-					pedido.mostrar_down = true;
 				if (productosDelPedido.Where(x => (x.pcd_pedida - x.cantidad) > 0).Any())
+					pedido.mostrar_down = true;
+				if (productosDelPedido.Where(x => (x.pcd_pedida - x.cantidad) < 0).Any())
 					pedido.mostrar_up = true;
 
 			}

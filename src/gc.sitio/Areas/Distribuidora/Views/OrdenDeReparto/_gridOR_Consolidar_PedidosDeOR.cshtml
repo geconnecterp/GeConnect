@@ -12,10 +12,14 @@
 	}
 
 	.table-golden td.cell-down {
-		background-color: #f8d7da !important;
-		color: #721c24 !important;
-		font-weight: bold;
-		text-align: center;
+		background-color: #dc3545 !important; /* rojo Bootstrap */
+		color: #ffffff !important; /* blanco */
+		font-weight: 700 !important; /* gruesa */
+	}
+
+	#containerTbConsolidarPedidos {
+		max-width: 100% !important;
+		overflow-x: hidden !important;
 	}
 
 	#tbConsolidarPedidos thead th {
@@ -39,11 +43,11 @@
 
 </style>
 
-<div class="table-responsive table-wrapper-400">
+<div class="table-responsive table-wrapper-400" id="containerTbConsolidarPedidos">
 	<table class="table table-sm table-hover mb-0 table-golden" id="tbConsolidarPedidos">
 		<thead class="sticky-top table-golden-header-compact">
 			<tr class="header">
-				<th class="col-id">ID</th>
+				<th class="col-id">PC N°</th>
 				<th>Cliente</th>
 				<th title="Generado">Gen.</th>
 				<th>Vendedor</th>

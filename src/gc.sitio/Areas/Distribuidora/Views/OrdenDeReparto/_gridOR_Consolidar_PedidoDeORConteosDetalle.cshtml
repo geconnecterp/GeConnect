@@ -4,6 +4,11 @@
     string clase = string.Empty;
 }
 <style>
+    #containerTbConsolidarDetalleConteo {
+        max-width: 100% !important;
+        overflow-x: hidden !important;
+    }
+
     .dif-positivo {
         background-color: #ffb3b3 !important; /* rojo suave */
         font-weight: bold;
@@ -53,22 +58,21 @@
 
     /* DIF */
     .cell-down {
-        background-color: #ffb3b3 !important;
-        color: #7a0000 !important;
-        font-weight: bold;
-        text-align: center;
+        background-color: #dc3545 !important; /* rojo Bootstrap */
+        color: #ffffff !important; /* blanco */
+        font-weight: 700 !important; /* gruesa */
     }
 </style>
-<div class="table-responsive table-wrapper-400">
+<div class="table-responsive table-wrapper-400" id="containerTbConsolidarDetalleConteo">
     <table class="table table-sm table-hover mb-0 table-golden" id="tbConsolidarDetalleConteo">
         <thead class="sticky-top table-golden-header-compact">
             <tr class="header">
-                <th>Item</th>
-                <th>Código</th>
-                <th>Descripción</th>
-                <th>Pedido</th>
-                <th>A Enviar</th>
-                <th>Dif.</th>
+                <th class="text-center">Item</th>
+                <th class="text-center">Código</th>
+                <th class="text-center">Descripción</th>
+                <th class="text-center">Pedido</th>
+                <th class="text-center">A Enviar</th>
+                <th class="text-center">Dif.</th>
             </tr>
         </thead>
 
@@ -95,8 +99,8 @@
                         data-pc-compte="@item.pc_compte"
                         data-permite-decimales="@(item.PermiteDecimales.ToString().ToLower())">
 
-                        <td>@item.pcd_item</td>
-                        <td>@item.p_id</td>
+                        <td class="text-center">@item.pcd_item</td>
+                        <td class="text-center">@item.p_id</td>
                         <td>@item.p_desc</td>
                         <td class="text-end">@GridHelper.FormatearDato(item.pcd_pedida, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
                         <td class="text-end celda-a-enviar">

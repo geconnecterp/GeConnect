@@ -349,7 +349,7 @@ function obtenerProductosDelGrid() {
 		const pcdPVta = parseFloat($fila.find('.input-pcd_pvta').text().replace(/,/g, '')) || 0;
 
 		const pcdOrigenBool = $fila.find('.input-pcd_origen_bool').prop('checked');
-		const pcdOrigen = pcdOrigenBool ? 'S' : 'N';
+		const pcdOrigen = $fila.data("pcd-origen");
 
 		const $selectReemplazo = $fila.find('.input-pcd_reemplazo');
 		const remplazoId = $selectReemplazo.val() || "";
@@ -488,7 +488,7 @@ $(document).on('click', '#btnAbmAceptar', function (e) {
 				$('#msjModal').modal('hide');
 			},
 			true,
-			['Confirmar', 'Cancelar'],
+			['SI', 'NO'],
 			'info!',
 			null
 		);
@@ -910,7 +910,7 @@ function normalizarDatosProducto(producto) {
 		cantidad: 1,
 		pcd_pedida: 1,
 		pcd_enviada: 0,
-		pcd_origen: 'N',
+		pcd_origen: 'P',
 		pcd_origen_bool: false,
 		PermiteDecimales: producto.up_id != '07',
 		// Impuestos
