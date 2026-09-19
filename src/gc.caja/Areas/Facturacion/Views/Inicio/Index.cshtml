@@ -9,6 +9,7 @@
 @section styles {
     <link rel="stylesheet" href="~/css/simplePagination.css" />
     <link rel="stylesheet" href="~/css/autorizacionRemota.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/facturaEmitida.css" asp-append-version="true" />
 }
 <div class="container-fluid p-4">
     <div class="row">
@@ -73,6 +74,7 @@
 @await Html.PartialAsync("~/Areas/Facturacion/Views/shared/_cambiarListaPreciosModal.cshtml")
 @await Html.PartialAsync("~/Areas/Facturacion/Views/shared/_prefacturaModal.cshtml")
 @await Html.PartialAsync("~/Areas/Facturacion/Views/shared/_cotizacionModal.cshtml")
+@await Html.PartialAsync("~/Areas/Facturacion/Views/ProductoFact/_facturaEmitidaModal.cshtml")
 @await Html.PartialAsync("~/Areas/Facturacion/Views/pago/_pagoModal.cshtml")
 @await Html.PartialAsync("~/Areas/Facturacion/Views/pago/_tipoMedioPago.cshtml")
 @await Html.PartialAsync("~/Areas/Facturacion/Views/pago/_instrumentosModal.cshtml")
@@ -141,6 +143,8 @@
 
 
         var ObtenerCotizacionesUrl = '@Url.Action("ObtenerCotizaciones", "ProductoFact", new { area = "Facturacion" })';
+        var ObtenerTiposFacturaEmitidaUrl = '@Url.Action("ObtenerTiposFacturaEmitida", "ProductoFact", new { area = "Facturacion" })';
+        var CargarFacturaEmitidaUrl = '@Url.Action("CargarFacturaEmitida", "ProductoFact", new { area = "Facturacion" })';
         var CargarCotizacionUrl = '@Url.Action("CargarCotizacion", "ProductoFact", new { area = "Facturacion" })';
 
         var DiferirFacturaUrl =  '@Url.Action("DiferirFactura", "ProductoFact", new { area = "Facturacion" })';
@@ -182,6 +186,7 @@
     <script src="~/js/app/factListaPrecioAutorizado.js" asp-append-version="true"></script>
     <script src="~/js/app/factPreFactura.js" asp-append-version="true"></script>
     <script src="~/js/app/factCotizacion.js" asp-append-version="true"></script>
+    <script src="~/js/app/factFacturaEmitida.js" asp-append-version="true"></script>
     <script src="~/js/app/pagoFactura.js" asp-append-version="true"></script>
 
 }

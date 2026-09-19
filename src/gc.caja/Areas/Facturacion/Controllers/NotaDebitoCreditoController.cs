@@ -523,6 +523,11 @@ namespace gc.caja.Areas.Facturacion.Controllers
                     });
                 }
 
+                contexto.JsonProductosCalculado = string.Empty;
+                contexto.JsonSubtotal = string.Empty;
+                contexto.FechaUltimoCalculoUtc = null;
+                GuardarContexto(contexto);
+
                 var validacion = ValidarSolicitudCalculo(contexto, request);
                 if (!validacion.Ok)
                 {
@@ -569,7 +574,14 @@ namespace gc.caja.Areas.Facturacion.Controllers
                 _logger?.LogInformation("   Request={Request}", JsonConvert.SerializeObject(requestCalculo));
                 _logger?.LogInformation("â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•");
 
-                var resultado = await _productoFactServicio.CalcularFilas(requestCalculo, token);
+                // Este servicio conserva el mensaje de error HTTP de la misma API de calculo.
+                var respuestaCalculo = await _notaCreditoServicio.CalcularFilas(requestCalculo, token);
+                if (!respuestaCalculo.Ok)
+                {
+                    _logger?.LogWarning("ND/NC/FS - Calculo rechazado: {Mensaje}", respuestaCalculo.Mensaje);
+                    return Json(new { ok = false, mensaje = respuestaCalculo.Mensaje });
+                }
+                var resultado = respuestaCalculo.Entidad;
 
                 _logger?.LogInformation("â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•");
                 _logger?.LogInformation("ND/NC/FS - RESPONSE CALCULAR FILAS");
@@ -579,6 +591,17 @@ namespace gc.caja.Areas.Facturacion.Controllers
                     resultado?.json_p?.Length ?? 0);
                 _logger?.LogInformation("   Response={Response}", JsonConvert.SerializeObject(resultado));
                 _logger?.LogInformation("â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•");
+
+                if (resultado != null && string.Equals(resultado.tipo?.Trim(), "ER", StringComparison.OrdinalIgnoreCase))
+                {
+                    return Json(new
+                    {
+                        ok = false,
+                        mensaje = string.IsNullOrWhiteSpace(resultado.concepto)
+                            ? "El procedimiento de calculo rechazo la operacion."
+                            : resultado.concepto
+                    });
+                }
 
                 if (resultado == null || string.IsNullOrWhiteSpace(resultado.json_subtotal))
                 {
@@ -766,6 +789,8 @@ namespace gc.caja.Areas.Facturacion.Controllers
                     });
                 }
 
+                // Un resultado exitoso ya no debe poder enviarse nuevamente, aun si falla su presentacion.
+                LimpiarContexto();
                 if (!TryParsearComprobanteJson(respuesta.resultado_id, out var comprobanteEmitido) ||
                     comprobanteEmitido == null)
                 {
@@ -773,6 +798,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
                     {
                         ok = false,
                         mensaje = "La operacion fue procesada, pero no se pudo interpretar el comprobante emitido.",
+                        operacion_confirmada = true,
                         debug_resultado_id = respuesta.resultado_id
                     });
                 }
@@ -780,8 +806,6 @@ namespace gc.caja.Areas.Facturacion.Controllers
                 var debeImprimir = DebeImprimirComprobanteElectronico();
                 var reporteModo = NormalizarModoReporte(_appSettings.NotaCreditoReporteModo);
                 var mensajeFinal = CrearMensajeOperacionConfirmada(contexto.CoTipo, comprobanteEmitido.tco_letra, comprobanteEmitido.cm_compte);
-
-                LimpiarContexto();
 
                 return Json(new
                 {
@@ -1005,13 +1029,14 @@ namespace gc.caja.Areas.Facturacion.Controllers
             var cantidad = concepto.Cantidad <= 0 ? 1 : concepto.Cantidad;
             var condicionIva = concepto.AlicuotaIva > 0 ? "G" : "N";
             var iva = CalcularIvaManual(concepto.NetoGravado, concepto.AlicuotaIva);
-            var total = (concepto.NetoGravado + iva + concepto.PercepcionIb + concepto.PercepcionIva) * cantidad;
+            var precioUnitario = concepto.NetoGravado + iva + concepto.PercepcionIb + concepto.PercepcionIva;
+            var total = precioUnitario * cantidad;
 
             return new
             {
                 p_id = string.Empty,
                 p_id_barrado = string.Empty,
-                p_desc = concepto.Concepto?.Trim() ?? string.Empty,
+                p_desc = concepto.Concepto?.Trim().ToUpperInvariant() ?? string.Empty,
                 p_pcosto = 0,
                 p_pcosto_repo = 0,
                 in_alicuota = 0,
@@ -1026,7 +1051,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
                 p_pneto = concepto.NetoGravado,
                 p_margen_imp = 0,
                 p_margen_vig = 0,
-                p_pvta = total,
+                p_pvta = precioUnitario,
                 lp_prevision_tot = 0,
                 lp_prevision_pin = 0,
                 cantidad_tot = cantidad,

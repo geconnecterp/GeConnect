@@ -8007,3 +8007,6 @@ span[data-bs-toggle="tooltip"] {
     }
 }
 
+
+/* Créditos del motor de pagos: mismo nivel que los demás detalles. */
+#modalDetalleCtaCte, #modalEditarCreditoNC { z-index: 5100 !important; }

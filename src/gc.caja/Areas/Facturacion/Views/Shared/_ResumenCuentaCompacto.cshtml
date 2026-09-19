@@ -1,0 +1,26 @@
+@model System.ValueTuple<string, string>
+@{
+    var campos = new[]
+    {
+        (Id: "Nombre", Etiqueta: "Nombre", Clase: "nombre"),
+        (Id: "Id", Etiqueta: "ID", Clase: "id"),
+        (Id: "Domicilio", Etiqueta: "Domicilio", Clase: "domicilio"),
+        (Id: "TipoNumero", Etiqueta: "Tipo/Nro", Clase: "documento"),
+        (Id: "Emite", Etiqueta: "Emite", Clase: "emite"),
+        (Id: "Afip", Etiqueta: "Condicion AFIP", Clase: "afip"),
+        (Id: "Email", Etiqueta: "Email", Clase: "email"),
+        (Id: "Movil", Etiqueta: "Movil", Clase: "movil"),
+        (Id: "Origen", Etiqueta: "Cuenta", Clase: "cuenta")
+    };
+}
+<div class="cuenta-resumen-compacto" role="group" aria-label="Datos de la cuenta">
+    @foreach (var campo in campos)
+    {
+        var id = $"{Model.Item1}{campo.Id}{Model.Item2}";
+        <div class="cuenta-resumen-campo cuenta-resumen-@campo.Clase">
+            <label for="@id">@campo.Etiqueta</label>
+            <input type="text" class="form-control @(campo.Id == "Emite" ? "fw-bold text-golden-dark" : "")" id="@id" readonly />
+        </div>
+    }
+</div>
+

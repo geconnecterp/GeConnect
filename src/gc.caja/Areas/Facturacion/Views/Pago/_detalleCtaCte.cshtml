@@ -145,6 +145,7 @@
                                 <th style="width: 145px;" class="text-end">
                                     Imputar
                                 </th>
+                                <th class="text-end">Remanente</th>
                             </tr>
                         </thead>
 
@@ -199,4 +200,28 @@
 
         </div>
     </div>
+</div>
+<!-- Edición individual de la imputación; el crédito original permanece intacto. -->
+<div class="modal fade" id="modalEditarCreditoNC" tabindex="-1" aria-labelledby="tituloEditarCreditoNC"
+     aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered"><div class="modal-content modal-golden">
+        <div class="modal-header bg-gradient-golden">
+            <h5 class="modal-title" id="tituloEditarCreditoNC">Modificar importe del crédito</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        </div>
+        <div class="modal-body">
+            <p id="lblComprobanteEditarNC" class="fw-semibold"></p>
+            <p>Saldo del crédito: <strong id="lblSaldoEditarNC"></strong></p>
+            <label for="txtImporteEditarNC" class="form-label">Importe a imputar</label>
+            <div class="input-group"><span class="input-group-text">$</span>
+                <input id="txtImporteEditarNC" type="text" class="form-control text-end jsteclado jsdecimal"
+                       inputmode="decimal" autocomplete="off" />
+            </div>
+            <p class="text-danger mt-2 d-none" id="errorImporteEditarNC" role="alert"></p>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+            <button type="button" class="btn btn-golden" id="btnGuardarImporteNC">Guardar importe</button>
+        </div>
+    </div></div>
 </div>

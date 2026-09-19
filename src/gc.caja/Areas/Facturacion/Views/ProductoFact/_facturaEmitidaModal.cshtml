@@ -1,0 +1,45 @@
+<div class="modal fade modal-golden" id="modalFacturaEmitida" tabindex="-1"
+     aria-labelledby="tituloFacturaEmitida" aria-hidden="true"
+     data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-gradient-golden">
+                <h5 class="modal-title" id="tituloFacturaEmitida"><i class="bx bx-receipt me-2"></i>Factura emitida</h5>
+                <button type="button" class="btn-close" data-factura-emitida-cancelar aria-label="Cerrar"></button>
+            </div>
+            <form id="formFacturaEmitida" autocomplete="off" novalidate>
+                @Html.AntiForgeryToken()
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label for="ddlFacturaEmitidaTipo" class="form-label">Tipo de comprobante</label>
+                            <select id="ddlFacturaEmitidaTipo" class="form-select" required disabled>
+                                <option value="">Seleccione un tipo</option>
+                            </select>
+                        </div>
+                        <div class="col-4">
+                            <label for="txtFacturaEmitidaPv" class="form-label">PV</label>
+                            <input id="txtFacturaEmitidaPv" type="text" class="form-control jsteclado jsinteger"
+                                   maxlength="4" inputmode="numeric" pattern="[0-9]{1,4}" placeholder="0000" required disabled />
+                        </div>
+                        <div class="col-8">
+                            <label for="txtFacturaEmitidaNumero" class="form-label">N&uacute;mero de comprobante</label>
+                            <input id="txtFacturaEmitidaNumero" type="text" class="form-control jsteclado jsinteger"
+                                   maxlength="8" inputmode="numeric" pattern="[0-9]{1,8}" placeholder="00000000" required disabled />
+                        </div>
+                    </div>
+                    <div id="estadoFacturaEmitida" class="small mt-3 text-muted" role="status" aria-live="polite"></div>
+                </div>
+                <div class="modal-footer justify-content-between">
+                    <button type="button" class="btn btn-outline-secondary" data-factura-emitida-cancelar>
+                        <i class="bx bx-x me-1"></i>Cancelar
+                    </button>
+                    <button type="submit" id="btnCargarFacturaEmitida" class="btn btn-golden" disabled>
+                        <span class="spinner-border spinner-border-sm d-none me-1" id="spinnerFacturaEmitida" aria-hidden="true"></span>
+                        <i class="bx bx-list-plus me-1"></i>Cargar detalle
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

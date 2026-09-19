@@ -21,10 +21,11 @@ namespace gc.caja.Areas.Facturacion.Controllers
 {
     [Area("Facturacion")]
     [Authorize]
-    public class ProductoFactController : ControladorBaseCaja
+    public partial class ProductoFactController : ControladorBaseCaja
     {
         private readonly ICajaServicio _cajaServicio;
         private readonly IProductoFactServicio _productoFactServicio;
+        private readonly INotaCreditoServicio _notaCreditoServicio;
         private readonly IReportesConfigService _reportesConfigService;
         private readonly IReportesService _reportesService;
         private readonly IBackupProductosServicio _backupServicio;// ✅ NUEVO
@@ -33,6 +34,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
             IOptions<AppSettings> options,
             ICajaServicio cajaServicio,
             IProductoFactServicio productoFactServicio, // ✅ INYECTAR
+            INotaCreditoServicio notaCreditoServicio,
             IHttpContextAccessor httpContext,
             IReportesConfigService reportesConfigService,
             IBackupProductosServicio backupServicio, // ✅ NUEVO
@@ -41,6 +43,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
         {
             _cajaServicio = cajaServicio;
             _productoFactServicio = productoFactServicio; // ✅ ASIGNAR
+            _notaCreditoServicio = notaCreditoServicio;
             _reportesConfigService = reportesConfigService;
             _reportesService = reportesService;
             _backupServicio = backupServicio;

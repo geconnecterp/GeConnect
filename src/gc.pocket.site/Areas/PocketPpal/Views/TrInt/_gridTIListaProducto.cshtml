@@ -24,9 +24,9 @@
             {
                 cont++;
                 if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
-                var pedido = item.Pedido.ToString(item.Up_id == "07" ? "N0" : "N3");
-                var colectado = item.Colectado.ToString(item.Up_id == "07" ? "N0" : "N3");
-                var formatoCantidad = item.Up_id == "07" ? "N0" : "N3";
+                var pedido = item.Pedido.ToString(item.up_id == "07" ? "N0" : "N3");
+                var colectado = item.Colectado.ToString(item.up_id == "07" ? "N0" : "N3");
+                var formatoCantidad = item.up_id == "07" ? "N0" : "N3";
                 var esReemplazo = "S".Equals(item.Remplazo, StringComparison.OrdinalIgnoreCase);
                 var resultado = (item.Resultado ?? "PE").Trim().ToUpperInvariant();
                 var esPropio = !(esReemplazo || item.Resultado == "40") ||
