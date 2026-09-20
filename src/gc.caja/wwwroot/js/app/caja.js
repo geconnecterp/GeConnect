@@ -571,9 +571,9 @@ $(function () {
 
         switch (nivelAccesoMenu) {
             case 'solo-cierre':
-                // Habilitar cierre y cobranza diferida para resolver pendientes antes de cerrar el PV.
-                $botones.not('[data-action="cierre"], [data-action="cobranza-diferida"]').prop('disabled', true).addClass('disabled-menu-item');
-                console.log("Menu configurado: CIERRE y COBRANZA DIFERIDA activos");
+                // Habilitar cierre, cobranza diferida y anulacion de cobranza para resolver pendientes antes de cerrar el PV.
+                $botones.not('[data-action="cierre"], [data-action="cobranza-diferida"], [data-action="anula-cobranza"]').prop('disabled', true).addClass('disabled-menu-item');
+                console.log("Menu configurado: CIERRE, COBRANZA DIFERIDA y ANULA COBRANZA activos");
                 break;
 
             case 'parcial':

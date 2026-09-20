@@ -8,7 +8,7 @@ let modoEdicionCliente = false; // Control de modo edición
 let busquedaEnProceso = false; // ✅ NUEVO: Control de búsquedas concurrentes
 let ajaxActual = null; // ✅ NUEVO: Referencia al AJAX en curso para cancelación
 // ✅ NUEVA VARIABLE DE CONFIGURACIÓN
-let autoConfirmarClienteUnico = false; // La carga manual permite elegir LP antes de seguir.
+let autoConfirmarClienteUnico = false; // Se sincroniza con el checkbox al inicializar la vista.
 
 // ========================================
 // ✅ NUEVA SECCIÓN: SINCRONIZACIÓN CHECKBOX
@@ -406,10 +406,6 @@ function abrirModalIdentificarCliente() {
     $('#modalIdentificarCliente').modal('show');
 
     setTimeout(() => {
-        // El flujo manual deja disponible el cambio de LP antes de continuar.
-        $('#chkAutoConfirmar').prop('checked', false).prop('disabled', false);
-        sincronizarAutoConfirmacion();
-
         $('#txtBuscarCliente').trigger("focus");
     }, 500);
 }
@@ -482,10 +478,11 @@ function limpiarModalCliente() {
 
     desbloquearInterfazBusqueda();
 
-    // Mantener desactivada la confirmación automática por defecto.
-    $('#chkAutoConfirmar').prop('checked', false).prop('disabled', false);
+    // Facturación inicia en modo automático; los demás módulos conservan su comportamiento.
+    const confirmarAutomaticamente = $('#modalIdentificarCliente').attr('data-modulo') === 'Facturacion';
+    $('#chkAutoConfirmar').prop('checked', confirmarAutomaticamente).prop('disabled', false);
     sincronizarAutoConfirmacion();
-    console.log('✅ Checkbox restaurado a modo manual');
+    console.log('✅ Checkbox restaurado al modo inicial del módulo');
 
     limpiarSesionClientesBuscados();
 
