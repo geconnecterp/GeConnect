@@ -914,6 +914,14 @@ function renderizarCreditosNCEnGrillaPago() {
 
         const descripcion = obtenerDescripcionCreditoNC(credito);
         const observacion = obtenerObservacionCreditoNC(credito);
+        const textoOriginal = normalizarTexto(credito.creditoOriginal?.cv_importe_ori);
+        const original = Number(textoOriginal.replace(',', '.'));
+        const importeOriginal = textoOriginal && Number.isFinite(original)
+            ? formatearMoneda(Math.abs(original)) : 'No informado';
+        const saldoDisponible = desdeCentavosNC(credito.saldoDisponibleCentavos);
+        const remanente = desdeCentavosNC(
+            credito.saldoDisponibleCentavos - credito.importeImputadoCentavos
+        );
 
         const accionHtml = credito.obligatorio
             ? `
@@ -958,6 +966,12 @@ function renderizarCreditosNCEnGrillaPago() {
 
                     <small class="text-muted d-block">
                         ${escapeHtml(observacion)}
+                    </small>
+                    <small class="text-muted d-flex flex-wrap gap-2 mt-1">
+                        <span class="text-nowrap" title="Importe histórico con el que nació el crédito">Original: <strong>${escapeHtml(importeOriginal)}</strong></span>
+                        <span class="text-nowrap" title="Saldo disponible recibido al consultar el crédito, antes de esta imputación">Disponible: <strong>${formatearMoneda(saldoDisponible)}</strong></span>
+                        <span class="text-nowrap" title="Importe aplicado a este pago">Imputado: <strong>${formatearMoneda(importe)}</strong></span>
+                        <span class="text-nowrap" title="Saldo que quedaría disponible después de esta imputación">Remanente: <strong>${formatearMoneda(remanente)}</strong></span>
                     </small>
                 </td>
 
@@ -2512,7 +2526,7 @@ function volverACalculoFactura() {
             valores: clonarObjetoNC(valoresPago), creditos: clonarObjetoNC(estadoNC.disponibles)
         };
         for (const selector of ['#msjModal', '#modalEditarCreditoNC', '#modalDetalleCtaCte',
-            '#modalDetalleEfectivo', '#modalDetalleCheque', '#modalDetalleTransferencia',
+            '#modalDetalleDocumento', '#modalDetalleEfectivo', '#modalDetalleCheque', '#modalDetalleTransferencia',
             '#modalDetalleValeCompra', '#modalDetalleCuponEmpresa', '#modalInstrumentos',
             '#modalTipoMedioPago', '#modalPago']) await ocultarVentanaPago(selector);
         if (coTipo === 'CC' && typeof calcularTotalCC === 'function') calcularTotalCC();
@@ -2549,6 +2563,11 @@ function volverACalculoFactura() {
  * @returns {Object} - { permitir: boolean, mensaje: string, advertencia?: string }
  */
 function validarDiferenciaParaFinalizar() {
+    if (valoresPago.some(esInstrumentoDocumento) &&
+        obtenerTotalOtrosValoresCentavos() + obtenerTotalCreditosNCCentavos() > obtenerTotalNetoCentavos()) {
+        return { permitir: false, mensaje: 'Los documentos no permiten superar el total a pagar ni generar vuelto.' };
+    }
+
     console.log('═══════════════════════════════════════════════════');
     console.log('🔍 VALIDAR DIFERENCIA PARA FINALIZAR v20.2');
     console.log('═══════════════════════════════════════════════════');
@@ -2832,6 +2851,13 @@ function construirJsonValores() {
         console.log(`      rb_nro_valor: ${valorBackend.rb_nro_valor}`);
         console.log(`      ins_id: ${valorBackend.ins_id}`);
         console.log(`      rb_importe: ${valorBackend.rb_importe}`);
+
+        // DOC tiene su propio contrato; no hereda estado/cuota/fecha del efectivo.
+        if (esInstrumentoDocumento(valor)) {
+            Object.assign(valorBackend, construirDatosDocumento(valor));
+            jsonValores.push(valorBackend);
+            return;
+        }
 
         // ❷ MAPEO ESPECÍFICO SEGÚN TIPO DE PAGO
         switch (tcfIdUpper) {
@@ -3168,7 +3194,13 @@ function finalizarPago() {
         return;
     }
 
-    const jsonValores = construirJsonValores();
+    let jsonValores;
+    try {
+        jsonValores = construirJsonValores();
+    } catch (error) {
+        mostrarMensajeError(error.message);
+        return;
+    }
     const jsonUniones = construirJsonUnionesNC();
 
     const totalNC = conceptosPago.totalCreditosNC || 0;
@@ -6433,6 +6465,8 @@ function confirmarSeleccionInstrumento() {
  * @param {Object} tipoMedioPago - Tipo de medio de pago seleccionado
  */
 function procesarInstrumentos(instrumentos, tipoMedioPago) {
+    const documento = instrumentos?.find(esInstrumentoDocumento);
+    if (documento) { abrirModalDetalleDocumento(documento, tipoMedioPago); return; }
     console.log('═══════════════════════════════════════════════════');
     console.log('🔄 PROCESAR INSTRUMENTOS v19.1');
     console.log(`   Tipo MP: ${tipoMedioPago.tcf_desc} (${tipoMedioPago.tcf_id})`);
@@ -6511,6 +6545,8 @@ function procesarInstrumentos(instrumentos, tipoMedioPago) {
  * @param {Object} tipoMedioPago - Tipo de medio de pago seleccionado
  */
 function agregarValorDirecto(instrumento, tipoMedioPago) {
+    const documento = esInstrumentoDocumento(instrumento) ? instrumento : null;
+    if (documento) { abrirModalDetalleDocumento(documento, tipoMedioPago); return; }
     console.log('═══════════════════════════════════════════════════');
     console.log('➕ AGREGAR VALOR DIRECTO v17.1');
     console.log(`   Instrumento: ${instrumento.ins_desc}`);
@@ -6638,6 +6674,7 @@ function obtenerIconoMP(tcfId) {
         'CP': 'bx bx-purchase-tag',
         'CR': 'bx bx-file-blank',
         'CC': 'bx bx-spreadsheet',
+        'DO': 'bx bx-file',
         'NC': 'bx bx-receipt',
         'RE': 'bx bx-wallet'
     };
@@ -7095,6 +7132,7 @@ function agregarFilaValor(valor) {
                     <strong>${escapeHtml(valor.tcf_desc)}</strong>
                 </div>
                 <small class="text-muted">${escapeHtml(valor.ins_desc)}</small>
+                ${esInstrumentoDocumento(valor) ? `<small class="d-block text-muted">Vencimiento: ${escapeHtml(formatearVencimientoDocumento(valor.detalle?.fecha_vencimiento))}</small>` : ''}
             </td>
             
             <!-- ✅ Importe CON TOOLTIP de observación -->
@@ -8417,6 +8455,8 @@ function requiereModalDetalle(tcfId) {
  * NUEVO: Agregado case 'BA' para Transferencias Bancarias
  */
 function abrirModalDetalleSegunTipo(instrumento, tipoMedioPago) {
+    const documento = esInstrumentoDocumento(instrumento) ? instrumento : null;
+    if (documento) { abrirModalDetalleDocumento(documento, tipoMedioPago); return; }
     console.log('═══════════════════════════════════════════════════');
     console.log('🔓 ABRIR MODAL DETALLE SEGÚN TIPO v19.3');
     console.log(`   Tipo MP: ${tipoMedioPago.tcf_id} - ${tipoMedioPago.tcf_desc}`);
@@ -10876,4 +10916,123 @@ function registrarAccionesIndividualesNC() {
         .on('keydown.ncIndividual', function (event) {
             if (event.key === 'Enter') { event.preventDefault(); guardarEdicionIndividualNC(); }
         });
+}
+
+// Documentos en Cuenta Corriente: fecha civil local, sin conversiones UTC.
+let contextoDocumento = null;
+
+function esInstrumentoDocumento(valor) {
+    return normalizarTextoUpper(valor?.ins_id) === 'DOC';
+}
+
+function fechaLocalDocumento(fecha = new Date()) {
+    return `${String(fecha.getFullYear()).padStart(4, '0')}-${String(fecha.getMonth() + 1).padStart(2, '0')}-${String(fecha.getDate()).padStart(2, '0')}`;
+}
+
+function fechaDocumentoValida(fecha) {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(fecha || '')) return false;
+    const [anio, mes, dia] = fecha.split('-').map(Number);
+    if (anio < 1 || anio > 9999 || mes < 1 || mes > 12 || dia < 1) return false;
+    const bisiesto = anio % 4 === 0 && (anio % 100 !== 0 || anio % 400 === 0);
+    const dias = [31, bisiesto ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+    return dia <= dias[mes - 1] && fecha !== '0001-01-01';
+}
+
+function formatearVencimientoDocumento(fecha) {
+    return fechaDocumentoValida(fecha) ? fecha.split('-').reverse().join('/') : 'Sin fecha válida';
+}
+
+function importeDocumentoCentavos(importe) {
+    // Acepta punto o coma decimal, sin separadores de miles ni parseos parciales.
+    const texto = String(importe ?? '').trim();
+    if (!/^\d+(?:[.,]\d{1,2})?$/.test(texto)) return null;
+    const partes = texto.replace(',', '.').split('.');
+    const centavos = Number(partes[0]) * 100 + Number((partes[1] || '').padEnd(2, '0'));
+    return Number.isSafeInteger(centavos) && centavos > 0 ? centavos : null;
+}
+
+function validarDatosDocumento(importe, fecha, pendienteCentavos) {
+    const centavos = importeDocumentoCentavos(importe);
+    if (centavos === null) return 'Ingrese un monto mayor a cero, con hasta dos decimales.';
+    if (!fechaDocumentoValida(fecha)) return 'Ingrese una fecha de vencimiento válida.';
+    if (fecha < fechaLocalDocumento()) return 'La fecha de vencimiento no puede ser anterior a la fecha actual.';
+    if (pendienteCentavos !== undefined && centavos > pendienteCentavos) return 'El documento no puede superar el saldo pendiente del pago.';
+    return '';
+}
+
+function construirDatosDocumento(valor) {
+    const fecha = valor.detalle?.fecha_vencimiento;
+    const error = validarDatosDocumento(valor.importe, fecha);
+    if (error) throw new Error(`Documento en Cuenta Corriente: ${error}`);
+    return {
+        ins_id: 'DOC', rb_fecha_valor: fecha, rb_importe: importeDocumentoCentavos(valor.importe) / 100,
+        rb_rec: 0, rb_opcion_cuota: '1', rb_cupon_manual: 'N', rb_ch_dif: 'N',
+        rb_estado: 'N', rb_aux: 0, rb_dato1_valor: '', rb_dato2_valor: '',
+        rb_dato3_valor: '', id_externo: ''
+    };
+}
+
+function saldoPendienteDocumentoCentavos() {
+    return Math.max(0, obtenerTotalNetoCentavos() - obtenerTotalOtrosValoresCentavos() - obtenerTotalCreditosNCCentavos());
+}
+
+function abrirModalDetalleDocumento(instrumento, tipoMedioPago) {
+    const $modal = $('#modalDetalleDocumento');
+    if (!$modal.length) { mostrarMensajeError('No se encontró la ventana de documentos. Recargue la página.'); return; }
+    contextoDocumento = { instrumento, tipoMedioPago, revision: revisionPago };
+    $('#txtMontoDocumento').val((saldoPendienteDocumentoCentavos() / 100).toFixed(2));
+    const hoy = fechaLocalDocumento();
+    $('#txtVencimientoDocumento').prop('min', hoy).val(hoy);
+    $('#errorDetalleDocumento').text('').addClass('d-none');
+    $('#btnGuardarDetalleDocumento').prop('disabled', false);
+    $('#formDetalleDocumento').off('submit.documento').on('submit.documento', function (event) {
+        event.preventDefault();
+        guardarDetalleDocumento();
+    });
+    vincularEnterTecladoPago($('#txtMontoDocumento'), 'documento', function () {
+        cerrarTecladoPago();
+        $('#txtVencimientoDocumento').trigger('focus');
+    });
+    $('#txtVencimientoDocumento').off('.documento').on('focus.documento', cerrarTecladoPago);
+    vincularEnterTecladoPago($('#txtVencimientoDocumento'), 'documento', guardarDetalleDocumento);
+    $modal.off('.documento')
+        .on('shown.bs.modal.documento', function () {
+            this.style.setProperty('z-index', '5100', 'important');
+            const fondo = $('.modal-backdrop').last().get(0);
+            if (fondo) fondo.style.setProperty('z-index', '5099', 'important');
+            const input = document.getElementById('txtMontoDocumento');
+            input.focus();
+            input.select();
+        })
+        .on('hide.bs.modal.documento', function () {
+            contextoDocumento = null;
+            cerrarTecladoPago();
+        })
+        .on('hidden.bs.modal.documento', function () {
+            if ($('.modal.show').length) $('body').addClass('modal-open');
+        });
+    $modal.modal('show');
+}
+
+function guardarDetalleDocumento() {
+    const contexto = contextoDocumento;
+    if (!contexto || contexto.revision !== revisionPago) return;
+    const monto = $('#txtMontoDocumento').val();
+    const fecha = $('#txtVencimientoDocumento').prop('min', fechaLocalDocumento()).val();
+    const error = validarDatosDocumento(monto, fecha, saldoPendienteDocumentoCentavos());
+    if (error) { $('#errorDetalleDocumento').text(error).removeClass('d-none'); return; }
+    // Invalidar antes de mutar para evitar doble guardado por Enter y clic.
+    contextoDocumento = null;
+    $('#btnGuardarDetalleDocumento').prop('disabled', true);
+    const valor = {
+        id: ++valorIdCounter, tcf_id: contexto.tipoMedioPago.tcf_id, tcf_desc: contexto.tipoMedioPago.tcf_desc,
+        ins_id: 'DOC', ins_desc: contexto.instrumento.ins_desc, ins_simbolo: '$',
+        importe: importeDocumentoCentavos(monto) / 100, observacion: '',
+        detalle: { fecha_vencimiento: fecha }, fecha_creacion: new Date().toISOString()
+    };
+    valoresPago.push(valor);
+    agregarFilaValor(valor);
+    actualizarTotalesPago();
+    actualizarTotalInstrumento(valor.ins_id, valor.importe);
+    $('#modalDetalleDocumento').modal('hide');
 }

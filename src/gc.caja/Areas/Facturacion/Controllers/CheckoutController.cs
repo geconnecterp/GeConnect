@@ -1220,22 +1220,44 @@ namespace gc.caja.Areas.Facturacion.Controllers
                     }
                 }
 
+                if (esCobranzaDiferida && valores.Any(v => v.rb_rec != 0))
+                    return Json(new { ok = false, mensaje = "Cobranza Diferida no admite recargos financieros en los medios de pago." });
+
+                if (valores.Any(DocumentoCuentaCorriente.EsDocumento))
+                {
+                    // Revalidar en la confirmación: el catálogo pudo cambiar desde la carga.
+                    var mediosDocumento = await _pagoFactServicio.ObtenerValoresMP(new ValoresMPReqDto
+                    {
+                        co_tipo = coTipo, cta_id = ctaId, adm_id = cajaActual.AdmId ?? AdministracionId
+                    }, TokenCookie);
+                    if (mediosDocumento == null || !mediosDocumento.Ok ||
+                        !DocumentoCuentaCorriente.EstaHabilitado(mediosDocumento.ListaEntidad))
+                        return Json(new { ok = false, mensaje = "Documento en Cuenta Corriente no está habilitado para esta operación. Recargue los medios de pago." });
+                }
+
+                var errorDocumento = DocumentoCuentaCorriente.ValidarYNormalizar(
+                    valores,
+                    ObtenerTotalOperacionParaNc(esCobranzaGen, importe, subtotalesFactura),
+                    validacionNc.TotalImputado);
+                if (errorDocumento != null)
+                    return Json(new { ok = false, mensaje = errorDocumento });
+
                 // Serializar solamente después de validar contexto, NC y totales.
                 var sorteosFactura = FacturaSorteos ?? [];
 
-                string jsonProductos = JsonConvert.SerializeObject(
+                string jsonProductos = esCobranzaDiferida ? "{}" : JsonConvert.SerializeObject(
                     productosFactura ?? [],
                     Formatting.None,
                     JsonSettings
                 );
 
-                string jsonSubtotales = JsonConvert.SerializeObject(
+                string jsonSubtotales = esCobranzaDiferida ? "{}" : JsonConvert.SerializeObject(
                     subtotalesFactura ?? [],
                     Formatting.None,
                     JsonSettings
                 );
 
-                string jsonSorteos = JsonConvert.SerializeObject(
+                string jsonSorteos = esCobranzaDiferida ? "{}" : JsonConvert.SerializeObject(
                     sorteosFactura,
                     Formatting.None,
                     JsonSettings
