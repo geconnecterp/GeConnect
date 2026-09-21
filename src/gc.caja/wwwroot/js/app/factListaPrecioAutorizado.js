@@ -9,6 +9,7 @@
     let catalogo = [];
     let seleccion = null;
     let solicitudEnCurso = false;
+    window.cambioListaPrecioEnCurso = () => solicitudEnCurso;
 
     $(function () {
         $(S.abrir).on('click', abrirModal);
@@ -93,6 +94,7 @@
     }
 
     function seleccionar(id) {
+        if (solicitudEnCurso) return;
         const item = catalogo.find(x => String(x.lp_id || '').trim().toUpperCase() === id.toUpperCase());
         seleccion = item ? { id: String(item.lp_id || '').trim(), descripcion: String(item.lp_desc || '').trim() } : null;
         $(S.lista).find('.list-group-item').removeClass('active');
@@ -107,13 +109,14 @@
     }
 
     function confirmarCambio() {
+        if (solicitudEnCurso) return;
         if (!seleccion || seleccion.id.toUpperCase() === listaActivaId().toUpperCase()) {
             mostrarError('Seleccione una lista distinta de la actual.');
             return;
         }
         AbrirMensaje('Solicitar autorización',
             `Se solicitará autorización para cambiar a:<br><br><strong>${escaparHtml(seleccion.descripcion)}</strong> (${escaparHtml(seleccion.id)}).`,
-            function () { $('#msjModal').modal('hide'); solicitarAutorizacion(); }, true,
+            function (respuesta) { $('#msjModal').modal('hide'); if (respuesta === 'SI') solicitarAutorizacion(); }, true,
             ['Solicitar', 'Cancelar'], 'warn!', null);
     }
 
@@ -193,10 +196,14 @@
 
     function bloquearInterfaz() {
         $(S.confirmar).prop('disabled', true).html('<i class="bx bx-loader-alt bx-spin"></i> Solicitando...');
+        $(S.select).prop('disabled', true);
+        $(S.lista).find('button').prop('disabled', true);
         $(S.cancelar).prop('disabled', true); $(S.abrir).prop('disabled', true); $(S.seguir).prop('disabled', true);
     }
     function restaurarBotonesModal() {
         $(S.confirmar).prop('disabled', true).html('<i class="bx bx-check-circle"></i> Cambiar LP');
+        $(S.select).prop('disabled', catalogo.length === 0);
+        $(S.lista).find('button').prop('disabled', false);
         $(S.cancelar).prop('disabled', false);
     }
     function cerrarModal() {

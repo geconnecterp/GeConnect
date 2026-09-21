@@ -394,7 +394,7 @@ function inicializaVistaFact() {
     console.log('🚀 Inicializando módulo de Facturación...');
 
     setTimeout(() => {
-        abrirModalIdentificarCliente();
+        abrirModalIdentificarCliente(true);
         console.log('✅ Modal de Identificar Cliente abierto automáticamente');
     }, 300);
 }
@@ -406,7 +406,16 @@ function inicializaVistaFact() {
 /**
  * ✅ MODIFICADO: Ahora inicializa el checkbox
  */
-function abrirModalIdentificarCliente() {
+async function abrirModalIdentificarCliente(nuevaOperacion = false) {
+    if (typeof window.prepararNuevaOperacionFactura === 'function' &&
+        (nuevaOperacion || !window.operacionFacturaPreparada?.())) {
+        try {
+            await window.prepararNuevaOperacionFactura();
+        } catch (error) {
+            AbrirMensaje('No se pudo iniciar la venta', $('<div>').text(error.message).html(), function () { $('#msjModal').modal('hide'); }, false, ['Aceptar'], 'error!', null);
+            return;
+        }
+    }
     limpiarModalCliente();
 
     $('#modalIdentificarCliente').modal('show');

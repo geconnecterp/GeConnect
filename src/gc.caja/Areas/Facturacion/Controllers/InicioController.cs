@@ -22,6 +22,20 @@ namespace gc.caja.Areas.Facturacion.Controllers
            
         }
 
+        [HttpPost]
+        public IActionResult NuevaOperacion()
+        {
+            if (!VerificarAutenticacion(out _))
+                return Unauthorized(new { ok = false, mensaje = "La sesión ha expirado." });
+            if (CajaActual?.Caja == null || string.IsNullOrWhiteSpace(CajaActual.CajaId))
+                return Conflict(new { ok = false, mensaje = "No hay una caja configurada para iniciar la venta." });
+
+            var sesion = HttpContext.Session;
+            var operacionId = gc.caja.Models.SesionOperacionFactura.Reiniciar(
+                sesion.Remove, (clave, valor) => sesion.SetString(clave, valor));
+            return Ok(new { ok = true, operacionId });
+        }
+
         /// <summary>
         /// Presenta la vista principal del módulo de facturación
         /// </summary>

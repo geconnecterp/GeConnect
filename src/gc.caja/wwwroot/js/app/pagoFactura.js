@@ -4310,7 +4310,7 @@ function reiniciaPantallaAlVolver() {
                 setTimeout(() => {
                     // ❹ PASO 4: Abrir modal de identificar cliente
                     if (typeof abrirModalIdentificarCliente === 'function') {
-                        abrirModalIdentificarCliente();
+                        abrirModalIdentificarCliente(true);
                         console.log('✅ Paso 4: Modal de identificar cliente abierto');
                     } else {
                         console.error('❌ Función abrirModalIdentificarCliente no existe');

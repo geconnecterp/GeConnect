@@ -118,6 +118,7 @@
         // ═══════════════════════════════════════════════════════════
 
         // URLs de Cliente
+        window.NuevaOperacionFacturaUrl = '@Url.Action("NuevaOperacion", "Inicio", new { area = "Facturacion" })';
         var BuscarClienteUrl = '@Url.Action("BuscarCliente", "Cliente", new { area = "Facturacion" })';
         var BuscarClientePorIdUrl = '@Url.Action("BuscarClientePorId", "Cliente", new { area = "Facturacion" })';
         var TraerGrillaClientesUrl = '@Url.Action("TraerGrillaClientes", "Cliente", new { area = "Facturacion" })';
@@ -177,6 +178,7 @@
     <script src="~/js/app/busquedas.js" asp-append-version="true"></script>
     <script src="~/js/app/busquedasV02.js" asp-append-version="true"></script>
 
+    <script src="~/js/app/factOperacion.js" asp-append-version="true"></script>
     <script src="~/js/app/prodfactcalc.js" asp-append-version="true"></script>
     <script src="~/js/app/prodfact.js" asp-append-version="true"></script>
 

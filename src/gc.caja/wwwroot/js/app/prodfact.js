@@ -1666,8 +1666,15 @@ function confirmarCancelarFactura() {
 /**
  * Ejecuta la cancelación de la factura
  */
-function ejecutarCancelarFactura() {
+async function ejecutarCancelarFactura() {
     console.log('🔙 Ejecutando cancelación de factura...');
+
+    try {
+        await window.prepararNuevaOperacionFactura();
+    } catch (error) {
+        mostrarMensajeEstado(error.message, 'danger', 0);
+        return;
+    }
 
     ocultarSeccionProductos();
     $(document).trigger('volverAIdentificarCliente');
