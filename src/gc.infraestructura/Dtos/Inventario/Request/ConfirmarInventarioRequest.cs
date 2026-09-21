@@ -13,5 +13,6 @@ namespace gc.infraestructura.Dtos.Inventario
 		public string depo_id { get; set; } = string.Empty;
 		public string json_r { get; set; } = string.Empty;
 		public string json_u { get; set; } = string.Empty;
+		public string json_c { get; set; } = string.Empty;
 	}
 }

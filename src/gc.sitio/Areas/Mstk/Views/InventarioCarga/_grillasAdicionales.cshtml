@@ -32,11 +32,30 @@
 			font-size: 0.70rem !important;
 			line-height: 1 !important;
 		}
+
+	#containerGrillaRubros table,
+	#containerGrillaProveedores table,
+	#containerGrillaUsuarios table {
+		height: auto !important;
+		max-height: none !important;
+		table-layout: fixed;
+	}
+
+	/* Asegurar que el contenedor no fuerce altura a las filas */
+	#containerGrillaRubros,
+	#containerGrillaProveedores,
+	#containerGrillaUsuarios {
+		display: block !important;
+		overflow-y: auto;
+		max-height: 165px !important;
+		height: 165px !important;
+	}
 </style>
 <fieldset class="border rounded p-2 mb-3">
 	<legend class="float-none w-auto px-2 fw-bold text-primary" style="margin:0 !important;">Datos de Adicionales</legend>
 	<div class="row">
-		<div class="col-sm-12">
+		<div class="col-4"></div>
+		<div class="col-4">
 			<div class="input-group input-group-sm">
 				<div class="form-check form-check-inline form-switch mb-2">
 					<input class="form-check-input" type="checkbox" name="EstadoActivo" id="chkCargarPorSector" checked />
@@ -44,12 +63,14 @@
 				</div>
 			</div>
 		</div>
+		<div class="col-4"></div>
 	</div>
 	<div class="row">
 		<div class="col-4 anchos-div-p">
 			<div class="row" id="divGrillaProveedores">
 			</div>
 			<div class="row mt-1" id="divListaProveedor">
+				<partial name="_listaProveedores" />
 			</div>
 		</div>
 		<div class="col-4 anchos-div">

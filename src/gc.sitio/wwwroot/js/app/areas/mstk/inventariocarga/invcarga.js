@@ -8,6 +8,9 @@
 	VALORIZACION: Symbol("VALORIZACION"),
 	CERRAR_INVENTARIO: Symbol("CERRAR_INVENTARIO")
 };
+var provIdSeleccionado = "";
+var provDescSeleccionado = "";
+
 var accion = "";
 var invNroSeleccionado = "";
 var inveIdSeleccionado = "";
@@ -85,21 +88,31 @@ function InicializarBusqueda() {
 }
 
 function CargarEventosABotonesEnDivPrincipal() {
+	$(document).off("click", "#btnAgregar", ControlaAgregarInventario);
 	$(document).on("click", "#btnAgregar", ControlaAgregarInventario);
+	$(document).off("click", "#btnModificar", ControlaModificarInventario);
 	$(document).on("click", "#btnModificar", ControlaModificarInventario);
+	$(document).off("click", "#btnEliminar", ControlaEliminarInventario);
 	$(document).on("click", "#btnEliminar", ControlaEliminarInventario);
+	$(document).off("click", "#btnRegStkCtrl", ControlaRegStkCtrl);
 	$(document).on("click", "#btnRegStkCtrl", ControlaRegStkCtrl);
+	$(document).off("click", "#btnValorizacion", ControlaValorizacion);
 	$(document).on("click", "#btnValorizacion", ControlaValorizacion);
+	$(document).off("click", "#btnCerrarInv", ControlaCerrarInventario);
 	$(document).on("click", "#btnCerrarInv", ControlaCerrarInventario);
+	$(document).off("click", "#btnConfirmar", ControlaConfirmarInventario);
 	$(document).on("click", "#btnConfirmar", ControlaConfirmarInventario);
+	$(document).off("click", "#btnCancelar", ControlaCancelarInventario);
 	$(document).on("click", "#btnCancelar", ControlaCancelarInventario);
 }
 
 function ControlaAgregarInventario() {
+
 	HabilitarDatosInventario();
 	HabilitarDatosAdicionales();
 	DeshabilitarGrillaInventarios();
-
+	LimpiarGrillasEnDatosAdicionales();
+	InicializarDatosDeInventario();
 	ActualizarEstadoDeBotonesPorEventos(EstadoBtnEnDivPrincipal.AGREGAR)
 }
 
@@ -137,7 +150,7 @@ function ControlaConfirmarInventario() {
 			}
 			return true;
 
-		}, true, ["Aceptar", "Cancelar"], "question!", null);
+		}, true, ["SI", "NO"], "question!", null);
 	}
 	else {
 		AbrirMensaje("ATENCIÓN", resultado, function () {
@@ -652,12 +665,87 @@ function CargarDatosAdicionalesInicial() {
 		CargarGrillaUsuariosEnSeccionDatosAdicionales();
 		CargarListaUsuariosEnSeccionDatosAdicionales();
 		CargarGrillaProveedoresEnSeccionDatosAdicionales();
+		CargarEventosEnSeccionProveedores();
 		setTimeout(() => {
 			DeshabilitarDatosAdicionales();
 		}, 500);
 		ActualizarEstadoDeBotones();
 		return true
 	});
+}
+
+function CargarEventosEnSeccionProveedores() {
+	$("#Rel01").off("click");
+	$("#btnAgregarProveedor").off("click");
+	//$("#Rel01").off("autocomplete");
+	$("#btnAgregarProveedor").on("click", AgregarProveedorEnLista);
+	$("#Rel01").on("click", function () {
+		limpiarProveedorSeleccionado();
+	});
+	$("#Rel01").autocomplete({
+		source: function (request, response) {
+
+			data = { prefix: request.term }; /*Rel01*/
+
+			$.ajax({
+				url: autoComRel011Url,
+				type: "POST",
+				dataType: "json",
+				data: data,
+				success: function (obj) {
+					response($.map(obj, function (item) {
+						return normalizarClienteAutocomplete(item);
+					}));
+				}
+			})
+		},
+		minLength: 3,
+		select: function (event, ui) {
+			provIdSeleccionado = ui.item.id;
+			provDescSeleccionado = ui.item.value;
+			return true;
+		}
+	});
+	aplicarRenderClienteAutocomplete($("#Rel01"));
+}
+
+function limpiarProveedorSeleccionado() {
+	$("#Rel01").val("");
+	provIdSeleccionado = "";
+	provDescSeleccionado = "";
+}
+function AgregarProveedorEnLista() {
+	if (!provIdSeleccionado || provIdSeleccionado == "") {
+		AbrirMensaje("ATENCIÓN", "Debe seleccionar un Proveedor.", function () {
+			$("#msjModal").modal("hide");
+			$("#Rel01").trigger("focus");
+			return true;
+		}, false, ["Aceptar"], "error!", null);
+	}
+	else {
+		var cta_id = provIdSeleccionado;
+		var cta_denominacion = provDescSeleccionado;
+		var data = { cta_id, cta_denominacion };
+		PostGenHtml(data, agregarProveedorEnListaURL, function (obj) {
+			$("#divGrillaProveedores").html(obj);
+			limpiarProveedorSeleccionado();
+			return true
+		}, function (err) {
+			let mensaje = "Error inesperado";
+			try {
+				const json = JSON.parse(err.responseText);
+				if (json.mensaje) {
+					mensaje = json.mensaje;
+				}
+			}
+			catch {
+				mensaje = err.responseText;
+			}
+			AbrirMensaje("ATENCIÓN", mensaje, function () {
+				$("#msjModal").modal("hide");
+			}, false, ["Aceptar"], "error!", null);
+		});
+	}
 }
 
 //#### INICIO Region Carga de datos en tab 'Carga de Inventario' ####//
@@ -887,14 +975,14 @@ function DeshabilitarGrillaInventarios() {
 function DeshabilitarDatosAdicionales() {
 	$("#divGrillasAdicionales").find("input, select, textarea, button").prop("disabled", true);
 
-	$("#divGrillaUsuarios, #divGrillaRubros").find("table tbody tr").addClass("disabled-row");
+	$("#divGrillaUsuarios, #divGrillaRubros, #divGrillaProveedores").find("table tbody tr").addClass("disabled-row");
 	$("#divGrillaRubros").find("table tbody tr").addClass("disabled-row");
 
 }
 function HabilitarDatosAdicionales() {
 	$("#divGrillasAdicionales").find("input, select, textarea, button").prop("disabled", false);
 
-	$("#divGrillaUsuarios, #divGrillaRubros").find("table tbody tr").removeClass("disabled-row");
+	$("#divGrillaUsuarios, #divGrillaRubros, #divGrillaProveedores").find("table tbody tr").removeClass("disabled-row");
 }
 
 function ActualizarEstadoDeBotonesPorEventos(estado) {
@@ -1267,3 +1355,4 @@ function getMaskForIntegerMax1000(selector) {
 		max: 1000
 	});
 }
+

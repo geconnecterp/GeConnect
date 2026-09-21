@@ -88,7 +88,8 @@ namespace gc.api.core.Servicios
                 new("@usu_id",request.usu_id),
                 new("@json_r",request.json_r),
                 new("@json_u",request.json_u),
-            };
+				new("@json_c",request.json_c),
+			};
             var listaTemp = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
             return listaTemp;
         }

@@ -5,12 +5,6 @@
 	string clase = string.Empty;
 }
 <style>
-	#containerGrillaRubros {
-		flex: 1; /* se estira para ocupar todo el espacio */
-		overflow-y: auto; /* scroll si hay muchas filas */
-		max-height: 165px !important;
-		height: 165px !important;
-	}
 
 	.disabled-row {
 		pointer-events: none; /* bloquea clicks */
@@ -24,18 +18,6 @@
 		line-height: 1.2; /* altura de línea más baja */
 		vertical-align: middle; /* centrar contenido verticalmente */
 	}
-
-	/* Botón compacto */
-	.btn-icon-compact {
-		padding: 2px 6px; /* menos padding */
-		font-size: 0.75rem; /* fuente más chica */
-		line-height: 1; /* altura mínima */
-	}
-
-		/* Ícono dentro del botón */
-		.btn-icon-compact i {
-			font-size: 0.9rem; /* ícono más chico */
-		}
 
 </style>
 <div class="table-responsive table-wrapper-200-full-width flex-grow-1" id="containerGrillaRubros">
@@ -57,7 +39,7 @@
 						<td class="@Model.GrillaRubros.ObtenerClase(item.rub_desc)">@Model.GrillaRubros.FormatearDato(item.rub_desc, FormatDato.Ninguno)</td>
 						<td class="text-center align-middle">
 							<div class="d-flex justify-content-center gap-1">
-								<button type="button" class="btn btn-danger btn-icon-compact" title="Quitar rubro" onclick="eliminarItemRubro('@item.inv_nro','@item.rub_id')">
+								<button type="button" class="btn btn-danger btn-eliminar-item" title="Quitar rubro" onclick="eliminarItemRubro('@item.inv_nro','@item.rub_id')">
 									<i class="bx bx-trash"></i>
 								</button>
 							</div>

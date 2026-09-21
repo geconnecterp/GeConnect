@@ -32,9 +32,11 @@ namespace gc.sitio.Areas.Mstk.Controllers
 		private readonly IUserServicio _userServicio;
 		private readonly IRubroServicio _rubroServicio;
 		private readonly ITipoInventarioServicio _tipoInventarioServicio;
+		private readonly ICuentaServicio _cuentaServicio;
 		public InventarioCargaController(IOptions<AppSettings> options, IHttpContextAccessor contexto, ILogger<InventarioCargaController> logger,
 										 IInventarioServicio inventarioServicio, IDepositoServicio depositoServicio, IInventarioEstadoServicio inventarioEstadoServicio,
-										 ISectorServicio sectorServicio, IUserServicio userServicio, IRubroServicio rubroServicio, ITipoInventarioServicio tipoInventarioServicio) : base(options, contexto, logger)
+										 ISectorServicio sectorServicio, IUserServicio userServicio, IRubroServicio rubroServicio, ITipoInventarioServicio tipoInventarioServicio,
+										 ICuentaServicio cuentaServicio) : base(options, contexto, logger)
 		{
 			_setting = options.Value;
 			_inventarioServicio = inventarioServicio;
@@ -44,6 +46,7 @@ namespace gc.sitio.Areas.Mstk.Controllers
 			_userServicio = userServicio;
 			_rubroServicio = rubroServicio;
 			_tipoInventarioServicio = tipoInventarioServicio;
+			_cuentaServicio = cuentaServicio;
 		}
 
 		public IActionResult Index()
@@ -81,6 +84,8 @@ namespace gc.sitio.Areas.Mstk.Controllers
 				var auth = EstaAutenticado;
 				if (!auth.Item1 || auth.Item2 < DateTime.Now)
 					return RedirectToAction("Login", "Token", new { area = "seguridad" });
+
+				InicializarDatos();
 				return PartialView("_inventarioCargaPantallaPrincipal");
 			}
 			catch (Exception ex)
@@ -445,6 +450,43 @@ namespace gc.sitio.Areas.Mstk.Controllers
 			}
 		}
 
+		public IActionResult AgregarProveedorEnLista(string cta_id, string cta_denominacion)
+		{
+			var model = new InventarioCargaGrillaProveedoresModel();
+			try
+			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+					return RedirectToAction("Login", "Token", new { area = "seguridad" });
+				if (string.IsNullOrEmpty(cta_id))
+				{
+					return BadRequest(new
+					{
+						mensaje = "No se ha especificado un valor para Proveedor."
+					});
+				}
+				if (ListaProveedorEnInventario.Where(x => x.cta_id == cta_id).Any())
+				{
+					return Conflict(new
+					{
+						mensaje = $"El proveedor que intenta agregar ya existe. ({cta_id}) {cta_denominacion}"
+					});
+				}
+				var listaTemp = ListaProveedorEnInventario;
+				listaTemp.Add(new ProveedorEnInventarioDto() { cta_id = cta_id, cta_denominacion = cta_denominacion });
+				ListaProveedorEnInventario = listaTemp;
+				model.GrillaProveedores = ObtenerGridCoreSmart<ProveedorEnInventarioDto>(ListaProveedorEnInventario);
+				return PartialView("_grillasAdicionalesProveedores", model);
+			}
+			catch (Exception ex)
+			{
+				return StatusCode(500, new
+				{
+					mensaje = ex.Message
+				});
+			}
+		}
+
 		public IActionResult AgregarUsuarioIndividual(string usu_id, string grupo)
 		{
 			var model = new InventarioCargaGrillaUsuariosModel();
@@ -511,6 +553,7 @@ namespace gc.sitio.Areas.Mstk.Controllers
 				request.usu_id = UserName;
 				request.json_r = ObtenerJsonRubroParaConfirmacionDeInventario();
 				request.json_u = ObtenerJsonUsuarioParaConfirmacionDeInventario();
+				request.json_c = ObtenerJsonProveedorParaConfirmacionDeInventario();
 				PrintProperties(request);
 				var respuesta = _inventarioServicio.ConfirmarInventario(request, TokenCookie);
 				return AnalizarRespuesta(respuesta, "La acción se ejecutó correctamente.");
@@ -988,6 +1031,13 @@ namespace gc.sitio.Areas.Mstk.Controllers
 		}
 
 		#region Metodos privados
+		private void InicializarDatos()
+		{
+			if (ProveedoresLista.Count == 0)
+			{
+				ObtenerProveedores(_cuentaServicio, "BI");
+			}
+		}
 		private string ObtenerProductosParaCierre()
 		{
 			if (ListaProductoEnCierre == null || ListaProductoEnCierre.Count <= 0)
@@ -1040,6 +1090,20 @@ namespace gc.sitio.Areas.Mstk.Controllers
 					inv_grupo = usuario.inv_grupo
 				};
 				listaParaConfirmacion.Add(usuarioConf);
+			}
+			var json = JsonConvert.SerializeObject(listaParaConfirmacion);
+			return json;
+		}
+		private string ObtenerJsonProveedorParaConfirmacionDeInventario()
+		{
+			var listaParaConfirmacion = new List<ProveedorParaConfirmacion>();
+			foreach (var prov in ListaProveedorEnInventario)
+			{
+				var provConf = new ProveedorParaConfirmacion
+				{
+					cta_id = prov.cta_id,
+				};
+				listaParaConfirmacion.Add(provConf);
 			}
 			var json = JsonConvert.SerializeObject(listaParaConfirmacion);
 			return json;
@@ -1185,6 +1249,10 @@ namespace gc.sitio.Areas.Mstk.Controllers
 		{
 			public string usu_id { get; set; } = string.Empty;
 			public string inv_grupo { get; set; } = string.Empty;
+		}
+		private class ProveedorParaConfirmacion
+		{
+			public string cta_id { get; set; } = string.Empty;
 		}
 		#endregion
 	}
