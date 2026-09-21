@@ -111,7 +111,7 @@ function ControlaAgregarInventario() {
 	HabilitarDatosInventario();
 	HabilitarDatosAdicionales();
 	DeshabilitarGrillaInventarios();
-	LimpiarGrillasEnDatosAdicionales();
+	InicializarDatosDeGrillasAdicionales();
 	InicializarDatosDeInventario();
 	ActualizarEstadoDeBotonesPorEventos(EstadoBtnEnDivPrincipal.AGREGAR)
 }
@@ -131,6 +131,29 @@ function ControlaEliminarInventario() {
 	DeshabilitarDatosAdicionales();
 	ActualizarEstadoDeBotonesPorEventos(EstadoBtnEnDivPrincipal.ELIMINAR)
 	$("#btnConfirmar").trigger("focus");
+}
+
+function InicializarDatosDeGrillasAdicionales() {
+	var data = {};
+	PostGen(data, inicializarListasEnInventarioUrl, function (obj) {
+		CerrarWaiting();
+		if (!obj.ok && obj.error && obj.msg === "No autenticado") {
+			window.location.href = login;
+			return false;
+		}
+
+		if (obj.error === true) {
+			AbrirMensaje("ATENCIÓN", obj.msg, function () {
+				$("#msjModal").modal("hide");
+				return true;
+			}, false, ["Aceptar"], "error!", null);
+		}
+		else {
+			setTimeout(() => {
+				LimpiarGrillasEnDatosAdicionales();
+			}, 500);
+		}
+	});
 }
 
 function ControlaConfirmarInventario() {
@@ -222,6 +245,7 @@ function ControlaCancelarInventario() {
 	DeshabilitarDatosAdicionales();
 	InicializarFechasEnDatos();
 	HabilitarGrillaInventarios();
+	InicializarDatosDeGrillasAdicionales();
 	ActualizarEstadoDeBotonesPorEventos(EstadoBtnEnDivPrincipal.CANCELAR)
 }
 
@@ -796,6 +820,20 @@ function ControlaAgregarRubroIndividual() {
 		PostGenHtml(data, agregarRubroIndividualURL, function (obj) {
 			$("#divGrillaRubros").html(obj);
 			return true
+		}, function (err) {
+			let mensaje = "Error inesperado";
+			try {
+				const json = JSON.parse(err.responseText);
+				if (json.mensaje) {
+					mensaje = json.mensaje;
+				}
+			}
+			catch {
+				mensaje = err.responseText;
+			}
+			AbrirMensaje("ATENCIÓN", mensaje, function () {
+				$("#msjModal").modal("hide");
+			}, false, ["Aceptar"], "error!", null);
 		});
 	}
 	else {
@@ -869,6 +907,20 @@ function ControlaAgregarUsuarioIndividual() {
 		PostGenHtml(data, agregarUsuarioIndividualURL, function (obj) {
 			$("#divGrillaUsuarios").html(obj);
 			return true
+		}, function (err) {
+			let mensaje = "Error inesperado";
+			try {
+				const json = JSON.parse(err.responseText);
+				if (json.mensaje) {
+					mensaje = json.mensaje;
+				}
+			}
+			catch {
+				mensaje = err.responseText;
+			}
+			AbrirMensaje("ATENCIÓN", mensaje, function () {
+				$("#msjModal").modal("hide");
+			}, false, ["Aceptar"], "error!", null);
 		});
 	}
 	else {

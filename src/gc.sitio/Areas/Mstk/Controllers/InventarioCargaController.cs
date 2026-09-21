@@ -1,4 +1,5 @@
-﻿using gc.api.core.Entidades;
+﻿using DocumentFormat.OpenXml.Wordprocessing;
+using gc.api.core.Entidades;
 using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Dtos;
 using gc.infraestructura.Dtos.Almacen;
@@ -414,24 +415,18 @@ namespace gc.sitio.Areas.Mstk.Controllers
 					return RedirectToAction("Login", "Token", new { area = "seguridad" });
 				if (string.IsNullOrEmpty(rub_id))
 				{
-					RespuestaGenerica<EntidadBase> response = new()
+					return BadRequest(new
 					{
-						Ok = false,
-						EsError = true,
-						Mensaje = "No se ha especificado un valor para rub_id"
-					};
-					return PartialView("_gridMensaje", response);
+						mensaje = "No se ha especificado un valor para Rubro."
+					});
 				}
 				var rubro = ListaRubroEnInventario.FirstOrDefault(x => x.rub_id == rub_id);
 				if (rubro != null)
 				{
-					RespuestaGenerica<EntidadBase> response = new()
+					return Conflict(new
 					{
-						Ok = false,
-						EsError = true,
-						Mensaje = "El rubro que intenta agregar ya existe."
-					};
-					return PartialView("_gridMensaje", response);
+						mensaje = $"El rubro que intenta agregar ya existe. ({rub_id}) {rubro.rub_desc}"
+					});
 				}
 				var rubroMapeado = RubrosMapperIndividual(ListaRubros.Where(x => x.Rub_Id == rub_id).First());
 				AgregarRubrosAListaRubroEnInventario(rubroMapeado);
@@ -503,8 +498,10 @@ namespace gc.sitio.Areas.Mstk.Controllers
 
 				if (ListaUsuarioEnInventario.Where(x => x.usu_id == usu_id).Any())
 				{
-					model.GrillaUsuarios = ObtenerGridCoreSmart<UsuarioEnInventarioDto>(ListaUsuarioEnInventario);
-					return PartialView("_grillasAdicionalesUsuarios", model);
+					return Conflict(new
+					{
+						mensaje = $"El usuario que intenta agregar ya existe. ({usu_id}) {ListaUsuarioEnInventario.Where(x => x.usu_id == usu_id).FirstOrDefault().usu_apellidoynombre}"
+					});
 				}
 
 				var listaTemp = ListaUsuarioEnInventario;
@@ -1000,7 +997,29 @@ namespace gc.sitio.Areas.Mstk.Controllers
 				return Json(response);
 			}
 		}
-		//
+		public JsonResult InicializarListasEnInventario()
+		{
+			try
+			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+					return Json(new { error = true, warn = false, ok = false, msg = "No autenticado" });
+				ListaProveedorEnInventario = [];
+				ListaRubroEnInventario = [];
+				ListaUsuarioEnInventario = [];
+				return Json(new { error = false, warn = false, ok = true, msg = "" });
+			}
+			catch (Exception ex)
+			{
+				RespuestaGenerica<EntidadBase> response = new()
+				{
+					Ok = false,
+					EsError = true,
+					Mensaje = ex.Message
+				};
+				return Json(response);
+			}
+		}
 
 		public JsonResult RegistrarCierre(RegistrarCierreRequest request)
 		{
