@@ -13,15 +13,17 @@ namespace gc.caja.Areas.Facturacion.Controllers
     {
         private readonly string Co_TipoCC;
         private readonly ICtaCteServicio _ctaCteServicio;
+        private readonly INotaCreditoServicio _notaCreditoServicio;
         private const string MODULO = "CobranzaCtaCte";
         private const string MODULO_DESC = "Módulo de Cobranza de Cuenta Corriente";
 
         public CobranzaCtaCteController(IOptions<AppSettings> options,
             IHttpContextAccessor contexto, ILogger<CobranzaCtaCteController> logger,
-            ICtaCteServicio ctaCteServicio) : base(options, contexto, logger)
+            ICtaCteServicio ctaCteServicio, INotaCreditoServicio notaCreditoServicio) : base(options, contexto, logger)
         {
             Co_TipoCC = "CC";
             _ctaCteServicio = ctaCteServicio;
+            _notaCreditoServicio = notaCreditoServicio;
         }
 
         public IActionResult Index()
@@ -80,6 +82,16 @@ namespace gc.caja.Areas.Facturacion.Controllers
                     if(resp.ListaEntidad?.Any() == true)
                     {
                         _logger?.LogInformation($"✅ Se encontraron {resp.ListaEntidad.Count} registros de la cuenta corriente de la cuenta {cta_id}");
+                        if (resp.ListaEntidad.Any(x => string.IsNullOrWhiteSpace(x.tco_desc)))
+                        {
+                            var tipos = await _notaCreditoServicio.GetTipoComprobante("%", "VE", TokenCookie);
+                            if (tipos?.Ok == true)
+                                gc.caja.core.Servicios.Implementacion.Cajas.DescripcionesCuentaCorriente.Completar(
+                                    resp.ListaEntidad, tipos.ListaEntidad ?? []);
+                            else
+                                _logger?.LogWarning("Cuenta Corriente: no se pudo obtener el catálogo de tipos de comprobante: {Mensaje}", tipos?.Mensaje);
+                        }
+
                         //resguardamos la información en la sesión para poder usarla posteriormente
                         CuentaCorrienteDelCliente = resp.ListaEntidad ?? [];
 

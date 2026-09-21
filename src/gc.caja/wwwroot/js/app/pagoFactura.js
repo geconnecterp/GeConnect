@@ -684,6 +684,16 @@ function obtenerTotalOtrosValoresCentavos() {
     }, 0);
 }
 
+// El vuelto sólo puede salir del efectivo recibido, nunca de NC ni de otros instrumentos.
+function obtenerVueltoEfectivoCentavos() {
+    const excedente = obtenerTotalOtrosValoresCentavos() +
+        obtenerTotalCreditosNCCentavos() - obtenerTotalNetoCentavos();
+    if (excedente <= 0 || valoresPago.some(esInstrumentoDocumento)) return 0;
+    const efectivo = valoresPago.reduce((total, valor) =>
+        total + (normalizarTextoUpper(valor.tcf_id) === 'EF' ? aCentavosMonto(valor.importe) : 0), 0);
+    return efectivo > 0 && excedente <= efectivo ? excedente : 0;
+}
+
 function obtenerCreditosNCImputados() {
     return (estadoNC.seleccionados || []).filter(function (credito) {
         return credito.importeImputadoCentavos > 0;
@@ -2081,7 +2091,8 @@ function agregarFormaPago() {
     }
 
     // ❶ Obtener diferencia actual
-    const diferencia = conceptosPago.diferencia || 0;
+    const diferencia = desdeCentavosNC(obtenerTotalNetoCentavos() -
+        obtenerTotalOtrosValoresCentavos() - obtenerTotalCreditosNCCentavos());
 
     console.log(`   Diferencia actual: ${formatearMoneda(diferencia)}`);
     console.log(`   Total valores actuales: ${valoresPago.length}`);
@@ -2556,7 +2567,7 @@ function volverACalculoFactura() {
  * 
  * 3. DIFERENCIA < 0 (Sobrepago/Vuelto):
  *    ⚠️ VALIDAR según tipo de valores:
- *    - Si todos los valores son EF (Efectivo) → ✅ PERMITIR (se entregará vuelto)
+ *    - Si el efectivo recibido cubre el excedente → ✅ PERMITIR (se entregará vuelto)
  *    - Si hay CH (Cheque) Y co_tipo='CR' (Cliente Registrado) → ✅ PERMITIR (cobranza)
  *    - Cualquier otro caso → ❌ BLOQUEAR
  * 
@@ -2572,7 +2583,8 @@ function validarDiferenciaParaFinalizar() {
     console.log('🔍 VALIDAR DIFERENCIA PARA FINALIZAR v20.2');
     console.log('═══════════════════════════════════════════════════');
 
-    const diferencia = conceptosPago.diferencia || 0;
+    const diferencia = desdeCentavosNC(obtenerTotalNetoCentavos() -
+        obtenerTotalOtrosValoresCentavos() - obtenerTotalCreditosNCCentavos());
     const totalValores = conceptosPago.totalValores || 0;
     const totalPagar = conceptosPago.totalPagar || 0;
 
@@ -2584,7 +2596,7 @@ function validarDiferenciaParaFinalizar() {
     // ═══════════════════════════════════════════════════════════
     // CASO 1: DIFERENCIA > 0 (FALTA PAGAR)
     // ═══════════════════════════════════════════════════════════
-    if (diferencia > 0.01) {
+    if (diferencia > 0) {
         console.error('❌ DIFERENCIA POSITIVA: Falta pagar');
         console.error(`   Monto faltante: ${formatearMoneda(diferencia)}`);
 
@@ -2622,7 +2634,7 @@ function validarDiferenciaParaFinalizar() {
     // ═══════════════════════════════════════════════════════════
     // CASO 2: DIFERENCIA = 0 (EXACTO)
     // ═══════════════════════════════════════════════════════════
-    if (Math.abs(diferencia) <= 0.01) {
+    if (diferencia === 0) {
         console.log('✅ DIFERENCIA CERO: Monto exacto');
         console.log('   No se requiere validación adicional');
 
@@ -2660,10 +2672,10 @@ function validarDiferenciaParaFinalizar() {
     console.log('═══════════════════════════════════════════════════');
 
     // ═══════════════════════════════════════════════════════════
-    // REGLA 1: Si todos son efectivo → PERMITIR (vuelto)
+    // REGLA 1: El efectivo recibido cubre el excedente → PERMITIR (vuelto)
     // ═══════════════════════════════════════════════════════════
-    if (tieneSoloEfectivo) {
-        console.log('✅ REGLA 1 APLICADA: Todos los valores son efectivo');
+    if (obtenerVueltoEfectivoCentavos() > 0) {
+        console.log('✅ REGLA 1 APLICADA: El efectivo recibido cubre el vuelto');
         console.log('   → PERMITIR (se dará vuelto al cliente)');
 
         return {
@@ -3873,6 +3885,9 @@ function enviarPayloadAlServidor(
             console.log(`   es_cobranza_diferida: ${esCobranzaDiferida ? 'SÍ' : 'NO'}`);
             console.log('═══════════════════════════════════════════════════');
 
+            // Cuenta Corriente confirma un cobro; no solicita un reporte fiscal de venta.
+            if (mostrarResultadoCobranzaCtaCte(comprobante, coTipoActual)) return;
+
             // ❿ Generar reporte PDF
             console.log('📄 Iniciando generación de reporte...');
 
@@ -4033,6 +4048,13 @@ function mostrarAdvertenciaPV(mensajeAdvertencia, callback) {
     );
 }
 
+function mostrarResultadoCobranzaCtaCte(comprobante, coTipo) {
+    if (coTipo !== 'CC' && comprobante.es_cobranza_cuenta_corriente !== true) return false;
+    ocultarLoadingGlobal();
+    procesarPagoExitoso({ ...comprobante, es_cobranza_cuenta_corriente: true });
+    return true;
+}
+
 /**
  * ✅ ACTUALIZADO v27.0: Procesa una respuesta exitosa del servidor
  * NUEVO: Mensajes diferenciados según contexto (VENTA/COBRANZA)
@@ -4057,7 +4079,10 @@ function procesarPagoExitoso(comprobante, esCobranzaDiferida = false) {
     const tipoComprobante = esRecibo
         ? 'Recibo de cobranza'
         : obtenerTipoComprobante(comprobante.tco_letra, comprobante.tco_id);
-    const numeroComprobante = (esRecibo ? comprobante.rb_compte || comprobante.cm_compte : comprobante.cm_compte) || 'Sin número';
+    const esCuentaCorriente = comprobante.es_cobranza_cuenta_corriente === true;
+    const numeroComprobante = (esCuentaCorriente
+        ? String(comprobante.rb_compte || '').trim()
+        : (esRecibo ? comprobante.rb_compte || comprobante.cm_compte : comprobante.cm_compte)) || 'No informado por el servidor';
     const esRepetido = comprobante.cm_repetido === "1" || comprobante.cm_repetido === 1;
 
     console.log(`   Tipo: ${tipoComprobante}`);
@@ -4126,7 +4151,7 @@ function procesarPagoExitoso(comprobante, esCobranzaDiferida = false) {
                 reinicioDespachado = true;
 
                 ejecutarReinicioDespuesDePagoExitoso(
-                    esCobranzaDiferidaConfirmada
+                    esCobranzaDiferidaConfirmada, esCuentaCorriente
                 );
             };
 
@@ -4178,7 +4203,14 @@ function redireccionarAIndexCobranzaDiferida() {
     window.location.replace(urlIndex);
 }
 
-function ejecutarReinicioDespuesDePagoExitoso(esCobranzaDiferida) {
+function ejecutarReinicioDespuesDePagoExitoso(esCobranzaDiferida, esCuentaCorriente = false) {
+    if (esCuentaCorriente) {
+        const url = typeof accesoModuloCCUrl !== 'undefined' && accesoModuloCCUrl
+            ? accesoModuloCCUrl : '/Facturacion/CobranzaCtaCte';
+        window.location.replace(url);
+        return;
+    }
+
     /*
         La decisión se toma con el parámetro recibido desde el flujo
         exitoso del pago. No se vuelve a consultar _coTipoActual.
@@ -7204,7 +7236,7 @@ function agregarFilaValor(valor) {
  * BOTÓN FINALIZAR:
  *   - ✅ Habilitado si:
  *     • diferencia === 0 (pago exacto) O
- *     • diferencia < 0 (vuelto) Y solo efectivo
+ *     • diferencia < 0 (vuelto) cubierto por el efectivo recibido
  *   - ❌ Deshabilitado en cualquier otro caso
  */
 function actualizarTotalesPago() {
@@ -7308,18 +7340,10 @@ function actualizarTotalesPago() {
             ) {
                 puedeFinalizar = true;
             } else if (
-                diferencia < -0.01 &&
+                diferencia < 0 &&
                 valoresPago.length > 0
             ) {
-                const tiposPago = valoresPago.map(function (valor) {
-                    return normalizarTextoUpper(valor.tcf_id);
-                });
-
-                const tieneSoloEfectivo = tiposPago.every(function (tipo) {
-                    return tipo === 'EF';
-                });
-
-                puedeFinalizar = tieneSoloEfectivo;
+                puedeFinalizar = obtenerVueltoEfectivoCentavos() > 0;
             }
         }
     }
@@ -10729,7 +10753,7 @@ function validarSeleccionNCParaFinalizar() {
     const saldoMaximoParaNcCentavos = Math.max(
         0,
         obtenerTotalNetoCentavos() -
-        obtenerTotalOtrosValoresCentavos()
+        obtenerTotalOtrosValoresCentavos() + obtenerVueltoEfectivoCentavos()
     );
 
     if (totalNCCentavos > saldoMaximoParaNcCentavos) {

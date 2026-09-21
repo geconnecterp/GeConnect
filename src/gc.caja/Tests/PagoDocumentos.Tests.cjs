@@ -9,7 +9,7 @@ function extract(name) {
     const end = /^}\r?$/m.exec(source.slice(start));
     return source.slice(start, start + end.index + 1);
 }
-const names = ['normalizarTexto', 'normalizarTextoUpper', 'esInstrumentoDocumento', 'fechaLocalDocumento',
+const names = ['obtenerVueltoEfectivoCentavos','desdeCentavosNC','normalizarTexto', 'normalizarTextoUpper', 'esInstrumentoDocumento', 'fechaLocalDocumento',
     'fechaDocumentoValida', 'formatearVencimientoDocumento', 'importeDocumentoCentavos', 'validarDatosDocumento',
     'construirDatosDocumento', 'construirJsonValores', 'saldoPendienteDocumentoCentavos',
     'abrirModalDetalleDocumento', 'guardarDetalleDocumento', 'procesarInstrumentos', 'agregarValorDirecto',

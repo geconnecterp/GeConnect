@@ -1,4 +1,4 @@
-﻿// ============================================
+// ============================================
 // GESTOR PRINCIPAL DEL MÓDULO DE FACTURACIÓN
 // ============================================
 
@@ -18,6 +18,12 @@ let autoConfirmarClienteUnico = false; // Se sincroniza con el checkbox al inici
  * Sincroniza el estado del checkbox con la variable global
  * y actualiza feedback visual
  */
+// El dato fiscal del cliente solo se presenta en módulos que emiten comprobantes.
+function obtenerEmiteClientePorModulo(cliente) {
+    const modulo = $('#modalIdentificarCliente').attr('data-modulo');
+    return ['CobranzaCtaCte', 'AnulacionCobranza', 'CambioValores'].includes(modulo) ? '' : (cliente?.emite || '');
+}
+
 function sincronizarAutoConfirmacion() {
     const $checkbox = $('#chkAutoConfirmar');
 
@@ -728,7 +734,7 @@ function mostrarDatosCliente(cliente) {
     $('#txtDomicilio').val(cliente.domicilio || '');
     $('#txtCondicionAfip').val(cliente.condicionAfip || '');
     $('#txtTipoNumero').val(tipoNumeroDisplay);
-    $('#txtEmite').val(cliente.emite || '');
+    $('#txtEmite').val(obtenerEmiteClientePorModulo(cliente));
     $('#txtEmail').val(cliente.email || '');
     $('#txtMovil').val(cliente.movil || '');
 
@@ -1207,7 +1213,7 @@ function mostrarDatosCliente(cliente) {
     $('#txtDomicilio').val(cliente.domicilio || '');
     $('#txtCondicionAfip').val(cliente.condicionAfip || '');
     $('#txtTipoNumero').val(tipoNumeroDisplay);
-    $('#txtEmite').val(cliente.emite || '');
+    $('#txtEmite').val(obtenerEmiteClientePorModulo(cliente));
     $('#txtEmail').val(cliente.email || '');
     $('#txtMovil').val(cliente.movil || '');
 
