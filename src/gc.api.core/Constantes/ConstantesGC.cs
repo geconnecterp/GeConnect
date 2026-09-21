@@ -295,6 +295,7 @@ namespace gc.api.core.Constantes
 			public const string SP_INV_LISTA = "SPGECO_INV_Lista";
 			public const string SP_INV_RUBROS = "SPGECO_INV_Rub";
 			public const string SP_INV_USUARIOS = "SPGECO_INV_Usu";
+			public const string SP_INV_CTA = "SPGECO_INV_Cta";
 			public const string SP_INV_CONFIRMAR = "SPGECO_INV_Confirmar";
 			public const string SP_INV_BOX = "SPGECO_INV_Box";
 			public const string SP_INV_PLANILLA = "SPGECO_INV_Planilla";

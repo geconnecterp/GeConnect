@@ -1,20 +1,13 @@
-﻿$(function () {
-	$("#btnDelProd").on("click", DelProd);
-	$("#btnCargaPrevia").on("click", AbrirCargaPrevia);
-	$("#btnRevertirAjuste").on("click", ValidarAjuste);
-	$("#btnAddProd").on("click", AgregarProdManual);
-	$("#btnConfirmar").on("click", ConfirmarAjuste);
-	$("#btnCancelar").on("click", VerificarAntesDeCancelarAjuste);
-	$("#txtUP").on("keyup", analizaInputUP);
-	$("#txtBto").on("keyup", analizaInputBto);
-	$("#txtUnid").on("keyup", analizaInputUnid);
-	$("#listaDeposito").on("change", listaDepositoChange);
-	$("#listaBox").on("change", listaBoxesChange);
-	$("#listaDepositoEnCargaPrevia").on("change", listaDepositoEnCargaPreviaChange);
-	$("#listaMotivo").on("change", listalistaMotivoChange);
-	$("#btnradioManual").on("click", BtnRadioManual);
-	$("#btnradioRevertirAjuste").on("click", BtnRadioRevertirAjuste);
-	$("#btnradioCargaPrevia").on("click", BtnRadioCargaPrevia);
+﻿/*
+Chequeos:
+	*) AbrirWaiting -> CerrarWaiting OK
+	*) Dlegacion de eventos .on() -> .off() OK
+	*) Limpieza de logs innecesarios OK
+*/
+
+$(function () {
+	registroDeEventos();
+
 	$("#divRevertirAjuste").find('input').each(function () {
 		$(this).attr('disabled', 'disabled');
 	});
@@ -24,8 +17,8 @@
 	$("#divCargaPrevia").find('button').each(function () {
 		$(this).attr('disabled', 'disabled');
 	});
+
 	document.addEventListener('cc:cuentaChanged', function (e) {
-		console.log('Razón social detectada desde evento externo:', e.detail.cta_denominacion, e.detail.cta_id);
 		if (e.detail.cta_id != undefined) {
 			provUnico = true;
 			provId = e.detail.cta_id;
@@ -40,6 +33,7 @@
 });
 
 function VerificarAntesDeCancelarAjuste() {
+	AbrirWaiting("Verificando ajustes...")
 	var datos = {};
 	PostGen(datos, VerificaExistenciaDeAjusteDeStockURL, function (o) {
 		CerrarWaiting();
@@ -75,7 +69,6 @@ function CancelarAjuste() {
 		AddEventListenerToGrid("tbDetalleDeProductosAAjustar");
 		$("#txtNroAjuste").val("");
 		$("#txtNota").val("");
-		//$("#listaDeposito").val(0);
 		$('#listaDeposito>option:eq(0)').attr('selected', true);
 		$('#listaBox>option:eq(0)').attr('selected', true);
 		$('#listaMotivo>option:eq(0)').attr('selected', true);
@@ -90,7 +83,7 @@ function ConfirmarAjuste() {
 	if (nota === "") {
 		AbrirMensaje("Atención", "Debe especificar una nota antes de confirmar.", function () {
 			$("#msjModal").modal("hide");
-			$("#txtNota").focus();
+			$("#txtNota").trigger('focus');
 			hayError = true;
 			return true;
 		}, false, ["Aceptar"], "warn!", null);
@@ -107,7 +100,7 @@ function ConfirmarAjuste() {
 	if (motivo === "") {
 		AbrirMensaje("Atención", "Debe especificar un 'Tipo' antes de confirmar.", function () {
 			$("#msjModal").modal("hide");
-			$("#listaMotivo").focus();
+			$("#listaMotivo").trigger('focus');
 			hayError = true;
 			return true;
 		}, false, ["Aceptar"], "warn!", null);
@@ -116,7 +109,7 @@ function ConfirmarAjuste() {
 	if (motivoSplited.length !== 2) {
 		AbrirMensaje("Atención", "El tipo de ajuste no tiene la configuracion correcta, consulte con el Administrador. Tipo: " + motivoSplited, function () {
 			$("#msjModal").modal("hide");
-			$("#listaMotivo").focus();
+			$("#listaMotivo").trigger('focus');
 			hayError = true;
 			return true;
 		}, false, ["Aceptar"], "warn!", null);
@@ -133,13 +126,11 @@ function ConfirmarAjuste() {
 					$("#msjModal").modal("hide");
 					return true;
 				}, false, ["Aceptar"], "error!", null);
-				console.log(o.jsonstring);
 			} else if (o.warn === true) {
 				AbrirMensaje("Atención", o.msg, function () {
 					$("#msjModal").modal("hide");
 					return true;
 				}, false, ["Aceptar"], "warn!", null);
-				console.log(o.jsonstring);
 			} else {
 				AbrirMensaje("Atención", o.msg, function () {
 					$("#msjModal").modal("hide");
@@ -147,7 +138,6 @@ function ConfirmarAjuste() {
 				}, false, ["Aceptar"], "succ!", null);
 				$("#tbDetalleDeProductosAAjustar tbody tr").remove(); 
 				$("#txtNota").val("");
-				console.log(o.jsonstring);
 			}
 		});
 	}
@@ -172,6 +162,7 @@ function DelProd() {
 			return true;
 		}, false, ["Aceptar"], "warn!", null);
 	}
+	AbrirWaiting("Quitando producto...");
 	var pId = pIdSeleccionado;
 	var datos = { pId };
 	PostGenHtml(datos, QuitarProductoDeListaURL, function (obj) {
@@ -184,7 +175,6 @@ function DelProd() {
 }
 
 function quitarProducto(p_id) {
-	console.log(p_id);
 	if (p_id === "") {
 		AbrirMensaje("Atención", "Debe seleccionar un producto.", function () {
 			$("#msjModal").modal("hide");
@@ -192,6 +182,7 @@ function quitarProducto(p_id) {
 		}, false, ["Aceptar"], "warn!", null);
 	}
 	else {
+		AbrirWaiting("Quitando producto...");
 		var pId = p_id;
 		var datos = { pId };
 		PostGenHtml(datos, QuitarProductoDeListaURL, function (obj) {
@@ -243,24 +234,24 @@ function BtnRadioCargaPrevia() {
 
 function analizaInputUP(x) {
 	if (x.which == "13") {
-		$("#txtBto").focus();
+		$("#txtBto").trigger('focus');
 	}
 }
 
 function analizaInputBto(x) {
 	if (x.which == "13") {
 		if ($("#txtUnid").prop('disabled')) {
-			$("#btnAddProd").focus();
+			$("#btnAddProd").trigger('focus');
 		}
 		else {
-			$("#txtUnid").focus();
+			$("#txtUnid").trigger('focus');
 		}
 	}
 }
 
 function analizaInputUnid(x) {
 	if (x.which == "13") {
-		$("#btnAddProd").focus();
+		$("#btnAddProd").trigger('focus');
 	}
 }
 
@@ -330,28 +321,6 @@ function EliminarProducto(id) {
 function InicializaPantalla() {
 }
 
-//function analizaEnterInput(e) {
-//	if (e.which == "13") {
-//		tope = 99999;
-//		index = -1;
-//		//obtengo los inputs dentro del div
-//		var inputss = $("#divInputs :input:not(:disabled)");
-//		tope = inputss.length;
-//		//le el id del input en el que he dado enter
-//		var cual = $(this).prop("id");
-//		inputss.each(function (i, item) {
-//			if ($(item).prop("id") === cual) {
-//				index = i;
-//				return false;
-//			}
-//		});
-//		if (index > -1 && tope > index + 1) {
-//			inputss[index + 1].focus();
-//		}
-//	}
-//	return true;
-//}
-
 function verificaEstado(e) {
 	FunctionCallback = null; //inicializo funcion por si tiene alguna funcionalidad asignada.
 	var res = $("#estadoFuncion").val();
@@ -380,36 +349,22 @@ function verificaEstado(e) {
 			}
 		});
 
-		//$("#txtBto").mask("000.000.000.000", {
-		//	reverse: true,
-		//	translation: {
-		//		'#': {
-		//			pattern: /-|\d/,
-		//			recursive: true
-		//		}
-		//	},
-		//	onChange: function (value, e) {
-		//		e.target.value = value.replace(/(?!^)-/g, '').replace(/^,/, '').replace(/^-,/, '-');
-		//	}
-		//});
-
 		$("#txtUP").val(prod.p_unidad_pres).prop("disabled", false);
 		$("#txtBto").val(prod.bulto).prop("disabled", false);
 		$("#txtUnid").mask("000.000.000.000", { reverse: true });
 
-		if (prod.up_id !== "07") {  //unidades enteras
-			// $("#box").mask("000.000.000.000,00", { reverse: true });
-			$("#txtUnid").mask("000.000.000.000,00", { reverse: true });
+		if (prod.up_id === "07") {  //unidades enteras
+			$("#txtUnid").mask("000,000,000,000", { reverse: true });
 			$("#txtUnid").val(0).prop("disabled", false);
 		}
 		else { //unidades decimales
-			//$("#txtUnid").val(0).prop("disabled", true);
+			$("#txtUnid").mask("000,000,000,000.00", { reverse: true });
 		}
 		$("#Busqueda").val("");
 		if (prod.p_con_vto !== "N") {
 		} else {
 		}
-		$("#txtUP").focus();
+		$("#txtUP").trigger('focus');
 	}
 	return true;
 }
@@ -565,7 +520,6 @@ function listalistaMotivoChange() {
 	}
 	//M -> Permite valores (+) y (-)
 	//B -> Solo valores (-) 
-	console.log(tipoMotivoSeleccionado);
 }
 
 function AbrirCargaPrevia() {
@@ -595,6 +549,7 @@ function listaDepositoChange() {
 }
 
 function BlanquearComboBoxes() {
+	AbrirWaiting("");
 	var depoId = "0";
 	var datos = { depoId };
 	PostGenHtml(datos, BuscarBoxesDesdeDepositoURL, function (obj) {
@@ -611,6 +566,7 @@ function listaBoxEnCargaPreviaChange() {
 	if (depoId == "" || boxId == "") {
 		return false;
 	}
+	AbrirWaiting("");
 	var datos = { depoId, boxId };
 	PostGenHtml(datos, FiltrarProductosModalCargaPreviaURL, function (obj) {
 		$("#divListaProductosParaAgregar").html(obj);
@@ -632,22 +588,38 @@ function BuscarBoxDesdeDeposito() {
 	});
 }
 
-function listaDepositoEnCargaPreviaChange() {
+let ajaxPendientes = 0;
+
+function AbrirWaitingAjax() {
+	ajaxPendientes++;
 	AbrirWaiting();
+}
+
+function CerrarWaitingAjax() {
+	ajaxPendientes--;
+	if (ajaxPendientes <= 0) {
+		ajaxPendientes = 0;
+		CerrarWaiting();
+	}
+}
+
+function listaDepositoEnCargaPreviaChange() {
+	AbrirWaitingAjax();
 	var depoId = $("#listaDepositoEnCargaPrevia").val();
 	var datos = { depoId };
 	PostGenHtml(datos, ObtenerBoxesDesdeDepositoDesdeCargaPreviaURL, function (obj) {
 		$("#divComboBoxesEnCargaPrevia").html(obj);
 		$("#listaBoxEnCargaPrevia").on("change", listaBoxEnCargaPreviaChange);
-		CerrarWaiting();
+		CerrarWaitingAjax();
 		return true
 	});
+	AbrirWaitingAjax();
 	var boxId = "";
 	var datos = { depoId, boxId };
 	PostGenHtml(datos, FiltrarProductosModalCargaPreviaURL, function (obj) {
 		$("#divListaProductosParaAgregar").html(obj);
 		AgregarHandlerAGrillaDetalleDeProductosEnModal();
-		CerrarWaiting();
+		CerrarWaitingAjax();
 		return true
 	});
 }
@@ -665,4 +637,54 @@ function AddEventListenerToGrid(tabla) {
 			}
 		});
 	}
+}
+
+function registroDeEventos() {
+	$("#btnDelProd").off("click", DelProd);
+	$("#btnDelProd").on("click", DelProd);
+
+	$("#btnCargaPrevia").off("click", AbrirCargaPrevia);
+	$("#btnCargaPrevia").on("click", AbrirCargaPrevia);
+
+	$("#btnRevertirAjuste").off("click", ValidarAjuste);
+	$("#btnRevertirAjuste").on("click", ValidarAjuste);
+
+	$("#btnAddProd").off("click", AgregarProdManual);
+	$("#btnAddProd").on("click", AgregarProdManual);
+
+	$("#btnConfirmar").off("click", ConfirmarAjuste);
+	$("#btnConfirmar").on("click", ConfirmarAjuste);
+
+	$("#btnCancelar").off("click", VerificarAntesDeCancelarAjuste);
+	$("#btnCancelar").on("click", VerificarAntesDeCancelarAjuste);
+
+	$("#txtUP").off("keyup", analizaInputUP);
+	$("#txtUP").on("keyup", analizaInputUP);
+
+	$("#txtBto").off("keyup", analizaInputBto);
+	$("#txtBto").on("keyup", analizaInputBto);
+
+	$("#txtUnid").off("keyup", analizaInputUnid);
+	$("#txtUnid").on("keyup", analizaInputUnid);
+
+	$("#listaDeposito").off("change", listaDepositoChange);
+	$("#listaDeposito").on("change", listaDepositoChange);
+
+	$("#listaBox").off("change", listaBoxesChange);
+	$("#listaBox").on("change", listaBoxesChange);
+
+	$("#listaDepositoEnCargaPrevia").off("change", listaDepositoEnCargaPreviaChange);
+	$("#listaDepositoEnCargaPrevia").on("change", listaDepositoEnCargaPreviaChange);
+
+	$("#listaMotivo").off("change", listalistaMotivoChange);
+	$("#listaMotivo").on("change", listalistaMotivoChange);
+
+	$("#btnradioManual").off("click", BtnRadioManual);
+	$("#btnradioManual").on("click", BtnRadioManual);
+
+	$("#btnradioRevertirAjuste").off("click", BtnRadioRevertirAjuste);
+	$("#btnradioRevertirAjuste").on("click", BtnRadioRevertirAjuste);
+
+	$("#btnradioCargaPrevia").off("click", BtnRadioCargaPrevia);
+	$("#btnradioCargaPrevia").on("click", BtnRadioCargaPrevia);
 }

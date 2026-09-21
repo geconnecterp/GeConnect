@@ -523,6 +523,7 @@ function actualizarCheckHeader() {
 function LimpiarGrillasEnDatosAdicionales() {
 	CargarGrillaRubrosEnSeccionDatosAdicionales();
 	CargarGrillaUsuariosEnSeccionDatosAdicionales();
+	CargarGrillaProveedoresEnSeccionDatosAdicionales();
 }
 
 function LimiparSelectListEnDatosAdicionales() {
@@ -650,6 +651,7 @@ function CargarDatosAdicionalesInicial() {
 		CargarListaSectoresEnSeccionDatosAdicionales();
 		CargarGrillaUsuariosEnSeccionDatosAdicionales();
 		CargarListaUsuariosEnSeccionDatosAdicionales();
+		CargarGrillaProveedoresEnSeccionDatosAdicionales();
 		setTimeout(() => {
 			DeshabilitarDatosAdicionales();
 		}, 500);
@@ -736,6 +738,18 @@ function CargarGrillaUsuariosEnSeccionDatosAdicionales(invId = 0) {
 	var data = { inv_nro };
 	PostGenHtml(data, cargarGrillaUsuariosEnSeccionDatosAdicionalesURL, function (obj) {
 		$("#divGrillaUsuarios").html(obj);
+		TaskManager.end();
+		return true
+	});
+}
+
+function CargarGrillaProveedoresEnSeccionDatosAdicionales(invId = 0) {
+	TaskManager.start();
+
+	var inv_nro = invId;
+	var data = { inv_nro };
+	PostGenHtml(data, cargarGrillaProveedoresEnSeccionDatosAdicionalesURL, function (obj) {
+		$("#divGrillaProveedores").html(obj);
 		TaskManager.end();
 		return true
 	});
@@ -964,6 +978,9 @@ function selectReg(x, gridId) {
 		}, 100);
 		setTimeout(() => {
 			CargarGrillaUsuariosEnSeccionDatosAdicionales(invNroSeleccionado);
+		}, 100);
+		setTimeout(() => {
+			CargarGrillaProveedoresEnSeccionDatosAdicionales(invNroSeleccionado);
 		}, 100);
 		setTimeout(() => {
 			CargarGrillaRubrosEnSeccionDatosAdicionales(invNroSeleccionado);
@@ -1200,6 +1217,8 @@ function validarFechas() {
 
 function selectItemGrillaRubro(x) { }
 
+function selectItemGrillaProveedor(x) { }
+
 function selectItemGrillaUsuarios(x) { }
 
 function eliminarItemRubro(inv_nro, rub_id) {
@@ -1207,6 +1226,16 @@ function eliminarItemRubro(inv_nro, rub_id) {
 	var data = { inv_nro, rub_id };
 	PostGenHtml(data, quitarItemEnGrillaRubroURL, function (obj) {
 		$("#divGrillaRubros").html(obj);
+		TaskManager.end();
+		return true
+	});
+}
+
+function eliminarItemProveedor(inv_nro, cta_id) {
+	TaskManager.start();
+	var data = { inv_nro, cta_id };
+	PostGenHtml(data, quitarItemEnGrillaProveedorURL, function (obj) {
+		$("#divGrillaProveedores").html(obj);
 		TaskManager.end();
 		return true
 	});

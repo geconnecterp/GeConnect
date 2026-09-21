@@ -1,0 +1,73 @@
+﻿@model InventarioCargaGrillaProveedoresModel
+@using static gc.infraestructura.Helpers.GridHelper
+@{
+	var alt = true;
+	string clase = string.Empty;
+}
+<style>
+	#containerGrillaProveedores {
+		flex: 1; 
+		overflow-y: auto;
+		max-height: 165px !important;
+		height: 165px !important;
+	}
+
+	.disabled-row {
+		pointer-events: none; 
+		opacity: 0.6;
+	}
+
+	#tbListaProveedores td,
+	#tbListaProveedores th {
+		padding: 0.25rem 0.5rem; 
+		line-height: 1.2; 
+		vertical-align: middle; 
+	}
+
+	.btn-icon-compact {
+		padding: 2px 6px; 
+		font-size: 0.75rem; 
+		line-height: 1; 
+	}
+
+		.btn-icon-compact i {
+			font-size: 0.9rem; 
+		}
+
+</style>
+<div class="table-responsive table-wrapper-200-full-width flex-grow-1" id="containerGrillaProveedores">
+	<table class="table table-bordered table-hover table-golden h-50" id="tbListaProveedores">
+		<thead>
+			<tr class="header">
+				<th class="text-center" scope="col">Proveedores</th>
+				<th style="width:10%;"></th>
+			</tr>
+		</thead>
+		<tbody>
+			@if (Model != null && Model.GrillaProveedores != null && Model.GrillaProveedores.ListaDatos != null && Model.GrillaProveedores.ListaDatos.Count > 0)
+			{
+				@foreach (var item in Model.GrillaProveedores.ListaDatos)
+				{
+					if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+					<tr class="@clase"
+						onclick="selectItemGrillaProveedor(this, 'tbListaProveedores');">
+						<td class="@Model.GrillaProveedores.ObtenerClase(item.cta_denominacion)">@Model.GrillaProveedores.FormatearDato(item.cta_denominacion, FormatDato.Ninguno)</td>
+						<td class="text-center align-middle">
+							<div class="d-flex justify-content-center gap-1">
+								<button type="button" class="btn btn-danger btn-icon-compact" title="Quitar proveedor" onclick="eliminarItemProveedor('@item.inv_nro','@item.cta_id')">
+									<i class="bx bx-trash"></i>
+								</button>
+							</div>
+						</td>
+					</tr>
+				}
+			}
+			else
+			{
+				<tr>
+					<td colspan="2" class="text-center text-muted">No hay proveedores cargados</td>
+				</tr>
+			}
+		</tbody>
+	</table>
+</div>

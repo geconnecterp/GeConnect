@@ -60,7 +60,19 @@ namespace gc.api.core.Servicios
             return listaTemp;
         }
 
-        public List<RespuestaDto> ConfirmarInventario(ConfirmarInventarioRequest request)
+		public List<ProveedorEnInventarioDto> GetProveedoresEnInventario(string inv_nro, string usu_id)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_INV_CTA;
+			var ps = new List<SqlParameter>()
+			{
+				new("@inv_nro",inv_nro),
+				new("@usu_id",usu_id),
+			};
+			var listaTemp = _repository.EjecutarLstSpExt<ProveedorEnInventarioDto>(sp, ps, true);
+			return listaTemp;
+		}
+
+		public List<RespuestaDto> ConfirmarInventario(ConfirmarInventarioRequest request)
         {
             var sp = Constantes.ConstantesGC.StoredProcedures.SP_INV_CONFIRMAR;
             var ps = new List<SqlParameter>()

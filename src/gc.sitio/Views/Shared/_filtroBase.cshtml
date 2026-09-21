@@ -358,7 +358,7 @@
                 Model.Modelo.Equals(ModeloFilter.CARGA_INVENTARIO))
         {
             <div class="row mb-3 mt-3">
-                <div class="col-md-2 col-sm-6">
+                <div class="@(Model.Modelo.Equals(ModeloFilter.CARGA_INVENTARIO) ? "col-md-4 col-sm-6" : "col-md-2 col-sm-6")">
                     <div class="input-group input-group-sm">
                         <div class="form-check form-check-inline form-switch mb-2">
                             <input class="form-check-input" type="checkbox" name="EstadoActivo" id="chkDesdeHasta" />
@@ -368,7 +368,7 @@
                 </div>
                 @*             </div>
             <div class="row mb-3"> *@
-                <div class="@(Model.Modelo.Equals(ModeloFilter.PRESUPUESTO) ? "col-md-4 col-sm-6" : "col-md-2 col-sm-6")">
+                <div class="@(Model.Modelo.Equals(ModeloFilter.PRESUPUESTO) || Model.Modelo.Equals(ModeloFilter.CARGA_INVENTARIO) ? "col-md-4 col-sm-6" : "col-md-2 col-sm-6")">
                     <div class="input-group input-group-sm">
                         <span class="input-group-text" id="lbIdDesde">Desde:</span>
                         <input type="date" class="form-control inputEditable" asp-for="Date1" style="background-color:rgb(251,255,195);font-weight:900;" disabled autofocus />
@@ -376,7 +376,7 @@
                 </div>
                 @if (!Model.Modelo.Equals(ModeloFilter.PROV_SIN_MOD))
                 {
-                    <div class="@(Model.Modelo.Equals(ModeloFilter.PRESUPUESTO) ? "col-md-4 col-sm-6" : "col-md-2 col-sm-6")">
+                    <div class="@(Model.Modelo.Equals(ModeloFilter.PRESUPUESTO) || Model.Modelo.Equals(ModeloFilter.CARGA_INVENTARIO) ? "col-md-4 col-sm-6" : "col-md-2 col-sm-6")">
                         <div class="input-group input-group-sm">
                             <span class="input-group-text" id="lbIdHasta">Hasta:</span>
                             <input type="date" class="form-control inputEditable" asp-for="Date2" style="background-color:rgb(251,255,195);font-weight:900;" disabled autofocus />

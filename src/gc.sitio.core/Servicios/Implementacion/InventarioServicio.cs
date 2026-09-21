@@ -23,7 +23,8 @@ namespace gc.sitio.core.Servicios.Implementacion
         private const string INV_LISTA = "/ObtenerInventarioLista";
         private const string INV_RUBROS = "/GetRubroParaInventario";
         private const string INV_USUARIOS = "/GetUsuariosParaInventario";
-        private const string INV_CONFIRMAR = "/ConfirmarInventario";
+		private const string INV_PROVEEDORES = "/GetProveedoresParaInventario";
+		private const string INV_CONFIRMAR = "/ConfirmarInventario";
         private const string INV_BOX = "/GetInventarioBox";
         private const string INV_PLANILLA = "/GetInventarioPlanilla";
         private const string INV_DATOS = "/ObtenerInventarioDatos";
@@ -165,7 +166,50 @@ namespace gc.sitio.core.Servicios.Implementacion
             }
         }
 
-        public RespuestaGenerica<RespuestaDto> ConfirmarInventario(ConfirmarInventarioRequest request, string token)
+		public List<ProveedorEnInventarioDto> GetProveedoresEnInventario(string inv_nro, string usu_id, string token)
+		{
+			ApiResponse<List<ProveedorEnInventarioDto>> respuesta;
+			string stringData;
+			try
+			{
+				HelperAPI helper = new();
+				HttpClient client = helper.InicializaCliente(token);
+				HttpResponseMessage response;
+				var link = $"{_appSettings.RutaBase}{RutaAPI}{INV_PROVEEDORES}?inv_nro={inv_nro}&usu_id={usu_id}";
+				response = client.GetAsync(link).GetAwaiter().GetResult();
+				if (response.StatusCode == HttpStatusCode.OK)
+				{
+					stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+					if (!string.IsNullOrEmpty(stringData))
+					{
+						respuesta = JsonConvert.DeserializeObject<ApiResponse<List<ProveedorEnInventarioDto>>>(stringData) ?? throw new NegocioException("Hubo un problema al deserializar los datos");
+					}
+					else
+					{
+						throw new Exception("Hubo un problema al deserializar los datos. Verifique.");
+					}
+					return respuesta.Data;
+				}
+				else
+				{
+					stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+					_logger.LogError($"Hubo un problema al deserializar los datos: {stringData}");
+					throw new NegocioException("Hubo un problema al deserializar los datos");
+				}
+
+			}
+			catch (NegocioException)
+			{
+				throw;
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, "Error al intentar obtener los datos de la cuenta financiera lista.");
+				throw;
+			}
+		}
+
+		public RespuestaGenerica<RespuestaDto> ConfirmarInventario(ConfirmarInventarioRequest request, string token)
         {
             ApiResponse<List<RespuestaDto>> apiResponse;
 

@@ -55,6 +55,24 @@ namespace gc.sitio.Areas.Mstk.Controllers
 			}
 		}
 
+		public List<ProveedorEnInventarioDto> ListaProveedorEnInventario
+		{
+			get
+			{
+				var json = _context.HttpContext?.Session.GetString("ListaProveedorEnInventario");
+				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+				{
+					return [];
+				}
+				return JsonConvert.DeserializeObject<List<ProveedorEnInventarioDto>>(json) ?? [];
+			}
+			set
+			{
+				var json = JsonConvert.SerializeObject(value);
+				_context.HttpContext?.Session.SetString("ListaProveedorEnInventario", json);
+			}
+		}
+
 		public List<UsuarioEnInventarioDto> ListaUsuarioEnInventario
 		{
 			get

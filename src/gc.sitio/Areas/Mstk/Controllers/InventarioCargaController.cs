@@ -227,6 +227,33 @@ namespace gc.sitio.Areas.Mstk.Controllers
 			}
 		}
 
+		public IActionResult CargarGrillaProveedoresEnSeccionDatosAdicionales(string inv_nro)
+		{
+			var model = new InventarioCargaGrillaProveedoresModel();
+			try
+			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+					return RedirectToAction("Login", "Token", new { area = "seguridad" });
+
+				var lista = _inventarioServicio.GetProveedoresEnInventario(inv_nro, AdministracionId, TokenCookie);
+				model.GrillaProveedores = ObtenerGridCoreSmart<ProveedorEnInventarioDto>(lista);
+				ListaProveedorEnInventario = lista;
+				return PartialView("_grillasAdicionalesProveedores", model);
+			}
+			catch (Exception ex)
+			{
+				RespuestaGenerica<EntidadBase> response = new()
+				{
+					Ok = false,
+					EsError = true,
+					EsWarn = false,
+					Mensaje = ex.Message
+				};
+				return PartialView("_gridMensaje", response);
+			}
+		}
+
 		//public IActionResult CargarDatosDeInvEnSeccionDatosAdicionales(string inv_nro)
 		//{ 
 
@@ -546,6 +573,34 @@ namespace gc.sitio.Areas.Mstk.Controllers
 				ListaRubroEnInventario = listaTemp;
 				model.GrillaRubros = ObtenerGridCoreSmart<RubroEnInventarioDto>(listaTemp);
 				return PartialView("_grillasAdicionalesRubros", model);
+			}
+			catch (Exception ex)
+			{
+				RespuestaGenerica<EntidadBase> response = new()
+				{
+					Ok = false,
+					EsError = true,
+					EsWarn = false,
+					Mensaje = ex.Message
+				};
+				return PartialView("_gridMensaje", response);
+			}
+		}
+
+		public IActionResult QuitarItemEnGrillaProveedores(string inv_nro, string cta_id)
+		{
+			var model = new InventarioCargaGrillaProveedoresModel();
+			try
+			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+					return RedirectToAction("Login", "Token", new { area = "seguridad" });
+
+				var listaTemp = ListaProveedorEnInventario;
+				listaTemp = [.. listaTemp.Where(x => x.cta_id != cta_id)];
+				ListaProveedorEnInventario = listaTemp;
+				model.GrillaProveedores = ObtenerGridCoreSmart<ProveedorEnInventarioDto>(listaTemp);
+				return PartialView("_grillasAdicionalesProveedores", model);
 			}
 			catch (Exception ex)
 			{

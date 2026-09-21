@@ -3,7 +3,7 @@
 	var lst = Model.ListaUsuarios;
 }
 <div class="input-group input-group-sm">
-	<span class="input-group-text fw-bold text-primary">Usuario:</span>
+	@* <span class="input-group-text fw-bold text-primary">Usuario:</span> *@
 	@Html.DropDownListFor(m => m.UsuarioSeleccionado, lst, "Seleccionar", new { @id = "listaUsuarios", @class = "form-control inputEditable activable w-50" })
 	<!-- Nuevo SelectList -->
 	@Html.DropDownList("ListaOpcionesConteo", Enumerable.Empty<SelectListItem>(), "Seleccionar",

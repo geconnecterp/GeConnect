@@ -83,6 +83,21 @@ namespace gc.api.Controllers.Almacen
 			return Ok(response);
 		}
 
+		[HttpGet]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<ProveedorEnInventarioDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult GetProveedoresParaInventario(string inv_nro, string usu_id)
+		{
+			ApiResponse<List<ProveedorEnInventarioDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
+			var res = _inventarioServicio.GetProveedoresEnInventario(inv_nro, usu_id);
+
+			response = new ApiResponse<List<ProveedorEnInventarioDto>>(res);
+
+			return Ok(response);
+		}
+
 		[HttpPost]
 		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<RespuestaDto>))]
 		[ProducesResponseType((int)HttpStatusCode.BadRequest)]

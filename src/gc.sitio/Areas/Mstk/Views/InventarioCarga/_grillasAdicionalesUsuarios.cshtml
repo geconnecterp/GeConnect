@@ -59,7 +59,7 @@
 						<td class="@Model.GrillaUsuarios.ObtenerClase(item.inv_grupo)">@Model.GrillaUsuarios.FormatearDato(item.inv_grupo, FormatDato.Ninguno)</td>
 						<td class="text-center align-middle">
 							<div class="d-flex justify-content-center gap-1">
-								<button type="button" class="btn btn-danger btn-icon-compact" title="Quitar rubro" onclick="eliminarItemUsuario('@item.inv_nro','@item.usu_id')">
+								<button type="button" class="btn btn-danger btn-eliminar-item" title="Quitar rubro" onclick="eliminarItemUsuario('@item.inv_nro','@item.usu_id')">
 									<i class="bx bx-trash"></i>
 								</button>
 							</div>
