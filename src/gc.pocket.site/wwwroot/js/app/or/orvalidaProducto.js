@@ -135,7 +135,7 @@ function validarBoxIngresado() {
                 mostrarMensaje(response.message, "success");
                 
                 // Deshabilitar input y botón de validación
-                $("#txtBox").prop("readonly", true);
+                $("#txtBox").val(response.data?.boxId || boxIngresado).prop("readonly", true);
                 $("#btnValBox").removeClass("btn-success").addClass("btn-secondary");
                 
                 // ✅ Mostrar sección de búsqueda de producto
@@ -234,7 +234,7 @@ function InicializaBusqueda() {
 
     $("#box").val(0).prop("disabled", true);
     $("#unid").val(0).prop("disabled", true);
-    $("#btnCargaProd").prop("disabled", true);
+    $("#btnCargarProd").prop("disabled", true);
 
     //si el desarma esta activado
     if ($("#chkDesarma").is(":disabled") === false) {
@@ -347,7 +347,8 @@ function verificaEstado() {
                             else { //unidades decimales
                                 ConfigurarEntradaCantidadProducto("#unid", prod.up_id, "OrdenReparto");
                                 $("#unid").val(0).prop("disabled", false);
-                                // $("#box").val(0).prop("disabled", true);
+                                $("#box").val(0).prop("disabled", true);
+                                $("#up").val(1).prop("disabled", true);
                             }
 
                             //if (prod.sinAU === true) {
@@ -390,95 +391,86 @@ function verificaEstado() {
     return true;
 }
 
-function cargarCarritoOR() {
-    //aca se validará previamente si la cantidad ingresada corresponde a lo solicitado
-    AbrirWaiting()
-    var cantSolic = productoActualOR.pedido;
-    var desarma = $("#chkDesarma").is(":checked");
-    //var upId = 0;
-    //if (productoActualOR.sinAU === true) {
-    //    productoActualOR.pId = $("#P_id").val();
-    //}
-
-
-    if (desarma === true) {
-        var upId = productoBase.up_id;
-        var cantidad = 0;
-        console.info("[Pocket][OrdenReparto] Calculando cantidad para el carrito");
-        var up = parseInt(NormalizarNumeroEntrada($("#up").val(), "OrdenReparto.unidadesPorBulto"));
-        var bulto = parseInt(NormalizarNumeroEntrada($("#box").val(), "OrdenReparto.bultos"));
-        var unid = parseFloat(NormalizarNumeroEntrada($("#unid").val(), "OrdenReparto.unidadesSueltas"))
-        var fv = $("#fvto").val();
-        if (upId === "07") {
-            cantidad = (up * bulto) + unid;
-        } else {
-            cantidad = unid;
+var cargaOREnCurso = false;
+function textoSeguroOR(valor) { return $("<div>").text(valor ?? "").html(); }
+function formatoCantidadOR(valor) {
+    return Number(valor || 0).toLocaleString("es-AR", { maximumFractionDigits: productoBase.up_id === "07" ? 0 : 3 });
+}
+function avisoCargaOR(mensaje, tipo, continuar) {
+    AbrirMensaje("Importante", textoSeguroOR(mensaje), function () {
+        $("#msjModal").modal("hide");
+        if (continuar) continuar();
+    }, false, ["Aceptar"], tipo || "warn!", null);
+}
+function enviarCargaOR(dato) {
+    if (cargaOREnCurso) return;
+    cargaOREnCurso = true;
+    $("#btnCargarProd").prop("disabled", true);
+    AbrirWaiting("Registrando producto...");
+    PostGen(dato, ResguardarProductoCarritoORUrl, function (obj) {
+        CerrarWaiting();
+        cargaOREnCurso = false;
+        if (!obj || obj.error !== false || obj.warn !== false) {
+            $("#btnCargarProd").prop("disabled", false);
+            if (obj?.reconsultar && obj.producto) productoActualOR = obj.producto;
+            avisoCargaOR(obj?.msg || "No se recibió una respuesta válida. Actualice el listado antes de reintentar.", obj?.error ? "error!" : "warn!");
+            return;
         }
-
-        ////los que tienen que tener cantidad exacta seran tambien los que tengan upId!==07
-        if (cantidad > cantSolic && upId === "07" && productoActualOR.sinAU === false) {
-            CerrarWaiting();
-
-            AbrirMensaje("Atención", "La cantidad ingresada" + cantidad + "no corresponde a la cantidad solicitada (" + cantSolic + "). Verifique.", function () {
-                $("#msjModal").modal("hide");
-                $("#up").trigger("focus");
-                return true;
-            }, false, ["Aceptar"], "warn!", null);
-        }
-        else {
-            //ControlaMensajeSuccess("Cantidad correcta");
-            //se procede a enviar el producto a cargar
-            var dato = { p_id: productoBase.p_id, item: productoActualOR.item, up, bulto, unid, cantidad, fv }
-            PostGen(dato, ResguardarProductoCarritoORUrl, function (obj) {
-                if (obj.error === true) {
-                    CerrarWaiting();
-
-                    AbrirMensaje("Importante", obj.msg, function () {
-                        $("#msjModal").modal("hide");
-                        return true;
-                    }, false, ["Aceptar"], "error!", null);
-                } else if (obj.warn === true) {
-                    CerrarWaiting();
-                    AbrirMensaje("Importante", obj.msg, function () {
-                        $("#msjModal").modal("hide");
-                        return true;
-                    }, false, ["Aceptar"], "warn!", null);
-                }
-                else {
-                    CerrarWaiting();
-                    AbrirMensaje("Importante", obj.msg, function () {
-                        $("#msjModal").modal("hide");
-                        window.location.href = proximoProductoUrl + `?or_compte=${orActual}`;
-                    }, false, ["Aceptar"], "succ!", null);
-                }
-            });
-
-        }
-    } else {
-        //ControlaMensajeSuccess("Cantidad correcta");
-        //se procede a enviar el producto a cargar
-        var dato = { p_id: productoActualOR.p_id, item: productoActualOR.item, up: 0, bulto: 0, unid: 0, cantidad: 0, fv: null, desarma }
-        PostGen(dato, ResguardarProductoCarritoORUrl, function (obj) {
-            if (obj.error === true) {
-                CerrarWaiting();
-
-                AbrirMensaje("Importante", obj.msg, function () {
-                    $("#msjModal").modal("hide");
-                    return true;
-                }, false, ["Aceptar"], "error!", null);
-            } else if (obj.warn === true) {
-                CerrarWaiting();
-                AbrirMensaje("Importante", obj.msg, function () {
-                    $("#msjModal").modal("hide");
-                    return true;
-                }, false, ["Aceptar"], "warn!", null);
-            }
-            else {
-                CerrarWaiting();
-
-                ControlaMensajeSuccess(obj.msg);
-                window.location.href = proximoProductoUrl + `?or_compte=${orActual}`;
-            }
+        avisoCargaOR(obj.msg, "succ!", function () {
+            window.location.href = proximoProductoUrl;
         });
+    }, function () {
+        CerrarWaiting();
+        // Resultado incierto: no reintentar automáticamente ni permitir un doble envío.
+        avisoCargaOR("No se pudo confirmar la respuesta. Volveremos al listado para verificar lo registrado antes de otra carga.", "warn!", function () {
+            window.location.href = proximoProductoUrl;
+        });
+    }, "json");
+}
+function resolverCargaPreviaOR(dato) {
+    var previa = Number(productoActualOR.colectado || 0);
+    dato.cantidadPrevia = previa;
+    dato.bultosPrevios = productoActualOR.bulto;
+    dato.unidadesPrevias = productoActualOR.us;
+    dato.upPrevia = productoActualOR.unidad_pres;
+    if (esReemplazoOR || previa <= 0) {
+        dato.modoCarga = "nueva";
+        enviarCargaOR(dato);
+        return;
     }
+    var mensaje = "El producto <strong>" + textoSeguroOR(productoActualOR.p_id + " " + productoActualOR.p_desc) +
+        "</strong> tiene <strong>" + formatoCantidadOR(previa) + "</strong> colectado por su usuario.<br><br>" +
+        "Sobrescribir carga: quedará en <strong>" + formatoCantidadOR(dato.cantidad) + "</strong>.<br>" +
+        "Acumular: quedará en <strong>" + formatoCantidadOR(previa + dato.cantidad) + "</strong>.<br><br>" +
+        "Esta decisión modifica cantidades; no reemplaza el producto.";
+    AbrirMensaje("Producto ya colectado", mensaje, function (respuesta) {
+        $("#msjModal").modal("hide");
+        if (respuesta !== "SI" && respuesta !== "SI2") return;
+        dato.modoCarga = respuesta === "SI2" ? "acumular" : "sobrescribir";
+        enviarCargaOR(dato);
+    }, true, ["Sobrescribir carga", "Acumular", "Cancelar"], "warn!", null, "cancelar");
+}
+function cargarCarritoOR() {
+    if (cargaOREnCurso) return;
+    if (!productoBase || !$("#chkDesarma").is(":checked")) {
+        avisoCargaOR("Busque el producto para realizar una colecta individual.");
+        return;
+    }
+    var up = Number(NormalizarNumeroEntrada($("#up").val(), "OR.presentacion"));
+    var bulto = productoBase.up_id === "07" ? Number(NormalizarNumeroEntrada($("#box").val(), "OR.bultos")) : 0;
+    var unid = Number(NormalizarNumeroEntrada($("#unid").val(), "OR.unidades"));
+    // Redondeo de la aritmética JS, no de entradas con precisión inválida.
+    var cantidad = Number((productoBase.up_id === "07" ? up * bulto + unid : unid).toFixed(3));
+    if (![up, bulto, unid, cantidad].every(Number.isFinite) || !Number.isInteger(up) || up < 1 || bulto < 0 || unid < 0 || cantidad <= 0) {
+        avisoCargaOR("Ingrese cantidades válidas y positivas.");
+        return;
+    }
+    if (Number(unid.toFixed(3)) !== unid || Number(bulto.toFixed(1)) !== bulto) {
+        avisoCargaOR("Se permiten hasta 3 decimales en unidades y 1 en bultos.");
+        return;
+    }
+    resolverCargaPreviaOR({ p_id: productoBase.p_id, item: productoActualOR.item,
+        contextoCarga: contextoCargaOR,
+        orCompte: productoActualOR.or_compte, productoOriginal: productoActualOR.p_id, boxOriginal: productoActualOR.box_id,
+        up, bulto, unid, cantidad, fv: $("#fvto").val(), desarma: true });
 }

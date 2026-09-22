@@ -3,33 +3,36 @@
     var callback = Url.Action("orcargacarrito", "or", new { area = "pocketppal" });
 
     string orCompte = ViewBag.Compte ?? "N/A";
-    (string, string) mensaje = ("Itinerario x BOX", orCompte);
+    (string, string) mensaje = (string.Empty, orCompte);
+    string orden = ViewBag.OrdenProductos as string ?? "B";
+}
+@model GridCoreSmart<ORProductoDto>
+@section styles {
+    <link rel="stylesheet" href="~/css/pocket-records.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/pocket-or.css" asp-append-version="true" />
 }
 <partial name="_NroComprobante" model="mensaje" />
-<div class="d-flex justify-content-center align-items-center gap-4 my-3">
+<div class="pocket-or-options">
     <div class="form-check">
-        <input class="form-check-input" type="radio" name="tipoOR" id="radioBox" value="BOX" checked>
+        <input class="form-check-input" type="radio" name="tipoOR" id="radioBox" value="BOX" checked="@(orden == "B")">
         <label class="form-check-label" for="radioBox">
             BOX
         </label>
     </div>
     <div class="form-check">
-        <input class="form-check-input" type="radio" name="tipoOR" id="radioRub" value="RUB">
+        <input class="form-check-input" type="radio" name="tipoOR" id="radioRub" value="RUB" checked="@(orden == "R")">
         <label class="form-check-label" for="radioRub">
             RUBRO
         </label>
     </div>
     <div class="form-check">
-        <input class="form-check-input" type="radio" name="tipoOR" id="radioProd" value="PROD">
+        <input class="form-check-input" type="radio" name="tipoOR" id="radioProd" value="PROD" checked="@(orden == "P")">
         <label class="form-check-label" for="radioProd">
             PRODUCTO
         </label>
     </div>
-    <button type="button" id="btnCargar" class="btn btn-sm btn-success">
-        <i class="bx bx-cart"></i> Cargar
-    </button>
 </div>
-<div id="contenedorCarritoOR"></div>
+<div id="contenedorCarritoOR"><partial name="_gridORListaProducto" model="Model" /></div>
 <div class="row mb-3">
     <div class="pocket-action-dock">
         <a asp-action="producto" asp-controller="infoprod" asp-area="pocketppal" asp-route-callback="@callback" class="btn btn-info btn-sm m-3 pocket-action-dock__button" aria-label="Consultar información de producto" title="Información de producto"><i class="bx bx-ms bx-info-circle"></i></a>
@@ -61,7 +64,7 @@
         var usuAuth = '@(User.Claims.First(c => c.Type.Contains("name"))?.Value ?? "")';
         var orCompteActual = '@orCompte';
     </script>
-    <script src="~/js/app/or/orCoreCommon.js"></script>
+    <script src="~/js/app/or/orCoreCommon.js" asp-append-version="true"></script>
     <script src="~/js/app/or/orCoreCarrito.js" asp-append-version="true"></script>
     <script src="~/js/app/reemplazoProducto.js" asp-append-version="true"></script>
 }

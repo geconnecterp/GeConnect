@@ -26,7 +26,7 @@
         public string up_id { get; set; } = string.Empty;
         public decimal pedido { get; set; }
         public decimal colectado { get; set; }
-        public  int bulto { get; set; }
+        public decimal bulto { get; set; }
         public decimal us { get; set; }
         public int unidad_pres { get; set; }
         public string nota { get; set; } = string.Empty;

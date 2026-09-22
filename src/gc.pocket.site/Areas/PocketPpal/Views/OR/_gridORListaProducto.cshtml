@@ -1,143 +1,139 @@
 ﻿@model GridCoreSmart<ORProductoDto>
 @*
-    Vista parcial para mostrar lista de productos de OR
-    Ordenable por BOX, RUBRO o PRODUCTO
-    Versión mejorada con estilos Golden
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 *@
 @{
     var alt = true;
     string clase = string.Empty;
     int cont = 0;
+    bool esSucursal = true;
+    string usuarioActual = ViewBag.UsuarioActual as string ?? string.Empty;
 }
 
-<div class="grid-golden h-100">
-    <div class="grid-golden-body p-1">
-        <div class="pocket-grid-scroll table-responsive table-wrapper table-wrapper-500">
-            <table class="pocket-grid table table-sm table-hover mb-0 table-golden" id="tbORListaProd">
-                <thead class="sticky-top table-golden-header-compact">
-                    <tr class="header">
-                        <th style="display:none;"></th>
-                        <th scope="col" class="text-left th-compact">Producto</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @if (Model.ListaDatos != null && Model.ListaDatos.Any())
-                    {
-                        @foreach (var item in Model.ListaDatos)
-                        {
-                            cont++;
-                            if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
-                            var pedido = item.pedido.ToString(item.up_id == "07" ? "N0" : "N3");
-                            var colectado = item.colectado.ToString(item.up_id == "07" ? "N0" : "N3");
+<div class="table-responsive table-wrapper pocket-record-list">
+    <table class="table table-sm mb-0 table-hover table-wrapper-fixed-head" id="tbORListaProd">
+        <thead>
+            <tr class="header table-dark">
+                <th style="display:none;"></th>
+                <th scope="col">Productos a colectar</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.ListaDatos ?? Enumerable.Empty<ORProductoDto>())
+            {
+                cont++;
+                if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+                var pedido = item.pedido.ToString(item.up_id == "07" ? "N0" : "N3");
+                var colectado = item.colectado.ToString(item.up_id == "07" ? "N0" : "N3");
+                var formatoCantidad = item.up_id == "07" ? "N0" : "N3";
+                var esReemplazo = ORColeccionReglas.EsReemplazo(item);
+                var resultado = ORColeccionReglas.Codigo(item);
+                var esPropio = ORColeccionReglas.EsPropio(item, usuarioActual);
+                var permiteCarga = ORColeccionReglas.PermiteCarga(item, usuarioActual);
+                var permiteColeccion = permiteCarga;
+                var permiteReemplazo = ORColeccionReglas.PermiteReemplazo(item, usuarioActual);
+                var diferenciaColectado = ORColeccionReglas.Diferencia(item);
+                var estadoColeccionTexto = diferenciaColectado > 0
+                    ? $"Falta colectar: {diferenciaColectado.ToString(formatoCantidad)}"
+                    : $"Sobra: {Math.Abs(diferenciaColectado).ToString(formatoCantidad)}";
+                var estadoColeccionClase = diferenciaColectado > 0 ? "bg-warning text-dark" : "bg-danger";
+                var estadoTexto = ORColeccionReglas.Mensaje(item);
+                var estadoClase = ORColeccionReglas.ClaseEstado(item);
 
-                            <tr class="@clase cursor-pointer" 
-                                data-prod-id="@item.p_id"
-                                data-box-id="@item.box_id"
-                                data-rub-id="@item.rub_id">
-                                <td style="display:none;">@cont</td>
-                                <td class="td-compact">
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <!-- ✅ Información del producto -->
-                                        <div class="d-flex flex-column flex-grow-1">
-                                            <div class="p-0">
-                                                <strong class="text-golden">@item.p_id</strong> 
-                                                <span>@item.p_desc</span>
-                                            </div>
-                                            <div class="p-0">
-                                                <small class="text-muted">
-                                                    <i class="bx bx-package"></i> Box: <strong>@item.box_id</strong> | 
-                                                    <i class="bx bx-category"></i> Rub: <strong>@item.rub_id</strong>
-                                                </small>
-                                            </div>
-                                            <div class="p-0">
-                                                <span class="badge bg-info">
-                                                    Pedido: @pedido
-                                                </span>
-                                                @if (item.colectado > 0)
-                                                {
-                                                    <span class="badge bg-success">
-                                                        Colectado: @colectado
-                                                    </span>
-                                                }
-                                            </div>
+                <tr class="@clase" data-prod-id="@item.p_id" data-box-id="@item.box_id" data-rub-id="@item.rub_id" data-item="@item.item">
+                    <td style="display:none;">@cont</td>
+                    <td>
+                        <div class="pocket-record @(esSucursal ? "pocket-record--collection" : "")">
+                            <div class="pocket-record__body">
+                                <div class="pocket-record__title">
+                                    <span class="pocket-record__code">@item.p_id</span>
+                                    <strong title="@item.p_desc">@item.p_desc</strong>
+                                    @if (esReemplazo)
+                                    {
+                                        <span class="badge bg-warning text-dark ms-1" title="Producto cargado como reemplazo">
+                                            <i class="bx bx-transfer-alt"></i> REEMPLAZO
+                                        </span>
+                                    }
+                                </div>
+                                <div class="pocket-record__context"><span class="pocket-record__box">BOX <strong>@item.box_id</strong></span><span class="pocket-record__rubro" title="Rubro @item.rub_id">Rubro <strong>@item.rub_id</strong></span></div>
+                                <div class="pocket-record__quantities">
+                                    <div><span>Pedido</span><strong>@pedido</strong></div>
+                                    <div><span>Colectado</span><strong>@colectado</strong></div>
+                                    @if (!esReemplazo)
+                                    {
+                                        <div><span>Reemplazo</span><strong>@item.colectado_remplazo.ToString(formatoCantidad)</strong></div>
+                                    }
+                                    @if (esSucursal)
+                                    {
+                                        <div><span>Colectado Otros</span><strong>@item.colectado_otros.ToString(formatoCantidad)</strong></div>
+                                    }
+                                </div>
+                                @if (esSucursal)
+                                {
+                                    @if (!esReemplazo && diferenciaColectado != 0)
+                                    {
+                                        <div class="pocket-record__totals">
+                                            <span class="badge @estadoColeccionClase" title="@estadoColeccionTexto">@estadoColeccionTexto</span>
                                         </div>
-
-                                        <!-- ✅ Botones de acción -->
-                                        <div class="d-flex align-items-center gap-1">
-                                            <a asp-action="ORValidaProducto" 
-                                               asp-controller="or" 
-                                               asp-area="pocketppal" 
-                                               asp-route-p_id="@item.p_id" 
-                                               asp-route-box_id="@item.box_id"
-                                               asp-route-item="@item.item"
-                                               class="btn btn-sm btn-success">
-                                                <i class="bx bx-barcode"></i>
-                                            </a>
-                                            <a asp-action="ORValidaProducto"
-                                               asp-controller="or"
-                                               asp-area="pocketppal"
-                                               asp-route-p_id="@item.p_id"
-                                               asp-route-box_id="@item.box_id"
-                                               asp-route-reemplazar="true"
-                                               asp-route-item="@item.item"
-                                               class="btn btn-sm btn-warning btnReemplazarProducto"
-                                               title="Reemplazar producto"
-                                               aria-label="Reemplazar @item.p_id @item.p_desc"
-                                               data-producto-id="@item.p_id"
-                                               data-producto-desc="@item.p_desc"
-                                               data-box-id="@item.box_id"
-                                               data-pedido="@pedido"
-                                               data-colectado="@colectado">
-                                                <i class="bx bx-transfer-alt"></i>
-                                            </a>
-                                            
-                                            @if (!string.IsNullOrEmpty(item.nota) && !string.IsNullOrWhiteSpace(item.nota))
-                                            {
-                                                <button type="button" 
-                                                        class="btn btn-sm btn-warning btnNota" 
-                                                        onclick="mostrarMensaje('@item.nota)')">
-                                                    <i class="bx bx-note"></i>
-                                                </button>
-                                            }
-                                            
-                                            @if (item.colectado > 0)
-                                            {
-                                                <button type="button" 
-                                                        class="btn btn-sm btn-danger" 
-                                                        onclick="limpiaProductoCarritoOR('@item.p_id','@item.box_id',@(item.item?.ToString() ?? "null"))">
-                                                    <i class="bx bx-eraser"></i>
-                                                </button>
-                                            }
-                                        </div>
+                                    }
+                                    <div class="pocket-record__status">
+                                        <span class="badge @estadoClase" title="@resultado · @estadoTexto">@resultado · @estadoTexto</span>
                                     </div>
-                                </td>
-                            </tr>
-                        }
-                    }
-                    else
-                    {
-                        <tr>
-                            <td colspan="2" class="text-center text-muted py-4">
-                                <i class="bx bx-info-circle bx-md"></i>
-                                <p class="mb-0">No hay productos disponibles</p>
-                            </td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
-        </div>
-    </div>
-    
-    @* Footer con información adicional *@
-    @if (Model.ListaDatos != null && Model.ListaDatos.Any())
-    {
-        <div class="grid-golden-footer d-flex justify-content-between align-items-center">
-            <small class="text-muted">
-                <i class="bx bx-package"></i> Total productos: <strong>@Model.ListaDatos.Count()</strong>
-            </small>
-            <small class="text-muted">
-                <i class="bx bx-check-circle"></i> Colectados: <strong>@Model.ListaDatos.Count(x => x.colectado > 0)</strong>
-            </small>
-        </div>
-    }
+                                    @if (esReemplazo && !string.IsNullOrWhiteSpace(item.remplazo_p_id))
+                                    {
+                                        <small class="text-muted pocket-record__reference">
+                                            <span class="pocket-record__reference-text" title="Reemplaza al producto @item.remplazo_p_id">Rem. @item.remplazo_p_id</span>
+                                            @if (!string.IsNullOrWhiteSpace(item.remplazo_box))
+                                            {
+                                                <span class="pocket-record__box" title="BOX original"><strong>@item.remplazo_box</strong></span>
+                                            }
+                                            @if (!string.IsNullOrWhiteSpace(item.remplazo_usu_id))
+                                            {
+                                                <span class="pocket-record__reference-text" title="Operador @item.remplazo_usu_id">- (@item.remplazo_usu_id)</span>
+                                            }
+                                        </small>
+                                    }
+                                    @if (!permiteCarga)
+                                    {
+                                        <small class="text-danger fw-semibold pocket-record__restriction">@(esPropio ? "Este estado no permite realizar una nueva carga." : "El reemplazo pertenece a otro operador y no puede modificarse.")</small>
+                                    }
+                                }
+                            </div>
+                            <div class="pocket-record__actions">
+                                @if (permiteColeccion)
+                                {
+                                    <a asp-action="ORValidaProducto" asp-controller="or" asp-area="pocketppal" asp-route-p_id="@item.p_id" asp-route-box_id="@item.box_id" asp-route-item="@item.item" class="btn btn-sm btn-success btnBarcode" title="Colectar producto"><i class="bx bx-barcode"></i></a>
+                                }
+                                @if (permiteReemplazo)
+                                {
+                                    <a asp-action="ORValidaProducto" asp-controller="or" asp-area="pocketppal"
+                                       asp-route-p_id="@item.p_id" asp-route-box_id="@item.box_id" asp-route-item="@item.item" asp-route-reemplazar="true"
+                                       class="btn btn-sm btn-warning btnReemplazarProducto"
+                                       title="Reemplazar producto"
+                                       aria-label="Reemplazar @item.p_id @item.p_desc"
+                                       data-producto-id="@item.p_id"
+                                       data-producto-desc="@item.p_desc"
+                                       data-box-id="@item.box_id"
+                                       data-pedido="@pedido"
+                                       data-colectado="@colectado">
+                                        <i class="bx bx-transfer-alt"></i>
+                                    </a>
+                                }
+                                @if (ORColeccionReglas.PermiteEliminar(item, usuarioActual))
+                                {
+                                    <button type="button" class="btn btn-sm btn-danger" title="Eliminar colección propia" onclick="limpiaProductoCarritoOR('@item.p_id','@item.box_id',@item.item)"><i class="bx bx-eraser"></i></button>
+                                }
+
+                            </div>
+                        </div>
+
+                    </td>
+                </tr>
+            }
+            @if (cont == 0)
+            {
+                <tr><td colspan="2" class="text-muted text-center">No hay productos disponibles para este filtro.</td></tr>
+            }
+        </tbody>
+    </table>
 </div>

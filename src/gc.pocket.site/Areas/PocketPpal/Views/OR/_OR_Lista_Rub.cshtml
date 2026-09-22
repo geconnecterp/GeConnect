@@ -1,13 +1,5 @@
 ﻿@model GridCoreSmart<ORListaDto>
 
-@{
-    var primerRegistro = Model.ListaDatos?.FirstOrDefault();
-    string orCompte = primerRegistro?.or_compte ?? "N/A";
-    (string, string) mensaje = ("Itinerario x Rubros", orCompte);
-}
-
-<partial name="_NroComprobante" model="mensaje" />
-
 <div class="grid-golden h-100">
     <div class="grid-golden-body p-1">
         <div class="pocket-grid-scroll table-responsive table-wrapper table-wrapper-500" >

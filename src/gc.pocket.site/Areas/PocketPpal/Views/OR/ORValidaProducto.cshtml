@@ -11,7 +11,14 @@
     ORProductoDto producto = ViewBag.Producto as ORProductoDto ?? new();
 }
 
+@section styles {
+    <link rel="stylesheet" href="~/css/pocket-or.css" asp-append-version="true" />
+}
 <partial name="_NroComprobante" model="@Model" />
+@if (ViewBag.AvisoOR is string aviso)
+{
+    <div class="alert alert-warning py-1 mb-2 small" role="status">@aviso</div>
+}
 
 @if (ViewBag.EsReemplazo == true)
 {
@@ -62,6 +69,8 @@
         //funcionalidad busqueda avanzada
         var productoBase = null; //se hidrata en busquedas.
         var productoActualOR = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(producto));
+        var esReemplazoOR = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(ViewBag.EsReemplazo == true));
+        var contextoCargaOR = @Html.Raw(System.Text.Json.JsonSerializer.Serialize((string?)ViewBag.ContextoCargaId));
         var funcionBusquedaAvanzada = false;
         var busquedaProdBaseUrl = "@Url.Action("BusquedaBase", "producto", new { area = "gestion" })";
         var modulo = "OR";
@@ -72,6 +81,6 @@
 
 
     </script>
-    <script src="~/js/app/busquedas.js"></script>
+    <script src="~/js/app/busquedas.js" asp-append-version="true"></script>
     <script src="~/js/app/or/orvalidaProducto.js" asp-append-version="true"></script> @* ← Específico OR *@
 }

@@ -7,24 +7,24 @@
     --record-muted: #625c50;
     border: 0;
 }
-.pocket-record-list #tbListaProd {
+.pocket-record-list :is(#tbListaProd, #tbORListaProd) {
     width: 100%;
     table-layout: fixed;
     border-collapse: separate;
     border-spacing: 0 .625rem;
 }
-.pocket-record-list #tbListaProd thead th {
+.pocket-record-list :is(#tbListaProd, #tbORListaProd) thead th {
     background: var(--record-ink);
     color: var(--record-tint);
     border: 0;
     border-radius: .5rem;
     padding: .625rem .875rem;
 }
-.pocket-record-list #tbListaProd tbody tr,
-.pocket-record-list #tbListaProd tbody tr.alt {
+.pocket-record-list :is(#tbListaProd, #tbORListaProd) tbody tr,
+.pocket-record-list :is(#tbListaProd, #tbORListaProd) tbody tr.alt {
     background: transparent !important;
 }
-.pocket-record-list #tbListaProd tbody td {
+.pocket-record-list :is(#tbListaProd, #tbORListaProd) tbody td {
     background: #fff;
     color: var(--record-ink);
     border: 1px solid var(--record-border);
@@ -34,18 +34,18 @@
     box-shadow: none;
     white-space: normal;
 }
-.pocket-record-list #tbListaProd tbody tr:hover td,
-.pocket-record-list #tbListaProd tbody tr:focus-within td {
+.pocket-record-list :is(#tbListaProd, #tbORListaProd) tbody tr:hover td,
+.pocket-record-list :is(#tbListaProd, #tbORListaProd) tbody tr:focus-within td {
     border-color: var(--record-accent);
 }
 /* Alternate presentation only; keep the existing server-generated row order. */
-.pocket-record-list #tbListaProd tbody tr.alt td {
+.pocket-record-list :is(#tbListaProd, #tbORListaProd) tbody tr.alt td {
     background: var(--record-tint);
 }
-.pocket-record-list #tbListaProd tbody tr.alt .pocket-record__quantities {
+.pocket-record-list :is(#tbListaProd, #tbORListaProd) tbody tr.alt .pocket-record__quantities {
     background: #fff;
 }
-.pocket-record-list #tbListaProd tbody tr.sel td {
+.pocket-record-list :is(#tbListaProd, #tbORListaProd) tbody tr.sel td {
     background: var(--bs-golden-bg-secondary);
     border-color: var(--record-accent);
 }
@@ -74,14 +74,14 @@
 .pocket-record__actions .btn { min-width: 44px; min-height: 44px; display: inline-flex; align-items: center; justify-content: center; }
 .pocket-record__actions .btn:focus-visible { outline: 3px solid var(--record-ink); outline-offset: 3px; }
 @media (max-width: 575.98px) {
-    .pocket-record-list #tbListaProd tbody td { padding: .75rem; }
+    .pocket-record-list :is(#tbListaProd, #tbORListaProd) tbody td { padding: .75rem; }
     .pocket-record { flex-direction: column; align-items: stretch; gap: .625rem; }
     .pocket-record__actions { justify-content: flex-end; }
     .pocket-record__quantities { gap: .375rem 1rem; }
     .pocket-record__totals { display: grid; grid-template-columns: minmax(0, 1fr); }
 
     /* Originales y reemplazos de TR: cantidades a la izquierda; acciones y estado a la derecha. */
-    .pocket-record-list #tbListaProd tbody td:has(.pocket-record--collection) { padding: .5rem; }
+    .pocket-record-list :is(#tbListaProd, #tbORListaProd) tbody td:has(.pocket-record--collection) { padding: .5rem; }
     .pocket-record--collection {
         display: grid;
         grid-template-columns: minmax(0, 1fr) minmax(140px, 1.2fr);

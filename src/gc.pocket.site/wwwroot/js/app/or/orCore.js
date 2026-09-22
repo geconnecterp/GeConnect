@@ -214,12 +214,12 @@ function crearFilaOrden(orden, index) {
 
     // Columna 1: N° Orden con badge
     const $colNumero = $('<td>')
-        .addClass('text-center td-compact')
+        .addClass('text-center td-compact text-nowrap')
         .html(crearBadgeOrden(numeroOrden, estado));
 
     // Columna 2: Repartidor
     const $colRepartidor = $('<td>')
-        .addClass('td-compact')
+        .addClass('td-compact text-nowrap')
         .text(repartidor);
 
     // Columna 3: Fecha

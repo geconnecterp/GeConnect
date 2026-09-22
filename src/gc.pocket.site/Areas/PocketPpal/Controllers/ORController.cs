@@ -9,6 +9,7 @@ using gc.sitio.core.Servicios.Contratos;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using System.Reflection;
+using System.Text.Json;
 using X.PagedList;
 
 namespace gc.pocket.site.Areas.PocketPpal.Controllers
@@ -23,7 +24,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
 
         public ORController(IOptions<AppSettings> options,
             IHttpContextAccessor context,
-            ILogger<TrIntController> logger,
+            ILogger<ORController> logger,
             IOptions<MenuSettings> options1,
             IORServicio oRServicio,
             IProductoServicio productoServicio,
@@ -696,7 +697,9 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                     request.or_compte, request.box_id, request.rub_id);
 
                 // Invocar servicio
+                TrazaOR("LISTA-REQUEST", request);
                 var resultado = await _orServicio.ObtenerORProductos(request, TokenCookie);
+                TrazaOR("LISTA-RESPONSE", resultado);
 
                 if (resultado == null || !resultado.Ok)
                 {
@@ -729,7 +732,9 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 ViewBag.AppItem = modulo;
                 ViewBag.Compte = session.ORComprobanteActual;
 
-                return View();
+                ViewBag.UsuarioActual = UserName;
+                ViewBag.OrdenProductos = session.OrdenProductos;
+                return View(ObtenerGrillaORListaProductos(OrdenarProductos(session.ORListaProductosActual, session.OrdenProductos), session.OrdenProductos));
             }
             catch (Exception ex)
             {
@@ -748,7 +753,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
         /// <param name="orden">Criterio de ordenamiento: B (BOX), R (RUBRO), P (PRODUCTO)</param>
         /// <returns>Vista parcial con grid de productos</returns>
         [HttpPost]
-        public IActionResult BuscaORListaProductos(string orden)
+        public async Task<IActionResult> BuscaORListaProductos(string orden)
         {
             try
             {
@@ -756,7 +761,11 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
 
                 // ✅ REFACTORIZADO: Obtener productos desde ORSession
                 var session = ORSession;
-                var productos = session.ORListaProductosActual;
+                var productos = await ConsultarProductosOR(session);
+                session.OrdenProductos = NormalizarOrden(orden);
+                session.ORListaProductosActual = productos;
+                ORSession = session;
+                ViewBag.UsuarioActual = UserName;
 
                 if (productos == null || !productos.Any())
                 {
@@ -776,12 +785,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 }
 
                 // Ordenar según criterio
-                List<ORProductoDto> productosOrdenados = orden?.ToUpper() switch
-                {
-                    "B" => productos.OrderBy(x => x.box_id).ThenBy(x => x.p_desc).ToList(),
-                    "R" => productos.OrderBy(x => x.rub_id).ThenBy(x => x.p_desc).ToList(),
-                    _ => productos.OrderBy(x => x.p_desc).ToList()
-                };
+                var productosOrdenados = OrdenarProductos(productos, session.OrdenProductos);
 
                 // ✅ Actualizar sesión con lista ordenada
                 session.ORListaProductosActual = productosOrdenados;
@@ -796,9 +800,8 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
             }
             catch (Exception ex)
             {
-                _logger?.LogError(ex, "❌ Error al ordenar productos OR");
-                TempData["error"] = ex.Message;
-                return RedirectToAction("ORCargaCarrito");
+                _logger?.LogError(ex, "[OR-TRACE][LISTA-ERROR] TraceId={TraceId}", HttpContext.TraceIdentifier);
+                return StatusCode(409, "No se pudo actualizar el listado. Vuelva a intentarlo o ingrese nuevamente a la OR.");
             }
         }
 
@@ -808,6 +811,68 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
         /// <param name="productos">Lista de productos</param>
         /// <param name="sortColumn">Columna de ordenamiento</param>
         /// <returns>Grid configurado</returns>
+        private static string NormalizarOrden(string? orden) => orden?.ToUpperInvariant() is "R" or "P" ? orden.ToUpperInvariant() : "B";
+
+        private static List<ORProductoDto> OrdenarProductos(List<ORProductoDto> productos, string? orden) => NormalizarOrden(orden) switch
+        {
+            "R" => productos.OrderBy(x => x.rub_id).ThenBy(x => x.p_desc).ThenBy(x => x.item).ToList(),
+            "P" => productos.OrderBy(x => x.p_desc).ThenBy(x => x.item).ToList(),
+            _ => productos.OrderBy(x => x.box_id).ThenBy(x => x.p_desc).ThenBy(x => x.item).ToList()
+        };
+
+        private void TrazaOR(string etapa, object datos) => _logger.LogInformation(
+            "[OR-TRACE][{Etapa}] TraceId={TraceId} Datos={Datos}", etapa, HttpContext.TraceIdentifier, JsonSerializer.Serialize(datos));
+
+        private async Task<List<ORProductoDto>> ConsultarProductosOR(ORSessionDto sesion, bool todos = false)
+        {
+            if (!EstaAutenticado.Item1 || EstaAutenticado.Item2 < DateTime.Now)
+                throw new NegocioException("La sesión venció. Vuelva a autenticarse.");
+            if (!sesion.EsValida()) throw new NegocioException("Seleccione nuevamente la orden de reparto.");
+            var request = new ORProdRequestDto
+            {
+                or_compte = sesion.ORComprobanteActual!, adm_id = AdministracionId, usu_id = UserName,
+                box_id = todos ? "%" : sesion.ORBoxSeleccionado ?? "%",
+                rub_id = todos ? "%" : sesion.ORRubroSeleccionado ?? "%"
+            };
+            TrazaOR("LISTA-REQUEST", request);
+            var respuesta = await _orServicio.ObtenerORProductos(request, TokenCookie);
+            TrazaOR("LISTA-RESPONSE", new { respuesta.Ok, respuesta.Mensaje, respuesta.ListaEntidad });
+            if (!respuesta.Ok) throw new NegocioException(respuesta.Mensaje ?? "No se pudo actualizar la lista de productos.");
+            return respuesta.ListaEntidad ?? new List<ORProductoDto>();
+        }
+
+        private async Task<ORProductoDto> ObtenerRenglonOR(ORSessionDto sesion, string? producto, string? box,
+            short? item, bool eliminar = false, bool reemplazar = false)
+        {
+            if (!item.HasValue || string.IsNullOrWhiteSpace(producto) || string.IsNullOrWhiteSpace(box))
+                throw new NegocioException("Actualice el listado y seleccione nuevamente el ítem y BOX.");
+            var registros = await ConsultarProductosOR(sesion, todos: true);
+            var registro = registros.SingleOrDefault(x => x.or_compte == sesion.ORComprobanteActual &&
+                x.item == item && x.p_id == producto && x.box_id == box);
+            if (registro == null) throw new NegocioException("El renglón ya no está disponible. Actualice el listado.");
+            var permitido = eliminar ? ORColeccionReglas.PermiteEliminar(registro, UserName)
+                : reemplazar ? ORColeccionReglas.PermiteReemplazo(registro, UserName)
+                : ORColeccionReglas.PermiteCarga(registro, UserName);
+            if (!permitido)
+                throw new NegocioException(!ORColeccionReglas.EsPropio(registro, UserName)
+                    ? "El reemplazo pertenece a otro operador y no puede modificarse ni eliminarse."
+                    : "El estado actual no permite esta operación. Si el pedido está completo, debe tener colección propia para modificarlo.");
+            TrazaOR("RENGLON", new { sesion.ORComprobanteActual, registro.item, registro.p_id, registro.box_id, registro.resultado, eliminar, reemplazar });
+            return registro;
+        }
+
+        private async Task<RespuestaGenerica<RespuestaDto>> ValidarYCargarOR(ORCargaCarritoRequest request)
+        {
+            TrazaOR("VALIDA-REQUEST", request);
+            var validacion = await _orServicio.ValidaProductoCarritoOR(request, TokenCookie);
+            TrazaOR("VALIDA-RESPONSE", validacion);
+            if (!validacion.Ok) return validacion;
+            TrazaOR("CARGA-REQUEST", request);
+            var respuesta = await _orServicio.ResguardarProductoCarrito(request, TokenCookie);
+            TrazaOR("CARGA-RESPONSE", respuesta);
+            return respuesta;
+        }
+
         private GridCoreSmart<ORProductoDto> ObtenerGrillaORListaProductos(List<ORProductoDto> productos, string sortColumn)
         {
             if (productos == null)
@@ -838,8 +903,10 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
         }
 
         [HttpGet]
-        public IActionResult ORValidaProducto(string p_id, string? box_id = null, bool reemplazar = false, short? item = null)
+        public async Task<IActionResult> ORValidaProducto(string p_id, string? box_id = null, bool reemplazar = false, short? item = null)
         {
+            try
+            {
             var auth = EstaAutenticado;
             if (!auth.Item1 || auth.Item2 < DateTime.Now)
             {
@@ -859,8 +926,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 TempData["warn"] = "Actualice el listado y seleccione nuevamente el renglón de la OR con su ítem y BOX.";
                 return RedirectToAction("ORCargaCarrito");
             }
-            var producto = session.ORListaProductosActual?.SingleOrDefault(x => x.item == item &&
-                x.p_id == p_id && x.box_id == box_id && x.or_compte == session.ORComprobanteActual);
+            var producto = await ObtenerRenglonOR(session, p_id, box_id, item, reemplazar: reemplazar);
 
             if (producto == null)
             {
@@ -877,6 +943,10 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
             session.ReemplazarPDesc = reemplazar ? producto.p_desc : null;
             session.ReemplazarBoxId = reemplazar ? producto.box_id : null;
             session.BoxCargaId = reemplazar ? null : producto.box_id;
+            session.BoxValidado = false;
+            session.ContextoCargaId = Guid.NewGuid().ToString("N");
+            session.ORListaProductosActual.RemoveAll(x => x.item == item && x.p_id == p_id && x.box_id == box_id);
+            session.ORListaProductosActual.Add(producto);
             session.UltimaActualizacion = DateTime.Now;
             ORSession = session;
 
@@ -904,8 +974,17 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
             //solicitada es correcta o no.
             ViewBag.Producto = producto;
             ViewBag.EsReemplazo = reemplazar;
+            ViewBag.ContextoCargaId = session.ContextoCargaId;
+            ViewBag.AvisoOR = $"{ORColeccionReglas.Codigo(producto)} · {ORColeccionReglas.Mensaje(producto)}. El servidor validará la nueva carga.";
 
             return View((string.Empty, session.ORComprobanteActual));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "[OR-TRACE][SELECCION-RECHAZADA] Item={Item} Producto={Producto}", item, p_id);
+                TempData["warn"] = ex is NegocioException ? ex.Message : "No se pudo consultar el renglón. Vuelva a intentarlo.";
+                return RedirectToAction("ORCargaCarrito");
+            }
         }
 
         [HttpPost]
@@ -975,7 +1054,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
 
                 boxIngresado = boxIngresado.Trim();
 
-                if (boxIngresado.Length != 11)
+                if (boxIngresado.Length != 11 || boxIngresado.Any(c => c < '0' || c > '9'))
                 {
                     _logger?.LogWarning("⚠️ Validación BOX: longitud incorrecta ({Length})", boxIngresado.Length);
                     return Json(new
@@ -987,6 +1066,8 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
 
                 // ✅ Obtener sesión OR
                 var session = ORSession;
+                session.BoxValidado = false;
+                ORSession = session;
 
                 if (string.IsNullOrEmpty(session.ORComprobanteActual))
                 {
@@ -1006,7 +1087,8 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                         return Json(new { success = false, message = validacion.Resultado_msj });
                     }
 
-                    session.BoxCargaId = validacion.Box_id_sugerido.ToUpper();
+                    session.BoxCargaId = string.IsNullOrWhiteSpace(validacion.Box_id_sugerido) ? boxIngresado : validacion.Box_id_sugerido.Trim().ToUpperInvariant();
+                    session.BoxValidado = true;
                     session.UltimaActualizacion = DateTime.Now;
                     ORSession = session;
                     return Json(new
@@ -1018,25 +1100,7 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 }
 
                 // ✅ Validar según el tipo de filtro usado
-                string boxEnSesion = string.Empty;
-
-                if (session.FiltroEsBox && !string.IsNullOrWhiteSpace(session.ORBoxSeleccionado))
-                {
-                    boxEnSesion = session.ORBoxSeleccionado;
-                }
-                else if (!session.FiltroEsBox)
-                {
-                    // Si se filtró por rubro, obtener el box del producto seleccionado
-                    var productoActual = session.ORListaProductosActual?
-                        .SingleOrDefault(p => session.ORItemSeleccionado.HasValue &&
-                            p.item == session.ORItemSeleccionado && p.p_id == session.ORProductoSeleccionado &&
-                            p.box_id == session.ORProductoBoxSeleccionado && p.or_compte == session.ORComprobanteActual);
-
-                    if (productoActual != null)
-                    {
-                        boxEnSesion = productoActual.box_id;
-                    }
-                }
+                string boxEnSesion = session.ORProductoBoxSeleccionado ?? string.Empty;
 
                 if (string.IsNullOrWhiteSpace(boxEnSesion))
                 {
@@ -1058,6 +1122,8 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
 
                     // Actualizar timestamp de sesión
                     session.UltimaActualizacion = DateTime.Now;
+                    session.BoxCargaId = boxIngresado;
+                    session.BoxValidado = true;
                     ORSession = session;
 
                     return Json(new
@@ -1096,21 +1162,15 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> LimpiaProductoCarritoOR(string p_id, string boxId = "", short? item = null)
+        public async Task<IActionResult> LimpiaProductoCarritoOR(string p_id, string boxId = "", short? item = null, string? orCompte = null)
         {
             try
             {
                 var sesion = ORSession;
 
-                if (!item.HasValue || string.IsNullOrWhiteSpace(boxId))
-                    return Json(new { error = false, warn = true, msg = "Actualice el listado y seleccione nuevamente el ítem y BOX de la OR." });
-                var prod = sesion.ORListaProductosActual.SingleOrDefault(x => x.item == item &&
-                    x.p_id == p_id && x.box_id == boxId && x.or_compte == sesion.ORComprobanteActual);
-
-                if (prod == null)
-                {
-                    return Json(new { error = false, warn = true, msg = $"No se encontró el producto en la lista actual." });
-                }
+                if (orCompte != sesion.ORComprobanteActual)
+                    throw new NegocioException("La OR seleccionada cambió. Actualice el listado.");
+                var prod = await ObtenerRenglonOR(sesion, p_id, boxId, item, eliminar: true);
 
                 ORCargaCarritoRequest request = new ORCargaCarritoRequest();
                 request.item = prod.item;
@@ -1126,21 +1186,8 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 request.cantidad = 0;
                 request.fv = DateTime.MinValue.ToStringYYYYMMDD();
 
-                RespuestaGenerica<RespuestaDto> respv = await _orServicio.ValidaProductoCarritoOR(request, TokenCookie);
-                if (respv.Ok)
-                {
-                    RespuestaGenerica<RespuestaDto> resp = await _orServicio.ResguardarProductoCarrito(request, TokenCookie);
-
-                    if (resp.Ok)
-                    {
-                        return Json(new { error = false, warn = false, msg = $"Producto {ProductoBase.P_desc} fue Limpiado exitosamente" });
-                    }
-                    else { return Json(new { error = false, warn = true, msg = resp.Mensaje }); }
-                }
-                else
-                {
-                    return Json(new { error = false, warn = true, msg = respv.Mensaje });
-                }
+                var resp = await ValidarYCargarOR(request);
+                return Json(new { error = false, warn = !resp.Ok, msg = resp.Ok ? $"Producto {prod.p_desc} fue limpiado exitosamente" : resp.Mensaje });
             }
             catch (NegocioException ex)
             {
@@ -1160,50 +1207,40 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> ResguardarProductoCarritoOR(string p_id, int up, int bulto, decimal unid, decimal cantidad, DateTime? fv, short? item = null)//, bool desarma = true)
+        public async Task<IActionResult> ResguardarProductoCarritoOR(string p_id, int up, decimal bulto, decimal unid, decimal cantidad,
+            DateTime? fv, short? item = null, string modoCarga = "nueva", decimal? cantidadPrevia = null,
+            decimal? bultosPrevios = null, decimal? unidadesPrevias = null, int? upPrevia = null,
+            string? orCompte = null, string? productoOriginal = null, string? boxOriginal = null, bool desarma = true, string? contextoCarga = null)
         {
             try
             {
                 var sesion = ORSession;
 
-                if (!item.HasValue || item != sesion.ORItemSeleccionado)
+                if (!ModelState.IsValid)
+                    throw new NegocioException("Los datos de carga no tienen un formato válido. Revise cantidades y fecha.");
+                if (!desarma) throw new NegocioException("Esta pantalla permite la colecta individual de productos, no BOX completo.");
+                if (string.IsNullOrEmpty(contextoCarga) || contextoCarga != sesion.ContextoCargaId ||
+                    !item.HasValue || item != sesion.ORItemSeleccionado || orCompte != sesion.ORComprobanteActual ||
+                    productoOriginal != sesion.ORProductoSeleccionado || boxOriginal != sesion.ORProductoBoxSeleccionado ||
+                    (!sesion.EsReemplazo && p_id != sesion.ORProductoSeleccionado))
                     return Json(new { error = false, warn = true, msg = "El ítem seleccionado cambió. Actualice el listado de la OR y selecciónelo nuevamente." });
-                var prod = sesion.ORListaProductosActual.SingleOrDefault(x => x.item == item &&
-                    x.p_id == sesion.ORProductoSeleccionado && x.box_id == sesion.ORProductoBoxSeleccionado &&
-                    x.or_compte == sesion.ORComprobanteActual);
-
-                if (prod == null)
+                var prod = await ObtenerRenglonOR(sesion, productoOriginal, boxOriginal, item, reemplazar: sesion.EsReemplazo);
+                if (!sesion.BoxValidado || string.IsNullOrWhiteSpace(sesion.BoxCargaId))
                 {
-                    return Json(new { error = false, warn = true, msg = $"No se encontró el producto en la lista actual." });
+                    return Json(new { error = false, warn = true, msg = "Debe validar el BOX del producto antes de cargar." });
                 }
-
-                if (sesion.EsReemplazo && string.IsNullOrWhiteSpace(sesion.BoxCargaId))
+                if (ProductoBase == null || ProductoBase.P_id != p_id)
+                    throw new NegocioException("El producto consultado cambió. Búsquelo nuevamente antes de cargar.");
+                if (!sesion.EsReemplazo && !ORColeccionReglas.CoincideColeccion(prod, cantidadPrevia, bultosPrevios, unidadesPrevias, upPrevia))
                 {
-                    return Json(new { error = false, warn = true, msg = "Debe validar el BOX del producto de reemplazo." });
+                    TrazaOR("COLECCION-CAMBIO", new { prod.item, prod.colectado, cantidadPrevia });
+                    return Json(new { error = false, warn = true, reconsultar = true, producto = prod,
+                        msg = "La colección cambió desde la última consulta. Revise la cantidad actual y confirme nuevamente." });
                 }
-                if (cantidad < 1)// && desarma)
-                {
-                    return Json(new { error = false, warn = true, msg = $"La cantidades de los productos a cargar siempre tienen que ser positivas, mayores a 0 (cero)." });
-                }
-                if (!CantidadCompatibleConUnidadProducto(ProductoBase.up_id, unid) ||
-                    !CantidadCompatibleConUnidadProducto(ProductoBase.up_id, cantidad))
-                {
-                    return Json(new { error = false, warn = true, msg = MensajeCantidadIncompatible(ProductoBase.up_id) });
-                }
-                var cantidadEsperada = ProductoBase.up_id.Equals("07") ? (up * bulto) + unid : unid;
-                if (cantidad != cantidadEsperada)
-                {
-                    return Json(new { error = false, warn = true, msg = "La cantidad informada no coincide con los bultos y unidades ingresados. Verifique, por favor." });
-                }
-                if (prod.pedido < cantidad && ProductoBase.up_id.Equals("07"))// && (!TIActual.SinAU || !desarma)) //verificamos las cantidades siempre y cuando haya una autorización o en el caso de transferencia de box completo con desarma = false
-                {
-                    return Json(new { error = false, warn = true, msg = $"No se puede cargar más unidades o cantidades ({cantidad}) que las pedidas ({prod.pedido})" });
-                }
-                //DEBO VALIAR SI ES PESABLE UP_ID != 07 QUE LA UP==1
-                if (!ProductoBase.up_id.Equals("07") && up != 1)// && desarma)
-                {
-                    return Json(new { error = false, warn = true, msg = $"EL PRODUCTO NO ES POR UNIDADES. LA UNIDAD DE PRESENTACIÓN TIENE QUE SER IGUAL A 1 SIEMPRE." });
-                }
+                if (sesion.EsReemplazo && modoCarga != "nueva")
+                    throw new NegocioException("El reemplazo no acumula las cantidades del producto original.");
+                var carga = ORColeccionReglas.ResolverCarga(sesion.EsReemplazo ? new ORProductoDto() : prod,
+                    modoCarga, ProductoBase.up_id, up, bulto, unid, cantidad);
                 ////VALIDAR LA FECHA FV CON LA FECHA DE CONTROL (SOLO PARA TRANSFERENCIA DE SUCURSALES)
                 //var fechaControl = ProductoBase.p_con_vto_ctl;
 
@@ -1222,9 +1259,9 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                 request.desarma_box = true;
                 request.p_id = p_id;
                 request.unidad_pres = up;
-                request.bulto = bulto;
-                request.us = unid;
-                request.cantidad = cantidad;
+                request.bulto = carga.Bultos;
+                request.us = carga.Unidades;
+                request.cantidad = carga.Cantidad;
                 request.remplazar = sesion.EsReemplazo;
                 request.remplazar_box_id = sesion.EsReemplazo ? sesion.ReemplazarBoxId : null;
                 request.remplazar_p_id = sesion.EsReemplazo ? sesion.ReemplazarPId : null;
@@ -1238,13 +1275,11 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                     request.fv = "19700101";
                 }
 
-                RespuestaGenerica<RespuestaDto> respv = await _orServicio.ValidaProductoCarritoOR(request, TokenCookie);
-                if (respv.Ok)
-                {
-                    RespuestaGenerica<RespuestaDto> resp = await _orServicio.ResguardarProductoCarrito(request, TokenCookie);
-
+                TrazaOR("CARGA-DECISION", new { item, modoCarga, cantidadPrevia, CantidadIngresada = cantidad, CantidadFinal = request.cantidad, sesion.EsReemplazo });
+                var resp = await ValidarYCargarOR(request);
                     if (resp.Ok)
                     {
+                        sesion.BoxValidado = false;
                         if (sesion.EsReemplazo)
                         {
                             sesion.EsReemplazo = false;
@@ -1252,17 +1287,18 @@ namespace gc.pocket.site.Areas.PocketPpal.Controllers
                             sesion.ReemplazarPDesc = null;
                             sesion.ReemplazarBoxId = null;
                             sesion.BoxCargaId = null;
-                            ORSession = sesion;
                         }
+                        ORSession = sesion;
+                        TrazaOR("CARGA-FIN", new { item, request.or_compte, request.p_id });
                         return Json(new { error = false, warn = false, msg = $"Producto {ProductoBase.P_desc} fue cargado exitosamente" });
                     }
                     else { return Json(new { error = false, warn = true, msg = resp.Mensaje }); }
-                }
-                else
-                {
-                    return Json(new { error = false, warn = true, msg = respv.Mensaje });
-                }
 
+            }
+            catch (InvalidOperationException ex)
+            {
+                TrazaOR("RECHAZO-LOCAL", new { item, modoCarga, ex.Message });
+                return Json(new { error = false, warn = true, msg = ex.Message });
             }
             catch (NegocioException ex)
             {

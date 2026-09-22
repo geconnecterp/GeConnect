@@ -31,6 +31,9 @@
         public string? ReemplazarPDesc { get; set; }
         public string? ReemplazarBoxId { get; set; }
         public string? BoxCargaId { get; set; }
+        public string OrdenProductos { get; set; } = "B";
+        public bool BoxValidado { get; set; }
+        public string? ContextoCargaId { get; set; }
 
         /// <summary>
         /// Lista completa de productos de la OR (filtrados o no)
@@ -73,6 +76,9 @@
             ReemplazarPDesc = null;
             ReemplazarBoxId = null;
             BoxCargaId = null;
+            BoxValidado = false;
+            ContextoCargaId = null;
+            OrdenProductos = "B";
             ORListaProductosActual = new List<ORProductoDto>();
             FiltroEsBox = false;
             UltimaActualizacion = DateTime.Now;
