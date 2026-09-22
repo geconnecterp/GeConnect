@@ -134,6 +134,7 @@ function cargarVistaOrByBox() {
     // Realizar petición
     PostGenHtml(datos, PresentarListaORbyBoxUrl, function (html) {
         console.log('✅ Vista BOX cargada correctamente');
+        $("#spanText").text("ITINERARIO X BOX");
         $("#contenedorListaOR").html(html);
         CerrarWaiting();
 
@@ -214,6 +215,7 @@ function cargarVistaOrByRubro() {
     // Realizar petición
     PostGenHtml(datos, PresentarListaORbyRubroUrl, function (html) {
         console.log('✅ Vista RUBRO cargada correctamente');
+        $("#spanText").text("ITINERARIO X RUBRO");
         $("#contenedorListaOR").html(html);
         CerrarWaiting();
 
