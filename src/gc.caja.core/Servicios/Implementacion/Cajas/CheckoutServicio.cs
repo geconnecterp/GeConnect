@@ -162,6 +162,25 @@ namespace gc.caja.core.Servicios.Implementacion.Cajas
         {
             try
             {
+                // DO no representa un instrumento físico. Solo se simula si el catálogo
+                // vigente lo permite para esta cuenta, operación y administración.
+                if (DocumentoCuentaCorriente.EsMedioDocumento(req.tcf_id))
+                {
+                    var medios = await ObtenerValoresMP(new ValoresMPReqDto
+                    {
+                        co_tipo = req.co_tipo, cta_id = req.cta_id, adm_id = req.adm_id
+                    }, token);
+                    if (medios == null || !medios.Ok)
+                        return new() { Ok = false, Mensaje = "No se pudo validar la disponibilidad de documentos en Cuenta Corriente." };
+                    if (!DocumentoCuentaCorriente.EstaHabilitado(medios.ListaEntidad))
+                        return new() { Ok = false, Mensaje = "Documento en Cuenta Corriente no está habilitado para esta operación." };
+                    return new()
+                    {
+                        Ok = true, Mensaje = "Documento en Cuenta Corriente.",
+                        ListaEntidad = [DocumentoCuentaCorriente.CrearInstrumentoSimulado()]
+                    };
+                }
+
                 var helper = new HelperAPI();
                 var client = helper.InicializaCliente(req, token, out StringContent contentData);
                 var link = $"{_appSettings.RutaBase}{RutaAPI}{POST_OBTENER_VALORES_INS}";

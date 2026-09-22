@@ -80,6 +80,7 @@ public sealed class ListaPrecioController : ControladorBaseCaja
             var contexto = new JObject
             {
                 ["tipoAutorizacion"] = "LP",
+                ["operacionFacturaId"] = HttpContext.Session.GetString(SesionOperacionFactura.ClaveOperacion) ?? string.Empty,
                 ["aplicacion"] = "gc.caja",
                 ["modulo"] = "FACTURACION",
                 ["coTipo"] = coTipo,
@@ -327,6 +328,8 @@ public sealed class ListaPrecioController : ControladorBaseCaja
         var actualContexto = contexto["listaPrecioActual"]?["id"]?.Value<string>();
         var valido =
             contexto.Value<string>("tipoAutorizacion") == "LP" &&
+            (contexto.Value<string>("operacionFacturaId") ?? string.Empty) ==
+                (HttpContext.Session.GetString(SesionOperacionFactura.ClaveOperacion) ?? string.Empty) &&
             contexto.Value<string>("aplicacion") == "gc.caja" &&
             contexto.Value<string>("modulo") == "FACTURACION" &&
             contexto.Value<string>("coTipo") == DeterminarCoTipo(cliente.Origen) &&

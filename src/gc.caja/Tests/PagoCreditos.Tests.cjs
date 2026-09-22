@@ -3,7 +3,7 @@
 const fs=require('node:fs'),path=require('node:path'),vm=require('node:vm'),assert=require('node:assert/strict');
 const source=fs.readFileSync(path.join(__dirname,'../wwwroot/js/app/pagoFactura.js'),'utf8');
 function extract(name){const a=source.search(new RegExp('^function '+name+'\\(','m'));assert(a>=0,name);const end=/^}\r?$/m.exec(source.slice(a));assert(end,name+' cierre');return source.slice(a,a+end.index+1);}
-const names=['descartarBorradorPago','consumirBorradorPago','registrarEventosInicioOperacionPago','normalizarTexto','normalizarTextoUpper','convertirNumeroNC','aCentavosMonto','desdeCentavosNC','obtenerTotalNetoCentavos','obtenerTotalOtrosValoresCentavos','obtenerCreditosNCImputados','obtenerTotalCreditosNCCentavos','obtenerCantidadCreditosNCImputados','actualizarBadgeCantidadPagos','consultaNCBloqueaPago','validarSeleccionNCParaFinalizar','actualizarTotalesPago','limpiarTablaFormasPago','eliminarValor','formatearImporteJsonNC','construirJsonUnionesNC','crearEstadoNCVacio','obtenerDescripcionCreditoNC','obtenerObservacionCreditoNC','asegurarFilaSinFormasPago','renderizarCreditosNCEnGrillaPago','clonarObjetoNC','obtenerCreditosBorradorNC','crearBorradorNC','obtenerTotalNcDesdeLista','validarBorradorNC','guardarDetalleCtaCte','actualizarSeleccionadosNC','puedeEditarCreditoNC','guardarImputacionesNC','cambiarImputacionIndividualNC','hayCreditosNCDisponibles','hayCreditosOpcionalesNC','sincronizarDisponibilidadNCConMediosPago','reiniciarImputacionesNC','marcarCreditoNCSeleccionado','aplicarImputacionInicialNC','restaurarSeleccionNC','obtenerMaximoImputableCreditoNC','obtenerTotalNcExceptoCredito','volverACalculoFactura','obtenerIdentidadClientePago','elevarModalCreditoNC','abrirModalTipoMedioPagoDespuesDeNC'];
+const names=['validarDiferenciaParaFinalizar','obtenerVueltoEfectivoCentavos','esInstrumentoDocumento','descartarBorradorPago','consumirBorradorPago','registrarEventosInicioOperacionPago','normalizarTexto','normalizarTextoUpper','convertirNumeroNC','aCentavosMonto','desdeCentavosNC','obtenerTotalNetoCentavos','obtenerTotalOtrosValoresCentavos','obtenerCreditosNCImputados','obtenerTotalCreditosNCCentavos','obtenerCantidadCreditosNCImputados','actualizarBadgeCantidadPagos','consultaNCBloqueaPago','validarSeleccionNCParaFinalizar','actualizarTotalesPago','limpiarTablaFormasPago','eliminarValor','formatearImporteJsonNC','construirJsonUnionesNC','crearEstadoNCVacio','obtenerDescripcionCreditoNC','obtenerObservacionCreditoNC','asegurarFilaSinFormasPago','renderizarCreditosNCEnGrillaPago','clonarObjetoNC','obtenerCreditosBorradorNC','crearBorradorNC','obtenerTotalNcDesdeLista','validarBorradorNC','guardarDetalleCtaCte','actualizarSeleccionadosNC','puedeEditarCreditoNC','guardarImputacionesNC','cambiarImputacionIndividualNC','hayCreditosNCDisponibles','hayCreditosOpcionalesNC','sincronizarDisponibilidadNCConMediosPago','reiniciarImputacionesNC','marcarCreditoNCSeleccionado','aplicarImputacionInicialNC','restaurarSeleccionNC','obtenerMaximoImputableCreditoNC','obtenerTotalNcExceptoCredito','volverACalculoFactura','obtenerIdentidadClientePago','elevarModalCreditoNC','abrirModalTipoMedioPagoDespuesDeNC'];
 let rows=[],errors=[],modals=[],closed=[],styles={},selection=[];
 const elements=new Map(),handlers=new Map();
 function matches(row,selector){return selector.split(',').some(part=>{if(part.includes('fila-credito-nc'))return row.includes('class="fila-credito-nc"');if(part.includes('data-valor-id'))return row.includes(part.match(/data-valor-id="[^"]+"/)[0]);if(part.includes('fila-valor'))return row.includes('class="fila-valor"');if(part.includes('rowSinFormasPago'))return row.includes('id="rowSinFormasPago"');return false;});}
@@ -149,5 +149,45 @@ test('Una apertura demorada no revive ventanas al volver',()=>{
  assert(ctx.consumirBorradorPago('CD'),'Volver solo a las facturas permite retomar');
  assert.equal(ctx.consumirBorradorPago('CD'),null,'El borrador se consume una sola vez');
  passed++;console.log('OK Retomar dentro de la misma operacion conserva y consume el borrador una sola vez');
- console.log('TOTAL: '+passed+' escenarios aprobados. Sin transacciones ni servidor.');
+ for (const modulo of ['CC','CD','CR','CF']) {
+ test(modulo + ': 85000 con efectivo 90000 muestra -5000 y permite finalizar',()=>{
+  setup(0,0,false,85000);ctx.window._coTipoActual=modulo;
+  ctx.valoresPago=[{tcf_id:'EF',ins_id:'ARS',importe:90000}];ctx.actualizarTotalesPago();
+  assert.equal(ctx.conceptosPago.diferencia,-5000);assert.equal(ctx.obtenerVueltoEfectivoCentavos(),500000);
+  assert.equal($('#btnFinalizarPago').prop('disabled'),false);assert(ctx.validarDiferenciaParaFinalizar().permitir);
+ });
+ test(modulo + ': NC y efectivo exactos, con centavos, coinciden',()=>{
+  setup(3000000,0,false,160554.04);ctx.window._coTipoActual=modulo;
+  ctx.valoresPago=[{tcf_id:'EF',ins_id:'ARS',importe:130554.04}];ctx.actualizarTotalesPago();
+  assert.equal(ctx.conceptosPago.diferencia,0);assert(ctx.validarSeleccionNCParaFinalizar().esValido);
+  assert.equal($('#btnFinalizarPago').prop('disabled'),false);assert(ctx.validarDiferenciaParaFinalizar().permitir);
+ });
+ test(modulo + ': NC 30000 y efectivo 60000 sobre total 85000 conserva NC y da vuelto 5000',()=>{
+  setup(3000000,0,false,85000);ctx.window._coTipoActual=modulo;
+  ctx.valoresPago=[{tcf_id:'EF',ins_id:'ARS',importe:60000}];ctx.actualizarTotalesPago();
+  assert.equal(ctx.conceptosPago.diferencia,-5000);assert(ctx.validarSeleccionNCParaFinalizar().esValido);
+  assert.equal($('#btnFinalizarPago').prop('disabled'),false);assert(ctx.validarDiferenciaParaFinalizar().permitir);
+  assert.equal(ctx.construirJsonUnionesNC()[0].cv_importe,'-30000.00');
+ });
+}
+test('Pago mixto: vuelto limitado al efectivo ingresado',()=>{
+ setup(0,0,false,85000);ctx.valoresPago=[{tcf_id:'BA',importe:80000},{tcf_id:'EF',importe:10000}];ctx.actualizarTotalesPago();
+ assert.equal(ctx.obtenerVueltoEfectivoCentavos(),500000);assert.equal($('#btnFinalizarPago').prop('disabled'),false);
+ ctx.valoresPago[0].importe=90000;ctx.actualizarTotalesPago();
+ assert.equal(ctx.obtenerVueltoEfectivoCentavos(),0);assert.equal($('#btnFinalizarPago').prop('disabled'),true);
+ assert.equal(ctx.validarDiferenciaParaFinalizar().permitir,false);
+});
+test('NC no se convierte en dinero y sin efectivo no hay vuelto',()=>{
+ setup(9000000,0,false,85000);assert.equal(ctx.obtenerVueltoEfectivoCentavos(),0);assert(!ctx.validarSeleccionNCParaFinalizar().esValido);
+ setup(3000000,0,false,85000);ctx.valoresPago=[{tcf_id:'BA',importe:60000}];ctx.actualizarTotalesPago();
+ assert.equal($('#btnFinalizarPago').prop('disabled'),true);assert(!ctx.validarSeleccionNCParaFinalizar().esValido);
+});
+test('Un centavo faltante bloquea y un centavo de vuelto en efectivo habilita',()=>{
+ setup(0,0,false,100);ctx.valoresPago=[{tcf_id:'EF',importe:99.99}];ctx.actualizarTotalesPago();
+ assert.equal($('#btnFinalizarPago').prop('disabled'),true);assert(!ctx.validarDiferenciaParaFinalizar().permitir);
+ ctx.valoresPago[0].importe=100.01;ctx.actualizarTotalesPago();
+ assert.equal(ctx.obtenerVueltoEfectivoCentavos(),1);assert.equal($('#btnFinalizarPago').prop('disabled'),false);
+ assert(ctx.validarDiferenciaParaFinalizar().permitir);
+});
+console.log('TOTAL: '+passed+' escenarios aprobados. Sin transacciones ni servidor.');
 })().catch(e=>{console.error(e);process.exitCode=1;});

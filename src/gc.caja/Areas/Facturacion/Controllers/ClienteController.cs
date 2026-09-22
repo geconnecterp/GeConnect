@@ -112,7 +112,6 @@ namespace gc.caja.Areas.Facturacion.Controllers
                 // ❻.2 - SE ENCONTRÓ UN ÚNICO CLIENTE → ✅ CARGAR DATOS COMPLETOS
                 if (cantidadResultados == 1)
                 {
-                    ProductosSeleccionados = []; // Limpiar productos seleccionados al cargar nuevo cliente
                     var clienteParcial = listaClientes[0];
 
                     if (clienteParcial.Origen.Equals("N", StringComparison.OrdinalIgnoreCase) ||

@@ -684,6 +684,16 @@ function obtenerTotalOtrosValoresCentavos() {
     }, 0);
 }
 
+// El vuelto sólo puede salir del efectivo recibido, nunca de NC ni de otros instrumentos.
+function obtenerVueltoEfectivoCentavos() {
+    const excedente = obtenerTotalOtrosValoresCentavos() +
+        obtenerTotalCreditosNCCentavos() - obtenerTotalNetoCentavos();
+    if (excedente <= 0 || valoresPago.some(esInstrumentoDocumento)) return 0;
+    const efectivo = valoresPago.reduce((total, valor) =>
+        total + (normalizarTextoUpper(valor.tcf_id) === 'EF' ? aCentavosMonto(valor.importe) : 0), 0);
+    return efectivo > 0 && excedente <= efectivo ? excedente : 0;
+}
+
 function obtenerCreditosNCImputados() {
     return (estadoNC.seleccionados || []).filter(function (credito) {
         return credito.importeImputadoCentavos > 0;
@@ -914,6 +924,14 @@ function renderizarCreditosNCEnGrillaPago() {
 
         const descripcion = obtenerDescripcionCreditoNC(credito);
         const observacion = obtenerObservacionCreditoNC(credito);
+        const textoOriginal = normalizarTexto(credito.creditoOriginal?.cv_importe_ori);
+        const original = Number(textoOriginal.replace(',', '.'));
+        const importeOriginal = textoOriginal && Number.isFinite(original)
+            ? formatearMoneda(Math.abs(original)) : 'No informado';
+        const saldoDisponible = desdeCentavosNC(credito.saldoDisponibleCentavos);
+        const remanente = desdeCentavosNC(
+            credito.saldoDisponibleCentavos - credito.importeImputadoCentavos
+        );
 
         const accionHtml = credito.obligatorio
             ? `
@@ -958,6 +976,12 @@ function renderizarCreditosNCEnGrillaPago() {
 
                     <small class="text-muted d-block">
                         ${escapeHtml(observacion)}
+                    </small>
+                    <small class="text-muted d-flex flex-wrap gap-2 mt-1">
+                        <span class="text-nowrap" title="Importe histórico con el que nació el crédito">Original: <strong>${escapeHtml(importeOriginal)}</strong></span>
+                        <span class="text-nowrap" title="Saldo disponible recibido al consultar el crédito, antes de esta imputación">Disponible: <strong>${formatearMoneda(saldoDisponible)}</strong></span>
+                        <span class="text-nowrap" title="Importe aplicado a este pago">Imputado: <strong>${formatearMoneda(importe)}</strong></span>
+                        <span class="text-nowrap" title="Saldo que quedaría disponible después de esta imputación">Remanente: <strong>${formatearMoneda(remanente)}</strong></span>
                     </small>
                 </td>
 
@@ -2067,7 +2091,8 @@ function agregarFormaPago() {
     }
 
     // ❶ Obtener diferencia actual
-    const diferencia = conceptosPago.diferencia || 0;
+    const diferencia = desdeCentavosNC(obtenerTotalNetoCentavos() -
+        obtenerTotalOtrosValoresCentavos() - obtenerTotalCreditosNCCentavos());
 
     console.log(`   Diferencia actual: ${formatearMoneda(diferencia)}`);
     console.log(`   Total valores actuales: ${valoresPago.length}`);
@@ -2512,7 +2537,7 @@ function volverACalculoFactura() {
             valores: clonarObjetoNC(valoresPago), creditos: clonarObjetoNC(estadoNC.disponibles)
         };
         for (const selector of ['#msjModal', '#modalEditarCreditoNC', '#modalDetalleCtaCte',
-            '#modalDetalleEfectivo', '#modalDetalleCheque', '#modalDetalleTransferencia',
+            '#modalDetalleDocumento', '#modalDetalleEfectivo', '#modalDetalleCheque', '#modalDetalleTransferencia',
             '#modalDetalleValeCompra', '#modalDetalleCuponEmpresa', '#modalInstrumentos',
             '#modalTipoMedioPago', '#modalPago']) await ocultarVentanaPago(selector);
         if (coTipo === 'CC' && typeof calcularTotalCC === 'function') calcularTotalCC();
@@ -2542,18 +2567,24 @@ function volverACalculoFactura() {
  * 
  * 3. DIFERENCIA < 0 (Sobrepago/Vuelto):
  *    ⚠️ VALIDAR según tipo de valores:
- *    - Si todos los valores son EF (Efectivo) → ✅ PERMITIR (se entregará vuelto)
+ *    - Si el efectivo recibido cubre el excedente → ✅ PERMITIR (se entregará vuelto)
  *    - Si hay CH (Cheque) Y co_tipo='CR' (Cliente Registrado) → ✅ PERMITIR (cobranza)
  *    - Cualquier otro caso → ❌ BLOQUEAR
  * 
  * @returns {Object} - { permitir: boolean, mensaje: string, advertencia?: string }
  */
 function validarDiferenciaParaFinalizar() {
+    if (valoresPago.some(esInstrumentoDocumento) &&
+        obtenerTotalOtrosValoresCentavos() + obtenerTotalCreditosNCCentavos() > obtenerTotalNetoCentavos()) {
+        return { permitir: false, mensaje: 'Los documentos no permiten superar el total a pagar ni generar vuelto.' };
+    }
+
     console.log('═══════════════════════════════════════════════════');
     console.log('🔍 VALIDAR DIFERENCIA PARA FINALIZAR v20.2');
     console.log('═══════════════════════════════════════════════════');
 
-    const diferencia = conceptosPago.diferencia || 0;
+    const diferencia = desdeCentavosNC(obtenerTotalNetoCentavos() -
+        obtenerTotalOtrosValoresCentavos() - obtenerTotalCreditosNCCentavos());
     const totalValores = conceptosPago.totalValores || 0;
     const totalPagar = conceptosPago.totalPagar || 0;
 
@@ -2565,7 +2596,7 @@ function validarDiferenciaParaFinalizar() {
     // ═══════════════════════════════════════════════════════════
     // CASO 1: DIFERENCIA > 0 (FALTA PAGAR)
     // ═══════════════════════════════════════════════════════════
-    if (diferencia > 0.01) {
+    if (diferencia > 0) {
         console.error('❌ DIFERENCIA POSITIVA: Falta pagar');
         console.error(`   Monto faltante: ${formatearMoneda(diferencia)}`);
 
@@ -2603,7 +2634,7 @@ function validarDiferenciaParaFinalizar() {
     // ═══════════════════════════════════════════════════════════
     // CASO 2: DIFERENCIA = 0 (EXACTO)
     // ═══════════════════════════════════════════════════════════
-    if (Math.abs(diferencia) <= 0.01) {
+    if (diferencia === 0) {
         console.log('✅ DIFERENCIA CERO: Monto exacto');
         console.log('   No se requiere validación adicional');
 
@@ -2641,10 +2672,10 @@ function validarDiferenciaParaFinalizar() {
     console.log('═══════════════════════════════════════════════════');
 
     // ═══════════════════════════════════════════════════════════
-    // REGLA 1: Si todos son efectivo → PERMITIR (vuelto)
+    // REGLA 1: El efectivo recibido cubre el excedente → PERMITIR (vuelto)
     // ═══════════════════════════════════════════════════════════
-    if (tieneSoloEfectivo) {
-        console.log('✅ REGLA 1 APLICADA: Todos los valores son efectivo');
+    if (obtenerVueltoEfectivoCentavos() > 0) {
+        console.log('✅ REGLA 1 APLICADA: El efectivo recibido cubre el vuelto');
         console.log('   → PERMITIR (se dará vuelto al cliente)');
 
         return {
@@ -2832,6 +2863,13 @@ function construirJsonValores() {
         console.log(`      rb_nro_valor: ${valorBackend.rb_nro_valor}`);
         console.log(`      ins_id: ${valorBackend.ins_id}`);
         console.log(`      rb_importe: ${valorBackend.rb_importe}`);
+
+        // DOC tiene su propio contrato; no hereda estado/cuota/fecha del efectivo.
+        if (esInstrumentoDocumento(valor)) {
+            Object.assign(valorBackend, construirDatosDocumento(valor));
+            jsonValores.push(valorBackend);
+            return;
+        }
 
         // ❷ MAPEO ESPECÍFICO SEGÚN TIPO DE PAGO
         switch (tcfIdUpper) {
@@ -3168,7 +3206,13 @@ function finalizarPago() {
         return;
     }
 
-    const jsonValores = construirJsonValores();
+    let jsonValores;
+    try {
+        jsonValores = construirJsonValores();
+    } catch (error) {
+        mostrarMensajeError(error.message);
+        return;
+    }
     const jsonUniones = construirJsonUnionesNC();
 
     const totalNC = conceptosPago.totalCreditosNC || 0;
@@ -3841,6 +3885,9 @@ function enviarPayloadAlServidor(
             console.log(`   es_cobranza_diferida: ${esCobranzaDiferida ? 'SÍ' : 'NO'}`);
             console.log('═══════════════════════════════════════════════════');
 
+            // Cuenta Corriente confirma un cobro; no solicita un reporte fiscal de venta.
+            if (mostrarResultadoCobranzaCtaCte(comprobante, coTipoActual)) return;
+
             // ❿ Generar reporte PDF
             console.log('📄 Iniciando generación de reporte...');
 
@@ -4001,6 +4048,13 @@ function mostrarAdvertenciaPV(mensajeAdvertencia, callback) {
     );
 }
 
+function mostrarResultadoCobranzaCtaCte(comprobante, coTipo) {
+    if (coTipo !== 'CC' && comprobante.es_cobranza_cuenta_corriente !== true) return false;
+    ocultarLoadingGlobal();
+    procesarPagoExitoso({ ...comprobante, es_cobranza_cuenta_corriente: true });
+    return true;
+}
+
 /**
  * ✅ ACTUALIZADO v27.0: Procesa una respuesta exitosa del servidor
  * NUEVO: Mensajes diferenciados según contexto (VENTA/COBRANZA)
@@ -4025,7 +4079,10 @@ function procesarPagoExitoso(comprobante, esCobranzaDiferida = false) {
     const tipoComprobante = esRecibo
         ? 'Recibo de cobranza'
         : obtenerTipoComprobante(comprobante.tco_letra, comprobante.tco_id);
-    const numeroComprobante = (esRecibo ? comprobante.rb_compte || comprobante.cm_compte : comprobante.cm_compte) || 'Sin número';
+    const esCuentaCorriente = comprobante.es_cobranza_cuenta_corriente === true;
+    const numeroComprobante = (esCuentaCorriente
+        ? String(comprobante.rb_compte || '').trim()
+        : (esRecibo ? comprobante.rb_compte || comprobante.cm_compte : comprobante.cm_compte)) || 'No informado por el servidor';
     const esRepetido = comprobante.cm_repetido === "1" || comprobante.cm_repetido === 1;
 
     console.log(`   Tipo: ${tipoComprobante}`);
@@ -4094,7 +4151,7 @@ function procesarPagoExitoso(comprobante, esCobranzaDiferida = false) {
                 reinicioDespachado = true;
 
                 ejecutarReinicioDespuesDePagoExitoso(
-                    esCobranzaDiferidaConfirmada
+                    esCobranzaDiferidaConfirmada, esCuentaCorriente
                 );
             };
 
@@ -4146,7 +4203,14 @@ function redireccionarAIndexCobranzaDiferida() {
     window.location.replace(urlIndex);
 }
 
-function ejecutarReinicioDespuesDePagoExitoso(esCobranzaDiferida) {
+function ejecutarReinicioDespuesDePagoExitoso(esCobranzaDiferida, esCuentaCorriente = false) {
+    if (esCuentaCorriente) {
+        const url = typeof accesoModuloCCUrl !== 'undefined' && accesoModuloCCUrl
+            ? accesoModuloCCUrl : '/Facturacion/CobranzaCtaCte';
+        window.location.replace(url);
+        return;
+    }
+
     /*
         La decisión se toma con el parámetro recibido desde el flujo
         exitoso del pago. No se vuelve a consultar _coTipoActual.
@@ -4246,7 +4310,7 @@ function reiniciaPantallaAlVolver() {
                 setTimeout(() => {
                     // ❹ PASO 4: Abrir modal de identificar cliente
                     if (typeof abrirModalIdentificarCliente === 'function') {
-                        abrirModalIdentificarCliente();
+                        abrirModalIdentificarCliente(true);
                         console.log('✅ Paso 4: Modal de identificar cliente abierto');
                     } else {
                         console.error('❌ Función abrirModalIdentificarCliente no existe');
@@ -6433,6 +6497,8 @@ function confirmarSeleccionInstrumento() {
  * @param {Object} tipoMedioPago - Tipo de medio de pago seleccionado
  */
 function procesarInstrumentos(instrumentos, tipoMedioPago) {
+    const documento = instrumentos?.find(esInstrumentoDocumento);
+    if (documento) { abrirModalDetalleDocumento(documento, tipoMedioPago); return; }
     console.log('═══════════════════════════════════════════════════');
     console.log('🔄 PROCESAR INSTRUMENTOS v19.1');
     console.log(`   Tipo MP: ${tipoMedioPago.tcf_desc} (${tipoMedioPago.tcf_id})`);
@@ -6511,6 +6577,8 @@ function procesarInstrumentos(instrumentos, tipoMedioPago) {
  * @param {Object} tipoMedioPago - Tipo de medio de pago seleccionado
  */
 function agregarValorDirecto(instrumento, tipoMedioPago) {
+    const documento = esInstrumentoDocumento(instrumento) ? instrumento : null;
+    if (documento) { abrirModalDetalleDocumento(documento, tipoMedioPago); return; }
     console.log('═══════════════════════════════════════════════════');
     console.log('➕ AGREGAR VALOR DIRECTO v17.1');
     console.log(`   Instrumento: ${instrumento.ins_desc}`);
@@ -6638,6 +6706,7 @@ function obtenerIconoMP(tcfId) {
         'CP': 'bx bx-purchase-tag',
         'CR': 'bx bx-file-blank',
         'CC': 'bx bx-spreadsheet',
+        'DO': 'bx bx-file',
         'NC': 'bx bx-receipt',
         'RE': 'bx bx-wallet'
     };
@@ -7095,6 +7164,7 @@ function agregarFilaValor(valor) {
                     <strong>${escapeHtml(valor.tcf_desc)}</strong>
                 </div>
                 <small class="text-muted">${escapeHtml(valor.ins_desc)}</small>
+                ${esInstrumentoDocumento(valor) ? `<small class="d-block text-muted">Vencimiento: ${escapeHtml(formatearVencimientoDocumento(valor.detalle?.fecha_vencimiento))}</small>` : ''}
             </td>
             
             <!-- ✅ Importe CON TOOLTIP de observación -->
@@ -7166,7 +7236,7 @@ function agregarFilaValor(valor) {
  * BOTÓN FINALIZAR:
  *   - ✅ Habilitado si:
  *     • diferencia === 0 (pago exacto) O
- *     • diferencia < 0 (vuelto) Y solo efectivo
+ *     • diferencia < 0 (vuelto) cubierto por el efectivo recibido
  *   - ❌ Deshabilitado en cualquier otro caso
  */
 function actualizarTotalesPago() {
@@ -7270,18 +7340,10 @@ function actualizarTotalesPago() {
             ) {
                 puedeFinalizar = true;
             } else if (
-                diferencia < -0.01 &&
+                diferencia < 0 &&
                 valoresPago.length > 0
             ) {
-                const tiposPago = valoresPago.map(function (valor) {
-                    return normalizarTextoUpper(valor.tcf_id);
-                });
-
-                const tieneSoloEfectivo = tiposPago.every(function (tipo) {
-                    return tipo === 'EF';
-                });
-
-                puedeFinalizar = tieneSoloEfectivo;
+                puedeFinalizar = obtenerVueltoEfectivoCentavos() > 0;
             }
         }
     }
@@ -8417,6 +8479,8 @@ function requiereModalDetalle(tcfId) {
  * NUEVO: Agregado case 'BA' para Transferencias Bancarias
  */
 function abrirModalDetalleSegunTipo(instrumento, tipoMedioPago) {
+    const documento = esInstrumentoDocumento(instrumento) ? instrumento : null;
+    if (documento) { abrirModalDetalleDocumento(documento, tipoMedioPago); return; }
     console.log('═══════════════════════════════════════════════════');
     console.log('🔓 ABRIR MODAL DETALLE SEGÚN TIPO v19.3');
     console.log(`   Tipo MP: ${tipoMedioPago.tcf_id} - ${tipoMedioPago.tcf_desc}`);
@@ -10689,7 +10753,7 @@ function validarSeleccionNCParaFinalizar() {
     const saldoMaximoParaNcCentavos = Math.max(
         0,
         obtenerTotalNetoCentavos() -
-        obtenerTotalOtrosValoresCentavos()
+        obtenerTotalOtrosValoresCentavos() + obtenerVueltoEfectivoCentavos()
     );
 
     if (totalNCCentavos > saldoMaximoParaNcCentavos) {
@@ -10876,4 +10940,123 @@ function registrarAccionesIndividualesNC() {
         .on('keydown.ncIndividual', function (event) {
             if (event.key === 'Enter') { event.preventDefault(); guardarEdicionIndividualNC(); }
         });
+}
+
+// Documentos en Cuenta Corriente: fecha civil local, sin conversiones UTC.
+let contextoDocumento = null;
+
+function esInstrumentoDocumento(valor) {
+    return normalizarTextoUpper(valor?.ins_id) === 'DOC';
+}
+
+function fechaLocalDocumento(fecha = new Date()) {
+    return `${String(fecha.getFullYear()).padStart(4, '0')}-${String(fecha.getMonth() + 1).padStart(2, '0')}-${String(fecha.getDate()).padStart(2, '0')}`;
+}
+
+function fechaDocumentoValida(fecha) {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(fecha || '')) return false;
+    const [anio, mes, dia] = fecha.split('-').map(Number);
+    if (anio < 1 || anio > 9999 || mes < 1 || mes > 12 || dia < 1) return false;
+    const bisiesto = anio % 4 === 0 && (anio % 100 !== 0 || anio % 400 === 0);
+    const dias = [31, bisiesto ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+    return dia <= dias[mes - 1] && fecha !== '0001-01-01';
+}
+
+function formatearVencimientoDocumento(fecha) {
+    return fechaDocumentoValida(fecha) ? fecha.split('-').reverse().join('/') : 'Sin fecha válida';
+}
+
+function importeDocumentoCentavos(importe) {
+    // Acepta punto o coma decimal, sin separadores de miles ni parseos parciales.
+    const texto = String(importe ?? '').trim();
+    if (!/^\d+(?:[.,]\d{1,2})?$/.test(texto)) return null;
+    const partes = texto.replace(',', '.').split('.');
+    const centavos = Number(partes[0]) * 100 + Number((partes[1] || '').padEnd(2, '0'));
+    return Number.isSafeInteger(centavos) && centavos > 0 ? centavos : null;
+}
+
+function validarDatosDocumento(importe, fecha, pendienteCentavos) {
+    const centavos = importeDocumentoCentavos(importe);
+    if (centavos === null) return 'Ingrese un monto mayor a cero, con hasta dos decimales.';
+    if (!fechaDocumentoValida(fecha)) return 'Ingrese una fecha de vencimiento válida.';
+    if (fecha < fechaLocalDocumento()) return 'La fecha de vencimiento no puede ser anterior a la fecha actual.';
+    if (pendienteCentavos !== undefined && centavos > pendienteCentavos) return 'El documento no puede superar el saldo pendiente del pago.';
+    return '';
+}
+
+function construirDatosDocumento(valor) {
+    const fecha = valor.detalle?.fecha_vencimiento;
+    const error = validarDatosDocumento(valor.importe, fecha);
+    if (error) throw new Error(`Documento en Cuenta Corriente: ${error}`);
+    return {
+        ins_id: 'DOC', rb_fecha_valor: fecha, rb_importe: importeDocumentoCentavos(valor.importe) / 100,
+        rb_rec: 0, rb_opcion_cuota: '1', rb_cupon_manual: 'N', rb_ch_dif: 'N',
+        rb_estado: 'N', rb_aux: 0, rb_dato1_valor: '', rb_dato2_valor: '',
+        rb_dato3_valor: '', id_externo: ''
+    };
+}
+
+function saldoPendienteDocumentoCentavos() {
+    return Math.max(0, obtenerTotalNetoCentavos() - obtenerTotalOtrosValoresCentavos() - obtenerTotalCreditosNCCentavos());
+}
+
+function abrirModalDetalleDocumento(instrumento, tipoMedioPago) {
+    const $modal = $('#modalDetalleDocumento');
+    if (!$modal.length) { mostrarMensajeError('No se encontró la ventana de documentos. Recargue la página.'); return; }
+    contextoDocumento = { instrumento, tipoMedioPago, revision: revisionPago };
+    $('#txtMontoDocumento').val((saldoPendienteDocumentoCentavos() / 100).toFixed(2));
+    const hoy = fechaLocalDocumento();
+    $('#txtVencimientoDocumento').prop('min', hoy).val(hoy);
+    $('#errorDetalleDocumento').text('').addClass('d-none');
+    $('#btnGuardarDetalleDocumento').prop('disabled', false);
+    $('#formDetalleDocumento').off('submit.documento').on('submit.documento', function (event) {
+        event.preventDefault();
+        guardarDetalleDocumento();
+    });
+    vincularEnterTecladoPago($('#txtMontoDocumento'), 'documento', function () {
+        cerrarTecladoPago();
+        $('#txtVencimientoDocumento').trigger('focus');
+    });
+    $('#txtVencimientoDocumento').off('.documento').on('focus.documento', cerrarTecladoPago);
+    vincularEnterTecladoPago($('#txtVencimientoDocumento'), 'documento', guardarDetalleDocumento);
+    $modal.off('.documento')
+        .on('shown.bs.modal.documento', function () {
+            this.style.setProperty('z-index', '5100', 'important');
+            const fondo = $('.modal-backdrop').last().get(0);
+            if (fondo) fondo.style.setProperty('z-index', '5099', 'important');
+            const input = document.getElementById('txtMontoDocumento');
+            input.focus();
+            input.select();
+        })
+        .on('hide.bs.modal.documento', function () {
+            contextoDocumento = null;
+            cerrarTecladoPago();
+        })
+        .on('hidden.bs.modal.documento', function () {
+            if ($('.modal.show').length) $('body').addClass('modal-open');
+        });
+    $modal.modal('show');
+}
+
+function guardarDetalleDocumento() {
+    const contexto = contextoDocumento;
+    if (!contexto || contexto.revision !== revisionPago) return;
+    const monto = $('#txtMontoDocumento').val();
+    const fecha = $('#txtVencimientoDocumento').prop('min', fechaLocalDocumento()).val();
+    const error = validarDatosDocumento(monto, fecha, saldoPendienteDocumentoCentavos());
+    if (error) { $('#errorDetalleDocumento').text(error).removeClass('d-none'); return; }
+    // Invalidar antes de mutar para evitar doble guardado por Enter y clic.
+    contextoDocumento = null;
+    $('#btnGuardarDetalleDocumento').prop('disabled', true);
+    const valor = {
+        id: ++valorIdCounter, tcf_id: contexto.tipoMedioPago.tcf_id, tcf_desc: contexto.tipoMedioPago.tcf_desc,
+        ins_id: 'DOC', ins_desc: contexto.instrumento.ins_desc, ins_simbolo: '$',
+        importe: importeDocumentoCentavos(monto) / 100, observacion: '',
+        detalle: { fecha_vencimiento: fecha }, fecha_creacion: new Date().toISOString()
+    };
+    valoresPago.push(valor);
+    agregarFilaValor(valor);
+    actualizarTotalesPago();
+    actualizarTotalInstrumento(valor.ins_id, valor.importe);
+    $('#modalDetalleDocumento').modal('hide');
 }

@@ -276,7 +276,7 @@ function mostrarCtaCtePendientes(cliente, registrosCuentaCorriente) {
     ) {
         $tbody.append(
             '<tr>' +
-            '<td colspan="9" class="text-center text-muted py-4">' +
+            '<td colspan="7" class="text-center text-muted py-4">' +
             'No hay registros pendientes de Cuenta Corriente.' +
             '</td>' +
             '</tr>'
@@ -324,19 +324,6 @@ function mostrarCtaCtePendientes(cliente, registrosCuentaCorriente) {
                 ctacte.ctacte_id
             );
 
-            const nombreCliente = obtenerPrimerValorCC(
-                cliente?.denominacion,
-                cliente?.cta_denominacion,
-                cliente?.nombre,
-                nombreClienteCC,
-                'N/A'
-            );
-
-            const nombreMostrado = ctaId
-                ? `${nombreCliente} (${ctaId})`
-                : nombreCliente;
-
-            const tipoNumero = obtenerTipoNumeroClienteCC(cliente);
             const fecha = formatearFechaCC(ctacte.cv_fecha_vto);
 
             const fila = `
@@ -344,10 +331,8 @@ function mostrarCtaCtePendientes(cliente, registrosCuentaCorriente) {
                     data-importe-ori="${importeOriginal.toFixed(2)}"
                     data-importe-bak="${importeBackup.toFixed(2)}">
 
-                    <td>${escaparHtmlCC(ctacte.tco_id || 'N/A')}</td>
+                    <td>${escaparHtmlCC(ctacte.tco_desc || 'Sin descripción')}</td>
                     <td>${escaparHtmlCC(ctacte.cm_compte || 'N/A')}</td>
-                    <td>${escaparHtmlCC(nombreMostrado)}</td>
-                    <td>${escaparHtmlCC(tipoNumero)}</td>
                     <td class="text-center">${escaparHtmlCC(fecha)}</td>
 
                     <td class="text-end fw-bold celda-importe-ori-cc">
@@ -410,7 +395,7 @@ function mostrarCtaCtePendientes(cliente, registrosCuentaCorriente) {
     if (registrosRenderizados === 0) {
         $tbody.html(
             '<tr>' +
-            '<td colspan="9" class="text-center text-muted py-4">' +
+            '<td colspan="7" class="text-center text-muted py-4">' +
             'No se encontraron registros válidos para cobrar.' +
             '</td>' +
             '</tr>'

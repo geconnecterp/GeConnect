@@ -776,6 +776,10 @@ namespace gc.caja.Areas.Facturacion.Controllers
                     return Json(new { ok = false, mensaje = "Error al calcular totales" });
                 }
 
+                // Reemplazar los sorteos en cada cálculo, incluso si ahora no hay beneficios.
+                FacturaSorteos = [];
+                var sorteos = gc.caja.Models.SorteosFactura.DesdeJson(resultado.json_sorteo);
+
                 // ⓫ GUARDAR JSON DE PRODUCTOS IMPOSITIVOS EN SESIÓN, SUBTOTALES Y SORTEOS
                 if (!string.IsNullOrEmpty(resultado.json_p))
                 {
@@ -794,8 +798,8 @@ namespace gc.caja.Areas.Facturacion.Controllers
                         _logger?.LogInformation("✅ JSON de subtotales guardado en sesión");
                     }
 
-                    FacturaSorteos = [];
                 }
+                FacturaSorteos = sorteos;
 
                 // ⓬ RETORNAR RESPUESTA
                 _logger?.LogInformation("═══════════════════════════════════════════════════");
@@ -807,7 +811,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
                     ok = true,
                     mensaje = "Totales calculados correctamente",
                     json_subtotal = resultado.json_subtotal,
-                    json_sorteo = resultado.json_sorteo,
+                    json_sorteo = JsonConvert.SerializeObject(sorteos),
                     json_p = resultado.json_p
                 });
             }

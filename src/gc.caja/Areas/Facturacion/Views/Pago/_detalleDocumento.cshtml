@@ -1,0 +1,37 @@
+<div class="modal fade" id="modalDetalleDocumento" tabindex="-1" role="dialog"
+     aria-labelledby="modalDetalleDocumentoLabel" aria-hidden="true"
+     data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-elevated" role="document" style="max-width: 500px;">
+        <div class="modal-content modal-golden">
+            <div class="modal-header bg-gradient-golden">
+                <h5 class="modal-title" id="modalDetalleDocumentoLabel">
+                    <i class="bx bx-file me-2"></i>Documento en Cuenta Corriente
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body">
+                <form id="formDetalleDocumento" novalidate>
+                    <div class="mb-3">
+                        <label for="txtMontoDocumento" class="form-label fw-bold">Monto <span class="text-danger">*</span></label>
+                        <div class="input-group input-group-lg">
+                            <span class="input-group-text bg-golden text-white">$</span>
+                            <input type="text" id="txtMontoDocumento" name="monto"
+                                   class="form-control form-control-lg text-end jsteclado jsdecimal"
+                                   inputmode="decimal" placeholder="0.00" autocomplete="off" required>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="txtVencimientoDocumento" class="form-label fw-bold">Fecha de vencimiento <span class="text-danger">*</span></label>
+                        <input type="date" id="txtVencimientoDocumento" name="vencimiento" class="form-control" required>
+                        <div class="form-text">Fecha en la que vence el compromiso en Cuenta Corriente. Debe ser hoy o una fecha posterior.</div>
+                    </div>
+                    <div id="errorDetalleDocumento" class="alert alert-danger d-none" role="alert" aria-live="polite"></div>
+                </form>
+            </div>
+            <div class="modal-footer bg-light">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><i class="bx bx-x me-1"></i>Cancelar</button>
+                <button type="submit" form="formDetalleDocumento" id="btnGuardarDetalleDocumento" class="btn btn-golden"><i class="bx bx-save me-1"></i>Guardar</button>
+            </div>
+        </div>
+    </div>
+</div>

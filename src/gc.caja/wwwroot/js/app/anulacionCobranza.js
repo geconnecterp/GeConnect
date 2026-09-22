@@ -6,6 +6,7 @@ let clienteSeleccionadoAnulaCob = null;
 let cobranzasAnulaCob = [];
 let cobranzaSeleccionadaAnulaCob = null;
 let anulandoAnulaCob = false;
+let saliendoAnulaCob = false;
 
 window.validarClienteAntesDeMostrar = function (cliente) {
     if (!cliente) {
@@ -79,6 +80,7 @@ function registrarEventosAnulacionCobranza() {
         .off('click.anulacionCobranza', '#btnCancelarAnulaCob')
         .on('click.anulacionCobranza', '#btnCancelarAnulaCob', function (event) {
             event.preventDefault();
+            if (anulandoAnulaCob) return;
             $('#modalAnulacionCobranza').modal('hide');
             setTimeout(function () {
                 $('#modalIdentificarCliente').modal('show');
@@ -152,6 +154,7 @@ function abrirModalAnulacionCobranza(cliente) {
 }
 
 function buscarCobranzasAnulaCob() {
+    if (anulandoAnulaCob) return;
     if (!clienteSeleccionadoAnulaCob) {
         mostrarMensajeAnulaCob('Atencion', 'Debe seleccionar un cliente registrado.', 'warn!');
         return;
@@ -252,6 +255,7 @@ function renderizarCobranzasAnulaCob(lista) {
 }
 
 function seleccionarCobranzaAnulaCob($checkbox) {
+    if (anulandoAnulaCob) return;
     const estaMarcado = $checkbox.is(':checked');
 
     $('#tbodyAnulacionCobranzas input[type="checkbox"]').not($checkbox).prop('checked', false);
@@ -268,6 +272,7 @@ function seleccionarCobranzaAnulaCob($checkbox) {
 }
 
 function actualizarSeleccionAnulaCob() {
+    if (anulandoAnulaCob) return;
     if (!cobranzaSeleccionadaAnulaCob) {
         $('#btnAnularCobranza').prop('disabled', true);
         $('#lblAnulacionCobranzaEstado').text('Sin recibo seleccionado');
@@ -299,8 +304,20 @@ function confirmarAnulacionCobranza() {
     const importe = formatearMontoAnulaCob(normalizarMontoAnulaCob(cobranzaSeleccionadaAnulaCob.co_cobranza));
 
     AbrirMensaje(
-        'Confirmar Anulacion',
-        `Esta por anular el recibo <strong>${recibo}</strong> de la operacion <strong>${operacion}</strong> por <strong>$ ${importe}</strong>.<br><br>?Desea continuar?`,
+        'Confirmar anulación de cobranza',
+        `<div class="text-center p-2">
+            <i class="bx bx-undo text-golden" style="font-size: 4rem;" aria-hidden="true"></i>
+            <h4 class="text-golden mt-3 mb-3">¿Confirmás la anulación de esta cobranza?</h4>
+            <div class="card card-golden text-start mb-3">
+                <div class="card-header fw-bold">Cobranza seleccionada</div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between mb-2"><span>Recibo</span><strong>${recibo}</strong></div>
+                    <div class="d-flex justify-content-between mb-2"><span>Operación</span><strong>${operacion}</strong></div>
+                    <div class="d-flex justify-content-between border-top pt-2"><span>Importe</span><strong class="fs-4 text-golden">$ ${importe}</strong></div>
+                </div>
+            </div>
+            <p class="text-muted mb-0">Se registrará la anulación en la caja actual.</p>
+        </div>`,
         function (respuesta) {
             $('#msjModal').modal('hide');
             if (respuesta === 'SI') {
@@ -308,13 +325,14 @@ function confirmarAnulacionCobranza() {
             }
         },
         true,
-        ['Anular', 'Cancelar'],
+        ['Confirmar anulación', 'Cancelar'],
         'quest!',
         null
     );
 }
 
 function ejecutarAnulacionCobranza() {
+    if (anulandoAnulaCob) return;
     if (!cobranzaSeleccionadaAnulaCob) {
         mostrarMensajeAnulaCob('Atencion', 'Debe seleccionar un recibo para anular.', 'warn!');
         return;
@@ -335,7 +353,7 @@ function ejecutarAnulacionCobranza() {
 
     console.log('[AnulacionCobranza] Request Anular:', payload);
     anulandoAnulaCob = true;
-    mostrarLoaderAnulaCob('Anulando cobranza. Aguarde, no toque nada hasta que el proceso termine...');
+    bloquearVistaAnulaCob(true);
     $('#btnAnularCobranza').prop('disabled', true).html('<i class="bx bx-loader-alt bx-spin"></i> ANULANDO');
 
     $.ajax({
@@ -346,29 +364,37 @@ function ejecutarAnulacionCobranza() {
         data: JSON.stringify(payload),
         timeout: 45000,
         success: function (response) {
-            ocultarLoaderAnulaCob();
+            mostrarProgresoAnulaCob(false);
             console.log('[AnulacionCobranza] Response Anular:', response);
 
-            if (!response || response.ok !== true) {
-                mostrarMensajeAnulaCob('Atencion', response?.mensaje || 'No se pudo anular la cobranza.', 'warn!');
+            if (!response || typeof response.ok !== 'boolean') {
+                informarResultadoInciertoAnulaCob();
+                return;
+            }
+            if (!response.ok) {
+                anulandoAnulaCob = false;
+                bloquearVistaAnulaCob(false);
+                mostrarMensajeAnulaCob('Atención', response.mensaje || 'No se pudo anular la cobranza.', 'warn!');
                 return;
             }
 
+            // Mantener el bloqueo hasta salir, también si se cierra el aviso con la X.
+            $('#msjModal').one('hidden.bs.modal.salidaAnulaCob', volverAlMenuAnulaCob);
             AbrirMensaje(
                 'Cobranza Anulada',
                 construirMensajeAnulacionExitosa(response),
                 function () {
                     $('#msjModal').modal('hide');
-                    buscarCobranzasAnulaCob();
+                    volverAlMenuAnulaCob();
                 },
                 false,
                 ['Aceptar'],
-                'success!',
+                'succ!',
                 null
             );
         },
         error: function (xhr, status, error) {
-            ocultarLoaderAnulaCob();
+            mostrarProgresoAnulaCob(false);
             console.error('[AnulacionCobranza] Error AJAX Anular:', {
                 status: xhr.status,
                 statusText: xhr.statusText,
@@ -376,14 +402,41 @@ function ejecutarAnulacionCobranza() {
                 error: error
             });
 
-            mostrarMensajeAnulaCob('Error', xhr?.responseJSON?.mensaje || 'Ocurrio un error al anular la cobranza.', 'error!');
+            informarResultadoInciertoAnulaCob();
         },
         complete: function () {
-            anulandoAnulaCob = false;
-            $('#btnAnularCobranza').html('<i class="bx bx-check-circle"></i> ANULAR');
-            actualizarSeleccionAnulaCob();
+            if (!anulandoAnulaCob) {
+                $('#btnAnularCobranza').html('<i class="bx bx-check-circle"></i> ANULAR');
+                actualizarSeleccionAnulaCob();
+            }
         }
     });
+}
+
+function mostrarProgresoAnulaCob(visible) {
+    $('#bloqueoAnulaCob').toggleClass('d-none', !visible).toggleClass('d-flex', visible);
+    if (visible) $('#bloqueoAnulaCob').trigger('focus');
+}
+
+function bloquearVistaAnulaCob(bloquear) {
+    $('#modalAnulacionCobranza, #modalIdentificarCliente').prop('inert', bloquear).attr('aria-busy', String(bloquear));
+    $('#modalAnulacionCobranza').find('button, input').prop('disabled', bloquear);
+    mostrarProgresoAnulaCob(bloquear);
+    if (!bloquear) actualizarSeleccionAnulaCob();
+}
+
+function volverAlMenuAnulaCob() {
+    if (saliendoAnulaCob) return;
+    saliendoAnulaCob = true;
+    window.location.replace(anulacionCobranzaMenuUrl);
+}
+
+function informarResultadoInciertoAnulaCob() {
+    // Una respuesta perdida no significa que el servidor haya rechazado la anulación.
+    $('#msjModal').one('hidden.bs.modal.salidaAnulaCob', volverAlMenuAnulaCob);
+    mostrarMensajeAnulaCob('Resultado pendiente de verificar',
+        'No se pudo confirmar el resultado de la anulación. Volvé al menú y consultá las cobranzas antes de intentar nuevamente.',
+        'warn!', volverAlMenuAnulaCob);
 }
 
 function construirMensajeAnulacionExitosa(response) {
@@ -391,14 +444,14 @@ function construirMensajeAnulacionExitosa(response) {
     const importe = formatearMontoAnulaCob(normalizarMontoAnulaCob(response?.importe ?? cobranzaSeleccionadaAnulaCob?.co_cobranza));
     const mensajeServidor = obtenerPrimerValorAnulaCob(response?.mensaje);
     const mensajeVisible = !mensajeServidor || mensajeServidor.toUpperCase() === 'OK'
-        ? `La cobranza del recibo <strong>${recibo}</strong> fue anulada correctamente. Se registro el contra-movimiento por <strong>$ ${importe}</strong>.`
+        ? `La cobranza del recibo <strong>${recibo}</strong> fue anulada correctamente. Se registró el contramovimiento por <strong>$ ${importe}</strong>.`
         : escaparHtmlAnulaCob(mensajeServidor);
 
     return `<div class="text-center px-2">
         <i class='bx bx-check-circle text-golden' style="font-size: 4rem;"></i>
-        <h4 class="text-golden mt-3 mb-2">Anulacion registrada</h4>
+        <h4 class="text-golden mt-3 mb-2">Anulación registrada</h4>
         <p class="fs-5 mb-2">${mensajeVisible}</p>
-        <p class="text-muted mb-0">La operacion quedo asentada en la caja actual.</p>
+        <p class="text-muted mb-0">La operación quedó asentada en la caja actual.</p>
         ${response?.resultado_id ? `<div class="small text-muted mt-2">Operacion: ${escaparHtmlAnulaCob(response.resultado_id)}</div>` : ''}
     </div>`;
 }

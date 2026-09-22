@@ -452,52 +452,35 @@ function cargarConceptosCalculoFactura(subtotales) {
  * ✅ ACTUALIZADO v6.0: Carga sorteos en panel lateral
  */
 function cargarSorteosCalculoFactura(sorteos) {
-    console.log('🎁 Cargando sorteos...');
-
     const $tbody = $('#tbodySorteos');
     $tbody.empty();
+    const registros = (Array.isArray(sorteos) ? sorteos : []).filter(sorteo =>
+        sorteo && typeof sorteo === 'object' && !Array.isArray(sorteo) &&
+        Object.keys(sorteo).length > 0);
+    const haySorteos = registros.length > 0;
+    $('#panelSorteosCalculo').toggleClass('d-none', !haySorteos);
+    $('#panelConceptosCalculo').toggleClass('col-md-8', haySorteos)
+        .toggleClass('col-md-12', !haySorteos);
 
-    // ❶ Sin sorteos o array vacío
-    if (!sorteos || sorteos.length === 0 || (sorteos.length === 1 && Object.keys(sorteos[0]).length === 0)) {
-        $tbody.html(`
-            <tr>
-                <td class="text-center text-muted py-4">
-                    <i class='bx bx-info-circle'></i> No hay sorteos disponibles
-                </td>
-            </tr>
-        `);
-        console.log('ℹ️ No hay sorteos para mostrar');
-        return;
-    }
-
-    // ❷ Recorrer sorteos y generar filas
-    sorteos.forEach(function (sorteo, index) {
-        // Validar que el sorteo tenga datos
-        if (Object.keys(sorteo).length === 0) {
-            return; // Skip sorteos vacíos
-        }
-
-        const descripcion = sorteo.descripcion || sorteo.nombre || sorteo.sorteo || 'Sorteo sin nombre';
+    registros.forEach(function (sorteo) {
+        const codigo = String(sorteo.so_sorteo || sorteo.So_Sorteo || '').trim();
+        const descripcion = sorteo.so_desc || sorteo.So_Desc || sorteo.descripcion ||
+            sorteo.nombre || sorteo.sorteo || (codigo ? `Sorteo ${codigo}` : 'Sorteo');
         const detalle = sorteo.detalle || sorteo.observacion || sorteo.premio || '';
-
-        const row = `
+        $tbody.append(`
             <tr>
                 <td>
                     <div class="d-flex align-items-center">
                         <i class='bx bx-gift text-warning fs-4 me-2'></i>
                         <div>
-                            <strong>${escapeHtml(descripcion)}</strong>
-                            ${detalle ? `<br><small class="text-muted">${escapeHtml(detalle)}</small>` : ''}
+                            <strong>${escapeHtml(String(descripcion))}</strong>
+                            ${detalle ? `<br><small class="text-muted">${escapeHtml(String(detalle))}</small>` : ''}
                         </div>
                     </div>
                 </td>
             </tr>
-        `;
-
-        $tbody.append(row);
+        `);
     });
-
-    console.log(`✅ ${sorteos.length} sorteos cargados`);
 }
 
 // ════════════════════════════════════════════════════════════
@@ -514,7 +497,7 @@ function cerrarModalCalculoFactura() {
     
     // Limpiar tablas
     $('#tbodyConceptosCalculo').empty();
-    $('#tbodySorteos').empty();
+    cargarSorteosCalculoFactura([]);
     $('#tdTotalFinal').text('$ 0.00');
     
     console.log('✅ Modal de cálculo cerrado');
@@ -706,7 +689,7 @@ function ejecutarDiferirFactura() {
                             setTimeout(() => {
                                 // Abrir modal de identificar cliente
                                 if (typeof abrirModalIdentificarCliente === 'function') {
-                                    abrirModalIdentificarCliente();
+                                    abrirModalIdentificarCliente(true);
                                     console.log('✅ Modal de identificar cliente abierto');
                                 }
 
@@ -878,7 +861,7 @@ function mostrarMensajeExitoGenerico(response) {
 
                     setTimeout(() => {
                         if (typeof abrirModalIdentificarCliente === 'function') {
-                            abrirModalIdentificarCliente();
+                            abrirModalIdentificarCliente(true);
                         }
                     }, 200);
                 }, 300);
@@ -1270,7 +1253,7 @@ function mostrarMensajeExitoDiferirPago(tipoComprobante, comprobante, numeroComp
 
                         // ❺ PASO 5: Abrir modal de identificar cliente
                         if (typeof abrirModalIdentificarCliente === 'function') {
-                            abrirModalIdentificarCliente();
+                            abrirModalIdentificarCliente(true);
                             console.log('✅ Paso 3: Modal de identificar cliente abierto');
                         } else {
                             console.error('❌ Función abrirModalIdentificarCliente no existe');

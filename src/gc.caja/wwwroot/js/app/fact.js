@@ -1,4 +1,4 @@
-﻿// ============================================
+// ============================================
 // GESTOR PRINCIPAL DEL MÓDULO DE FACTURACIÓN
 // ============================================
 
@@ -8,7 +8,7 @@ let modoEdicionCliente = false; // Control de modo edición
 let busquedaEnProceso = false; // ✅ NUEVO: Control de búsquedas concurrentes
 let ajaxActual = null; // ✅ NUEVO: Referencia al AJAX en curso para cancelación
 // ✅ NUEVA VARIABLE DE CONFIGURACIÓN
-let autoConfirmarClienteUnico = false; // La carga manual permite elegir LP antes de seguir.
+let autoConfirmarClienteUnico = false; // Se sincroniza con el checkbox al inicializar la vista.
 
 // ========================================
 // ✅ NUEVA SECCIÓN: SINCRONIZACIÓN CHECKBOX
@@ -18,6 +18,12 @@ let autoConfirmarClienteUnico = false; // La carga manual permite elegir LP ante
  * Sincroniza el estado del checkbox con la variable global
  * y actualiza feedback visual
  */
+// El dato fiscal del cliente solo se presenta en módulos que emiten comprobantes.
+function obtenerEmiteClientePorModulo(cliente) {
+    const modulo = $('#modalIdentificarCliente').attr('data-modulo');
+    return ['CobranzaCtaCte', 'AnulacionCobranza', 'CambioValores'].includes(modulo) ? '' : (cliente?.emite || '');
+}
+
 function sincronizarAutoConfirmacion() {
     const $checkbox = $('#chkAutoConfirmar');
 
@@ -388,7 +394,7 @@ function inicializaVistaFact() {
     console.log('🚀 Inicializando módulo de Facturación...');
 
     setTimeout(() => {
-        abrirModalIdentificarCliente();
+        abrirModalIdentificarCliente(true);
         console.log('✅ Modal de Identificar Cliente abierto automáticamente');
     }, 300);
 }
@@ -400,16 +406,21 @@ function inicializaVistaFact() {
 /**
  * ✅ MODIFICADO: Ahora inicializa el checkbox
  */
-function abrirModalIdentificarCliente() {
+async function abrirModalIdentificarCliente(nuevaOperacion = false) {
+    if (typeof window.prepararNuevaOperacionFactura === 'function' &&
+        (nuevaOperacion || !window.operacionFacturaPreparada?.())) {
+        try {
+            await window.prepararNuevaOperacionFactura();
+        } catch (error) {
+            AbrirMensaje('No se pudo iniciar la venta', $('<div>').text(error.message).html(), function () { $('#msjModal').modal('hide'); }, false, ['Aceptar'], 'error!', null);
+            return;
+        }
+    }
     limpiarModalCliente();
 
     $('#modalIdentificarCliente').modal('show');
 
     setTimeout(() => {
-        // El flujo manual deja disponible el cambio de LP antes de continuar.
-        $('#chkAutoConfirmar').prop('checked', false).prop('disabled', false);
-        sincronizarAutoConfirmacion();
-
         $('#txtBuscarCliente').trigger("focus");
     }, 500);
 }
@@ -482,10 +493,11 @@ function limpiarModalCliente() {
 
     desbloquearInterfazBusqueda();
 
-    // Mantener desactivada la confirmación automática por defecto.
-    $('#chkAutoConfirmar').prop('checked', false).prop('disabled', false);
+    // Facturación inicia en modo automático; los demás módulos conservan su comportamiento.
+    const confirmarAutomaticamente = $('#modalIdentificarCliente').attr('data-modulo') === 'Facturacion';
+    $('#chkAutoConfirmar').prop('checked', confirmarAutomaticamente).prop('disabled', false);
     sincronizarAutoConfirmacion();
-    console.log('✅ Checkbox restaurado a modo manual');
+    console.log('✅ Checkbox restaurado al modo inicial del módulo');
 
     limpiarSesionClientesBuscados();
 
@@ -731,7 +743,7 @@ function mostrarDatosCliente(cliente) {
     $('#txtDomicilio').val(cliente.domicilio || '');
     $('#txtCondicionAfip').val(cliente.condicionAfip || '');
     $('#txtTipoNumero').val(tipoNumeroDisplay);
-    $('#txtEmite').val(cliente.emite || '');
+    $('#txtEmite').val(obtenerEmiteClientePorModulo(cliente));
     $('#txtEmail').val(cliente.email || '');
     $('#txtMovil').val(cliente.movil || '');
 
@@ -1210,7 +1222,7 @@ function mostrarDatosCliente(cliente) {
     $('#txtDomicilio').val(cliente.domicilio || '');
     $('#txtCondicionAfip').val(cliente.condicionAfip || '');
     $('#txtTipoNumero').val(tipoNumeroDisplay);
-    $('#txtEmite').val(cliente.emite || '');
+    $('#txtEmite').val(obtenerEmiteClientePorModulo(cliente));
     $('#txtEmail').val(cliente.email || '');
     $('#txtMovil').val(cliente.movil || '');
 

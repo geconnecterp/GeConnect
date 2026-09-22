@@ -1,4 +1,4 @@
-﻿using gc.caja.Controllers;
+using gc.caja.Controllers;
 using gc.caja.core.Servicios.Contratos.Cajas;
 using gc.caja.core.Servicios.Implementacion.Cajas;
 using gc.infraestructura.Core.EntidadesComunes.Options;
@@ -888,33 +888,6 @@ namespace gc.caja.Areas.Facturacion.Controllers
 
                 var unionesSolicitadas = pagoDto.Uniones?.ToList() ?? [];
 
-                // Cuenta Corriente todavía no utiliza NC.
-                // Mantiene exactamente su regla actual: el total de valores
-                // convencionales debe coincidir con la deuda seleccionada.
-                if (esCobranzaCtaCteTemporal)
-                {
-                    var totalSeleccionado = ctaCtes?.Sum(x => x.cv_importe) ?? 0m;
-
-                    var totalValoresConvencionales =
-                        ObtenerTotalValoresConvencionales(valores);
-
-                    if (Math.Abs(totalSeleccionado - totalValoresConvencionales) > 0.01m)
-                    {
-                        _logger?.LogWarning(
-                            "Monto inconsistente en Cuenta Corriente. Selección={Seleccion}. Valores={Valores}",
-                            totalSeleccionado,
-                            totalValoresConvencionales
-                        );
-
-                        return Json(new
-                        {
-                            ok = false,
-                            mensaje =
-                                "El total de los medios de pago no coincide con el importe seleccionado de Cuenta Corriente."
-                        });
-                    }
-                }
-
                 _logger?.LogInformation(
                     "Valores convencionales recibidos: {CantidadValores}",
                     valores.Count
@@ -1172,6 +1145,33 @@ namespace gc.caja.Areas.Facturacion.Controllers
                     });
                 }
 
+                var totalOperacionPago = ObtenerTotalOperacionParaNc(esCobranzaGen, importe, subtotalesFactura);
+                var catalogoEfectivo = new List<ValoresInsResDto>();
+                if (ObtenerTotalValoresConvencionales(valores) + validacionNc.TotalImputado > totalOperacionPago &&
+                    !valores.Any(DocumentoCuentaCorriente.EsDocumento))
+                {
+                    var instrumentosEf = await _pagoFactServicio.ObtenerValoresIns(new ValoresInsReqDto
+                    {
+                        tcf_id = "EF", co_tipo = coTipo, cta_id = ctaId,
+                        adm_id = cajaActual.AdmId ?? AdministracionId
+                    }, TokenCookie);
+                    if (instrumentosEf?.Ok != true)
+                        return Json(new { ok = false, mensaje = "No se pudo verificar el efectivo para calcular el vuelto. Vuelva a intentar." });
+                    catalogoEfectivo = instrumentosEf.ListaEntidad?.ToList() ?? [];
+                }
+                var resultadoVuelto = VueltoEfectivo.Normalizar(
+                    valores, totalOperacionPago, validacionNc.TotalImputado, catalogoEfectivo);
+                if (!resultadoVuelto.Ok)
+                    return Json(new { ok = false, mensaje = resultadoVuelto.Mensaje });
+                if (resultadoVuelto.Vuelto > 0m)
+                    _logger?.LogInformation("Vuelto efectivo={Vuelto}. Valores netos enviados al SP={Neto}",
+                        resultadoVuelto.Vuelto, ObtenerTotalValoresConvencionales(valores));
+
+                // La deuda seleccionada se cubre con valores y NC canónicas, ya revalidadas.
+                if (esCobranzaCtaCteTemporal && !TotalesCobranzaCtaCte.Coinciden(
+                    importe, ObtenerTotalValoresConvencionales(valores), validacionNc.TotalImputado))
+                    return Json(new { ok = false, mensaje = "El total de los medios de pago y las Notas de Crédito no coincide con el importe seleccionado de Cuenta Corriente." });
+
                 // Única declaración de "uniones" dentro de FinalizarCompra.
                 var uniones = validacionNc.Uniones;
 
@@ -1220,22 +1220,44 @@ namespace gc.caja.Areas.Facturacion.Controllers
                     }
                 }
 
+                if (esCobranzaDiferida && valores.Any(v => v.rb_rec != 0))
+                    return Json(new { ok = false, mensaje = "Cobranza Diferida no admite recargos financieros en los medios de pago." });
+
+                if (valores.Any(DocumentoCuentaCorriente.EsDocumento))
+                {
+                    // Revalidar en la confirmación: el catálogo pudo cambiar desde la carga.
+                    var mediosDocumento = await _pagoFactServicio.ObtenerValoresMP(new ValoresMPReqDto
+                    {
+                        co_tipo = coTipo, cta_id = ctaId, adm_id = cajaActual.AdmId ?? AdministracionId
+                    }, TokenCookie);
+                    if (mediosDocumento == null || !mediosDocumento.Ok ||
+                        !DocumentoCuentaCorriente.EstaHabilitado(mediosDocumento.ListaEntidad))
+                        return Json(new { ok = false, mensaje = "Documento en Cuenta Corriente no está habilitado para esta operación. Recargue los medios de pago." });
+                }
+
+                var errorDocumento = DocumentoCuentaCorriente.ValidarYNormalizar(
+                    valores,
+                    ObtenerTotalOperacionParaNc(esCobranzaGen, importe, subtotalesFactura),
+                    validacionNc.TotalImputado);
+                if (errorDocumento != null)
+                    return Json(new { ok = false, mensaje = errorDocumento });
+
                 // Serializar solamente después de validar contexto, NC y totales.
                 var sorteosFactura = FacturaSorteos ?? [];
 
-                string jsonProductos = JsonConvert.SerializeObject(
+                string jsonProductos = esCobranzaDiferida ? "{}" : JsonConvert.SerializeObject(
                     productosFactura ?? [],
                     Formatting.None,
                     JsonSettings
                 );
 
-                string jsonSubtotales = JsonConvert.SerializeObject(
+                string jsonSubtotales = esCobranzaDiferida ? "{}" : JsonConvert.SerializeObject(
                     subtotalesFactura ?? [],
                     Formatting.None,
                     JsonSettings
                 );
 
-                string jsonSorteos = JsonConvert.SerializeObject(
+                string jsonSorteos = esCobranzaDiferida ? "{}" : JsonConvert.SerializeObject(
                     sorteosFactura,
                     Formatting.None,
                     JsonSettings
@@ -1447,7 +1469,16 @@ namespace gc.caja.Areas.Facturacion.Controllers
                 _logger?.LogInformation($"   resultado_id raw: {respuestaDto.resultado_id}");
                 _logger?.LogInformation("═══════════════════════════════════════════════════");
 
-                if (!TryParsearComprobanteJson(respuestaDto.resultado_id, out var comprobante))
+                ComprobanteInfoDto? comprobante;
+                if (esCobranzaCtaCteTemporal)
+                {
+                    var recibo = ResultadoCobranzaCtaCte.ObtenerNumeroRecibo(respuestaDto.resultado_id);
+                    // El SP ya confirmó: un identificador faltante no debe invitar a repetir el cobro.
+                    if (recibo == null)
+                        _logger?.LogWarning("Cobranza CC confirmada sin número de recibo interpretable. ResultadoId={ResultadoId}", respuestaDto.resultado_id);
+                    comprobante = new ComprobanteInfoDto { rb_compte = recibo ?? string.Empty };
+                }
+                else if (!TryParsearComprobanteJson(respuestaDto.resultado_id, out comprobante))
                 {
                     _logger?.LogError("❌ No se pudo parsear resultado_id como JSON");
 
@@ -1551,8 +1582,8 @@ namespace gc.caja.Areas.Facturacion.Controllers
 
                 if (esCobranzaCtaCteTemporal)
                 {
-                    CuentaCorrienteDelClienteSeleccionadaParaElCobro =
-                        new List<CtaCteResponseDto>();
+                    CuentaCorrienteDelCliente = [];
+                    CuentaCorrienteDelClienteSeleccionadaParaElCobro = [];
 
                     _logger?.LogInformation(
                         "✅ Sesión CuentaCorrienteDelClienteSeleccionadaParaElCobro limpiada"
@@ -1568,7 +1599,9 @@ namespace gc.caja.Areas.Facturacion.Controllers
                 var mensajeExito = esCobranzaDiferida
                     ? $"Cobro de facturas procesado exitosamente. Recibo Nro {numeroRecibo}"
                     : esCobranzaCtaCteTemporal
-                        ? $"Cobro de Cuenta Corriente procesado exitosamente. Recibo Nro {numeroRecibo}"
+                        ? (string.IsNullOrWhiteSpace(comprobante.rb_compte)
+                            ? "Cobranza de Cuenta Corriente registrada. El servidor no informó el número de recibo."
+                            : $"Cobro de Cuenta Corriente procesado exitosamente. Recibo Nro {comprobante.rb_compte}")
                         : $"Factura {comprobante.tco_letra} Nro {comprobante.cm_compte} emitida y pagada exitosamente";
 
                 var respuestaFinal = new
@@ -1596,7 +1629,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
                     },
 
                     resultado_completo = respuestaDto.resultado_msj,
-                    debe_imprimir = true
+                    debe_imprimir = !esCobranzaCtaCteTemporal
                 };
 
                 // ✅ NUEVO v21.0: Agregar advertencia del PV si existe
