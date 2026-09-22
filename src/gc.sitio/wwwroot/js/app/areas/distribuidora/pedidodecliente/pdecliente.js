@@ -137,7 +137,9 @@ function InicializaPantallaPedido() {
 		}
 	});
 	$("#btnImprimir").removeClass("btn-light").addClass("btn-primary");
-
+	$("#btnAbmNuevo").attr("title", "Agregar nuevo pedido");
+	$("#btnAbmModif").attr("title", "Modificar pedido seleccionado");
+	$("#btnAbmElimi").attr("title", "Eliminar pedido seleccionado");
 }
 
 function analizaEstadoBtnDetalle() {
@@ -1435,22 +1437,26 @@ function cancelarOperacion(e) {
 	const $filaSeleccionada = $("#tbGridPedido tbody tr.selected-row");
 	const hayPedidoSeleccionado = $filaSeleccionada.length > 0;
 
-	if (hayPedidoSeleccionado) {
-		// Si hay un pedido seleccionado, mantener habilitados Modificar y Eliminar
-		const pceId = $filaSeleccionada.data('pce-id') || 'P';
-		const estadosEditables = ['P'];
-		const permite = estadosEditables.includes(pceId);
+	//if (hayPedidoSeleccionado) {
+	//	// Si hay un pedido seleccionado, mantener habilitados Modificar y Eliminar
+	//	const pceId = $filaSeleccionada.data('pce-id') || 'P';
+	//	const estadosEditables = ['P'];
+	//	const permite = estadosEditables.includes(pceId);
 
-		$("#btnAbmModif").prop("disabled", !permite);
-		$("#btnAbmElimi").prop("disabled", !permite);
-		$("#btnAbmNuevo").prop("disabled", false);
-		$("#btnImprimir").prop("disabled", false);
+	//	$("#btnAbmModif").prop("disabled", !permite);
+	//	$("#btnAbmElimi").prop("disabled", !permite);
+	//	$("#btnAbmNuevo").prop("disabled", false);
+	//	$("#btnImprimir").prop("disabled", false);
 
-	} else {
-		// Si no hay selección, solo habilitar Nuevo
-		$("#btnAbmNuevo").prop("disabled", false);
-		$("#btnAbmModif, #btnAbmElimi, #btnImprimir").prop("disabled", true);
-	}
+	//} else {
+	//	// Si no hay selección, solo habilitar Nuevo
+	//	$("#btnAbmNuevo").prop("disabled", false);
+	//	$("#btnAbmModif, #btnAbmElimi, #btnImprimir").prop("disabled", true);
+	//}
+
+	// Si no hay selección, solo habilitar Nuevo
+	$("#btnAbmNuevo").prop("disabled", false);
+	$("#btnAbmModif, #btnAbmElimi, #btnImprimir").prop("disabled", true);
 
 	$("#btnAbmAceptar, #btnAbmCancelar, #btnImprimir").prop("disabled", true).hide();
 	$("#btnAgregarCProducto").prop("disabled", true);
@@ -1461,7 +1467,7 @@ function cancelarOperacion(e) {
 	$("#divPedido")
 		.removeClass("table-wrapper-small")
 		.addClass("table-wrapper-full");
-	$("#divFiltro").collapse("show");
+	$("#divDetalle").collapse("show");
 	activarTablaPedidos();
 }
 

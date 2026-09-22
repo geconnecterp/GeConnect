@@ -2414,6 +2414,7 @@ document.addEventListener("click", function (e) {
 		fecha: btn.dataset.fecha,
 		vendedor: btn.dataset.vendedor,
 		repartidor: btn.dataset.repartidor,
+		rpid: btn.dataset.rpId,
 		importe: parseFloat(btn.dataset.importe).toFixed(2)
 	};
 
@@ -2437,6 +2438,7 @@ document.addEventListener("click", function (e) {
                     data-fecha="${pedido.fecha}"
                     data-vendedor="${pedido.vendedor}"
                     data-repartidor="${pedido.repartidor}"
+					data-rp-id="${pedido.rpid}"
                     data-importe="${pedido.importe}">
                 <i class="bx bx-plus"></i>
             </button>
