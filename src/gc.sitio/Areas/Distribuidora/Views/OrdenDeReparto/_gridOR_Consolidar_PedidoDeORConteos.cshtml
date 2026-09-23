@@ -101,15 +101,42 @@
                         <td class="text-start">@item.p_desc</td>
                         <td class="text-end">@GridHelper.FormatearDato(item.pcd_pedida, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
                         <td class="text-end">@GridHelper.FormatearDato(item.cantidad, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
-                        <td class="text-end">@GridHelper.FormatearDato(item.cantidad_ctl, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
-                        <td class="text-end
-                            @(dif > 0
-                                ? "cell-up"
-                                : (dif < 0
-                                    ? "cell-down"
-                                    : "cell-zero"))">
-                            @GridHelper.FormatearDato(dif, GridHelper.FormatDato.Monto, item.PermiteDecimales)
+                        @* <td class="text-end">@GridHelper.FormatearDato(item.cantidad_ctl, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td> *@
+                        <td class="table-fontsize" style="font-weight: bold;">
+                            <div class="td-conteo">
+                                <span class="td-icon">
+                                    @if (item.cantidad < item.cantidad_ctl)
+                                    {
+                                        <i class="bx bx-up-arrow-alt text-info icon-arrow"></i>
+                                    }
+                                    else if (item.cantidad > item.cantidad_ctl)
+                                    {
+                                        <i class="bx bx-down-arrow-alt text-danger icon-arrow"></i>
+                                    }
+                                </span>
+
+                                <span class="td-value">
+                                    @GridHelper.FormatearDato(item.cantidad_ctl, GridHelper.FormatDato.Monto, item.PermiteDecimales)
+                                </span>
+                            </div>
                         </td>
+                        @if (dif == 0 && item.pcd_pedida > 0)
+                        {
+                            <td class="table-fontsize diferencia-cero d-flex justify-content-between align-items-center">
+                                <span>
+                                    <i class="bx bx-check-circle text-success" title="Sin diferencia"></i>
+                                </span>
+                                <span class="ms-auto">
+                                    @GridHelper.FormatearDato(dif, GridHelper.FormatDato.Monto, item.PermiteDecimales)
+                                </span>
+                            </td>
+                        }
+                        else
+                        {
+                            <td class="text-end @(dif > 0 ? "cell-down" : (dif < 0 ? "cell-up" : "cell-zero"))">
+                                @GridHelper.FormatearDato(dif, GridHelper.FormatDato.Monto, item.PermiteDecimales)
+                            </td>
+                        }
                     </tr>
                 }
             }

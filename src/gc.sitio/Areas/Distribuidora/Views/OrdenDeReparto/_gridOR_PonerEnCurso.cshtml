@@ -108,38 +108,83 @@
 
 		<!-- COLUMNA DERECHA -->
 		<div class="col-md-10 d-flex flex-column h-100">
-			<div class="card flex-grow-1 d-flex flex-column">
-				<div class="card-header fw-bold">
-					Análisis de Stk y Recolección
+			<div class="d-flex justify-content-between align-items-center mb-2">
+				<!-- TABS -->
+				<ul class="nav nav-tabs" id="tabAnalisisDeStk" role="tablist">
+					<li class="nav-item" role="presentation">
+						<button class="nav-link active" id="tab-analisis-tab" data-bs-toggle="tab"
+								data-bs-target="#tab-analisis" type="button" role="tab">
+							Análisis de Stk y Recolección
+						</button>
+					</li>
+					<li class="nav-item" role="presentation">
+						<button class="nav-link" id="tab-sinstock-tab" data-bs-toggle="tab"
+								data-bs-target="#tab-sinstock" type="button" role="tab">
+							Sin Stock
+						</button>
+					</li>
+				</ul>
+			</div>
+			<!-- CONTENIDO DE LOS TABS -->
+			<div class="tab-content tab-content-no-padding" id="tabAnalisisDeStkContent" style="padding: 0px;">
+				<!-- TAB #1: ANALISIS DE STK -->
+				<div class="tab-pane fade show active" id="tab-analisis" role="tabpanel" style="padding: 5px;">
+					<div id="cardGrillaAnalizaAut">
+						<div class="table-responsive table-wrapper-400-full-width">
+							<!-- TABLA VACÍA INICIAL -->
+							<table class="table table-sm table-hover mb-0 table-golden" id="tbGrillaAnalizaAut">
+								<thead class="sticky-top table-golden-header-compact">
+									<tr class="header">
+										<th class="text-center" style="width:4%;">ID</th>
+										<th>Descripción</th>
+										<th class="text-center" style="width:4%;">ID Prov</th>
+										<th class="text-center col-num" style="width:6%;">STK Suc</th>
+										<th class="text-center col-num" style="width:5%;">Pedido</th>
+										<th class="text-center col-num" style="width:6%;">A Enviar</th>
+										<th class="text-center col-num" style="width:6%;">Dif.</th>
+										<th class="text-center" style="width:8%;">PC N°</th>
+										<th class="text-center" style="width:7%;">BOX</th>
+										<th class="text-center col-num" style="width:8%;">A Enviar BOX</th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr class="fila-vacia">
+										<td colspan="11" class="text-center text-muted py-2">
+											<i class="bx bx-info-circle me-1"></i>
+											No hay datos para mostrar. Seleccione depósitos y presione <strong>Analizar OR</strong>.
+										</td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
+					</div>
 				</div>
-				<div class="card-body p-0 flex-grow-1 overflow-auto" id="cardGrillaAnalizaAut">
-					<div class="table-responsive table-wrapper-400">
-						<!-- TABLA VACÍA INICIAL -->
-						<table class="table table-sm table-hover mb-0 table-golden" id="tbGrillaAnalizaAut">
-							<thead class="sticky-top table-golden-header-compact">
-								<tr class="header">
-									<th>ID</th>
-									<th>Descripción</th>
-									<th>ID Prov</th>
-									<th>PC</th>
-									<th>STK Suc</th>
-									<th>Pedido</th>
-									<th>A Enviar</th>
-									<th>Dif.</th>
-									<th>BOX</th>
-									<th>A Enviar BOX</th>
-									<th>Nota</th>
-								</tr>
-							</thead>
-							<tbody>
-								<tr class="fila-vacia">
-									<td colspan="11" class="text-center text-muted py-2">
-										<i class="bx bx-info-circle me-1"></i>
-										No hay datos para mostrar. Seleccione depósitos y presione <strong>Analizar OR</strong>.
-									</td>
-								</tr>
-							</tbody>
-						</table>
+				<!-- TAB #2: SIN STOCK -->
+				<div class="tab-pane fade" id="tab-sinstock" role="tabpanel" style="padding: 5px;">
+					<!-- Tabla Sin Stock -->
+					<div id="divNuevaAutListaProductosSinStock">
+						<div class="table-responsive text-nowrap table-wrapper">
+							<table class="table table-sm mb-0 table-hover table-golden" id="tbNuevaAutListaProductosSinStock">
+								<thead>
+									<tr class="header">
+										<th style="width:5%;" class="align-center">ID</th>
+										<th style="width:25%;" class="align-center">Descripción</th>
+										<th style="width:10%;" class="align-center">ID Prov.</th>
+										<th style="width:10%;" class="align-center">Comprobante</th>
+										<th style="width:10%;" class="align-center">Stock</th>
+										<th style="width:10%;" class="align-center">Pedido</th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr class="fila-vacia">
+										<td colspan="11" class="text-center text-muted py-2">
+											<i class="bx bx-info-circle me-1"></i>
+											No hay datos para mostrar.
+										</td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
 					</div>
 				</div>
 			</div>

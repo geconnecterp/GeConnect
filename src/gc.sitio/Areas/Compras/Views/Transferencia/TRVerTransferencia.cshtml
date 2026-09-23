@@ -189,18 +189,6 @@
 										</td>
 										<td class="table-fontsize" style="font-weight: bold;">
 											@GridHelper.FormatearDato(item.cantidad_c, GridHelper.FormatDato.Monto, item.PermiteDecimales)
-											@* <div class="td-conteo">
-												<span class="td-icon">
-													@if (item.cantidad_c == item.cantidad && item.cantidad > 0)
-													{
-														<i class="bx bx-check-circle text-success"></i>
-													}
-												</span>
-
-												<span class="td-value">
-													@GridHelper.FormatearDato(item.cantidad_c, GridHelper.FormatDato.Monto, item.PermiteDecimales)
-												</span>
-											</div> *@
 										</td>
 										@if (item.Diferencia == 0)
 										{

@@ -31,5 +31,6 @@ namespace gc.infraestructura.Dtos.Productos.OrdenDeReparto
 		public string up_desc { get; set; } = string.Empty;
 		public string up_tipo { get; set; } = string.Empty;
 		public bool PermiteDecimales => up_tipo == "P";
+		public char sin_stk { get; set; }
 	}
 }

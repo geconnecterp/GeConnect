@@ -393,8 +393,33 @@ namespace gc.sitio.Areas.Distribuidora.Controllers
 					return PartialView("_gridMensaje", CrearRespuestaError("No se han provisto los datos necesarios: Debe seleccionar al menos un depósito."));
 
 				var itemsAnaliza = await _ordenDeRepartoServicio.AnalizarAutOrdenDeReparto(new AnalizarAutOrdenDeRepartoRequest() { or_compte = orCompte, dep_ids = listaDepo, palet_nro = 0 }, TokenCookie);
-				AnalizarAutOrdenDeRepartoLista = itemsAnaliza.ListaEntidad ?? [];
+				var listaFiltrada = itemsAnaliza.ListaEntidad != null ? itemsAnaliza.ListaEntidad.Where(x => x.sin_stk == 'N') : [];
+				AnalizarAutOrdenDeRepartoLista = [.. listaFiltrada];
+				var listaFiltradaSinStk = itemsAnaliza.ListaEntidad != null ? itemsAnaliza.ListaEntidad.Where(x => x.sin_stk == 'S') : [];
+				AnalizarAutOrdenDeRepartoSinStkLista = [.. listaFiltradaSinStk];
 				return PartialView("_gridOR_PonerEnCurso_TablaAnalizaAut", ObtenerGridCoreSmart<AnalizarAutOrdenDeRepartoDto>(itemsAnaliza.ListaEntidad == null ? [] : itemsAnaliza.ListaEntidad.ToList()));
+			}
+			catch (NegocioException ex)
+			{
+				_logger?.LogError(ex, "Error");
+				return PartialView("_gridMensaje", CrearRespuestaWarning(ex.Message));
+			}
+			catch (Exception ex)
+			{
+				_logger?.LogError(ex, "Error");
+				return PartialView("_gridMensaje", CrearRespuestaError("Error al abrir la orden de reparto para poner en curso"));
+			}
+		}
+
+		[HttpPost]
+		public IActionResult AnalizarAutDeOREnPonerEnCursoSinStk()
+		{
+			try
+			{
+				if (!VerificarAutenticacion(out IActionResult redirectResult))
+					return redirectResult;
+				
+				return PartialView("_gridOR_PonerEnCurso_TablaAnalizaAut_SinStk", ObtenerGridCoreSmart<AnalizarAutOrdenDeRepartoDto>(AnalizarAutOrdenDeRepartoSinStkLista));
 			}
 			catch (NegocioException ex)
 			{

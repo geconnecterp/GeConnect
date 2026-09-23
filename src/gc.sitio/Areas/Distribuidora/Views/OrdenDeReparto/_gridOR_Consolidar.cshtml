@@ -12,6 +12,46 @@
         opacity: 0.6;
     }
 
+    .td-conteo {
+        display: table;
+        width: 100%;
+    }
+
+    .td-icon {
+        display: table-cell;
+        vertical-align: middle;
+        width: 1%;
+    }
+
+    .td-value {
+        display: table-cell;
+        vertical-align: middle;
+        text-align: right;
+        padding-left: 4px;
+    }
+
+    .icon-arrow {
+        font-size: 1.2rem !important;
+        line-height: 1 !important; /* mantiene compactación */
+        padding: 0 !important;
+        margin: 0 !important;
+        border: none !important;
+        display: inline-block !important;
+        vertical-align: middle !important;
+        transform: translateY(2px); /* 🔥 ajuste fino sin aumentar altura */
+    }
+
+    .diferencia-cero {
+        background-color: #d4edda !important; /* verde suave */
+        color: #155724 !important; /* texto verde oscuro */
+        font-weight: bold !important;
+    }
+
+    .diferencia-no-cero {
+        background-color: #dc3545 !important; /* rojo Bootstrap */
+        color: #ffffff !important; /* blanco */
+        font-weight: 700 !important; /* gruesa */
+    }
 </style>
 
 <div class="container-fluid min-vh-100 d-flex flex-column">

@@ -2,6 +2,7 @@
 let orCompteSeleccionado = null;
 let oreCompteSeleccionado = null;
 let pcCompteSeleccionado = null;
+let pcCfSeleccionado = null;
 let pceCompteSeleccionado = null;
 let pcCompteSeleccionadoEnConsolidar = null;
 let modoEdicionConteo = false;
@@ -421,6 +422,7 @@ function PonerCFPedidoDeCliente(pcCompteSeleccionado) {
 									function () {
 										$('#msjModal').modal('hide');
 										//Actualizar tabla de Ordenes de Reparto
+										pcCfSeleccionado = 'S';
 										CargarPedidosDeLaOrdenesDeReparto(orCompteSeleccionado);
 									},
 									false,
@@ -446,10 +448,33 @@ function CargarPedidosDeLaOrdenesDeReparto(orCompte) {
 	AbrirWaiting("Cargando pedidos de cliente de la orden de reparto...");
 	PostGenHtml({ orCompte }, cargarPedidosDeLaOrdenDeRepartoUrl, function (html) {
 		CerrarWaiting();
-		$("#divPedidosDeLaOrdenDeReparto").html(html).collapse("show");
+		$("#divPedidosEnOrdenDeReparto").html(html);
+		configurarEventosSeleccionListaPedidosDeOR();
+		reseleccionarFilaPedidosOR();
+		if (pcCompteSeleccionado && pceCompteSeleccionado) {
+			ConfigurarEstadoDeBotonesEnTabPedidosDeLaOrdenDeReparto(
+				pcCompteSeleccionado,
+				pceCompteSeleccionado,
+				pcCfSeleccionado
+			);
+		} else {
+			ConfigurarEstadoDeBotonesEnTabPedidosDeLaOrdenDeReparto("", "", "");
+		}
 	}, function (obj) {
 		CerrarWaiting();
 	});
+}
+
+function reseleccionarFilaPedidosOR() {
+
+	if (!pcCompteSeleccionado) return;
+
+	const $fila = $("#tbGridPedidosEnOrdenDeReparto tbody tr")
+		.filter(`[data-pc-compte="${pcCompteSeleccionado}"]`);
+
+	if ($fila.length) {
+		$fila.addClass("selected-row");
+	}
 }
 
 
@@ -1870,6 +1895,7 @@ function ConfigurarEventosEnPonerEnCurso() {
 			} else {
 				$("#btnConfirmarPonerEnCurso").prop('disabled', true);
 			}
+			CargarResultadoDeAnalisisParaProdsSinStk();
 		}, function (obj) {
 			CerrarWaiting();
 		});
@@ -1947,6 +1973,17 @@ function ConfigurarEventosEnPonerEnCurso() {
 
 	deshabilitarTabPedidos();
 	addEventListenersToTablaDepositos();
+}
+
+function CargarResultadoDeAnalisisParaProdsSinStk() {
+	PostGenHtml({}, analizarAutDeOREnPonerEnCursoSinStkUrl, function (html) {
+		CerrarWaiting();
+		$("#divNuevaAutListaProductosSinStock").html(html);
+		configurarEventosSeleccionListaAnalisisAutORSinStk();
+		AgregarHanlderColumnaDescripcion();
+	}, function (obj) {
+		CerrarWaiting();
+	});
 }
 
 function addEventListenersToTablaDepositos() {
@@ -4132,6 +4169,21 @@ function setBtnLoading($btn, loading, originalHtml) {
 	}
 }
 
+function configurarEventosSeleccionListaAnalisisAutORSinStk() {
+	$(document).off("click", "#tbNuevaAutListaProductosSinStock tbody tr");
+	$(document).on("click", "#tbNuevaAutListaProductosSinStock tbody tr", function (e) {
+		if (!$(e.target).is("button, a, .btn, i")) {
+			var $this = $(this);
+			var fueSeleccionado = $this.hasClass("selected-row");
+
+			$("#tbNuevaAutListaProductosSinStock tbody tr").removeClass("selected-row");
+
+			if (!fueSeleccionado) {
+				$this.addClass("selected-row");
+			}
+		}
+	});
+}
 function configurarEventosSeleccionListaAnalisisAutOR() {
 	$(document).off("click", "#tbGrillaAnalizaAut tbody tr");
 	$(document).on("click", "#tbGrillaAnalizaAut tbody tr", function (e) {
@@ -4207,10 +4259,12 @@ function configurarEventosSeleccionListaPedidosDeOR() {
 				$this.addClass("selected-row");
 				let pcCompte = $this.data("pc-compte");
 				let pceId = $this.data("pce-id");
+				let pcCf = $this.data("pc-cf");
 				pcCompteSeleccionado = pcCompte;
 				pceCompteSeleccionado = pceId;
+				pcCfSeleccionado = pcCf;
 				if (pcCompte) {
-					ConfigurarEstadoDeBotonesEnTabPedidosDeLaOrdenDeReparto(pcCompte, pceId);
+					ConfigurarEstadoDeBotonesEnTabPedidosDeLaOrdenDeReparto(pcCompte, pceId, pcCf);
 				}
 			}
 		}
@@ -4234,13 +4288,13 @@ function CargarPedidosDelReparto(orCompte) {
 		$("#divListaPedidosDeCliente").html(header + html);
 		CerrarWaiting();
 		configurarEventosSeleccionListaPedidosDeOR();
-		ConfigurarEstadoDeBotonesEnTabPedidosDeLaOrdenDeReparto("", "")
+		ConfigurarEstadoDeBotonesEnTabPedidosDeLaOrdenDeReparto("", "", "")
 	}, function (obj) {
 		CerrarWaiting();
 	});
 }
 
-function ConfigurarEstadoDeBotonesEnTabPedidosDeLaOrdenDeReparto(pcCompte, pceCompte) {
+function ConfigurarEstadoDeBotonesEnTabPedidosDeLaOrdenDeReparto(pcCompte, pceCompte, pcCf) {
 
 	const controls = {
 		btnCF: document.getElementById("btnCF"),
@@ -4267,7 +4321,7 @@ function ConfigurarEstadoDeBotonesEnTabPedidosDeLaOrdenDeReparto(pcCompte, pceCo
 
 	// CF habilitado solo si el estado está permitido
 	const estadosPermitidosCF = ["C", "O", "T"];
-	setState(controls.btnCF, estadosPermitidosCF.includes(pceCompte));
+	setState(controls.btnCF, estadosPermitidosCF.includes(pceCompte) && pcCf === 'N');
 
 	// Asociar NC solo si estado = F
 	setState(controls.btnAsociarNC, pceCompte === "F");

@@ -37,11 +37,12 @@ namespace gc.infraestructura.Dtos.Productos.OrdenDeReparto
 		public string ve_id { get; set; } = string.Empty;
 		public string ve_nombre { get; set; } = string.Empty;
 		public char pc_cf { get; set; }
-		public bool pc_cons_final
-		{
-			get => char.ToUpper(pc_cf) == 'S';
-			set => pc_cf = value ? 'S' : 'N';
-		}
+		public bool pc_cons_final => pc_cf == 'S';
+		//public bool pc_cons_final
+		//{
+		//	get => char.ToUpper(pc_cf) == 'S';
+		//	//set => pc_cf = value ? 'S' : 'N';
+		//}
 		public string cta_id { get; set; } = string.Empty;
 		public string cta_denominacion { get; set; } = string.Empty;
 		public string cta_domicilio { get; set; } = string.Empty;

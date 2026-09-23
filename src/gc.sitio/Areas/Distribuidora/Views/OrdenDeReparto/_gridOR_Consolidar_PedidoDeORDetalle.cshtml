@@ -52,7 +52,7 @@
 		<thead class="sticky-top table-golden-header-compact">
 			<tr class="header">
 				<th class="text-center">Item</th>
-				<th class="text-center">Código</th>
+				<th class="text-center" style="width: 7%;">ID</th>
 				<th class="text-center">Descripción</th>
 				<th class="text-center">Ori</th>
 				<th class="text-center">Pedido</th>
@@ -94,15 +94,42 @@
 							<td>Cliente</td>
 						}
 						<td class="text-end">@GridHelper.FormatearDato(item.pcd_pedida, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
-						<td class="text-end">@GridHelper.FormatearDato(item.cantidad, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
-						<td class="text-end
-							@(dif > 0
-								? "cell-up"
-								: (dif < 0
-									? "cell-down"
-									: "cell-zero"))">
-							@GridHelper.FormatearDato(dif, GridHelper.FormatDato.Monto, item.PermiteDecimales)
+						<td class="table-fontsize" style="font-weight: bold;">
+							<div class="td-conteo">
+								<span class="td-icon">
+									@if (item.pcd_pedida < item.cantidad)
+									{
+										<i class="bx bx-up-arrow-alt text-info icon-arrow"></i>
+									}
+									else if (item.pcd_pedida > item.cantidad)
+									{
+										<i class="bx bx-down-arrow-alt text-danger icon-arrow"></i>
+									}
+								</span>
+
+								<span class="td-value">
+									@GridHelper.FormatearDato(item.cantidad, GridHelper.FormatDato.Monto, item.PermiteDecimales)
+								</span>
+							</div>
 						</td>
+						@if (dif == 0 && item.pcd_pedida > 0)
+						{
+							<td class="table-fontsize diferencia-cero d-flex justify-content-between align-items-center">
+								<span>
+									<i class="bx bx-check-circle text-success" title="Sin diferencia"></i>
+								</span>
+								<span class="ms-auto">
+									@GridHelper.FormatearDato(dif, GridHelper.FormatDato.Monto, item.PermiteDecimales)
+								</span>
+							</td>
+						}
+						else
+						{
+							<td class="text-end @(dif > 0 ? "cell-down" : (dif < 0 ? "cell-up" : "cell-zero"))">
+								@GridHelper.FormatearDato(dif, GridHelper.FormatDato.Monto, item.PermiteDecimales)
+							</td>
+						}
+						
 					</tr>
 				}
 			}
