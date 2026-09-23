@@ -2,6 +2,8 @@
 
 Fecha: 12/09/2026. Raíz: `D:\Sis25\git\GeConnect\src`.
 
+> Actualización 22/09/2026: consultar la [auditoría vigente y plan de cierre](Pocket_TR_OR_Auditoria_2026-09-22.md). Este documento conserva el diagnóstico inicial y avances como historial; no interpretar los pendientes de la tabla inicial como el estado actual sin leer la nueva auditoría.
+
 ## Alcance y estado
 
 El usuario confirmó equivalencia funcional de TR y OR, salvo su finalidad, y equivalencia de sus SP/parámetros. También confirmó conservar SPGECO_OR_* con contratos equivalentes a TR, sin redirigir OR a SPGECO_TR_*. Se conservan comprobantes, navegación y control de salida propios de OR. No se modifican SP ni se ejecutan movimientos de inventario para verificar apariencia.

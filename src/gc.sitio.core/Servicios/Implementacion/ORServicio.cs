@@ -253,6 +253,8 @@ namespace gc.sitio.core.Servicios.Implementacion
 
         public async Task<RespuestaGenerica<ORProductoDto>> ObtenerORProductos(ORProdRequestDto request, string token)
         {
+            using var traza = _logger.BeginScope(new Dictionary<string, object> { ["OR"] = request.or_compte, ["EtapaOR"] = "LISTA" });
+            _logger.LogInformation("[OR-TRACE][SITIO-API][LISTA-REQUEST] Request={Request}", JsonConvert.SerializeObject(request));
             try
             {
                 var helper = new HelperAPI();
@@ -260,9 +262,11 @@ namespace gc.sitio.core.Servicios.Implementacion
                 var link = $"{_appSettings.RutaBase}{RutaAPI}{POST_LISTA_OR_PRODUCTOS}";
 
                 using var response = await client.PostAsync(link, contentData);
+                _logger.LogInformation("[OR-TRACE][SITIO-API][LISTA-HTTP] OR={OR} StatusCode={StatusCode}", request.or_compte, (int)response.StatusCode);
                 if (response.StatusCode == HttpStatusCode.OK)
                 {
                     var stringData = await response.Content.ReadAsStringAsync();
+                    _logger.LogInformation("[OR-TRACE][SITIO-API][LISTA-RESPONSE] OR={OR} Response={Response}", request.or_compte, stringData);
                     if (string.IsNullOrEmpty(stringData))
                     {
                         return new() { Ok = false, Mensaje = "No se recibió respuesta válida de la API" };
@@ -298,6 +302,8 @@ namespace gc.sitio.core.Servicios.Implementacion
 
         public async Task<RespuestaGenerica<RespuestaDto>> ValidaProductoCarritoOR(ORCargaCarritoRequest request, string token)
         {
+            using var traza = _logger.BeginScope(new Dictionary<string, object> { ["OR"] = request.or_compte, ["EtapaOR"] = "VALIDA" });
+            _logger.LogInformation("[OR-TRACE][SITIO-API][VALIDA-REQUEST] Request={Request}", JsonConvert.SerializeObject(request));
             try
             {
                 var helper = new HelperAPI();
@@ -305,9 +311,11 @@ namespace gc.sitio.core.Servicios.Implementacion
                 var link = $"{_appSettings.RutaBase}{RutaAPI}{POST_VALIDA_PRODUCTO_CARRITO_OR}";
 
                 using var response = await client.PostAsync(link, contentData);
+                _logger.LogInformation("[OR-TRACE][SITIO-API][VALIDA-HTTP] OR={OR} StatusCode={StatusCode}", request.or_compte, (int)response.StatusCode);
                 if (response.StatusCode == HttpStatusCode.OK)
                 {
                     var stringData = await response.Content.ReadAsStringAsync();
+                    _logger.LogInformation("[OR-TRACE][SITIO-API][VALIDA-RESPONSE] OR={OR} Response={Response}", request.or_compte, stringData);
                     if (string.IsNullOrEmpty(stringData))
                     {
                         return new() { Ok = false, Mensaje = "No se recibió respuesta válida de la API" };
@@ -343,6 +351,8 @@ namespace gc.sitio.core.Servicios.Implementacion
 
         public async Task<RespuestaGenerica<RespuestaDto>> ResguardarProductoCarrito(ORCargaCarritoRequest request, string token)
         {
+            using var traza = _logger.BeginScope(new Dictionary<string, object> { ["OR"] = request.or_compte, ["EtapaOR"] = "CARGA" });
+            _logger.LogInformation("[OR-TRACE][SITIO-API][CARGA-REQUEST] Request={Request}", JsonConvert.SerializeObject(request));
             try
             {
                 var helper = new HelperAPI();
@@ -350,9 +360,11 @@ namespace gc.sitio.core.Servicios.Implementacion
                 var link = $"{_appSettings.RutaBase}{RutaAPI}{POST_RESGUARDAR_PRODUCTO_CARRITO_OR}";
 
                 using var response = await client.PostAsync(link, contentData);
+                _logger.LogInformation("[OR-TRACE][SITIO-API][CARGA-HTTP] OR={OR} StatusCode={StatusCode}", request.or_compte, (int)response.StatusCode);
                 if (response.StatusCode == HttpStatusCode.OK)
                 {
                     var stringData = await response.Content.ReadAsStringAsync();
+                    _logger.LogInformation("[OR-TRACE][SITIO-API][CARGA-RESPONSE] OR={OR} Response={Response}", request.or_compte, stringData);
                     if (string.IsNullOrEmpty(stringData))
                     {
                         return new() { Ok = false, Mensaje = "No se recibió respuesta válida de la API" };

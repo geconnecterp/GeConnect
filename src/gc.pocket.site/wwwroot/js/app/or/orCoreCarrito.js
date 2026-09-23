@@ -8,8 +8,8 @@ $(function () {
     // Inicializar eventos
     inicializarEventosCarrito();
 
-    // Cargar vista por defecto (ordenado por BOX)
-    presentaListaProducto("B");
+    // La carga inicial ya viene renderizada con una única consulta al SP.
+    actualizarContinuarOR();
 });
 
 // ======================================================================
@@ -54,6 +54,10 @@ function inicializarEventosCarrito() {
  * Carga la lista de productos con el ordenamiento especificado
  * @param {string} orden - Criterio de ordenamiento: "B" (BOX), "R" (RUBRO), "P" (PRODUCTO)
  */
+function actualizarContinuarOR() {
+    $("#btnContinuar").toggle($("#tbORListaProd tbody tr[data-prod-id]").length > 0);
+}
+
 function presentaListaProducto(orden) {
     console.log(`📡 Cargando lista de productos - Orden: ${orden}`);
     
@@ -71,14 +75,7 @@ function presentaListaProducto(orden) {
         $("#contenedorCarritoOR").html(html);
         
         // Verificar si hay productos y controlar visibilidad del botón continuar
-        var tbody = $("#contenedorCarritoOR #tbORListaProd tbody td");
-        if (tbody.length <= 0) {
-            $("#btnContinuar").hide("fast");
-            console.log('⚠️ No hay productos - Ocultando botón continuar');
-        } else {
-            $("#btnContinuar").show("fast");
-            console.log('✅ Productos cargados - Mostrando botón continuar');
-        }
+        actualizarContinuarOR();
         
         CerrarWaiting();
     }, function (xhr, status, error) {
@@ -141,7 +138,7 @@ function limpiaProductoCarritoOR(p_id, boxId, item) {
     
     AbrirWaiting('Limpiando producto del carrito...');
 
-    const datos = { p_id: p_id, boxId: boxId, item: item };
+    const datos = { p_id: p_id, boxId: boxId, item: item, orCompte: orCompteActual };
 
     PostGen(datos, LimpiaProductoCarritoORUrl, function (obj) {
         CerrarWaiting();

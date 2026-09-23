@@ -5,7 +5,7 @@
 }
 
 <section class="pocket-modern pocket-workspace">
-    <div class="pocket-workspace__header">
+    <div class="pocket-workspace__header pocket-mobile-redundant-title">
         <h1 class="pocket-workspace__heading"><i class="bx bx-list-check"></i> Órdenes disponibles</h1>
         <p class="pocket-workspace__hint">Seleccione una orden para consultar su detalle y continuar.</p>
     </div>
@@ -20,6 +20,7 @@
 
 @section styles {
     <link rel="stylesheet" href="~/css/pocket-modern.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/pocket-or.css" asp-append-version="true" />
 }
 
 @section scripts {
@@ -34,7 +35,7 @@
          var ORCargaCarritoUrl = "@Url.Action("ORCargaCarrito", "or", new { area = "pocketppal" })";
 
     </script>
-    <script src="~/js/app/or/orCoreCommon.js"></script>
+    <script src="~/js/app/or/orCoreCommon.js" asp-append-version="true"></script>
 
-    <script src="~/js/app/or/orCore.js"></script>
+    <script src="~/js/app/or/orCore.js" asp-append-version="true"></script>
 }
