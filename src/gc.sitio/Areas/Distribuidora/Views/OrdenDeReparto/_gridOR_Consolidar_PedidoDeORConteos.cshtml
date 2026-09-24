@@ -92,7 +92,7 @@
                         alt = true;
                     }
 
-                    var dif = item.pcd_pedida - item.cantidad;
+                    var dif = item.cantidad - item.cantidad_ctl;
                     if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
                     <tr class="@clase row-conteo"
                         data-or-compte="@item.or_compte"
@@ -100,25 +100,27 @@
                         <td class="text-center">@item.p_id</td>
                         <td class="text-start">@item.p_desc</td>
                         <td class="text-end">@GridHelper.FormatearDato(item.pcd_pedida, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
-                        <td class="text-end">@GridHelper.FormatearDato(item.cantidad, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
-                        @* <td class="text-end">@GridHelper.FormatearDato(item.cantidad_ctl, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td> *@
+                        @* <td class="text-end">@GridHelper.FormatearDato(item.cantidad, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td> *@
                         <td class="table-fontsize" style="font-weight: bold;">
                             <div class="td-conteo">
                                 <span class="td-icon">
-                                    @if (item.cantidad < item.cantidad_ctl)
+                                    @if (item.pcd_pedida < item.cantidad)
                                     {
                                         <i class="bx bx-up-arrow-alt text-info icon-arrow"></i>
                                     }
-                                    else if (item.cantidad > item.cantidad_ctl)
+                                    else if (item.pcd_pedida > item.cantidad)
                                     {
                                         <i class="bx bx-down-arrow-alt text-danger icon-arrow"></i>
                                     }
                                 </span>
 
                                 <span class="td-value">
-                                    @GridHelper.FormatearDato(item.cantidad_ctl, GridHelper.FormatDato.Monto, item.PermiteDecimales)
+                                    @GridHelper.FormatearDato(item.cantidad, GridHelper.FormatDato.Monto, item.PermiteDecimales)
                                 </span>
                             </div>
+                        </td>
+                        <td class="text-end" style="font-weight: bold;">
+                            @GridHelper.FormatearDato(item.cantidad_ctl, GridHelper.FormatDato.Monto, item.PermiteDecimales)
                         </td>
                         @if (dif == 0 && item.pcd_pedida > 0)
                         {

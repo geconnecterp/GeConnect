@@ -1,7 +1,9 @@
 ﻿
+using gc.infraestructura.Dtos.Almacen;
+
 namespace gc.infraestructura.Dtos
 {
-	public class ConteoEnValorizacionDto : Dto
+	public class ConteoEnValorizacionDto : Dto, IProductoConUnidad
 	{
 		public string p_id { get; set; } = string.Empty;
 		public string box_id { get; set; } = string.Empty;
@@ -14,5 +16,9 @@ namespace gc.infraestructura.Dtos
 		public int invd_bulto { get; set; }
 		public decimal invd_unidad_suelta { get; set; } = 0.000M;
 		public decimal invd_cantidad { get; set; } = 0.000M;
+		public string up_id { get; set; } = string.Empty;
+		public string up_desc { get; set; } = string.Empty;
+		public string up_tipo { get; set; } = string.Empty;
+		public bool PermiteDecimales => up_tipo == "P";
 	}
 }

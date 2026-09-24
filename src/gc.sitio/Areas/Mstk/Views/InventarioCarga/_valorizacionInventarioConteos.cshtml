@@ -1,4 +1,5 @@
-﻿@model ConteosEnValorizacionModel
+﻿@using gc.infraestructura.Helpers
+@model ConteosEnValorizacionModel
 @using static gc.infraestructura.Helpers.GridHelper
 @{
 	var alt = true;
@@ -76,10 +77,10 @@
 		<table class="table table-sm table-golden" id="tbValorGridConteos">
 			<thead>
 				<tr class="header">
-					<th class="text-center" style="width: 20%;">Usuario</th>
+					<th class="text-center" style="width: 35%;">Usuario</th>
 					<th class="text-center" style="width: 20%;">Planilla</th>
 					<th class="text-center" style="width: 20%;">Conteo</th>
-					<th class="text-center" style="width: 20%;">Grp.</th>
+					<th class="text-center" style="width: 15%;">Grp.</th>
 				</tr>
 			</thead>
 			<tbody>
@@ -91,7 +92,7 @@
 						<tr class="@clase" onclick="selectReg(this, 'tbValorGridConteos')" data-p-id="@item.p_id" data-box-id="@item.box_id">
 							<td class="@Model.GrillaConteos.ObtenerClase(item.usu_apellidoynombre) cell-fit-content">@Model.GrillaConteos.FormatearDato(item.usu_apellidoynombre, FormatDato.Ninguno)</td>
 							<td class="@Model.GrillaConteos.ObtenerClase(item.carga_nro) cell-fit-content">@Model.GrillaConteos.FormatearDato(item.carga_nro, FormatDato.Ninguno)</td>
-							<td class="@Model.GrillaConteos.ObtenerClase(item.invd_cantidad) cell-fit-content">@Model.GrillaConteos.FormatearDato(item.invd_cantidad, FormatDato.Monto)</td>
+							<td class="@Model.GrillaConteos.ObtenerClase(item.invd_cantidad) cell-fit-content">@GridHelper.FormatearDato(item.invd_cantidad, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
 							<td class="@Model.GrillaConteos.ObtenerClase(item.inv_grupo) cell-fit-content">@Model.GrillaConteos.FormatearDato(item.inv_grupo, FormatDato.Monto)</td>
 						</tr>
 					}
@@ -118,11 +119,6 @@
 			   value="@Model.Conteo"/>
 		<button type="button" class="btn btn-info btn-sm" id="btnModificarConteo" title="Modificar Conteo">
 			<i class="bx bx-edit"></i>
-		</button>
-	</div>
-	<div class="input-group input-group-sm">
-		<button type="button" class="btn btn-success btn-sm mt-1 me-1" id="btnConfirmarValoracion">
-			<i class="bx bx-badge-check"></i> Confirmar Valoración
 		</button>
 	</div>
 </div>

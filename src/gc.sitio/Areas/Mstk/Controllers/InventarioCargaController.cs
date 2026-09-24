@@ -163,7 +163,7 @@ namespace gc.sitio.Areas.Mstk.Controllers
 					model.Estado = string.Empty;
 				}
 				//var estados = _inventarioEstadoServicio.GetInventarioEstadoLista(TokenCookie);
-				var depositos = _depositoServicio.ObtenerDepositosDeAdministracion("%", TokenCookie);
+				var depositos = _depositoServicio.ObtenerDepositosDeAdministracion(AdministracionId, TokenCookie);
 				if (depositos != null && depositos.Count > 0)
 					model.ListaDepositos = ObtenerListaDepositos(depositos);
 				else

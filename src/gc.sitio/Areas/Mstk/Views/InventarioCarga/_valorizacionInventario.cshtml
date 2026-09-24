@@ -16,27 +16,47 @@
 
 </style>
 @Html.Hidden("invt_id", Model.invt_id)
-<div class="col-6">
+<div class="col-12">
 	<div id="divDatosInventario">
 		<div class="row mb-2">
-			<div class="input-group input-group-sm">
+			<div class="d-flex align-items-center w-100">
 
-				<span class="input-group-text fixed-width small">Inv. N°:</span>
-				<input id="inv_nro"
-					   type="text"
-					   class="form-control form-control-sm col-3"
-					   value="@Model.inv_nro"
-					   readonly />
+				<!-- Controles a la izquierda -->
+				<div class="input-group input-group-sm flex-grow-1 me-3">
 
-				<span class="input-group-text fixed-width ms-2">Descripción:</span>
-				<input id="inv_descripcion"
-					   type="text"
-					   class="form-control form-control-sm col-9"
-					   value="@Model.inv_descripcion"
-					   readonly />
+					<span class="input-group-text fixed-width small">Inv. N°:</span>
+
+					<input id="inv_nro"
+						   type="text"
+						   class="form-control form-control-sm"
+						   style="max-width: 120px;"
+						   value="@Model.inv_nro"
+						   readonly />
+
+					<span class="input-group-text fixed-width ms-2">Descripción:</span>
+
+					<input id="inv_descripcion"
+						   type="text"
+						   class="form-control form-control-sm"
+						   style="flex: 1 1 auto;width: 30% !important;max-width: 30% !important;"
+						   value="@Model.inv_descripcion"
+						   readonly />
+				</div>
+
+				<!-- Botones alineados a la derecha -->
+				<div class="d-flex align-items-center ms-auto">
+					<button type="button" class="btn btn-success btn-sm me-2" id="btnConfirmarValoracion">
+						<i class="bx bx-badge-check"></i> Confirmar
+					</button>
+
+					<button type="button" class="btn btn-danger btn-sm" id="btnCancelarValoracion">
+						<i class="bx bx-x"></i> Cancelar
+					</button>
+				</div>
 
 			</div>
 		</div>
+
 	</div>
 </div>
 <div class="row">
@@ -84,9 +104,9 @@
 				<table class="table table-sm table-golden" id="tbValorGridRubros">
 					<thead>
 						<tr class="header">
-							<th class="text-center" style="width: 50%;">Rubros</th>
+							<th class="text-center" style="width: 45%;">Rubros</th>
 							<th class="text-center" style="width: 25%;">Cant. Prod.</th>
-							<th class="text-center" style="width: 25%;">Cant. con Dif.</th>
+							<th class="text-center" style="width: 30%;">Cant. con Dif.</th>
 						</tr>
 					</thead>
 					<tbody>
