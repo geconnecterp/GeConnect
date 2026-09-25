@@ -456,13 +456,19 @@ namespace gc.sitio.core.Servicios.Implementacion
 
 
         public async Task<RespuestaGenerica<RespuestaDto>> ValidaConteo(InventarioRequestDto req, string token)
+            => await ValidarConteoApi(req, token, INV_VERIFICA_CONTEO);
+
+        public async Task<RespuestaGenerica<RespuestaDto>> ValidaProductoConteo(InventarioRequestDto req, string token)
+            => await ValidarConteoApi(req, token, "/VerificaProductoConteo");
+
+        private async Task<RespuestaGenerica<RespuestaDto>> ValidarConteoApi(InventarioRequestDto req, string token, string accion)
         {
             try
             {
                 var helper = new HelperAPI();
                 var client = helper.InicializaCliente(req, token, out StringContent contentData);
 
-                var link = $"{_appSettings.RutaBase}{RutaAPI}{INV_VERIFICA_CONTEO}";
+                var link = $"{_appSettings.RutaBase}{RutaAPI}{accion}";
 
                 using var response = await client.PostAsync(link, contentData);
 
@@ -643,101 +649,29 @@ namespace gc.sitio.core.Servicios.Implementacion
             {
                 var helper = new HelperAPI();
                 var client = helper.InicializaCliente(req, token, out StringContent contentData);
-
-                var link = $"{_appSettings.RutaBase}{RutaAPI}{INV_CONFIRMAR_CONTEO}";
-
-                using var response = await client.PostAsync(link, contentData);
-
-                if (response.StatusCode == HttpStatusCode.OK)
+                using var response = await client.PostAsync($"{_appSettings.RutaBase}{RutaAPI}{INV_CONFIRMAR_CONTEO}", contentData);
+                if (response.StatusCode != HttpStatusCode.OK)
+                    return new RespuestaGenerica<RespuestaDto> { Ok = false, EsError = true,
+                        Mensaje = "No se pudo confirmar el resultado. Verifique los conteos guardados antes de reintentar." };
+                var json = await response.Content.ReadAsStringAsync();
+                var envelope = Newtonsoft.Json.Linq.JObject.Parse(json);
+                var data = envelope.GetValue("data", StringComparison.OrdinalIgnoreCase) as Newtonsoft.Json.Linq.JObject;
+                if (data?.GetValue("resultado", StringComparison.OrdinalIgnoreCase)?.Type != Newtonsoft.Json.Linq.JTokenType.Integer)
+                    throw new InvalidOperationException("Respuesta de confirmación incompleta.");
+                var respuesta = data.ToObject<RespuestaDto>();
+                if (respuesta == null || string.IsNullOrWhiteSpace(respuesta.resultado_msj))
+                    throw new InvalidOperationException("Respuesta de confirmación sin mensaje.");
+                return new RespuestaGenerica<RespuestaDto>
                 {
-                    var stringData = await response.Content.ReadAsStringAsync();
-
-                    if (string.IsNullOrEmpty(stringData))
-                    {
-                        return new RespuestaGenerica<RespuestaDto>
-                        {
-                            Ok = false,
-                            Mensaje = "No se recibió respuesta válida de la API"
-                        };
-                    }
-
-                    var apiResponse = JsonConvert.DeserializeObject<ApiResponse<RespuestaDto>>(stringData);
-
-                    if (apiResponse == null || apiResponse.Data == null)
-                    {
-                        return new RespuestaGenerica<RespuestaDto>
-                        {
-                            Ok = false,
-                            Mensaje = "Error deserializando la respuesta de la API"
-                        };
-                    }
-
-                    if (apiResponse.Data.resultado != 0)
-                    {
-                        if (apiResponse.Data.resultado > 0)
-                        {
-                            return new RespuestaGenerica<RespuestaDto>
-                            {
-                                Ok = false,
-                                Entidad = apiResponse.Data,
-                                EsWarn = true,
-                                Mensaje = apiResponse.Data.resultado_msj ?? "Error procesando la CONFIRMACIÓN del Conteo."
-                            };
-                        }
-                        else
-                        {
-                            return new RespuestaGenerica<RespuestaDto>
-                            {
-                                Ok = false,
-                                Entidad = apiResponse.Data,
-                                EsError = true,
-                                Mensaje = apiResponse.Data.resultado_msj ?? "Error procesando la CONFIRMACIÓN del Conteo."
-                            };
-                        }
-                    }
-                    else
-                    {
-                        return new RespuestaGenerica<RespuestaDto>
-                        {
-                            Ok = true,
-                            Entidad = apiResponse?.Data ?? new RespuestaDto(),
-                            Mensaje = ""
-                        };
-                    }
-                }
-                else
-                {
-                    var errorData = await response.Content.ReadAsStringAsync();
-                    _logger.LogWarning($"Error API ({response.StatusCode}): {errorData}");
-
-                    var resp = JsonConvert.DeserializeObject<ErrorResponse>(errorData);
-
-                    var error = resp?.Error.FirstOrDefault();
-                    if (string.IsNullOrEmpty(error?.Detail))
-                    {
-                        //intentamos obtener los datos con otra entidad
-                    }
-
-                    var mensaje = error?.Detail ?? "Error desconocido en la API";
-
-                    return new RespuestaGenerica<RespuestaDto>
-                    {
-                        Ok = false,
-                        EsWarn = true,
-                        Mensaje = mensaje
-                    };
-                }
+                    Ok = respuesta.resultado == 0, EsWarn = respuesta.resultado > 0,
+                    EsError = respuesta.resultado < 0, Entidad = respuesta, Mensaje = respuesta.resultado_msj
+                };
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error en la CONFIRMACIÓN del Conteo");
-
-                return new RespuestaGenerica<RespuestaDto>
-                {
-                    Ok = false,
-                    EsError = true,
-                    Mensaje = "Error procesando la CONFIRMACIÓN del Conteo.."
-                };
+                _logger.LogError(ex, "No se pudo determinar el resultado de confirmación del inventario {Inventario}", req.inv_nro);
+                return new RespuestaGenerica<RespuestaDto> { Ok = false, EsError = true,
+                    Mensaje = "No se pudo confirmar el resultado. Verifique los conteos guardados antes de reintentar." };
             }
         }
 

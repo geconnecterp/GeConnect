@@ -5,6 +5,10 @@
         public string p_id { get; set; } = string.Empty;
         public string p_desc { get; set; } = string.Empty;
         public string up_id { get; set; } = string.Empty;
+        public string up_tipo { get; set; } = string.Empty;
+        public string up_desc { get; set; } = string.Empty;
+        public string usu_apellidoynombre { get; set; } = string.Empty;
+        public string inv_grupo { get; set; } = string.Empty;
         public string box_id { get; set; } = string.Empty;
         public int carga_nro { get; set; }
         public string carga_des { get; set; } = string.Empty;
