@@ -28,6 +28,8 @@ namespace gc.sitio.core.Extensions
             services.AddScoped<IRendicionServicio, RendicionServicio>();
             services.AddScoped<IAnulacionCobranzaServicio, AnulacionCobranzaServicio>();
 
+            services.AddScoped<gc.sitio.core.Servicios.Contratos.IConfiguracionSeguridadServicio,
+                gc.sitio.core.Servicios.Implementacion.ConfiguracionSeguridadServicio>();
             return services;
         }
     }

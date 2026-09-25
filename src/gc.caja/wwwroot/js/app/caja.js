@@ -831,6 +831,9 @@ $(function () {
             case 'cierre':
                 abrirModuloCierre();
                 break;
+            case 'cambio-pass':
+                window.location.assign(CuentaCajaUrl + '#cambiar-clave');
+                break;
             case 'administrador':
                 abrirModuloAdministrador();
                 break;

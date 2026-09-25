@@ -162,6 +162,20 @@ namespace gc.caja.Models.Middleware
                 return;
             }
 
+            var destinoCuenta = gc.caja.Models.Cuenta.AccesoCuentaCaja.Redireccion(context.User, context.Request.Path);
+            if (destinoCuenta != null)
+            {
+                var destino = $"{context.Request.PathBase}{destinoCuenta}";
+                if (isAjaxRequest)
+                {
+                    context.Response.StatusCode = StatusCodes.Status403Forbidden;
+                    await context.Response.WriteAsJsonAsync(new { ok = false, warn = true,
+                        msg = "Debe actualizar su contraseña antes de continuar.", redirect = destino });
+                }
+                else context.Response.Redirect(destino);
+                return;
+            }
+
             // Continuar con la solicitud si todo está bien
             await _next(context);
         }

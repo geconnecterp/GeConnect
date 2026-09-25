@@ -41,6 +41,10 @@
         </div>
     </div>
 
+    @if (Context.Request.Query["cambioClave"] == "ok")
+    {
+        <div class="alert alert-success m-3" role="status">Contraseña actualizada. Ingresá con tu nueva clave.</div>
+    }
     <main class="geco-login-shell" id="formulario">
         <section class="geco-login-presentation" aria-label="Presentación de GECO Caja">
             <div class="geco-login-brand geco-login-brand--light">

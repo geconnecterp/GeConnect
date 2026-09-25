@@ -9,9 +9,12 @@
                     Menú Principal - Caja
                     <span id="lblPV" class="badge bg-light text-dark ms-2 shadow-sm"></span>
                 </h5>
+                <div class="d-flex align-items-center gap-2">
+                @await Html.PartialAsync("_CuentaOperador")
                 <button type="button" class="btn btn-sm btn-danger d-flex align-items-center shadow" id="btnCerrarMenu">
                     <i class='bx bx-x fs-5'></i> Salir
                 </button>
+                </div>
             </div>
 
             <!-- Body con grid mejorado -->
@@ -91,7 +94,7 @@
 
                         <button class="btn menu-btn-enhanced btn-dark-orange" data-action="cambio-pass">
                             <i class='bx bx-key'></i>
-                            <span>CAMBIO PASS</span>
+                            <span>CAMBIAR CONTRASEÑA</span>
                         </button>
 
                         <button class="btn menu-btn-enhanced btn-primary" data-action="administrador">

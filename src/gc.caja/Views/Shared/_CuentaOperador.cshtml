@@ -1,0 +1,23 @@
+@using gc.caja.Models.Cuenta
+@{ var operador = OperadorCuenta.Desde(User); }
+@if (User.Identity?.IsAuthenticated == true)
+{
+    <div class="dropdown cuenta-operador">
+        <button class="cuenta-avatar" type="button" data-bs-toggle="dropdown" aria-expanded="false"
+                aria-label="Mi cuenta: @operador.Nombre" title="Mi cuenta">
+            @operador.Iniciales
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end cuenta-dropdown">
+            <li class="px-3 py-2">
+                <strong class="d-block">@operador.Nombre</strong>
+                <small class="d-block text-muted">@operador.Usuario</small>
+                <small class="d-block text-muted">@operador.Sucursal</small>
+            </li>
+            <li><hr class="dropdown-divider" /></li>
+            <li><a class="dropdown-item" asp-area="Seguridad" asp-controller="Cuenta" asp-action="Index"><i class="bx bx-user" aria-hidden="true"></i> Mi cuenta</a></li>
+            <li><a class="dropdown-item" asp-area="Seguridad" asp-controller="Cuenta" asp-action="Index" asp-fragment="cambiar-clave"><i class="bx bx-key" aria-hidden="true"></i> Cambiar contraseña</a></li>
+            <li><hr class="dropdown-divider" /></li>
+            <li><a class="dropdown-item" asp-area="Seguridad" asp-controller="Token" asp-action="Logout"><i class="bx bx-log-out" aria-hidden="true"></i> Cerrar sesión</a></li>
+        </ul>
+    </div>
+}

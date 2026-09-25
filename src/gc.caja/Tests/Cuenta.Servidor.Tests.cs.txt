@@ -1,0 +1,73 @@
+using System.Security.Claims;
+using System.Text.Json;
+using gc.caja.Areas.Seguridad.Controllers;
+using gc.caja.Models.Cuenta;
+using gc.infraestructura.Core.EntidadesComunes.Options;
+using gc.infraestructura.Core.Exceptions;
+using gc.infraestructura.Dtos.Seguridad;
+using gc.sitio.core.Servicios.Contratos;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Routing;
+using Microsoft.AspNetCore.Mvc.Abstractions;
+using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
+
+int count=0;
+void Check(bool ok,string name){if(!ok)throw new Exception(name);Console.WriteLine("OK "+name);count++;}
+ClaimsPrincipal User(params Claim[] claims)=>new(new ClaimsIdentity(claims,"Test"));
+var normal=User(new("user","tester"),new("nya","María López"),new("email","operador@example.invalid"),new("AdmId","01#Sucursal Centro"));
+var forced=User(new Claim("cambio_clave_obligatorio","true"));var expired=User(new Claim("clave_expirada","true"));
+foreach(var ruta in new[]{"/","/Facturacion/Inicio/Index","/Seguridad/Cuenta/Index/falso","/Seguridad/Cuenta/CambiarClave","/Seguridad/Cuenta"})
+ Check(AccesoCuentaCaja.Redireccion(forced,ruta)==AccesoCuentaCaja.Obligatoria,"Clave temporal bloquea "+ruta);
+foreach(var ruta in new[]{"/Seguridad/Cuenta/ClaveObligatoria","/seguridad/cuenta/cambiarclaveobligatoria/","/Seguridad/Token/Logout"})
+ Check(AccesoCuentaCaja.Redireccion(forced,ruta)==null,"Clave temporal permite "+ruta);
+Check(AccesoCuentaCaja.Redireccion(expired,"/Facturacion/Inicio")==AccesoCuentaCaja.Inicio,"Vencida bloquea operación");
+Check(AccesoCuentaCaja.Redireccion(expired,"/Seguridad/Cuenta/CambiarClave")==null,"Vencida permite cambiar clave");
+Check(AccesoCuentaCaja.Redireccion(normal,"/Facturacion/Inicio")==null,"Cuenta normal conserva operación");
+var op=OperadorCuenta.Desde(normal);Check(op.Iniciales=="ML" && op.Sucursal=="Sucursal Centro" && op.Usuario=="tester","Avatar e identidad desde claims");
+Check(OperadorCuenta.Desde(User()).Iniciales=="O","Avatar sin nombre tiene alternativa");
+Check(typeof(CuentaController).GetCustomAttributes(typeof(AuthorizeAttribute),true).Length==1,"Cuenta requiere autenticación");
+foreach(var name in new[]{"CambiarClave","CambiarClaveObligatoria"}) Check(typeof(CuentaController).GetMethod(name)!.GetCustomAttributes(typeof(ValidateAntiForgeryTokenAttribute),true).Length==1,name+" exige antiforgery");
+(CuentaController controller,FakeApi api,MemorySession session,FakeAuth auth,DefaultHttpContext http) Setup(ClaimsPrincipal? user=null){
+ var api=new FakeApi();var auth=new FakeAuth();var session=new MemorySession();session.SetString("Etiqueta","testerGCCaja");session.SetString("CajaActual","{}");
+ var http=new DefaultHttpContext{User=user??normal,Session=session,RequestServices=new ServiceCollection().AddSingleton<IAuthenticationService>(auth).BuildServiceProvider()};http.Request.Headers.Cookie="testerGCCaja=token-prueba";
+ var controller=new CuentaController(api,Options.Create(new AppSettings()),new HttpContextAccessor{HttpContext=http},NullLogger<CuentaController>.Instance);
+ controller.ControllerContext=new ControllerContext{HttpContext=http};controller.Url=new FakeUrl();controller.TempData=new Microsoft.AspNetCore.Mvc.ViewFeatures.TempDataDictionary(http,new FakeTempData());return(controller,api,session,auth,http);
+}
+JsonElement Result(IActionResult r)=>JsonSerializer.SerializeToElement(r is JsonResult j?j.Value:((ObjectResult)r).Value);
+CuentaViewModel Valid()=>new(){ClaveActual=" Anterior 1 ",ClaveNueva=" Nueva 2 ",ConfirmacionClave=" Nueva 2 "};
+foreach(var field in new[]{"actual","nueva","confirmacion","limite"}){var t=Setup();var m=Valid();if(field=="actual")m.ClaveActual=" ";if(field=="nueva")m.ClaveNueva=" ";if(field=="confirmacion")m.ConfirmacionClave="diferente";if(field=="limite")m.ClaveNueva=m.ConfirmacionClave=new string('x',129);
+ Check(!Result(await t.controller.CambiarClave(m)).GetProperty("ok").GetBoolean() && t.api.Calls==0,"No llama a API con "+field+" inválida");}
+{var t=Setup();t.api.Response=new(){resultado=1,resultado_msj="Clave incorrecta",resultado_setfocus="ClaveActual"};var r=Result(await t.controller.CambiarClave(Valid()));Check(!r.GetProperty("ok").GetBoolean() && r.GetProperty("focus").GetString()=="ClaveActual" && !t.auth.SignedOut && !t.session.Cleared,"Rechazo conserva sesión y campo a corregir");}
+{var t=Setup();var r=Result(await t.controller.CambiarClave(Valid()));Check(t.api.Actual==" Anterior 1 " && t.api.Nueva==" Nueva 2 " && t.api.Token=="token-prueba","Envía valores exactos y token de sesión");Check(r.GetProperty("ok").GetBoolean() && t.auth.SignedOut && t.session.Cleared,"Éxito cierra autenticación y limpia sesión");Check(t.http.Response.Headers.SetCookie.ToString().Contains("testerGCCaja=;"),"Éxito elimina cookie JWT");}
+{var t=Setup(forced);var m=Valid();m.ClaveActual="";Check(Result(await t.controller.CambiarClaveObligatoria(m)).GetProperty("ok").GetBoolean() && t.api.Forced,"Cambio forzado no pide clave anterior");}
+{var t=Setup(forced);Check(!Result(await t.controller.CambiarClave(Valid())).GetProperty("ok").GetBoolean() && t.api.Calls==0,"Forzada no usa cambio común");var n=Setup();Check(!Result(await n.controller.CambiarClaveObligatoria(Valid())).GetProperty("ok").GetBoolean() && n.api.Calls==0,"Sesión común no puede omitir clave actual");}
+{var t=Setup();t.api.Error=new HttpRequestException("fallo simulado");var r=await t.controller.CambiarClave(Valid());Check(r is ObjectResult{StatusCode:503} && Result(r).GetProperty("incierto").GetBoolean() && !t.session.Cleared,"Fallo de transporte informa resultado incierto");var v=(ViewResult)await t.controller.Index();Check(((CuentaViewModel)v.Model!).Politica==null && ((CuentaViewModel)v.Model).Error!=null,"Fallo de política deja formulario indisponible");}
+{var t=Setup();t.api.Error=new UnauthorizedException("sesión vencida");Check(await t.controller.CambiarClave(Valid()) is ObjectResult{StatusCode:401},"API no autorizada solicita reingreso");}
+Console.WriteLine($"{count} pruebas de servidor aprobadas. API simulada, sin cambiar credenciales reales.");
+class FakeApi:IConfiguracionSeguridadServicio{
+ public int Calls;public bool Forced;public string? Actual,Nueva,Token;public Exception? Error;public CambioClaveResultadoDto Response=new(){resultado=0};
+ public Task<PoliticaClaveDto> ObtenerPoliticaClave(string t){if(Error!=null)throw Error;return Task.FromResult(new PoliticaClaveDto());}
+ public Task<CambioClaveResultadoDto> CambiarClave(CambioClaveRequestDto r,string t,string? ip){Calls++;Actual=r.ClaveActual;Nueva=r.ClaveNueva;Token=t;if(Error!=null)throw Error;return Task.FromResult(Response);}
+ public Task<CambioClaveResultadoDto> CambiarClaveForzada(CambioClaveForzadaRequestDto r,string t,string? ip){Forced=true;return CambiarClave(new(){ClaveNueva=r.ClaveNueva},t,ip);}
+}
+class MemorySession:ISession{
+ readonly Dictionary<string,byte[]> data=new();public bool Cleared;public bool IsAvailable=>true;public string Id=>"test";public IEnumerable<string> Keys=>data.Keys;
+ public void Clear(){data.Clear();Cleared=true;}public void Remove(string k)=>data.Remove(k);public void Set(string k,byte[] v)=>data[k]=v;public bool TryGetValue(string k,[System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out byte[]? v)=>data.TryGetValue(k,out v);public Task LoadAsync(CancellationToken c=default)=>Task.CompletedTask;public Task CommitAsync(CancellationToken c=default)=>Task.CompletedTask;
+}
+class FakeAuth:IAuthenticationService{
+ public bool SignedOut;public Task<AuthenticateResult> AuthenticateAsync(HttpContext c,string? s)=>Task.FromResult(AuthenticateResult.NoResult());public Task ChallengeAsync(HttpContext c,string? s,AuthenticationProperties? p)=>Task.CompletedTask;public Task ForbidAsync(HttpContext c,string? s,AuthenticationProperties? p)=>Task.CompletedTask;public Task SignInAsync(HttpContext c,string? s,ClaimsPrincipal u,AuthenticationProperties? p)=>Task.CompletedTask;public Task SignOutAsync(HttpContext c,string? s,AuthenticationProperties? p){SignedOut=true;return Task.CompletedTask;}
+}
+class FakeUrl:IUrlHelper{
+ public ActionContext ActionContext=>new(new DefaultHttpContext(),new RouteData(),new ActionDescriptor());public string? Action(UrlActionContext c)=>"/Seguridad/Token/Login";public string? Content(string? p)=>p;public bool IsLocalUrl(string? u)=>true;public string? Link(string? r,object? v)=>null;public string? RouteUrl(UrlRouteContext c)=>null;
+}
+
+class FakeTempData : Microsoft.AspNetCore.Mvc.ViewFeatures.ITempDataProvider {
+ public IDictionary<string,object> LoadTempData(HttpContext c)=>new Dictionary<string,object>();
+ public void SaveTempData(HttpContext c,IDictionary<string,object> v){}
+}

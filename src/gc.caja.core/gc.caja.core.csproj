@@ -14,4 +14,9 @@
     <ProjectReference Include="..\gc.infraestructura\gc.infraestructura.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- Un único adaptador para la misma política y operaciones de seguridad de Sitio y Caja. -->
+    <Compile Include="..\gc.sitio.core\Servicios\Contratos\IConfiguracionSeguridadServicio.cs" Link="Servicios\Contratos\IConfiguracionSeguridadServicio.cs" />
+    <Compile Include="..\gc.sitio.core\Servicios\Implementacion\ConfiguracionSeguridadServicio.cs" Link="Servicios\Implementacion\ConfiguracionSeguridadServicio.cs" />
+  </ItemGroup>
 </Project>

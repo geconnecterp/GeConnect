@@ -184,6 +184,10 @@ namespace gc.caja.Areas.Seguridad.Controllers
 
                         #endregion
 
+                        if (gc.caja.Models.Cuenta.AccesoCuentaCaja.Forzada(principal))
+                            return RedirectToAction("ClaveObligatoria", "Cuenta", new { area = "Seguridad" });
+                        if (gc.caja.Models.Cuenta.AccesoCuentaCaja.Vencida(principal))
+                            return RedirectToAction("Index", "Cuenta", new { area = "Seguridad" });
                         return RedirectToAction("Index", new RouteValueDictionary(new { area = "", controller = "Home", action = "Index" }));
                     }
                     else
@@ -214,7 +218,10 @@ namespace gc.caja.Areas.Seguridad.Controllers
         [HttpGet]
         public async Task<IActionResult> Logout()
         {
+            var etiqueta = Etiqueta;
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            if (!string.IsNullOrWhiteSpace(etiqueta)) Response.Cookies.Delete(etiqueta, new CookieOptions { Path = "/" });
+            HttpContext.Session.Clear();
 
             //// Acá debo invocar la api
             //HelperAPI api = new HelperAPI();
