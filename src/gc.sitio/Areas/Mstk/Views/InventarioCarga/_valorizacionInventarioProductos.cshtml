@@ -117,7 +117,12 @@
 					var dif1 = item.ps_stk - item.planillas_conteo1;
 					var dif2 = item.ps_stk - item.planillas_conteo2;
 					if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
-					<tr class="@clase" onclick="selectReg(this, 'tbValorGridProductos')" data-p-id="@item.p_id" data-inv-nro="@item.inv_nro" data-ps-ajuste="@item.ps_ajuste">
+					<tr class="@clase" 
+						onclick="selectReg(this, 'tbValorGridProductos')" 
+						data-p-id="@item.p_id" 
+						data-inv-nro="@item.inv_nro" 
+						data-ps-ajuste="@item.ps_ajuste"
+						data-permite-decimales="@item.PermiteDecimales">
 						<td class="@Model.GrillaProductos.ObtenerClase(item.p_id) align-center cell-fit-content">@Model.GrillaProductos.FormatearDato(item.p_id, FormatDato.Ninguno)</td>
 						<td class="@Model.GrillaProductos.ObtenerClase(item.p_desc) cell-fit-content">@Model.GrillaProductos.FormatearDato(item.p_desc, FormatDato.Ninguno)</td>
 						<td class="@Model.GrillaProductos.ObtenerClase(item.ps_stk) cell-fit-content font-bold">@GridHelper.FormatearDato(item.ps_stk, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>

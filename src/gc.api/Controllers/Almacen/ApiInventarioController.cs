@@ -269,6 +269,26 @@ namespace gc.api.Controllers.Almacen
 			return Ok(new ApiResponse<RespuestaDto>(resultado));
         }
 
+		[HttpPost("InventarioConfirmarModificacionDeConteo")]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<RespuestaDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		public ActionResult<RespuestaDto> InventarioConfirmarModificacionDeConteo([FromBody] ConfirmarModificacionDeConteoRequest request)
+		{
+			if (request == null)
+			{
+				return BadRequest("Parametros del Conteo erroneos.");
+			}
+			ApiResponse<List<RespuestaDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
+			var resultado = _inventarioServicio.InventarioConfirmarModificacionDeConteo(request);
+			response = new ApiResponse<List<RespuestaDto>>(resultado);
+			if (resultado == null)
+			{
+				return BadRequest("No se obtubieron resultados.");
+			}
+			return Ok(response);
+		}
+
 		[HttpPost]
 		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<RespuestaDto>))]
 		[ProducesResponseType((int)HttpStatusCode.BadRequest)]

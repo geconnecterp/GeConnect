@@ -15,6 +15,17 @@ var accion = "";
 var invNroSeleccionado = "";
 var inveIdSeleccionado = "";
 var invtIdSeleccionado = "";
+
+
+let pIdSeleccionadoEnConteo = "";
+let boxIdSeleccionadoEnConteo = "";
+let invNroSeleccionadoEnConteo = "";
+let invdCantidadSeleccionadaEnConteo = 0;
+let cargaNroSeleccionadaEnConteo = 0;
+let usuIdSeleccionadaEnConteo = "";
+
+let pIdSeleccionadoEnProductos = "";
+
 $(function () {
 	InicializarVista();
 });
@@ -329,9 +340,38 @@ function ControlaValorizacion() {
 	});
 }
 
-function ControlaModificarConteo() {
+function RecargarListaDeProductosEnValoracion() {
 
+	// ¿Hay una fila seleccionada en BOX?
+	let $filaSeleccionadaBox = $("#tbValorGridBox tbody tr.selected-row");
+
+	if ($filaSeleccionadaBox.length > 0) {
+		selectReg($filaSeleccionadaBox[0], "tbValorGridBox");
+		return;
+	}
+
+	// ¿Hay una fila seleccionada en RUBROS?
+	let $filaSeleccionadaRubros = $("#tbValorGridRubros tbody tr.selected-row");
+
+	if ($filaSeleccionadaRubros.length > 0) {
+		selectReg($filaSeleccionadaRubros[0], "tbValorGridRubros");
+		return;
+	}
+
+	// Si no hay selección previa, seleccionar la primera válida
+	let $primerBox = $("#tbValorGridBox tbody tr").not(".fila-vacia").first();
+	if ($primerBox.length > 0) {
+		selectReg($primerBox[0], "tbValorGridBox");
+		return;
+	}
+
+	let $primerRubro = $("#tbValorGridRubros tbody tr").not(".fila-vacia").first();
+	if ($primerRubro.length > 0) {
+		selectReg($primerRubro[0], "tbValorGridRubros");
+		return;
+	}
 }
+
 
 function SeleccionarPrimeraFilaEnValorizacion() {
 
@@ -1232,6 +1272,28 @@ function SeleccionarPrimeraFilaProductosValorizacion() {
 	}
 }
 
+function SeleccionarProductoPrevioEnValorizacion() {
+
+	if (!pIdSeleccionadoEnProductos || pIdSeleccionadoEnProductos === "") {
+		return; // No hay producto previo
+	}
+
+	const $fila = $("#tbValorGridProductos tbody tr[data-p-id='" + pIdSeleccionadoEnProductos + "']");
+
+	if ($fila.length > 0) {
+
+		// Seleccionar la fila
+		selectReg($fila[0], "tbValorGridProductos");
+
+		// Hacer scroll para que quede visible
+		$fila[0].scrollIntoView({
+			behavior: "smooth",
+			block: "center"
+		});
+	}
+}
+
+
 function selectReg(x, gridId) {
 	$("#" + gridId + " tbody tr").each(function (index) {
 		$(this).removeClass("selected-row");
@@ -1265,7 +1327,10 @@ function selectReg(x, gridId) {
 			$("#divProductosValorizacion").html(obj);
 			TaskManager.end();
 
-			SeleccionarPrimeraFilaProductosValorizacion(); 
+			if (pIdSeleccionadoEnProductos == "")
+				SeleccionarPrimeraFilaProductosValorizacion();
+			else
+				SeleccionarProductoPrevioEnValorizacion();
 
 			return true
 		});
@@ -1280,7 +1345,10 @@ function selectReg(x, gridId) {
 			$("#divProductosValorizacion").html(obj);
 			TaskManager.end();
 
-			SeleccionarPrimeraFilaProductosValorizacion(); 
+			if (pIdSeleccionadoEnProductos == "")
+				SeleccionarPrimeraFilaProductosValorizacion();
+			else
+				SeleccionarProductoPrevioEnValorizacion();
 
 			return true
 		});
@@ -1289,12 +1357,25 @@ function selectReg(x, gridId) {
 		TaskManager.start();
 		let inv_nro = $("#inv_nro").val();
 		let p_id = x.getAttribute("data-p-id");
+		let permiteDecimales = x.getAttribute("data-permite-decimales") === "true";
+
+		pIdSeleccionadoEnProductos = p_id;
 		var data = { inv_nro, tipo, tipo_id, p_id };
 		PostGenHtml(data, obtenerConteosEnValorizacionURL, function (obj) {
 			$("#divConteosValorizacion").html(obj);
 			TaskManager.end();
-			getMaskForIntegerMax1000("#conteo");
+			// Aplicar máscara según el flag
+			if (permiteDecimales) {
+				getMaskForTwoDecimals("#conteo");
+			} else {
+				getMaskForIntegerMax1000("#conteo");
+			}
 			HabilitarSeccionEdicionDeConteo();
+			pIdSeleccionadoEnConteo = "";
+			boxIdSeleccionadoEnConteo = "";
+			invNroSeleccionadoEnConteo = "";
+			invdCantidadSeleccionadaEnConteo = 0;
+			cargaNroSeleccionadaEnConteo = 0;
 			return true
 		});
 	}
@@ -1322,6 +1403,64 @@ function selectReg(x, gridId) {
 			actualizarCheckHeader();
 			TaskManager.end();
 			return true
+		});
+	}
+	if (gridId == 'tbValorGridConteos') {
+		pIdSeleccionadoEnConteo = x.getAttribute("data-p-id");
+		boxIdSeleccionadoEnConteo = x.getAttribute("data-box-id");
+		invNroSeleccionadoEnConteo = $("#inv_nro").val();
+		invdCantidadSeleccionadaEnConteo = x.getAttribute("data-invd-cantidad");
+		cargaNroSeleccionadaEnConteo = x.getAttribute("data-carga-nro");
+		usuIdSeleccionadaEnConteo = x.getAttribute("data-carga-usu-id");
+		$("#conteo").val(invdCantidadSeleccionadaEnConteo);
+		console.log(pIdSeleccionadoEnConteo, boxIdSeleccionadoEnConteo, invNroSeleccionadoEnConteo, invdCantidadSeleccionadaEnConteo);
+	}
+}
+
+function ControlaModificarConteo() {
+	var conteo = $("#conteo").val();
+	if (pIdSeleccionadoEnConteo === "" || boxIdSeleccionadoEnConteo === "" || invNroSeleccionadoEnConteo === "") {
+		AbrirMensaje("ATENCIÓN", "Debe seleccionar un producto.", function () {
+			$("#msjModal").modal("hide");
+			return true;
+		}, false, ["Aceptar"], "error!", null);
+	}
+	else if (conteo < 0) {
+		AbrirMensaje("ATENCIÓN", "Debe indicar un valor mayor a 0.", function () {
+			$("#msjModal").modal("hide");
+			$("#conteo").trigger("focus");
+			return true;
+		}, false, ["Aceptar"], "error!", null);
+	}
+	else {
+		TaskManager.start();
+		var data = {
+			p_id: pIdSeleccionadoEnConteo,
+			box_id: boxIdSeleccionadoEnConteo,
+			inv_nro: invNroSeleccionadoEnConteo,
+			cantidad: conteo,
+			carga_nro: cargaNroSeleccionadaEnConteo,
+			usu_id: usuIdSeleccionadaEnConteo
+		};
+		PostGen(data, confirmarModificarConteoEnInventarioURL, function (obj) {
+			TaskManager.end();
+			if (!obj.ok && obj.esError && obj.msg === "No autenticado") {
+				window.location.href = login;
+				return false;
+			}
+
+			if (obj.esError === true) {
+				AbrirMensaje("ATENCIÓN", obj.Mensaje, function () {
+					$("#msjModal").modal("hide");
+					return true;
+				}, false, ["Aceptar"], "error!", null);
+			}
+			else {
+				//Seguir aca, controlar lo de NO AUTENTICADO y lo de error, y lo de exito
+				//Actualizar lista central de conteos
+				RecargarListaDeProductosEnValoracion();
+				SeleccionarProductoPrevioEnValorizacion();
+			}
 		});
 	}
 }
@@ -1620,3 +1759,17 @@ function getMaskForIntegerMax1000(selector) {
 	});
 }
 
+function getMaskForTwoDecimals(selector) {
+	$(selector).inputmask({
+		alias: 'numeric',
+		groupSeparator: '.',
+		radixPoint: ',',
+		digits: 2,
+		digitsOptional: false,
+		allowMinus: false,
+		prefix: '',
+		suffix: '',
+		rightAlign: true,
+		unmaskAsNumber: true
+	});
+}

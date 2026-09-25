@@ -419,7 +419,7 @@ namespace gc.sitio.Areas.Distribuidora.Controllers
 				if (!VerificarAutenticacion(out IActionResult redirectResult))
 					return redirectResult;
 				
-				return PartialView("_gridOR_PonerEnCurso_TablaAnalizaAut_SinStk", ObtenerGridCoreSmart<AnalizarAutOrdenDeRepartoDto>(AnalizarAutOrdenDeRepartoSinStkLista));
+				return PartialView("_gridOR_PonerEnCurso_TablaAnalizaAut_SinStk", ObtenerGridCoreSmart<AnalizarAutOrdenDeRepartoDto>(AnalizarAutOrdenDeRepartoSinStkLista.OrderBy(x=>x.p_desc).ToList()));
 			}
 			catch (NegocioException ex)
 			{

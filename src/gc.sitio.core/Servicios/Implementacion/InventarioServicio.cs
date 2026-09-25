@@ -34,6 +34,7 @@ namespace gc.sitio.core.Servicios.Implementacion
         private const string INV_VERIFICA_CONTEO = "/VerificaConteo";
         private const string INV_CONTEO = "/ObtenerConteos";
         private const string INV_CONFIRMAR_CONTEO = "/ConfirmarConteo";
+		private const string INV_CONFIRMAR_CONTEO_MOD = "/InventarioConfirmarModificacionDeConteo";
 		private const string INV_REG_VALORIZACION = "/RegistrarValorizacion";
 		private const string INV_PRODUCTOS_CIERRE = "/ObtenerProductosEnCierre";
 		private const string INV_REG_CIERRE = "/RegistrarCierre";
@@ -740,6 +741,37 @@ namespace gc.sitio.core.Servicios.Implementacion
                 };
             }
         }
+
+		public RespuestaGenerica<RespuestaDto> InventarioConfirmarModificacionDeConteo(ConfirmarModificacionDeConteoRequest request, string token)
+		{
+			ApiResponse<List<RespuestaDto>> apiResponse;
+
+			HelperAPI helper = new();
+			HttpClient client = helper.InicializaCliente(request, token, out StringContent contentData);
+			HttpResponseMessage response;
+
+			var link = $"{_appSettings.RutaBase}{RutaAPI}{INV_CONFIRMAR_CONTEO_MOD}";
+
+			response = client.PostAsync(link, contentData).Result;
+
+			if (response.StatusCode == HttpStatusCode.OK)
+			{
+				string stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+				if (string.IsNullOrEmpty(stringData))
+				{
+					_logger.LogWarning($"La API devolvió error.");
+					return new();
+				}
+				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<RespuestaDto>>>(stringData) ?? throw new Exception("Error al deserializar la respuesta de la API.");
+				return new RespuestaGenerica<RespuestaDto>() { Entidad = apiResponse.Data.First() };
+			}
+			else
+			{
+				string stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+				_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+				return new();
+			}
+		}
 
 		public List<ProductoEnCierreDto> GetProductosEnCierre(ProductosEnCierreRequest request, string token)
 		{

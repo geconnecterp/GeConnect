@@ -838,6 +838,42 @@ namespace gc.sitio.Areas.Mstk.Controllers
 			}
 		}
 
+		public JsonResult ConfirmarModificarConteoEnInventario(string p_id, string box_id, string inv_nro, decimal cantidad, int carga_nro, string usu_id)
+		{
+			try
+			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+					return Json(new { error = true, warn = false, ok = false, msg = "No autenticado" });
+				if (string.IsNullOrEmpty(p_id) || string.IsNullOrEmpty(inv_nro))
+					return Json(new { error = true, warn = false, ok = false, msg = "No se han especificado datos necesarios." });
+				if (cantidad < 0)
+					return Json(new { error = true, warn = false, ok = false, msg = "La cantidad debe ser mayor a cero." });
+
+				var request = new ConfirmarModificacionDeConteoRequest()
+				{ 
+					inv_nro = inv_nro,
+					cantidad = cantidad,
+					box_id = box_id,
+					carga_nro = carga_nro, 
+					p_id = p_id,
+					usu_id = usu_id
+				};
+				var respuesta = _inventarioServicio.InventarioConfirmarModificacionDeConteo(request, TokenCookie);
+				return AnalizarRespuesta(respuesta, "La acción se ejecutó correctamente.");
+			}
+			catch (Exception ex)
+			{
+				RespuestaGenerica<EntidadBase> response = new()
+				{
+					Ok = false,
+					EsError = true,
+					Mensaje = ex.Message
+				};
+				return Json(response);
+			}
+		}
+
 		public IActionResult InicializarTabCerrarInventario(string inv_nro)
 		{
 			var model = new CerrarInventarioModel();

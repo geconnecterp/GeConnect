@@ -240,6 +240,22 @@ namespace gc.api.core.Servicios
             }
         }
 
+		public List<RespuestaDto> InventarioConfirmarModificacionDeConteo(ConfirmarModificacionDeConteoRequest request)
+		{
+			var sp = ConstantesGC.StoredProcedures.SP_INV_CONTEO_MOD;
+			var ps = new List<SqlParameter>()
+			{
+				new("@inv_nro",request.inv_nro),
+				new("@box_id",request.box_id),
+				new("@usu_id",request.usu_id),
+				new("@carga_nro",request.carga_nro),
+				new("@p_id",request.p_id),
+				new("@cantidad", request.cantidad),
+			};
+			var listaTemp = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
+			return listaTemp;
+		}
+
 		public List<RespuestaDto> RegistrarValorizacion(RegistrarValorizacionRequest request)
 		{
 			var sp = Constantes.ConstantesGC.StoredProcedures.SP_INV_VALORIZA;

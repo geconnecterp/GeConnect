@@ -100,8 +100,8 @@
 
 				foreach (var item in Model.ListaDatos)
 				{
-					bool esRepetido = (ultimoProducto == item.p_id + "|" + item.p_desc + "|" + item.p_id_prov);
-					ultimoProducto = item.p_id + "|" + item.p_desc + "|" + item.p_id_prov;
+					bool esRepetido = (ultimoProducto == item.p_id + "|" + item.p_desc + "|" + item.p_id_prov + "|" + item.pc_compte);
+					ultimoProducto = item.p_id + "|" + item.p_desc + "|" + item.p_id_prov + "|" + item.pc_compte;
 
 					var dif = @item.a_enviar - @item.pedido;
 					var claseDif = dif > 0 ? "dif-positivo" : (dif < 0 ? "dif-negativo" : "");

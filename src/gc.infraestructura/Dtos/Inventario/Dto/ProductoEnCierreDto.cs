@@ -1,7 +1,9 @@
 ﻿
+using gc.infraestructura.Dtos.Almacen;
+
 namespace gc.infraestructura.Dtos
 {
-	public class ProductoEnCierreDto : Dto
+	public class ProductoEnCierreDto : Dto, IProductoConUnidad
 	{
 		public string inv_nro { get; set; } = string.Empty;
 		public string p_id { get; set; } = string.Empty;
@@ -16,10 +18,14 @@ namespace gc.infraestructura.Dtos
 		private bool _mostrarCheck;
 		public bool mostrarCheck
 		{
-			get { return (ps_stk - ps_conteo) != 0; }
+			get { return (ps_stk - planillas_conteo1) != 0; }
 			set { _mostrarCheck = value; }
 		}
 		public char tipo { get; set; }
 		public string tipo_id { get; set; }
+		public string up_id { get; set; } = string.Empty;
+		public string up_desc { get; set; } = string.Empty;
+		public string up_tipo { get; set; } = string.Empty;
+		public bool PermiteDecimales => up_tipo == "P";
 	}
 }
