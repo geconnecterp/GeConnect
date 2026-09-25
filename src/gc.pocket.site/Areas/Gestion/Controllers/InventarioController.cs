@@ -265,22 +265,8 @@ namespace gc.pocket.site.Areas.Gestion.Controllers
                 req.usu_id = UserName;
 
                 RespuestaGenerica<RespuestaDto> resultado = await _invSv.ValidaConteo(req, TokenCookie);
-                if (resultado == null || !resultado.Ok)
-                {
-                    if (resultado == null)
-                    {
-                        throw new NegocioException("Error al validar el conteo");
-                    }
-
-                    if (resultado.EsWarn)
-                    {
-                        throw new NegocioException(resultado.Mensaje ?? "Error al validar el conteo");
-                    }
-                    if (resultado.EsError)
-                    {
-                        throw new Exception(resultado.Mensaje ?? "Error al validar el conteo");
-                    }
-                }
+                if (resultado?.Ok != true)
+                    throw new NegocioException(resultado?.Mensaje ?? "No se pudo validar el conteo.");
                 return Json(new { error = false, warn = false, msg = "Validación Exitosa." });
             }
             catch (NegocioException ex)
@@ -328,22 +314,8 @@ namespace gc.pocket.site.Areas.Gestion.Controllers
                 req.usu_id = UserName;
 
                 var resultado = await _invSv.GetConteno(req, TokenCookie);
-                if (resultado == null || !resultado.Ok)
-                {
-                    if (resultado == null)
-                    {
-                        throw new NegocioException("Error al obtener el conteo");
-                    }
-
-                    if (resultado.EsWarn)
-                    {
-                        throw new NegocioException(resultado.Mensaje ?? "Error al obtener el conteo");
-                    }
-                    if (resultado.EsError)
-                    {
-                        throw new Exception(resultado.Mensaje ?? "Error al obtener el conteo");
-                    }
-                }
+                if (resultado?.Ok != true)
+                    throw new NegocioException(resultado?.Mensaje ?? "No se pudo recuperar el conteo.");
                 return Json(new { error = false, warn = false, msg = "Validación Exitosa." });
             }
             catch (NegocioException ex)
@@ -361,7 +333,7 @@ namespace gc.pocket.site.Areas.Gestion.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> CargaConteo(string invNro, string tipo, string tipoId)
+        public async Task<IActionResult> CargaConteo(string invNro, string tipo, string tipoId, bool reiniciar = false)
         {
             if (!VerificarAutenticacion(out IActionResult redirectResult))
                 return redirectResult;
@@ -372,7 +344,7 @@ namespace gc.pocket.site.Areas.Gestion.Controllers
             ViewBag.AppItem = new AppItem { Nombre = modulo!.Nombre, VolverUrl = volver ?? "#" };
 
             if (string.IsNullOrEmpty(invNro) ||
-                string.IsNullOrEmpty(tipo) ||
+                (tipo != "B" && tipo != "P") ||
                 string.IsNullOrEmpty(tipoId))
             {
                 TempData["error"] = "Los datos del conteo son incorrectos";
@@ -389,6 +361,12 @@ namespace gc.pocket.site.Areas.Gestion.Controllers
             };
 
 
+            var validacion = await _invSv.ValidaConteo(req, TokenCookie);
+            if (validacion?.Ok != true)
+            {
+                TempData["warn"] = validacion?.Mensaje ?? "No se pudo validar el conteo.";
+                return RedirectToAction("Index");
+            }
             var resultado = await _invSv.GetConteno(req, TokenCookie);
             if (resultado == null || !resultado.Ok)
             {
@@ -408,14 +386,32 @@ namespace gc.pocket.site.Areas.Gestion.Controllers
                     TempData["error"] = resultado.Mensaje ?? "Error al obtener el conteo";
                     return RedirectToAction("index", "inventario", new { area = "Gestion" });
                 }
+                TempData["error"] = resultado.Mensaje ?? "Respuesta de conteo inválida.";
+                return RedirectToAction("Index");
             }
             //return Json(new { error = false, warn = false, msg = "Validación Exitosa." });
 
             ViewBag.InvNro = invNro;
             ViewBag.Tipo = tipo;
             ViewBag.TipoId = tipoId;
-            ViewBag.RegistrosConteo = resultado.ListaEntidad;
+            ViewBag.RegistrosConteo = reiniciar && tipo == "B" ? new List<InventarioConteoDto>() : resultado.ListaEntidad;
+            ViewBag.Reiniciado = reiniciar && tipo == "B";
+            ViewBag.PreguntarRecuperacion = tipo == "B" && !reiniciar && resultado.ListaEntidad?.Count > 0;
             return View(modulo);
+        }
+
+        [HttpPost]
+        public async Task<JsonResult> ValidarProductoConteo([FromBody] InventarioRequestDto req)
+        {
+            var auth = EstaAutenticado;
+            if (!auth.Item1 || auth.Item2 < DateTime.Now)
+                return Json(new { error = false, warn = true, auth = true, msg = "Su sesión ha terminado." });
+            if (req == null || string.IsNullOrWhiteSpace(req.p_id))
+                return Json(new { error = false, warn = true, msg = "Seleccione un producto." });
+            req.usu_id = UserName;
+            var resultado = await _invSv.ValidaProductoConteo(req, TokenCookie);
+            return Json(new { error = false, warn = resultado?.Ok != true,
+                msg = resultado?.Mensaje ?? "No se pudo validar el producto." });
         }
 
         [HttpPost]
@@ -451,9 +447,9 @@ namespace gc.pocket.site.Areas.Gestion.Controllers
                     req.tipo_id = req.tipo_id.ToUpper();
                 }
 
-                if (req.json.Count == 0)
+                if (req.json == null || req.json.Count == 0)
                 {
-                    throw new NegocioException("Es necesario que al menos un producto sea enviado para confirmar.");
+                    throw new NegocioException("Debe agregar al menos un producto para confirmar el conteo.");
                 }
 
                 req.usu_id = UserName;
@@ -475,8 +471,11 @@ namespace gc.pocket.site.Areas.Gestion.Controllers
                     {
                         throw new Exception(resultado.Mensaje ?? "Error al validar el conteo");
                     }
+                    throw new NegocioException(resultado.Mensaje ?? "No se pudo confirmar el conteo.");
                 }
-                return Json(new { error = false, warn = false, msg = "Validación Exitosa." });
+                if (resultado.Entidad == null || resultado.Entidad.resultado != 0 || string.IsNullOrWhiteSpace(resultado.Entidad.resultado_msj))
+                    throw new Exception("La confirmación devolvió una respuesta incompleta. Verifique el conteo antes de reintentar.");
+                return Json(new { error = false, warn = false, msg = "Conteo confirmado correctamente." });
             }
             catch (NegocioException ex)
             {

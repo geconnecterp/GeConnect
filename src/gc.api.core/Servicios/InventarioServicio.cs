@@ -185,7 +185,7 @@ namespace gc.api.core.Servicios
                 new("@tipo_id",request.tipo_id),
             };
             var resultado = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
-            if (resultado != null && resultado.Count > 0)
+            if (resultado != null && resultado.Count > 0 && !string.IsNullOrWhiteSpace(resultado[0].resultado_msj))
             {
                 return resultado[0];
             }
@@ -216,6 +216,14 @@ namespace gc.api.core.Servicios
 
         public RespuestaDto InventarioConfirmarConteo(InventarioRequestDto request)
         {
+            // Nunca enviar un snapshot vacío ni confiar en json_p proporcionado por el cliente.
+            if (request.json == null || request.json.Count == 0)
+                return new RespuestaDto { resultado = 2, resultado_msj = "Debe agregar al menos un producto para confirmar el conteo." };
+            request.json_p = JsonConvert.SerializeObject(request.json.Select(p => new
+            {
+                p.p_id, p.p_desc, p.up_id, p.invd_unidad_pres, p.invd_bulto,
+                p.invd_unidad_suelta, p.invd_cantidad
+            }));
             var sp = ConstantesGC.StoredProcedures.SP_INV_CONTEO_CONFIRMA;
             var ps = new List<SqlParameter>()
             {
@@ -226,7 +234,7 @@ namespace gc.api.core.Servicios
                 new("@json_p", request.json_p),
             };
             var resultado = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
-            if (resultado != null && resultado.Count > 0)
+            if (resultado != null && resultado.Count > 0 && !string.IsNullOrWhiteSpace(resultado[0].resultado_msj))
             {
                 return resultado[0];
             }
@@ -238,6 +246,21 @@ namespace gc.api.core.Servicios
                     resultado_msj = "No se obtuvo respuesta de la confirmación del conteo."
                 };
             }
+        }
+
+        public RespuestaDto ValidarProductoConteo(InventarioRequestDto request)
+        {
+            var parametros = new List<SqlParameter>
+            {
+                new("@inv_nro", request.inv_nro),
+                new("@p_id", request.p_id),
+                new("@usu_id", request.usu_id)
+            };
+            var respuesta = _repository.EjecutarLstSpExt<RespuestaDto>(
+                ConstantesGC.StoredProcedures.SP_INV_CARRITO_VALIDA, parametros, true)?.FirstOrDefault();
+            return respuesta != null && !string.IsNullOrWhiteSpace(respuesta.resultado_msj)
+                ? respuesta
+                : new RespuestaDto { resultado = -1, resultado_msj = "No se recibió una respuesta válida al validar el producto." };
         }
 
 		public List<RespuestaDto> RegistrarValorizacion(RegistrarValorizacionRequest request)
