@@ -108,7 +108,8 @@ namespace gc.pocket.site.Areas.Gestion.Controllers
                     bool warn = false;
                     string msg = string.Empty;
                     //validación de Estado
-                    if (!producto.P_activo.Equals("S") && validarEstado)
+                    var discontinuadoInventario = moduloNormalizado == "INV" && producto.P_activo == "D";
+                    if (!producto.P_activo.Equals("S") && !discontinuadoInventario && validarEstado)
                     {
                         //se valida que no esta activo. Valores Noactivo Discontinuo
                         return Json(new { error = true, msg = $"El producto {producto.P_desc} se encuentra {producto.Msj}" });

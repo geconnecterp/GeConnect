@@ -11,6 +11,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
 using System.Reflection;
+using System.Security.Claims;
+using gc.infraestructura.EntidadesComunes.Options;
 
 namespace gc.api.Controllers.Almacen
 {
@@ -24,14 +26,16 @@ namespace gc.api.Controllers.Almacen
 		private readonly IUriService _uriService;
 		private readonly ILogger<ApiInventarioController> _logger;
 		private readonly IInventarioServicio _inventarioServicio;
+        private readonly IApiProductoServicio _productoServicio;
 
 		public ApiInventarioController(IMapper mapper, IUriService uriService, ILogger<ApiInventarioController> logger,
-									   IInventarioServicio inventarioServicio)
+									   IInventarioServicio inventarioServicio, IApiProductoServicio productoServicio)
 		{
 			_mapper = mapper;
 			_uriService = uriService;
 			_logger = logger;
 			_inventarioServicio = inventarioServicio;
+            _productoServicio = productoServicio;
 		}
 
 		[HttpPost("ObtenerInventarioLista")]
@@ -226,7 +230,7 @@ namespace gc.api.Controllers.Almacen
 			{
 				return BadRequest("Parametros del Conteo erroneos.");
             }
-			var resultado = _inventarioServicio.ValidarConteo(request);
+            var resultado = ValidarContextoPocket(request) ?? _inventarioServicio.ValidarConteo(request);
 			if (resultado == null)
 			{
 				return BadRequest("No se obtubieron resultados.");
@@ -243,7 +247,10 @@ namespace gc.api.Controllers.Almacen
 			{
 				return BadRequest("Parametros del Conteo erroneos.");
             }
-			var resultado = _inventarioServicio.GetInventarioConteo(req);
+            var rechazo = ValidarContextoPocket(req) ?? _inventarioServicio.ValidarConteo(req);
+            if (rechazo.resultado != 0) return BadRequest(rechazo.resultado_msj);
+            req.p_id = "%";
+            var resultado = _inventarioServicio.GetInventarioConteo(req);
 			if (resultado == null)
 			{
 				return BadRequest("No se obtubieron resultados.");
@@ -261,12 +268,77 @@ namespace gc.api.Controllers.Almacen
 			{
 				return BadRequest("Parametros del Conteo erroneos.");
             }
-			var resultado = _inventarioServicio.InventarioConfirmarConteo(request);
+            var rechazo = ValidarContextoPocket(request) ?? _inventarioServicio.ValidarConteo(request);
+            if (rechazo.resultado != 0) return Ok(new ApiResponse<RespuestaDto>(rechazo));
+            if (request.json == null || request.json.Count == 0)
+                return Ok(new ApiResponse<RespuestaDto>(RechazoConteo("Debe agregar al menos un producto para confirmar el conteo.")));
+            var ids = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            foreach (var fila in request.json)
+            {
+                if (fila == null || string.IsNullOrWhiteSpace(fila.p_id) || fila.p_id.Length > 10 || !ids.Add(fila.p_id))
+                    return Ok(new ApiResponse<RespuestaDto>(RechazoConteo("El conteo contiene productos inválidos o repetidos.")));
+                var producto = _productoServicio.ProductoBuscar(new BusquedaBase
+                {
+                    Busqueda = fila.p_id, Administracion = AdministracionPocket
+                });
+                if (producto == null || producto.P_id != fila.p_id || (producto.P_activo != "S" && producto.P_activo != "D"))
+                    return Ok(new ApiResponse<RespuestaDto>(RechazoConteo($"El producto {fila.p_id} no existe o no está habilitado para contar.")));
+                var errorCantidad = InventarioConteoReglas.ValidarCantidad(fila, producto.up_tipo);
+                if (errorCantidad != null)
+                    return Ok(new ApiResponse<RespuestaDto>(RechazoConteo($"{fila.p_id}: {errorCantidad}")));
+                fila.up_id = producto.up_id;
+                fila.up_tipo = producto.up_tipo;
+                fila.p_desc = producto.P_desc;
+                var validacion = _inventarioServicio.ValidarProductoConteo(new InventarioRequestDto
+                {
+                    inv_nro = request.inv_nro, usu_id = request.usu_id, p_id = fila.p_id
+                });
+                if (validacion.resultado != 0) return Ok(new ApiResponse<RespuestaDto>(validacion));
+            }
+            _logger.LogInformation("INV confirma snapshot. Inventario {Inventario}; tipo {Tipo}; contexto {Contexto}; usuario {Usuario}; productos {Cantidad}",
+                request.inv_nro, request.tipo, request.tipo_id, request.usu_id, request.json.Count);
+            var resultado = _inventarioServicio.InventarioConfirmarConteo(request);
+            _logger.LogInformation("INV respuesta confirmación. Inventario {Inventario}; resultado {Resultado}; mensaje {Mensaje}",
+                request.inv_nro, resultado?.resultado, resultado?.resultado_msj);
 			if (resultado == null)
 			{
 				return BadRequest("No se obtubieron resultados.");
             }
 			return Ok(new ApiResponse<RespuestaDto>(resultado));
+        }
+
+        [HttpPost("VerificaProductoConteo")]
+        public IActionResult VerificaProductoConteo([FromBody] InventarioRequestDto request)
+        {
+            if (request == null) return BadRequest("Parámetros inválidos.");
+            var rechazo = ValidarContextoPocket(request);
+            if (rechazo != null) return Ok(new ApiResponse<RespuestaDto>(rechazo));
+            if (string.IsNullOrWhiteSpace(request.p_id) || request.p_id.Length > 10)
+                return BadRequest("Producto inválido.");
+            return Ok(new ApiResponse<RespuestaDto>(_inventarioServicio.ValidarProductoConteo(request)));
+        }
+
+        private string AdministracionPocket => User.FindFirst("AdmId")?.Value.Split('#')[0] ?? "";
+
+        private static RespuestaDto RechazoConteo(string mensaje) => new() { resultado = 2, resultado_msj = mensaje };
+
+        private RespuestaDto? ValidarContextoPocket(InventarioRequestDto request)
+        {
+            // El usuario y la sucursal nunca se toman del payload del navegador.
+            request.usu_id = User.FindFirst("user")?.Value ?? User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "";
+            var error = InventarioConteoReglas.ValidarContexto(request);
+            if (error != null) return RechazoConteo(error);
+            if (string.IsNullOrWhiteSpace(AdministracionPocket)) return RechazoConteo("No se pudo determinar la sucursal autenticada.");
+            var permitidos = _inventarioServicio.GetInventarioLista(new GetInventarioListaRequest
+            {
+                desde = new DateTime(2020, 1, 1), hasta = DateTime.Today,
+                adm_id = AdministracionPocket, usu_id = request.usu_id, inve_id = "S"
+            });
+            var inventario = permitidos?.FirstOrDefault(i => i.inv_nro == request.inv_nro);
+            if (inventario == null) return RechazoConteo("El inventario ya no está disponible para el usuario y la sucursal.");
+            if ((inventario.invt_id == 'B' ? 'B' : 'P') != request.tipo)
+                return RechazoConteo("La modalidad no corresponde al inventario seleccionado.");
+            return null;
         }
 
 		[HttpPost("InventarioConfirmarModificacionDeConteo")]

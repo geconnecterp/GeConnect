@@ -300,6 +300,7 @@ namespace gc.api.core.Constantes
 			public const string SP_INV_BOX = "SPGECO_INV_Box";
 			public const string SP_INV_PLANILLA = "SPGECO_INV_Planilla";
 			public const string SP_INV_CONTEO_VALIDA = "SPGECO_INV_Conteos_Valida";
+			public const string SP_INV_CARRITO_VALIDA = "SPGECO_INV_Carrito_Valida";
 			public const string SP_INV_CONTEOS = "SPGECO_INV_Conteos";
 			public const string SP_INV_CONTEO_CONFIRMA = "SPGECO_INV_Conteos_Confirma";
 			public const string SP_INV_CONTEO_MOD = "SPGECO_INV_Conteos_Mod";

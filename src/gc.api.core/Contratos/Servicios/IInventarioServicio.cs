@@ -21,6 +21,7 @@ namespace gc.api.core.Contratos.Servicios
         List<InventarioBoxDto> GetInventarioBox(string inv_nro, string usu_id);
         List<InventarioPlanillaDto> GetInventarioPlanilla(string inv_nro, string usu_id);
 		RespuestaDto ValidarConteo(InventarioRequestDto request);
+        RespuestaDto ValidarProductoConteo(InventarioRequestDto request);
         List<InventarioConteoDto> GetInventarioConteo(InventarioRequestDto req);
 		RespuestaDto InventarioConfirmarConteo(InventarioRequestDto request);
 		List<RespuestaDto> InventarioConfirmarModificacionDeConteo(ConfirmarModificacionDeConteoRequest request);
