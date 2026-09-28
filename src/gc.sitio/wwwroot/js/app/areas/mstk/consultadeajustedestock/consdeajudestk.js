@@ -1,4 +1,4 @@
-﻿
+﻿let asCompteSeleccionado = "";
 
 $(function () {
 	$("#pagEstado").on("change", function () {
@@ -9,6 +9,9 @@ $(function () {
 	InicializarCamposEnFiltros();
 
 	$(document).on("change", "#listaSucursales", ControlalistaSucursalesSelected);
+
+	$("#btnImprimir").off("click");
+	$("#btnImprimir").on("click", controlaImprimirAjuste);
 
 	$("#SucursalesList").on("dblclick", 'option', function () { $(this).remove(); })
 
@@ -67,7 +70,31 @@ function MostrarFiltrosAplicados() {
 	$target.html(html);
 }
 
+function controlaImprimirAjuste() {
+	if (asCompteSeleccionado == "") {
+		AbrirMensaje("ATENCIÓN", "Debe seleccionar un Ajuste.", function () {
+			$("#msjModal").modal("hide");
+			return true;
+		}, false, ["Aceptar"], "error!", null);
+	}
+	else {
+		ImprimirAjusteStk_Generado(asCompteSeleccionado);
+	}
+}
 
+function ReseteoDeReportes() {
+	console.log("Reseto de reportes");
+	ReporteResetArre();
+}
+
+function ImprimirAjusteStk_Generado(asCompteSeleccionado) {
+	ReseteoDeReportes();
+	setTimeout(() => {
+		let data = { as_compte: asCompteSeleccionado };
+		cargarReporteEnArre(100, data, "AJUSTE DE STOCK", "", "");
+		invocacionGestorDoc({});
+	}, 500);
+}
 
 // Mostrar filtros al cargar la pantalla
 try { MostrarFiltrosAplicados(); } catch (e) { }
@@ -194,6 +221,7 @@ function SeleccionarAjuste(x, grid) {
 	var as_compte = $row.data("as-compte");
 	AbrirWaiting("Cargando datos del ajuste...");
 	consultarDetalle(as_compte);
+	asCompteSeleccionado = as_compte;
 }
 
 function consultarDetalle(as_compte) {

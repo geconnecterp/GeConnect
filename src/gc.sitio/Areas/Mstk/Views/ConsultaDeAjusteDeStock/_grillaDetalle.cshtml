@@ -38,7 +38,7 @@
 			{
 				foreach (var item in Model.GrillaAjusteDetalle.ListaDatos)
 				{
-					var total = item.as_stock * item.as_pcosto;
+					var total = item.as_ajuste * item.as_pcosto;
 					if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
 					<tr class="@clase row-detalle-ajuste"
 						data-as-compte="@item.as_compte"

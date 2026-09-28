@@ -7,6 +7,7 @@ namespace gc.infraestructura.Dtos.Almacen.AjusteDeStock
         public DateTime as_fecha { get; set; }
         public string as_motivo { get; set; } = string.Empty;
 		public string at_id { get; set; } = string.Empty;
+		public string at_desc { get; set; } = string.Empty;
 		public string ae_id { get; set; } = string.Empty;
 		public string adm_id { get; set; } = string.Empty;
 		public string adm_nombre { get; set; } = string.Empty;

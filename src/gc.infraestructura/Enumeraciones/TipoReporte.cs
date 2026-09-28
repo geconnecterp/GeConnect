@@ -104,6 +104,7 @@ namespace gc.infraestructura.Enumeraciones
 		R096_Consulta_Movimiento_De_Stock = 96,
 		R097_Imprime_Etiquetas_UL = 97,
 		R098_Reporte_Prod_Sin_Stock_En_Transferencias = 98,
-		R099_Reporte_Ordenes_De_Reparto = 99
+		R099_Reporte_Ordenes_De_Reparto = 99,
+        R100_Ajuste_De_Stock = 100,
 	}
 }

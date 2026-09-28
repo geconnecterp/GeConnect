@@ -37,6 +37,11 @@ function VerificarAntesDeCancelarAjuste() {
 	var datos = {};
 	PostGen(datos, VerificaExistenciaDeAjusteDeStockURL, function (o) {
 		CerrarWaiting();
+		if (!o.ok && o.error && o.msg === "No autenticado") {
+			window.location.href = login;
+			return false;
+		}
+
 		if (o.error === true) {
 			AbrirMensaje("Atención", o.msg, function () {
 				$("#msjModal").modal("hide");
@@ -121,7 +126,7 @@ function ConfirmarAjuste() {
 		var datos = { atId, nota, atTipo }
 		PostGen(datos, ConfirmarAjusteDeStockURL, function (o) {
 			CerrarWaiting();
-			if (!obj.ok && obj.error && obj.msg === "No autenticado") {
+			if (!o.ok && o.error && o.msg === "No autenticado") {
 				window.location.href = login;
 				return false;
 			}
@@ -143,7 +148,7 @@ function ConfirmarAjuste() {
 				}, false, ["Aceptar"], "succ!", null);
 				$("#tbDetalleDeProductosAAjustar tbody tr").remove(); 
 				$("#txtNota").val("");
-				ImprimirAjusteStk_Generado(obj.id);
+				ImprimirAjusteStk_Generado(o.id);
 			}
 		});
 	}
@@ -157,8 +162,8 @@ function ReseteoDeReportes() {
 function ImprimirAjusteStk_Generado(id) {
 	ReseteoDeReportes();
 	setTimeout(() => {
-		let data = { id, ctaId: cta_id };
-		cargarReporteEnArre(39, data, "ANTICIPO DE EMPLEADOS", "", "");
+		let data = { as_compte: id };
+		cargarReporteEnArre(100, data, "AJUSTE DE STOCK", "", "");
 		invocacionGestorDoc({});
 	}, 500);
 }
@@ -375,24 +380,27 @@ function verificaEstado(e) {
 			}
 		});
 
-		$("#txtUP").val(prod.p_unidad_pres).prop("disabled", false);
-		$("#txtBto").val(prod.bulto).prop("disabled", false);
-		//$("#txtUnid").mask("000.000.000.000", { reverse: true });
+		$("#txtUP").val(prod.p_unidad_pres);
+		$("#txtBto").val(prod.bulto);
 
 		if (prod.up_id === "07") {  //unidades enteras
 			getMaskForInteger("#txtUnid");
-			//$("#txtUnid").mask("000,000,000,000", { reverse: true });
 			$("#txtUnid").val(0).prop("disabled", false);
+			$("#txtUP").prop('disabled', false);
+			$("#txtBto").prop('disabled', false);
+			$("#txtUP").trigger('focus');
 		}
 		else { //unidades decimales
-			//$("#txtUnid").mask("000,000,000,000.00", { reverse: true });
+			$("#txtUP").prop('disabled', true);
+			$("#txtBto").prop('disabled', true);
 			getMaskForTwoDecimals("#txtUnid");
+			$("#txtUnid").trigger('focus');
 		}
 		$("#Busqueda").val("");
 		if (prod.p_con_vto !== "N") {
 		} else {
 		}
-		$("#txtUP").trigger('focus');
+		
 	}
 	return true;
 }

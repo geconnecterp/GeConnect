@@ -146,6 +146,7 @@ namespace gc.api.core.Servicios.Reportes
 				{ InfoReporte.R097_Imprime_Etiquetas_UL, new R097_Impresion_De_Etiquetas_UL(uow,apiProdSv,empresa,ctaSv, logger) },
 				{ InfoReporte.R098_Reporte_Prod_Sin_Stock_En_Transferencias, new R098_Reporte_Prod_Sin_Stock_En_Transferencias(uow,apiProdSv,empresa,ctaSv, logger) },
 				{ InfoReporte.R099_Reporte_Ordenes_De_Reparto, new R099_Reporte_Ordenes_De_Reparto(uow,ordRepSv,empresa,ctaSv, logger) },
+				{ InfoReporte.R100_Ajuste_De_Stock, new R100_Ajuste_De_Stock(uow,apiProdSv,empresa,ctaSv, logger) },
 			}; 
             _logger = logger;
         }

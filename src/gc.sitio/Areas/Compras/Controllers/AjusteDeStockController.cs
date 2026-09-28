@@ -1,29 +1,24 @@
-﻿using Azure;
-using gc.api.core.Entidades;
+﻿using gc.api.core.Entidades;
 using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Dtos.Almacen;
 using gc.infraestructura.Dtos.Almacen.AjusteDeStock;
-using gc.infraestructura.Dtos.Almacen.Tr.Transferencia;
-using gc.infraestructura.Dtos.Productos;
 using gc.infraestructura.Dtos.Deposito;
 using gc.infraestructura.Dtos.Gen;
+using gc.infraestructura.Dtos.Productos;
 using gc.infraestructura.EntidadesComunes.Options;
+using gc.infraestructura.Enumeraciones;
 using gc.infraestructura.Helpers;
 using gc.sitio.Controllers;
 using gc.sitio.core.Servicios.Contratos;
+using gc.sitio.core.Servicios.Contratos.DocManager;
+using gc.sitio.Models.Dto;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using System.Globalization;
 using System.Reflection;
-using System.Security.Cryptography;
 using static gc.sitio.Areas.Compras.Controllers.CompraController;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
-using gc.infraestructura.Dtos;
-using System.Runtime.Serialization;
-using gc.sitio.Models.Dto;
 
 namespace gc.sitio.Areas.Compras.Controllers
 {
@@ -35,13 +30,25 @@ namespace gc.sitio.Areas.Compras.Controllers
 		private readonly IProductoServicio _productoServicio;
 		private readonly ILogger<CompraController> _logger;
 
+		//PARA MODULO DE IMPRESION
+		private readonly DocsManager _docsManager; //recupero los datos desde el appsettings.json
+		private AppModulo _modulo;
+		private string APP_MODULO = AppModulos.AJUSTE_DE_STOCK.ToString();
+		private readonly IDocManagerServicio _docMSv;
+
 		public AjusteDeStockController(IProductoServicio productoServicio, IDepositoServicio depositoServicio,
-									   ILogger<CompraController> logger, IOptions<AppSettings> options, IHttpContextAccessor context) : base(options, context)
+									   ILogger<CompraController> logger, IOptions<AppSettings> options, IHttpContextAccessor context,
+									   IDocManagerServicio docManager, IOptions<DocsManager> docsManager) : base(options, context)
 		{
 			_logger = logger;
 			_appSettings = options.Value;
 			_depositoServicio = depositoServicio;
 			_productoServicio = productoServicio;
+
+			//PARA MODULO DE IMPRESION
+			_docsManager = docsManager.Value; //recupero los datos desde el appsettings.json
+			_modulo = _docsManager.Modulos.First(x => x.Id == APP_MODULO);
+			_docMSv = docManager; //instancio el servicio de impresión
 		}
 
 		public IActionResult Index()
@@ -56,8 +63,17 @@ namespace gc.sitio.Areas.Compras.Controllers
 			List<ProductoAAjustarDto> listaProdAAjustar = [];
 			try
 			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+					return RedirectToAction("Login", "Token", new { area = "seguridad" });
+
 				var titulo = "AJUSTES DE STOCK";
 				ViewData["Titulo"] = titulo;
+
+				#region Gestor Impresion - Inicializacion de variables
+				DocumentManager = _docMSv.InicializaObjeto(titulo, _modulo);
+				ArchivosCargadosModulo = _docMSv.GeneraArbolArchivos(_modulo);
+				#endregion
 
 				model.ComboDepositos = CargarComboDepositos();
 				model.ComboBoxes = HelperMvc<ComboGenDto>.ListaGenerica(boxes.Select(x => new ComboGenDto { Id = x.Box_Id, Descripcion = $"{x.Box_Id}__{x.Box_desc}" }));
@@ -84,6 +100,10 @@ namespace gc.sitio.Areas.Compras.Controllers
 			var model = new BoxListDto();
 			try
 			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+					return RedirectToAction("Login", "Token", new { area = "seguridad" });
+
 				if (depoId != "0")
 					model.ComboBoxes = CargarComboBoxes(depoId);
 				else
@@ -111,6 +131,10 @@ namespace gc.sitio.Areas.Compras.Controllers
 			var model = new BoxListDto();
 			try
 			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+					return RedirectToAction("Login", "Token", new { area = "seguridad" });
+
 				var boxesAux = AjustePrevioCargadoLista.Where(x => x.depo_id == depoId).Select(x => new { x.box_id, x.box_desc }).Distinct();
 				var boxes = boxesAux.Select(x => new ComboGenDto { Id = x.box_id, Descripcion = $"{x.box_id}__{x.box_desc}" });
 				model.ComboBoxes = HelperMvc<ComboGenDto>.ListaGenerica(boxes);
@@ -134,6 +158,10 @@ namespace gc.sitio.Areas.Compras.Controllers
 			var model = new DatosModalCargaPreviaDto();
 			try
 			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+					return RedirectToAction("Login", "Token", new { area = "seguridad" });
+
 				if (AdministracionId == null)
 					return ObtenerMensajeDeError("No hay sucural de logueo establecida. Si el problema persiste informe al Administrador.");
 
@@ -165,6 +193,10 @@ namespace gc.sitio.Areas.Compras.Controllers
 			var model = new GridCoreSmart<AjustePrevioCargadoDto>();
 			try
 			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+					return RedirectToAction("Login", "Token", new { area = "seguridad" });
+
 				if (string.IsNullOrWhiteSpace(depoId) && string.IsNullOrWhiteSpace(boxId))
 				{
 					RespuestaGenerica<EntidadBase> response = new()
@@ -204,6 +236,10 @@ namespace gc.sitio.Areas.Compras.Controllers
 			var model = new GridCoreSmart<ProductoAAjustarDto>();
 			try
 			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+					return RedirectToAction("Login", "Token", new { area = "seguridad" });
+
 				var listaAjustesPrevios = AjustePrevioCargadoLista.Where(x => x.depo_id.Equals(depoId) && x.box_id.Equals(boxId) && ids.Contains(x.p_id)).ToList();
 				//Si no existen ya, los agregamos
 				listaAjustesPrevios.RemoveAll(x => AjusteProductosLista.Exists(y => y.p_id.Equals(x.p_id)));
@@ -265,6 +301,10 @@ namespace gc.sitio.Areas.Compras.Controllers
 			var model = new GridCoreSmart<ProductoAAjustarDto>();
 			try
 			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+					return RedirectToAction("Login", "Token", new { area = "seguridad" });
+
 				if (ajId == null)
 					return ObtenerMensajeDeError("No se ha especificado un ID de Ajuste válido. Si el problema persiste informe al Administrador.");
 
@@ -307,6 +347,10 @@ namespace gc.sitio.Areas.Compras.Controllers
 			var model = new GridCoreSmart<ProductoAAjustarDto>();
 			try
 			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+					return RedirectToAction("Login", "Token", new { area = "seguridad" });
+
 				if (pId == null)
 					return ObtenerMensajeDeError("No se ha especificado un producto válido. Si el problema persiste informe al Administrador.");
 
@@ -333,6 +377,10 @@ namespace gc.sitio.Areas.Compras.Controllers
 			var model = new GridCoreSmart<ProductoAAjustarDto>();
 			try
 			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+					return RedirectToAction("Login", "Token", new { area = "seguridad" });
+
 				if (AjusteProductosLista.Where(x => x.p_id.Equals(pId)).Any())
 				{
 					model = ObtenerGridCoreSmart<ProductoAAjustarDto>(AjusteProductosLista);
@@ -419,28 +467,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 			return PartialView("_grillaProductos", model);
 		}
 
-		private static decimal ObtenerValorDeStock(string strStk)
-		{
-			try
-			{
-				System.Globalization.NumberFormatInfo numberFormatInfo = new System.Globalization.NumberFormatInfo();
-				if (System.Globalization.CultureInfo.CurrentCulture.Name == "es-AR")
-				{
-					numberFormatInfo.NumberDecimalSeparator = ".";
-					numberFormatInfo.NumberGroupSeparator = ",";
-				}
-				return Convert.ToDecimal(strStk, numberFormatInfo);
-				//return Int32.Parse(strStk, NumberStyles.AllowThousands, numberFormatInfo);
-			}
-			catch (System.FormatException)
-			{
-				return Int32.Parse(strStk, NumberStyles.AllowThousands, CultureInfo.InvariantCulture);
-			}
-			catch (Exception)
-			{
-				return 0;
-			}
-		}
+		
 
 		public async Task<JsonResult> ConfirmarAjusteDeStock(string atId, string nota, string atTipo)
 		{
@@ -471,13 +498,6 @@ namespace gc.sitio.Areas.Compras.Controllers
 				var json_string = GenerarJsonDesdeLista();
 				var respuesta = _productoServicio.ConfirmarAjusteStk(json_string, AdministracionId, UserName, string.Empty, TokenCookie);
 
-				//if (respuesta == null)
-				//	return Json(new { error = true, warn = false, msg = "Algo no fue bien al confirmar el ajuste, intente nuevamente mas tarde.", jsonstring = json_string });
-				//if (respuesta..Count == 0)
-				//	return Json(new { error = true, warn = false, msg = "Algo no fue bien al confirmar el ajuste, intente nuevamente mas tarde.", jsonstring = json_string });
-				//if (respuesta.First().resultado != 0)
-				//	return Json(new { error = false, warn = true, msg = respuesta.First().resultado_msj, jsonstring = json_string });
-
 				AjusteProductosLista = [];
 				return AnalizarRespuesta(respuesta, "El ajuste se ha realizado con éxito.");
 				//return Json(new { error = false, warn = false, msg = "El ajuste se ha realizado con éxito.", jsonstring = json_string });
@@ -493,6 +513,10 @@ namespace gc.sitio.Areas.Compras.Controllers
 		{
 			try
 			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+					return Json(new { error = true, warn = false, ok = false, msg = "No autenticado" });
+
 				if (AjusteProductosLista == null || AjusteProductosLista.Count == 0)
 				{
 					return Json(new { error = false, warn = true, msg = "No existen Ajustes de Stock cargado por cancelar." });
@@ -514,6 +538,10 @@ namespace gc.sitio.Areas.Compras.Controllers
 			var model = new GridCoreSmart<ProductoAAjustarDto>();
 			try
 			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+					return RedirectToAction("Login", "Token", new { area = "seguridad" });
+
 				var listaTemp = AjusteProductosLista;
 				listaTemp = [];
 				AjusteProductosLista = listaTemp;
@@ -534,6 +562,29 @@ namespace gc.sitio.Areas.Compras.Controllers
 		}
 
 		#region Métodos Privados
+		private static decimal ObtenerValorDeStock(string strStk)
+		{
+			try
+			{
+				System.Globalization.NumberFormatInfo numberFormatInfo = new System.Globalization.NumberFormatInfo();
+				if (System.Globalization.CultureInfo.CurrentCulture.Name == "es-AR")
+				{
+					numberFormatInfo.NumberDecimalSeparator = ".";
+					numberFormatInfo.NumberGroupSeparator = ",";
+				}
+				return Convert.ToDecimal(strStk, numberFormatInfo);
+				//return Int32.Parse(strStk, NumberStyles.AllowThousands, numberFormatInfo);
+			}
+			catch (System.FormatException)
+			{
+				return Int32.Parse(strStk, NumberStyles.AllowThousands, CultureInfo.InvariantCulture);
+			}
+			catch (Exception)
+			{
+				return 0;
+			}
+		}
+
 		private string GenerarJsonDesdeLista()
 		{
 			var listaSerializada = new List<ProductoAAjustarSerializedDto>();

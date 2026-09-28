@@ -7,12 +7,15 @@ using gc.infraestructura.Dtos.Almacen.AjusteDeStock.Request;
 using gc.infraestructura.Dtos.Almacen.DevolucionAProveedor;
 using gc.infraestructura.Dtos.Almacen.DevolucionAProveedor.Request;
 using gc.infraestructura.Dtos.Gen;
+using gc.infraestructura.EntidadesComunes.Options;
+using gc.infraestructura.Enumeraciones;
 using gc.infraestructura.Helpers;
 using gc.sitio.Areas.Mstk.Models;
 using gc.sitio.Areas.Mstk.Models.ConsultaDeAjusteDeStock;
 using gc.sitio.Areas.Mstk.Models.ConsultaDeRecepcionDeProveedores;
 using gc.sitio.Areas.Mstk.Models.ConsultaDevolucionAProveedores;
 using gc.sitio.core.Servicios.Contratos;
+using gc.sitio.core.Servicios.Contratos.DocManager;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Options;
@@ -25,12 +28,25 @@ namespace gc.sitio.Areas.Mstk.Controllers
 		private readonly AppSettings _setting;
 		private readonly IAdministracionServicio _administracionServicio;
 		private readonly IProductoServicio _productoServicio;
+
+		//PARA MODULO DE IMPRESION
+		private readonly DocsManager _docsManager; //recupero los datos desde el appsettings.json
+		private AppModulo _modulo;
+		private string APP_MODULO = AppModulos.AJUSTE_DE_STOCK.ToString();
+		private readonly IDocManagerServicio _docMSv;
+
 		public ConsultaDeAjusteDeStockController(IOptions<AppSettings> options, IHttpContextAccessor contexto, ILogger<ConsultaDeAjusteDeStockController> logger,
-												 IAdministracionServicio administracionServicio, IProductoServicio productoServicio) : base(options, contexto, logger)
+												 IAdministracionServicio administracionServicio, IProductoServicio productoServicio,
+												 IDocManagerServicio docManager, IOptions<DocsManager> docsManager) : base(options, contexto, logger)
 		{
 			_setting = options.Value;
 			_administracionServicio = administracionServicio;
 			_productoServicio = productoServicio;
+
+			//PARA MODULO DE IMPRESION
+			_docsManager = docsManager.Value; //recupero los datos desde el appsettings.json
+			_modulo = _docsManager.Modulos.First(x => x.Id == APP_MODULO);
+			_docMSv = docManager; //instancio el servicio de impresión
 		}
 
 		public IActionResult Index()
@@ -44,6 +60,11 @@ namespace gc.sitio.Areas.Mstk.Controllers
 
 				var titulo = "REPORTE DE AJUSTE DE STOCK";
 				ViewData["Titulo"] = titulo;
+
+				#region Gestor Impresion - Inicializacion de variables
+				DocumentManager = _docMSv.InicializaObjeto(titulo, _modulo);
+				ArchivosCargadosModulo = _docMSv.GeneraArbolArchivos(_modulo);
+				#endregion
 
 				CargarDatosIniciales(model);
 
