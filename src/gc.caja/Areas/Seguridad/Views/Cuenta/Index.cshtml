@@ -1,0 +1,99 @@
+@model gc.caja.Models.Cuenta.CuentaViewModel
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = "Mi cuenta";
+    var restringida = Model.Obligatoria || Model.Vencida;
+    var politica = Model.Politica;
+}
+<section class="cuenta-page" aria-labelledby="cuentaTitulo">
+    <header class="cuenta-heading">
+        <div><span class="cuenta-eyebrow">GECO CAJA · ACCESO PERSONAL</span><h1 id="cuentaTitulo">Mi cuenta</h1><p>Tu identidad y la seguridad de tu acceso.</p></div>
+        <div class="d-flex align-items-center gap-3">
+            @if (!restringida) { <a class="cuenta-back" asp-area="" asp-controller="Home" asp-action="Index"><i class="bx bx-arrow-back" aria-hidden="true"></i> Volver al menú</a> }
+            @await Html.PartialAsync("_CuentaOperador")
+        </div>
+    </header>
+    <div class="cuenta-grid">
+        <aside class="cuenta-identidad" aria-label="Datos del operador">
+            <span class="cuenta-avatar cuenta-avatar-grande" aria-hidden="true">@Model.Operador.Iniciales</span>
+            <h2>@Model.Operador.Nombre</h2><p>Operador de caja</p>
+            <dl>
+                <dt>Usuario</dt><dd>@Model.Operador.Usuario</dd>
+                <dt>Correo electrónico</dt><dd>@(string.IsNullOrWhiteSpace(Model.Operador.Email) ? "No informado" : Model.Operador.Email)</dd>
+                <dt>Sucursal</dt><dd>@Model.Operador.Sucursal</dd>
+                <dt>Perfil activo</dt><dd>@Model.Operador.Perfil</dd>
+            </dl>
+            <p class="cuenta-nota">Estos datos corresponden a tu sesión. La administración gestiona tu identidad y permisos.</p>
+        </aside>
+        <section class="cuenta-card" id="cambiar-clave" aria-labelledby="claveTitulo">
+            <header><span class="cuenta-icon"><i class="bx bx-shield-quarter" aria-hidden="true"></i></span><div>
+                <h2 id="claveTitulo">@(Model.Obligatoria ? "Definí tu contraseña definitiva" : "Cambiar contraseña")</h2>
+                <p>Al guardar, cerraremos tu sesión para que ingreses con la nueva clave.</p>
+            </div></header>
+            @if (restringida) {
+                <div class="alert alert-warning" role="status">@(Model.Obligatoria ? "Debés reemplazar la contraseña temporal antes de operar en Caja." : "Tu contraseña está vencida. Actualizala para continuar.")</div>
+            }
+            @if (politica == null) {
+                <div class="alert alert-warning" role="alert">@Model.Error</div>
+                <a class="btn btn-golden" asp-action="@(Model.Obligatoria ? "ClaveObligatoria" : "Index")">Reintentar</a>
+            }
+            else {
+                <form id="formCuentaClave" method="post" novalidate autocomplete="off"
+                      action="@Url.Action(Model.Obligatoria ? "CambiarClaveObligatoria" : "CambiarClave", "Cuenta", new { area = "Seguridad" })"
+                      data-login="@Url.Action("Login", "Token", new { area = "Seguridad" })"
+                      data-obligatoria="@Model.Obligatoria.ToString().ToLowerInvariant()"
+                      data-validar-longitud="@politica.ValidarLongitud.ToString().ToLowerInvariant()"
+                      data-longitud-minima="@politica.LongitudMinima" data-longitud-maxima="@politica.LongitudMaxima"
+                      data-validar-complejidad="@politica.ValidarComplejidad.ToString().ToLowerInvariant()"
+                      data-mayuscula="@politica.RequiereMayuscula.ToString().ToLowerInvariant()"
+                      data-minuscula="@politica.RequiereMinuscula.ToString().ToLowerInvariant()"
+                      data-numero="@politica.RequiereNumero.ToString().ToLowerInvariant()"
+                      data-simbolo="@politica.RequiereSimbolo.ToString().ToLowerInvariant()"
+                      data-distinta="@politica.ImpedirClaveActual.ToString().ToLowerInvariant()">
+                    @Html.AntiForgeryToken()
+                    <div id="cuentaMensaje" class="alert d-none" role="alert" tabindex="-1"></div>
+                    <div class="cuenta-form-grid">
+                        <div>
+                            @foreach (var campo in new[] { (Id: "ClaveActual", Label: "Contraseña actual"), (Id: "ClaveNueva", Label: "Nueva contraseña"), (Id: "ConfirmacionClave", Label: "Confirmar nueva contraseña") }) {
+                                if (Model.Obligatoria && campo.Id == "ClaveActual") { continue; }
+                                <div class="cuenta-field">
+                                    <label for="@campo.Id">@campo.Label</label>
+                                    <div class="cuenta-password">
+                                        <input id="@campo.Id" name="@campo.Id" type="password" class="form-control"
+                                               maxlength="128" required spellcheck="false" autocapitalize="none"
+                                               autocomplete="@(campo.Id == "ClaveActual" ? "current-password" : "new-password")"
+                                               aria-describedby="@(campo.Id == "ConfirmacionClave" ? "cuentaCoincidencia" : "cuentaRequisitos")" />
+                                        <button type="button" class="cuenta-toggle" data-target="@campo.Id" aria-label="Mostrar @campo.Label.ToLowerInvariant()" aria-pressed="false"><i class="bx bx-show" aria-hidden="true"></i></button>
+                                    </div>
+                                </div>
+                            }
+                            <small id="cuentaCoincidencia" aria-live="polite"></small>
+                        </div>
+                        <aside class="cuenta-policy" id="cuentaRequisitos">
+                            <h3>Requisitos de seguridad</h3>
+                            <ul>
+                                @if (politica.ValidarLongitud) { <li data-rule="length">Entre @politica.LongitudMinima y @politica.LongitudMaxima caracteres</li> }
+                                @if (politica.ValidarComplejidad && politica.RequiereMayuscula) { <li data-rule="upper">Al menos una mayúscula</li> }
+                                @if (politica.ValidarComplejidad && politica.RequiereMinuscula) { <li data-rule="lower">Al menos una minúscula</li> }
+                                @if (politica.ValidarComplejidad && politica.RequiereNumero) { <li data-rule="number">Al menos un número</li> }
+                                @if (politica.ValidarComplejidad && politica.RequiereSimbolo) { <li data-rule="symbol">Al menos un símbolo</li> }
+                                @if (politica.ImpedirClaveActual && !Model.Obligatoria) { <li data-rule="different">Diferente de la actual</li> }
+                            </ul>
+                            @if (politica.DiasVigencia > 0) { <p><i class="bx bx-calendar-check" aria-hidden="true"></i> Vigencia: @politica.DiasVigencia días</p> }
+                            <small>Los espacios dentro de la contraseña se conservan. Los requisitos son los definidos por la administración.</small>
+                        </aside>
+                    </div>
+                    <div class="cuenta-actions">
+                        <button type="submit" id="cuentaGuardar" class="btn btn-golden"><i class="bx bx-check-circle" aria-hidden="true"></i> Guardar contraseña</button>
+                        @if (!restringida) { <a class="btn btn-outline-secondary" asp-area="" asp-controller="Home" asp-action="Index">Cancelar</a> }
+                        else { <a class="btn btn-outline-secondary" asp-area="Seguridad" asp-controller="Token" asp-action="Logout">Cerrar sesión</a> }
+                    </div>
+                    <a id="cuentaReingresar" class="btn btn-outline-secondary d-none mt-3" asp-area="Seguridad" asp-controller="Token" asp-action="Logout">Volver a ingresar</a>
+                </form>
+            }
+        </section>
+    </div>
+</section>
+@section Scripts {
+    <script src="~/js/app/seguridad/cuenta.js" asp-append-version="true"></script>
+}

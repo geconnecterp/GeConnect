@@ -1,0 +1,48 @@
+/* Identidad del inicio de Caja: carbón, marfil y acentos Golden. */
+.cuenta-page, .cuenta-operador { --cuenta-ink:#292822; --cuenta-muted:#6b695f; --cuenta-line:#d9d7cf; --cuenta-gold:#d4a80d; --cuenta-soft:#f7f6f1; }
+.cuenta-avatar { display:inline-flex; align-items:center; justify-content:center; flex:none; width:40px; height:40px; padding:0; border:1px solid #d4a80d; border-radius:50%; background:#363128; color:#fff5cf; font-size:14px; font-weight:700; letter-spacing:.03em; }
+.cuenta-avatar:focus-visible, .cuenta-page :focus-visible { outline:3px solid #9f7600; outline-offset:3px; }
+.cuenta-dropdown { width:min(290px, calc(100vw - 32px)); padding-block:.5rem; border-color:var(--cuenta-line); box-shadow:0 8px 24px #29282226; }
+.cuenta-dropdown strong, .cuenta-dropdown small { overflow-wrap:anywhere; white-space:normal; }
+.cuenta-dropdown .dropdown-item { display:flex; gap:.65rem; align-items:center; padding:.65rem 1rem; white-space:normal; }
+.cuenta-dropdown .dropdown-item:active { background:#363128; color:white; }
+.cuenta-page { max-width:1160px; margin:2rem auto 4rem; color:var(--cuenta-ink); }
+.cuenta-heading { display:flex; align-items:center; justify-content:space-between; gap:1rem; margin-bottom:1.5rem; }
+.cuenta-eyebrow { font-size:.7rem; letter-spacing:.12em; font-weight:700; color:var(--cuenta-muted); }
+.cuenta-page h1 { margin:.4rem 0; font-size:1.8rem; font-weight:700; }
+.cuenta-page p { color:var(--cuenta-muted); margin:0; }
+.cuenta-back { display:inline-flex; align-items:center; gap:.4rem; color:var(--cuenta-ink); text-decoration:none; font-size:.9rem; }
+.cuenta-grid { display:grid; grid-template-columns:minmax(210px, .85fr) minmax(0, 2.2fr); gap:1.25rem; align-items:start; }
+.cuenta-identidad, .cuenta-card { border:1px solid var(--cuenta-line); border-radius:16px; padding:1.5rem; background:white; box-shadow:0 4px 15px #29282208; min-width:0; }
+.cuenta-identidad { background:var(--cuenta-soft); }
+.cuenta-avatar-grande { width:56px; height:56px; font-size:20px; margin-bottom:1rem; }
+.cuenta-page h2 { font-size:1.15rem; font-weight:700; margin:0 0 .45rem; overflow-wrap:anywhere; }
+.cuenta-identidad dl { margin:1.5rem 0; font-size:.9rem; }
+.cuenta-identidad dt { color:var(--cuenta-muted); font-weight:400; font-size:.8rem; }
+.cuenta-identidad dd { margin:.15rem 0 1rem; overflow-wrap:anywhere; font-weight:600; }
+.cuenta-identidad .cuenta-nota { border-top:1px solid var(--cuenta-line); padding-top:1rem; font-size:.8rem; line-height:1.6; }
+.cuenta-card > header { display:flex; gap:.8rem; align-items:flex-start; margin-bottom:1.5rem; }
+.cuenta-card header p { font-size:.85rem; line-height:1.5; }
+.cuenta-icon { color:#856300; background:#fff5cf; border-radius:10px; padding:.55rem; display:flex; font-size:1.5rem; }
+.cuenta-form-grid { display:grid; grid-template-columns:minmax(0, 1.15fr) minmax(0, 1fr); gap:1.25rem; }
+.cuenta-field { margin-bottom:1rem; }
+.cuenta-field label { display:block; font-size:.85rem; font-weight:600; margin-bottom:.4rem; }
+.cuenta-password { position:relative; }
+.cuenta-page .cuenta-password input { min-height:44px; padding-right:46px; text-transform:none !important; border-color:var(--cuenta-line); }
+.cuenta-toggle { position:absolute; right:1px; top:1px; width:42px; height:42px; border:0; border-radius:6px; background:transparent; color:var(--cuenta-muted); }
+.cuenta-policy { background:var(--cuenta-soft); border-radius:10px; padding:1rem; font-size:.82rem; }
+.cuenta-policy h3 { font-size:.88rem; font-weight:700; margin:0 0 .8rem; }
+.cuenta-policy ul { padding:0; list-style:none; margin:0 0 1rem; }
+.cuenta-policy li { display:flex; gap:.4rem; margin:.5rem 0; }
+.cuenta-policy li::before { content:'○'; flex:none; }
+.cuenta-policy li.valid { color:#246431; }
+.cuenta-policy li.valid::before { content:'✓'; }
+.cuenta-policy small { display:block; margin-top:1rem; line-height:1.55; color:var(--cuenta-muted); }
+.cuenta-actions { display:flex; gap:.65rem; flex-wrap:wrap; margin-top:1.5rem; padding-top:1.25rem; border-top:1px solid var(--cuenta-line); }
+.cuenta-actions .btn { min-height:44px; }
+.cuenta-page [aria-busy="true"] { cursor:progress; }
+.cuenta-page .match { color:#246431; } .cuenta-page .no-match { color:#a02c28; }
+@media (max-width: 991px) { .cuenta-form-grid { grid-template-columns:1fr; } }
+@media (max-width: 767px) { .cuenta-page { margin:1rem auto 3rem; } .cuenta-grid { grid-template-columns:1fr; } .cuenta-heading { align-items:flex-start; flex-wrap:wrap; } .cuenta-identidad, .cuenta-card { padding:1.15rem; } .cuenta-identidad dl { display:grid; grid-template-columns:100px minmax(0, 1fr); gap:.5rem; } .cuenta-identidad dd { margin:0; } .cuenta-actions .btn { flex:1 1 auto; } }
+
+.cuenta-page .form-control:focus { border-color:#9f7600; box-shadow:0 0 0 3px #d4a80d26; }

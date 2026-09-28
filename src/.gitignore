@@ -403,3 +403,8 @@ FodyWeavers.xsd
 
 ../etc/
 .codex-build/
+
+# Salidas aisladas de las pruebas de cuenta de Caja
+/.artifacts/cuenta-build/
+/.artifacts/cuenta-buildruntimes/
+/.artifacts/cuenta-tests/
