@@ -386,6 +386,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 							p_id_barrado = producto.P_id_barrado,
 							p_id_prov = producto.P_id_prov,
 							up_id = upId,
+							up_tipo = producto.up_tipo,
 							unidad_pres = unidadPres,
 							bulto = bto,
 							us = us,
@@ -445,6 +446,10 @@ namespace gc.sitio.Areas.Compras.Controllers
 		{
 			try
 			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+					return Json(new { error = true, warn = false, ok = false, msg = "No autenticado" });
+
 				if (string.IsNullOrWhiteSpace(atId) || string.IsNullOrWhiteSpace(atTipo))
 				{
 					return Json(new { error = true, warn = false, msg = "Debe especificar un 'Tipo' antes de confirmar." });
@@ -464,17 +469,18 @@ namespace gc.sitio.Areas.Compras.Controllers
 					listaTemp.ForEach(x => { if (x.cantidad > 0) { x.cantidad *= -1; } });
 				AjusteProductosLista = listaTemp;
 				var json_string = GenerarJsonDesdeLista();
-				var respuesta = await _productoServicio.ConfirmarAjusteStk(json_string, AdministracionId, UserName, string.Empty, TokenCookie);
+				var respuesta = _productoServicio.ConfirmarAjusteStk(json_string, AdministracionId, UserName, string.Empty, TokenCookie);
 
-				if (respuesta == null)
-					return Json(new { error = true, warn = false, msg = "Algo no fue bien al confirmar el ajuste, intente nuevamente mas tarde.", jsonstring = json_string });
-				if (respuesta.Count == 0)
-					return Json(new { error = true, warn = false, msg = "Algo no fue bien al confirmar el ajuste, intente nuevamente mas tarde.", jsonstring = json_string });
-				if (respuesta.First().resultado != 0)
-					return Json(new { error = false, warn = true, msg = respuesta.First().resultado_msj, jsonstring = json_string });
+				//if (respuesta == null)
+				//	return Json(new { error = true, warn = false, msg = "Algo no fue bien al confirmar el ajuste, intente nuevamente mas tarde.", jsonstring = json_string });
+				//if (respuesta..Count == 0)
+				//	return Json(new { error = true, warn = false, msg = "Algo no fue bien al confirmar el ajuste, intente nuevamente mas tarde.", jsonstring = json_string });
+				//if (respuesta.First().resultado != 0)
+				//	return Json(new { error = false, warn = true, msg = respuesta.First().resultado_msj, jsonstring = json_string });
 
 				AjusteProductosLista = [];
-				return Json(new { error = false, warn = false, msg = "El ajuste se ha realizado con éxito.", jsonstring = json_string });
+				return AnalizarRespuesta(respuesta, "El ajuste se ha realizado con éxito.");
+				//return Json(new { error = false, warn = false, msg = "El ajuste se ha realizado con éxito.", jsonstring = json_string });
 			}
 			catch (Exception ex)
 			{

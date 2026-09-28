@@ -42,7 +42,7 @@ namespace gc.sitio.core.Servicios.Contratos
 		Task<List<TipoAjusteDeStockDto>> ObtenerTipoDeAjusteDeStock(string token);
 		Task<List<AjustePrevioCargadoDto>> ObtenerAJPreviosCargados(string admId, string token);
 		Task<List<AjusteRevertidoDto>> ObtenerAJREVERTIDO(string ajId, string token);
-		Task<List<RespuestaDto>> ConfirmarAjusteStk(string json, string admId, string usuId, string compteOri, string token);
+		RespuestaGenerica<RespuestaDto> ConfirmarAjusteStk(string json, string admId, string usuId, string compteOri, string token);
 		Task<(List<AjusteDeStockListaDto>, MetadataGrid)> ObtenerAjusteDeStockLista(CargarAjusteDeStockListaRequest filters, string token);
 
 		Task<List<DevolucionPrevioCargadoDto>> ObtenerDPPreviosCargados(string admId, string ctaId, string token);

@@ -54,6 +54,13 @@
 		height: 1.6rem !important;
 	}
 
+	#tbDetalleDeProductosAAjustar > tbody > tr > td {
+		font-size: 12px !important;
+	}
+
+	.fuente-bold {
+		font-weight: bold;
+	}
 </style>
 <div class="table-responsive table-wrapper-full-width" id="containerDetalleDeProductosAAjustar">
 	<table class="table table-sm table-golden" id="tbDetalleDeProductosAAjustar">
@@ -81,9 +88,9 @@
 						<td class="align-left">@item.p_desc</td>
 						<td class="align-center">@item.p_id_prov</td>
 						<td class="align-center">@item.box_desc</td>
-						<td class="align-right">@GridHelper.FormatearDato(item.as_stock, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
-						<td class="align-right">@GridHelper.FormatearDato(item.as_ajuste, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
-						<td class="align-right">@GridHelper.FormatearDato(item.as_resultado, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
+						<td class="align-right fuente-bold">@GridHelper.FormatearDato(item.as_stock, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
+						<td class="align-right fuente-bold">@GridHelper.FormatearDato(item.as_ajuste, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
+						<td class="align-right fuente-bold">@GridHelper.FormatearDato(item.as_resultado, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
 						<td class="text-center align-middle">
 							<button type="button" class="btn btn-danger btn-icon-compact" title="Rechazar" onclick="quitarProducto('@item.p_id')">
 								<i class="bx bx-trash"></i>

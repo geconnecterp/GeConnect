@@ -675,7 +675,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 			}
 		}
 
-		public async Task<List<RespuestaDto>> ConfirmarAjusteStk(string json, string admId, string usuId, string compteOri, string token)
+		public RespuestaGenerica<RespuestaDto> ConfirmarAjusteStk(string json, string admId, string usuId, string compteOri, string token)
 		{
 			ApiResponse<List<RespuestaDto>> apiResponse;
 
@@ -686,22 +686,22 @@ namespace gc.sitio.core.Servicios.Implementacion
 
 			var link = $"{_appSettings.RutaBase}{RutaAPI}{AJUSTE_CONFIRMAR}";
 
-			response = await client.PostAsync(link, contentData);
+			response = client.PostAsync(link, contentData).Result;
 
 			if (response.StatusCode == HttpStatusCode.OK)
 			{
-				string stringData = await response.Content.ReadAsStringAsync();
+				string stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
 				if (string.IsNullOrEmpty(stringData))
 				{
 					_logger.LogWarning($"La API devolvió error. Parametros json:{json}");
 					return new();
 				}
 				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<RespuestaDto>>>(stringData) ?? throw new NegocioException("Hubo un problema al deserializar los datos");
-				return apiResponse.Data;
+				return new RespuestaGenerica<RespuestaDto>() { Entidad = apiResponse.Data.First() };
 			}
 			else
 			{
-				string stringData = await response.Content.ReadAsStringAsync();
+				string stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
 				_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
 				return new();
 			}

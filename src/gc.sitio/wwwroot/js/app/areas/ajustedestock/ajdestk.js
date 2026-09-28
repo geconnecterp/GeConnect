@@ -121,6 +121,11 @@ function ConfirmarAjuste() {
 		var datos = { atId, nota, atTipo }
 		PostGen(datos, ConfirmarAjusteDeStockURL, function (o) {
 			CerrarWaiting();
+			if (!obj.ok && obj.error && obj.msg === "No autenticado") {
+				window.location.href = login;
+				return false;
+			}
+
 			if (o.error === true) {
 				AbrirMensaje("Atención", o.msg, function () {
 					$("#msjModal").modal("hide");
@@ -138,9 +143,24 @@ function ConfirmarAjuste() {
 				}, false, ["Aceptar"], "succ!", null);
 				$("#tbDetalleDeProductosAAjustar tbody tr").remove(); 
 				$("#txtNota").val("");
+				ImprimirAjusteStk_Generado(obj.id);
 			}
 		});
 	}
+}
+
+function ReseteoDeReportes() {
+	console.log("Reseto de reportes");
+	ReporteResetArre();
+}
+
+function ImprimirAjusteStk_Generado(id) {
+	ReseteoDeReportes();
+	setTimeout(() => {
+		let data = { id, ctaId: cta_id };
+		cargarReporteEnArre(39, data, "ANTICIPO DE EMPLEADOS", "", "");
+		invocacionGestorDoc({});
+	}, 500);
 }
 
 function ObtenerIdsDeProdSeleccionadosEnModal() {
@@ -233,13 +253,17 @@ function BtnRadioCargaPrevia() {
 }
 
 function analizaInputUP(x) {
-	if (x.which == "13") {
+	if (x.key === "Enter" || x.which == "13") {
+		x.preventDefault();
+		x.stopPropagation();
 		$("#txtBto").trigger('focus');
 	}
 }
 
 function analizaInputBto(x) {
-	if (x.which == "13") {
+	if (x.key === "Enter" || x.which == "13") {
+		x.preventDefault();
+		x.stopPropagation();
 		if ($("#txtUnid").prop('disabled')) {
 			$("#btnAddProd").trigger('focus');
 		}
@@ -250,7 +274,9 @@ function analizaInputBto(x) {
 }
 
 function analizaInputUnid(x) {
-	if (x.which == "13") {
+	if (x.key === "Enter" || x.which == "13") {
+		x.preventDefault();
+		x.stopPropagation();
 		$("#btnAddProd").trigger('focus');
 	}
 }
@@ -351,14 +377,16 @@ function verificaEstado(e) {
 
 		$("#txtUP").val(prod.p_unidad_pres).prop("disabled", false);
 		$("#txtBto").val(prod.bulto).prop("disabled", false);
-		$("#txtUnid").mask("000.000.000.000", { reverse: true });
+		//$("#txtUnid").mask("000.000.000.000", { reverse: true });
 
 		if (prod.up_id === "07") {  //unidades enteras
-			$("#txtUnid").mask("000,000,000,000", { reverse: true });
+			getMaskForInteger("#txtUnid");
+			//$("#txtUnid").mask("000,000,000,000", { reverse: true });
 			$("#txtUnid").val(0).prop("disabled", false);
 		}
 		else { //unidades decimales
-			$("#txtUnid").mask("000,000,000,000.00", { reverse: true });
+			//$("#txtUnid").mask("000,000,000,000.00", { reverse: true });
+			getMaskForTwoDecimals("#txtUnid");
 		}
 		$("#Busqueda").val("");
 		if (prod.p_con_vto !== "N") {
@@ -421,7 +449,8 @@ function AgregarProdManual() {
 					return true;
 				}, false, ["Aceptar"], "warn!", null);
 			}
-			ajuste = (Number($("#txtUP").val()) * Number($("#txtBto").val())) + Number($("#txtUnid").val());
+			var unidades = $("#txtUnid").inputmask('unmaskedvalue');
+			ajuste = (Number($("#txtUP").val()) * Number($("#txtBto").val())) + unidades;
 			if (tipoMotivoSeleccionado === "B" && ajuste > 0) {
 				ajuste = ajuste * -1;
 			}
@@ -432,7 +461,7 @@ function AgregarProdManual() {
 			var boxId = $("#listaBox").val();
 			var depoId = $("#listaDeposito").val();
 			var atId = $("#listaMotivo").val();
-			var us = $("#txtUnid").val();
+			var us = $("#txtUnid").inputmask('unmaskedvalue');
 			var bto = $("#txtBto").val();
 			var unidadPres = $("#txtUP").val();
 			var upId = $("#txtUP_ID").val();
@@ -687,4 +716,35 @@ function registroDeEventos() {
 
 	$("#btnradioCargaPrevia").off("click", BtnRadioCargaPrevia);
 	$("#btnradioCargaPrevia").on("click", BtnRadioCargaPrevia);
+}
+
+
+function getMaskForInteger(selector) {
+	$(selector).inputmask({
+		alias: 'numeric',
+		groupSeparator: ',',       // separador de miles
+		digits: 0,                 // sin decimales
+		digitsOptional: false,
+		allowMinus: false,
+		prefix: '',
+		suffix: '',
+		rightAlign: true,
+		unmaskAsNumber: true,
+		min: 0
+	});
+}
+
+function getMaskForTwoDecimals(selector) {
+	$(selector).inputmask({
+		alias: 'numeric',
+		groupSeparator: ',',
+		radixPoint: '.',
+		digits: 2,
+		digitsOptional: false,
+		allowMinus: false,
+		prefix: '',
+		suffix: '',
+		rightAlign: true,
+		unmaskAsNumber: true
+	});
 }
