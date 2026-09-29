@@ -207,6 +207,9 @@
 	</div>
 </div>
 
+<!-- para el modal del geston de impresion -->
+<div id="modalGestorDocumental"></div>
+
 @section scripts {
 	<script src="~/js/app/controlcomun/ccWatcher.js"></script>
 	<script type="text/javascript">
@@ -254,11 +257,23 @@
 		var busquedaAvanzadaUrl = "@Url.Action("BusquedaAvanzada", "producto", new { area = "ControlComun" })";
 		var autoComRel011Url = "@Url.Action("BuscarProvs", "devolucionaproveedor", new { area = "Compras" })";
 
+		// Gestor de impresión
+		var repoApiUrl = '@Url.Action("ObtenerPdfDesdeAPI", "GestorImpresion", new { area = "ControlComun" })';
+		var OrquestadorDeModulosUrl = "@Url.Action("OrquestadorDeModulos", "GestorImpresion", new { area = "ControlComun" })";
+		var presentarArchivosUrl = "@Url.Action("presentarArchivos", "GestorImpresion", new { area = "ControlComun" })";
+		var enviarEmailUrl = "@Url.Action("EnviarEmail", "GestorImpresion", new { area = "ControlComun" })";
+		var enviarWhatsAppUrl = "@Url.Action("EnviarWhatsApp", "GestorImpresion", new { area = "ControlComun" })";
+		var generadorArchivoUrl = "@Url.Action("GeneradorArchivo", "GestorImpresion", new { area = "ControlComun" })";
+
 		window.addEventListener("DOMContentLoaded", function() {
 		  document.getElementById("Busqueda").style.width = "100px";
 		  ccWatcher.init();
 		});
 	</script>
+	<script src="~/js/app/areas/docmngr/docmanager.js" asp-append-version="true"></script>
+	<script src="~/js/plugins/jquery.simplePagination.js"></script>
+	<script src="~/lib/jstree/jstree.min.js"></script>
+
 	<script src="~/js/app/busquedas.js" type="text/javascript"></script>
 	<script src="~/js/app/areas/devolucionaproveedor/devaprov.js"></script>
 	<script src="~/js/app/controlcomun/busquedacuentacomercial.js"></script>

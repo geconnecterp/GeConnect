@@ -29,6 +29,7 @@ namespace gc.infraestructura.Dtos.Almacen.AjusteDeStock
         public decimal as_ajuste { get; set; } = 0.000M;
         public decimal as_resultado { get; set; } = 0.000M;
 		public string cta_id { get; set; } = string.Empty;
+		public string cta_denominacion { get; set; } = string.Empty;
 		public string up_tipo { get; set; } = string.Empty;
 		public string up_desc { get; set; } = string.Empty;
 		public bool PermiteDecimales => up_tipo == "P";

@@ -756,3 +756,107 @@ function getMaskForTwoDecimals(selector) {
 		unmaskAsNumber: true
 	});
 }
+
+function buscarProducto() {
+	AbrirWaiting();
+	var _post = busquedaProdBaseUrl;
+	var valor = $("#Busqueda").val();
+	var validarEstado = false;
+
+	var datos = {};
+	if (typeof validarEstado !== 'undefined') {
+		datos = { busqueda: valor, validarEstado };
+	}
+	else {
+		datos = { busqueda: valor };
+	}
+	$("#tbGridProd").empty();
+	PostGen(datos, _post, function (obj) {
+		if (obj.error === true) {
+			CerrarWaiting();
+			AbrirMensaje("ATENCIÓN", obj.msg, function () {
+				productoBase = null;
+				$("#estadoFuncion").val(false);
+				$("#btnBusquedaBase").prop("disabled", false);
+				$("#msjModal").modal("hide");
+				$("#Busqueda").focus();
+				return true;
+			}, false, ["Aceptar"], "error!", null);
+		}
+		else if (obj.warn === true) {
+			CerrarWaiting();
+			if (obj.producto.p_id === "0000-0000") {
+				AbrirMensaje("ATENCIÓN", obj.msg, function () {
+					productoBase = null;
+					$("#estadoFuncion").val(false);
+					$("#btnBusquedaBase").prop("disabled", false);
+					$("#msjModal").modal("hide");
+					$("#Busqueda").focus();
+					return true;
+				}, false, ["Aceptar"], "error!", null);
+			}
+			else if (obj.producto.p_id === "NO" && valor != "") {
+				if (funcionBusquedaAvanzada === true) {
+					AbrirMensaje("ATENCIÓN", "NO SE ENCONTRO EL PRODUCTO QUE INTENTO BUSCAR. SE ABRIRÁ LA BUSQUEDA AVANZADA.", function () {
+						$("#msjModal").modal("hide");
+						productoBase = null;
+						$("#estadoFuncion").val(false);
+						inicializaBusquedaAvanzada();
+						$("#busquedaModal").modal("toggle");
+						return true;
+					}, false, ["Aceptar"], "error!", null);
+
+					return true;
+				}
+				else {
+					AbrirMensaje("ATENCIÓN", "NO SE ENCONTRO EL PRODUCTO QUE INTENTO BUSCAR.", function () {
+						$("#msjModal").modal("hide");
+						$("#Busqueda").focus();
+						return true;
+					}, false, ["Aceptar"], "error!", null);
+
+				}
+			} else if (obj.producto.p_id === "NO" && valor == "") {
+				if (funcionBusquedaAvanzada === true) {
+					productoBase = null;
+					$("#estadoFuncion").val(false);
+					inicializaBusquedaAvanzada();
+					$("#busquedaModal").modal("toggle");
+				}
+			} else {
+				//encontro producto pero hay warning
+				AbrirMensaje("ATENCIÓN!", obj.msg, function (resp) {
+					if (resp === "SI") {
+						productoBase = obj.producto;
+						$("#estadoFuncion").val(true);
+						$("#estadoFuncion").trigger("change");
+						$("#msjModal").modal("hide");
+						var up = $("#txtUPEnComprobanteRP");
+						if (up) {
+							up.focus();
+						}
+						return true;
+					}
+					else {
+						//se deniega
+						productoBase = null;
+						$("#estadoFuncion").val(false);
+						$("#btnBusquedaBase").prop("disabled", false);
+						$("#msjModal").modal("hide");
+						$("#Busqueda").focus();
+						return true;
+					}
+				},
+					true, ["Aceptar", "Denegar"], "Warning!", null);
+			}
+		}
+		else {
+			//encontro y se presenta
+			productoBase = obj.producto;
+			$("#estadoFuncion").val(true);
+			$("#estadoFuncion").trigger("change");
+			return true;
+		}
+	});
+	return true;
+}

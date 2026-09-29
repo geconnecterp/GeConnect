@@ -106,5 +106,7 @@ namespace gc.infraestructura.Enumeraciones
 		R098_Reporte_Prod_Sin_Stock_En_Transferencias = 98,
 		R099_Reporte_Ordenes_De_Reparto = 99,
         R100_Ajuste_De_Stock = 100,
+		R101_Devolucion_A_Proveedor = 101,
+		R102_Remito_No_Fiscal = 102,
 	}
 }

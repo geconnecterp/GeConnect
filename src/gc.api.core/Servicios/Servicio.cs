@@ -600,6 +600,97 @@
 			return tabla;
 		}
 
+		protected PdfPTable GeneraCabeceraPDF2_ParaRemito(ReporteSolicitudDto solicitud, Font chico, Font titulo, Font tituloBig, Image? logo, EmpresaGeco empresa, string nro_remito, int titHorAlign = Element.ALIGN_LEFT, int subtitHorAlign = Element.ALIGN_LEFT)
+		{
+			// Tabla principal: 3 columnas
+			PdfPTable tabla = HelperPdf.GeneraTabla(3, new float[] { 45f, 10f, 45f }, 100, 10, 20);
+
+			// ============================================================
+			// COLUMNA 1 — Datos de la empresa
+			// ============================================================
+
+			PdfPTable col1 = new PdfPTable(1);
+			col1.WidthPercentage = 100;
+
+			col1.AddCell(HelperPdf.CrearCeldaTexto(empresa.Nombre, chico));
+			col1.AddCell(HelperPdf.CrearCeldaTexto($"{empresa.Direccion}, {empresa.Localidad}", chico));
+			col1.AddCell(HelperPdf.CrearCeldaTexto($"{empresa.Responsabilidad}", chico));
+			col1.AddCell(HelperPdf.CrearCeldaTexto($"CUIT: {empresa.CUIT}", chico));
+			col1.AddCell(HelperPdf.CrearCeldaTexto($"IB: {empresa.IngresosBrutos}", chico));
+			col1.AddCell(HelperPdf.CrearCeldaTexto($"Inicio Act.: {empresa.InicioActividades.ToShortDateString()}", chico));
+
+			PdfPCell celdaCol1 = new PdfPCell(col1)
+			{
+				Border = Rectangle.NO_BORDER,
+				HorizontalAlignment = Element.ALIGN_LEFT,
+				VerticalAlignment = Element.ALIGN_TOP
+			};
+
+			tabla.AddCell(celdaCol1);
+
+			// ============================================================
+			// COLUMNA 2 — R grande + Cod. 91
+			// ============================================================
+
+			PdfPTable col2 = new PdfPTable(1);
+			col2.WidthPercentage = 100;
+
+			// R grande dentro de recuadro
+			PdfPCell celdaR = new PdfPCell(new Phrase("R", tituloBig))
+			{
+				Border = Rectangle.BOX,
+				HorizontalAlignment = Element.ALIGN_CENTER,
+				VerticalAlignment = Element.ALIGN_MIDDLE,
+				PaddingTop = 10f,
+				PaddingBottom = 10f
+			};
+			col2.AddCell(celdaR);
+
+			// Cod. 91 debajo
+			PdfPCell celdaCod = new PdfPCell(new Phrase("Cod. 91", chico))
+			{
+				Border = Rectangle.NO_BORDER,
+				HorizontalAlignment = Element.ALIGN_CENTER,
+				PaddingTop = 5f
+			};
+			col2.AddCell(celdaCod);
+
+			PdfPCell celdaCol2 = new PdfPCell(col2)
+			{
+				Border = Rectangle.NO_BORDER,
+				HorizontalAlignment = Element.ALIGN_CENTER,
+				VerticalAlignment = Element.ALIGN_MIDDLE
+			};
+
+			tabla.AddCell(celdaCol2);
+
+			// ============================================================
+			// COLUMNA 3 — Datos del remito
+			// ============================================================
+
+			PdfPTable col3 = new PdfPTable(1);
+			col3.WidthPercentage = 100;
+
+			col3.AddCell(HelperPdf.CrearCeldaTexto($"N° Remito: {nro_remito}", chico));
+			col3.AddCell(HelperPdf.CrearCeldaTexto($"Fecha: {DateTime.Now:dd/MM/yyyy}", chico));
+			col3.AddCell(HelperPdf.CrearCeldaTexto("DOCUMENTO NO VÁLIDO COMO FACTURA", chico));
+			col3.AddCell(HelperPdf.CrearCeldaTexto($"CUIT: {empresa.CUIT}", chico));
+			col3.AddCell(HelperPdf.CrearCeldaTexto($"IIBB: {empresa.IngresosBrutos}", chico));
+			col3.AddCell(HelperPdf.CrearCeldaTexto($"Inicio Act.: {empresa.InicioActividades.ToShortDateString()}", chico));
+
+			PdfPCell celdaCol3 = new PdfPCell(col3)
+			{
+				Border = Rectangle.NO_BORDER,
+				HorizontalAlignment = Element.ALIGN_RIGHT,
+				VerticalAlignment = Element.ALIGN_TOP
+			};
+
+			tabla.AddCell(celdaCol3);
+
+			return tabla;
+		}
+
+
 		protected PdfPTable GeneraCabeceraPDF2_NoFecha(ReporteSolicitudDto solicitud, Font chico, Font titulo, Font tituloBig, Image? logo, EmpresaGeco _empresaGeco, int titHorAlign = 1, int subtitHorAlign = 1)
 		{
 			PdfPTable tabla = HelperPdf.GeneraTabla(3, [10f, 20f, 70f], 100, 10, 20);

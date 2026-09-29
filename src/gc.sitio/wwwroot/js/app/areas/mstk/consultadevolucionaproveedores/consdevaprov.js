@@ -16,6 +16,9 @@ $(function () {
 	$("#SucursalesList").on("dblclick", 'option', function () { $(this).remove(); })
 	$("#Rel01List").on("dblclick", 'option', function () { $(this).remove(); })
 
+	$("#btnImprimir").off("click");
+	$("#btnImprimir").on("click", ControlaImprimirDevolucion);
+
 	$("input#Rel01").on("click", function () {
 		$("input#Rel01").val("");
 		$("#Rel01Item").val("");
@@ -47,6 +50,33 @@ $(function () {
 		}
 	});
 });
+
+function ControlaImprimirDevolucion() {
+	if (dvCompteSeleccionado == "") {
+		AbrirMensaje("ATENCIÓN", "Debe seleccionar una Devolución.", function () {
+			$("#msjModal").modal("hide");
+			return true;
+		}, false, ["Aceptar"], "error!", null);
+	}
+	else {
+		ImprimirDevolucion_Generado(dvCompteSeleccionado);
+	}
+}
+
+function ReseteoDeReportes() {
+	console.log("Reseto de reportes");
+	ReporteResetArre();
+}
+
+function ImprimirDevolucion_Generado(dvCompteSeleccionado) {
+	ReseteoDeReportes();
+	setTimeout(() => {
+		let data = { id: dvCompteSeleccionado, sm_tipo: "DV" };
+		cargarReporteEnArre(101, data, "DEVOLUCIÓN A PROVEEDOR", "", "");
+		cargarReporteEnArre(102, data, "REMITO NO FISCAL", "", "");
+		invocacionGestorDoc({});
+	}, 500);
+}
 
 function MostrarFiltrosAplicados() {
 	try {
@@ -198,8 +228,11 @@ function SeleccionarDevolucion(x, grid) {
 	var dv_compte = $row.data("dv-compte");
 	var cm_compte = $row.data("cm-compte");
 	AbrirWaiting("Cargando datos...");
+	dvCompteSeleccionado = dv_compte;
 	consultarDetalle(dv_compte);
 }
+
+let dvCompteSeleccionado = null;
 
 function consultarDetalle(dv_compte) {
 	PostGenHtml({ dv_compte }, obtenerDetalleDevolucionURL, function (obj) {

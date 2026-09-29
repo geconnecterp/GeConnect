@@ -798,9 +798,13 @@ namespace gc.api.core.Constantes
 			public const string SP_COMPTE_REPO_CAB = "SPGECO_Compte_REPO_Cab";
 			public const string SP_COMPTE_REPO_IVA = "SPGECO_Compte_REPO_IVA";
 			public const string SP_COMPTE_REPO_PER = "SPGECO_Compte_REPO_Per";
+
+			#region PV
+			public const string SP_PV_REMITO_REPO = "SPGECO_PV_REMITO_REPO";
+			#endregion
 		}
 
-        public static class StoredFunctions
+		public static class StoredFunctions
 		{
 			public const string FX_PASSWORD_ENCRIPTA = "dbo.sf_pass_e";
 			public const string FX_PASSWORD_DESENCRIPTA = "dbo.sf_pass_d";

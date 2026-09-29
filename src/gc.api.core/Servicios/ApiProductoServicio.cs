@@ -2001,5 +2001,19 @@ namespace gc.api.core.Servicios
 
 			return info;
 		}
+
+		public List<RemitoNoFiscalDto> ObtenerRemitoNoFiscal(RemitoNoFiscalRequest request)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_PV_REMITO_REPO;
+			var ps = new List<SqlParameter>
+			{
+				new("@sm_tipo", request.sm_tipo),
+				new("@sm_compte", request.sm_compte),
+				new("@costo", request.costo),
+			};
+			var rem = _repository.EjecutarLstSpExt<RemitoNoFiscalDto>(sp, ps, true);
+
+			return rem;
+		}
 	}
 }
