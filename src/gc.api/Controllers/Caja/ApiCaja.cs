@@ -18,6 +18,18 @@ namespace gc.api.Controllers.Caja
     {
         private readonly ILogger<ApiCaja> _logger;
         private readonly IApiCajaServicio _apiCajaServicio;
+        [HttpPost("ReimprimirZ")]
+        public IActionResult ReimprimirZ(ReimpresionZRequestDto req)
+        {
+            var usuario = User.FindFirst("user")?.Value ?? User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            var adm = User.FindFirst("AdmId")?.Value?.Split('#')[0];
+            if (string.IsNullOrWhiteSpace(usuario) || string.IsNullOrWhiteSpace(adm)) return Forbid();
+            // La identidad del token prevalece sobre cualquier dato suministrado por el cliente.
+            req.usu_id = usuario;
+            req.adm_id = adm;
+            return Ok(new ApiResponse<RespuestaDto>(_apiCajaServicio.ReimprimirZ(req)));
+        }
+
         public ApiCaja(ILogger<ApiCaja> logger, IApiCajaServicio apiCajaServicio)
         {
             _logger = logger;

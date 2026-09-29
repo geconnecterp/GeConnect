@@ -1,13 +1,14 @@
 ﻿<!--(Nombre modulo,(NN,url))-->
 @model (string,(string,(string,bool)))
 @{
-    string a = User.Claims.First(c => c.Type.Contains("AdmId")).Value;
-    var adm = a.Split("#");
+    var operador = gc.pocket.site.Models.Cuenta.OperadorCuenta.Desde(User);
     var areaActual = ViewContext.RouteData.Values["area"]?.ToString();
     var controladorActual = ViewContext.RouteData.Values["controller"]?.ToString();
     var cabeceraCompacta = string.Equals(areaActual, "PocketPpal", StringComparison.OrdinalIgnoreCase) &&
         (string.Equals(controladorActual, "TrInt", StringComparison.OrdinalIgnoreCase) ||
          string.Equals(controladorActual, "OR", StringComparison.OrdinalIgnoreCase));
+    cabeceraCompacta |= string.Equals(areaActual, "Seguridad", StringComparison.OrdinalIgnoreCase) &&
+        string.Equals(controladorActual, "Cuenta", StringComparison.OrdinalIgnoreCase);
 }
 
 <!-- Header Golden Minimalista -->
@@ -19,13 +20,11 @@
             <i class="bx bx-home-alt me-1"></i>GECOPocket
         </a>
         
-        <span class="badge bg-golden-light text-golden-dark px-3 py-2 pocket-header-branch" title="Sucursal @adm[1]">
-            <i class="bx bx-building me-1"></i>Sucursal @adm[1]
+        <span class="badge bg-golden-light text-golden-dark px-3 py-2 pocket-header-branch" title="Sucursal @operador.Sucursal">
+            <i class="bx bx-building me-1"></i>Sucursal @operador.Sucursal
         </span>
 
-        <span class="text-white fw-semibold text-truncate pocket-header-user" title="@Model.Item2.Item1">
-            <i class="bx bx-user me-1"></i>@Model.Item2.Item1
-        </span>
+        <div class="pocket-header-account"><partial name="_loginAuth" /></div>
     </div>
     
     <!-- Barra Inferior -->

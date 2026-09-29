@@ -37,6 +37,33 @@ namespace gc.caja.core.Servicios.Implementacion.Seguridad
         {
         }
 
+        public async Task<RespuestaGenerica<RespuestaDto>> ReimprimirZ(ReimpresionZRequestDto req, string token)
+        {
+            try
+            {
+                using var client = new HelperAPI().InicializaCliente(req, token, out var content);
+                using (content)
+                using (var response = await client.PostAsync($"{_appSettings.RutaBase}{RutaAPI}/ReimprimirZ", content))
+                {
+                    if (response.IsSuccessStatusCode)
+                    {
+                        var body = await response.Content.ReadAsStringAsync();
+                        var resultado = JsonConvert.DeserializeObject<ApiResponse<RespuestaDto>>(body)?.Data;
+                        if (resultado != null)
+                            return new() { Ok = resultado.resultado == 0, Entidad = resultado, Mensaje = resultado.resultado_msj };
+                    }
+                    // No reintentar: un fallo de transporte no prueba que el controlador no recibió la orden.
+                    _logger.LogWarning("Reimpresión Z: respuesta HTTP {Status}", response.StatusCode);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "No se pudo determinar el resultado de reimpresión Z. Caja={Caja}", req.caja_id);
+            }
+            return new() { Ok = false, Entidad = new() { resultado = -9 },
+                Mensaje = "No se pudo determinar el resultado. Revise el controlador antes de volver a solicitar la impresión." };
+        }
+
         public async Task<RespuestaGenerica<RespuestaDto>> ValidarIntegridadUsuarioCaja(CajaReqDto req, string token)
         {
             try

@@ -10,6 +10,7 @@ $(function () {
 
     // Variable global para control de acceso al menÃº
     let nivelAccesoMenu = 'ninguno';
+    let reimpresionZDisponible = false;
 
     // Variable global para control de cierre intencional del modal Cambio PV
     let cierreIntencional = false;
@@ -66,7 +67,15 @@ $(function () {
     // ---------------------------------------------------------
     // INICIO DEL FLUJO: VALIDACIÃ“N DE INTEGRIDAD
     // ---------------------------------------------------------
-    iniciarFlujoValidacion();
+    // Consulta de configuración sin apertura ni validación operativa del controlador.
+    $.ajax({ url: ReimpresionZDisponibleUrl, dataType: 'json', timeout: 15000 }).done(function (r) {
+        reimpresionZDisponible = r.habilitado === true;
+    }).always(function () { iniciarFlujoValidacion(); });
+    $('<button>', { type: 'button', id: 'btnReimpresionZSinApertura',
+        class: 'btn btn-outline-secondary w-100', text: 'Reimprimir Z sin abrir caja' })
+        .appendTo('#modalValidacionIngreso .modal-footer').hide()
+        .on('click', abrirModuloReportesZ);
+
 
     // ---------------------------------------------------------
     // MANEJADORES DE EVENTOS: MODAL VALIDACIÃ“N
@@ -242,7 +251,13 @@ $(function () {
 
         const resultado = response.resultado;
 
-        if (resultado === 0) {
+        if (resultado === 0 && reimpresionZDisponible) {
+            // Permite reportes históricos sin ejecutar AperturaCaja automáticamente.
+            $('#btnOperaSinCaja').hide();
+            $('#btnReimpresionZSinApertura').show();
+            mostrarModalValidacionConOpciones('Puede iniciar la operación de caja o reimprimir reportes Z sin realizar una apertura.');
+        }
+        else if (resultado === 0) {
             // âœ… CORRECTO: Procede automÃ¡ticamente con apertura
             console.log("âœ… ValidaciÃ³n OK - Procediendo automÃ¡ticamente con apertura");
             mostrarLoader("Procediendo a realizar apertura de caja...<br><small class='text-muted'>Inicializando punto de venta</small>");
@@ -255,6 +270,8 @@ $(function () {
         else if (resultado === 3) {
             // âœ… CORRECTO: Muestra modal para que usuario evalÃºe opciones
             console.log("âš ï¸ ValidaciÃ³n resultado=3 - Mostrando opciones al usuario");
+            $('#btnOperaSinCaja').show();
+            $('#btnReimpresionZSinApertura').toggle(reimpresionZDisponible);
             mostrarModalValidacionConOpciones(response.mensaje);
         }
         else if (resultado === 4) {
@@ -530,13 +547,7 @@ $(function () {
                     return;
                 }
 
-                // Cambio exitoso (resultado = 0)
-                console.log("âœ… Cambio de PV exitoso - Procediendo con apertura automÃ¡tica");
-                
-                mostrarLoader("Procediendo a realizar apertura de caja...<br><small class='text-muted'>Nuevo punto de venta configurado</small>");
-                setTimeout(() => {
-                    procesarAperturaCaja();
-                }, 800);
+                window.location.reload();
             },
             error: function (xhr, status, error) {
                 ocultarLoader();
@@ -594,6 +605,10 @@ $(function () {
                 console.warn("ðŸš« MenÃº configurado: SIN ACCESO");
                 break;
         }
+        const zHabilitado = reimpresionZDisponible && ['completo', 'parcial', 'solo-cierre'].includes(nivelAccesoMenu);
+        $botones.filter('[data-action="reportes-z"]').prop('disabled', !zHabilitado)
+            .toggleClass('disabled-menu-item', !zHabilitado).attr('aria-disabled', String(!zHabilitado))
+            .attr('title', zHabilitado ? 'Reimprimir reportes del controlador fiscal' : 'Requiere controlador fiscal compatible');
     }
 
     /**
@@ -1633,7 +1648,9 @@ $(function () {
         });
     }
     function abrirModuloAdministrador() { console.log('ðŸ›¡ï¸ Administrador...'); }
-    function abrirModuloReportesZ() { console.log('ðŸ“Š Reportes Z...'); }
+    function abrirModuloReportesZ() {
+        if (reimpresionZDisponible) window.location.assign(ReimpresionZUrl);
+    }
 
     function abrirModalTecladoDemo() {
         const menuModal = getModalMenu();

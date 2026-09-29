@@ -1,0 +1,83 @@
+using System.Reflection;
+using System.Security.Claims;
+using System.Text.Json;
+using gc.api.Controllers.Caja;
+using gc.api.core.Constantes;
+using gc.api.core.Contratos.Servicios.LineaCaja;
+using gc.api.core.Entidades;
+using gc.api.core.Interfaces.Datos;
+using gc.api.core.Servicios.LineaCaja;
+using gc.infraestructura.Core.Interfaces;
+using gc.infraestructura.Dtos.Cajas;
+using gc.infraestructura.Dtos.Cajas.Request;
+using gc.infraestructura.Dtos.Gen;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Data.SqlClient;
+using Microsoft.Extensions.Logging.Abstractions;
+
+int count = 0;
+void Check(bool ok, string nombre) { if (!ok) throw new Exception(nombre); count++; }
+var opciones = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+var casos = JsonSerializer.Deserialize<List<Caso>>(File.ReadAllText(args[0]), opciones)!;
+foreach(var c in casos) Check(new ReimpresionZRangoDto { PorFecha=c.porFecha, Desde=c.desde, Hasta=c.hasta }.Validar(new(2026,9,29),out _,out _,out _)==c.valido,c.nombre);
+Check(!new ReimpresionZRangoDto { Desde="1",Hasta="2" }.Validar(DateTime.Today,out _,out _,out _),"Modo obligatorio");
+Check(new ReimpresionZRangoDto { PorFecha=true,Desde="2026-09-22",Hasta="2026-09-29" }.Validar(new(2026,9,29),out var d,out var h,out _) && d=="260922" && h=="260929","Conversión AAMMDD");
+foreach(var ctrl in new string?[] { null,"","-1","0","51" }) Check(!ReimpresionZRangoDto.ControladorSoportado(ctrl),"Controlador no soportado");
+Check(ReimpresionZRangoDto.ControladorSoportado("50"),"Hasar habilitado");
+
+var repo=DispatchProxy.Create<IRepository<EntidadBase>,Proxy>();
+var uow=new FakeUow(repo);
+var logger=DispatchProxy.Create<ILoggerHelper,Proxy>();
+((Proxy)(object)logger).Call=(m,a)=>null;
+string ctrlId="50", admId="0001"; int llamadas=0; List<SqlParameter>? parametros=null; string? spInvocado=null;
+Func<List<RespuestaDto>> respuesta=()=>new(){new(){resultado=0,resultado_msj="OK"}};
+((Proxy)(object)repo).Call=(m,a)=> {
+ if(m.Name!="EjecutarLstSpExt") throw new Exception("Operación inesperada");
+ if((string)a![0]! ==ConstantesGC.StoredProcedures.SP_CAJA_DATOS) return new List<CajaDatosDto>{new(){caja_id="0001",adm_id=admId,ctrl_id=ctrlId,caja_estado="C"}};
+ if((string)a![0]! !=ConstantesGC.StoredProcedures.SP_CAJA_REIMPRIMIR_Z) throw new Exception("SP inesperado");
+ Interlocked.Increment(ref llamadas);spInvocado=(string)a[0]!;parametros=(List<SqlParameter>)a[1]!;return respuesta();
+};
+var service=new ApiCajaServicio(uow,logger);
+ReimpresionZRequestDto Req()=>new(){caja_id="0001",usu_id="tester",adm_id="0001",PorFecha=false,Desde="5000",Hasta="5005"};
+Check(service.ReimprimirZ(Req()).resultado==0 && llamadas==1,"Caja cerrada permite reimpresión");
+Check(spInvocado=="SPGECO_CAJA_Z" && parametros!.Count==6,"Contrato seis parámetros");
+Check(parametros!.Single(p=>p.ParameterName=="@xfecha").SqlDbType==System.Data.SqlDbType.Bit && (bool)parametros!.Single(p=>p.ParameterName=="@xfecha").Value==false,"Modo numérico bit");
+Check((string)parametros!.Single(p=>p.ParameterName=="@desde").Value=="5000" && (string)parametros!.Single(p=>p.ParameterName=="@hasta").Value=="5005","Valores exactos de rango");
+var fecha=Req();fecha.PorFecha=true;fecha.Desde=ReimpresionZRangoDto.Hoy.AddDays(-7).ToString("yyyy-MM-dd");fecha.Hasta=ReimpresionZRangoDto.Hoy.ToString("yyyy-MM-dd");
+Check(service.ReimprimirZ(fecha).resultado==0 && (bool)parametros!.Single(p=>p.ParameterName=="@xfecha").Value && (string)parametros!.Single(p=>p.ParameterName=="@hasta").Value==ReimpresionZRangoDto.Hoy.ToString("yyMMdd"),"Mapeo fechas real al límite SQL");
+var anteriores=llamadas;ctrlId="-1";Check(service.ReimprimirZ(Req()).resultado!=0 && llamadas==anteriores,"FE nunca ejecuta SP Z");ctrlId="50";
+admId="9999";Check(service.ReimprimirZ(Req()).resultado!=0 && llamadas==anteriores,"Caja ajena no imprime");admId="0001";
+var invalido=Req();invalido.Hasta="5006";Check(service.ReimprimirZ(invalido).resultado!=0 && llamadas==anteriores,"Servidor rechaza rango manipulado");
+respuesta=()=>new();Check(service.ReimprimirZ(Req()).resultado==-9,"Respuesta vacía incierta");
+respuesta=()=>throw new TimeoutException();Check(service.ReimprimirZ(Req()).resultado==-9,"Excepción incierta sin reintentar");
+respuesta=()=>new(){new(){resultado=2,resultado_msj="Rechazo"}};Check(service.ReimprimirZ(Req()).resultado_msj=="Rechazo","Propaga rechazo del SP");
+using(var entro=new ManualResetEventSlim()) using(var liberar=new ManualResetEventSlim()) {
+ respuesta=()=>{entro.Set();if(!liberar.Wait(5000))throw new Exception("Prueba bloqueada");return new(){new(){resultado=0}};};
+ var primera=Task.Run(()=>service.ReimprimirZ(Req()));
+ Check(entro.Wait(5000),"Primera solicitud iniciada");
+ try { var antes=llamadas;Check(service.ReimprimirZ(Req()).resultado!=0 && llamadas==antes,"Segunda solicitud simultánea rechazada"); }
+ finally { liberar.Set(); }
+ Check((await primera).resultado==0,"Primera solicitud completa");
+}
+respuesta=()=>new(){new(){resultado=0}};Check(service.ReimprimirZ(Req()).resultado==0,"Bloqueo liberado al terminar");
+var apiServicio=DispatchProxy.Create<IApiCajaServicio,Proxy>();ReimpresionZRequestDto? capturado=null;
+((Proxy)(object)apiServicio).Call=(m,a)=>{capturado=(ReimpresionZRequestDto)a![0]!;return new RespuestaDto();};
+var endpoint=new ApiCaja(NullLogger<ApiCaja>.Instance,apiServicio){ControllerContext=new(){HttpContext=new DefaultHttpContext()}};
+Check(endpoint.ReimprimirZ(Req()) is ForbidResult,"API exige identidad");
+endpoint.HttpContext.User=new ClaimsPrincipal(new ClaimsIdentity(new[]{new Claim("user","operador"),new Claim("AdmId","0001#Sucursal")},"Test"));
+var falsificado=Req();falsificado.usu_id="otro";falsificado.adm_id="otra";
+Check(endpoint.ReimprimirZ(falsificado) is OkObjectResult && capturado!.usu_id=="operador" && capturado.adm_id=="0001","API obtiene identidad del token");
+Console.WriteLine($"{count} pruebas de servidor aprobadas. Repositorio simulado: sin SQL ni impresión física.");
+public class Caso {public string nombre{get;set;}="";public bool porFecha{get;set;}public string desde{get;set;}="";public string hasta{get;set;}="";public bool valido{get;set;}}
+public class Proxy:DispatchProxy {public Func<MethodInfo,object?[]?,object?> Call=null!; protected override object? Invoke(MethodInfo? m,object?[]? a)=>Call(m!,a);}
+
+public class FakeUow(IRepository<EntidadBase> repo) : IUnitOfWork {
+ public IRepository<T> GetRepository<T>() where T:EntidadBase => (IRepository<T>)(object)repo;
+ public int SaveChanges(bool process=true)=>throw new NotSupportedException();
+ public Task<int> SaveChangesAsync(bool process=true)=>throw new NotSupportedException();
+ public long Complete()=>throw new NotSupportedException();
+ public void InicializarTransaccion()=>throw new NotSupportedException();
+ public void Commit()=>throw new NotSupportedException();
+ public void Rollback()=>throw new NotSupportedException();
+}

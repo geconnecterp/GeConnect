@@ -6,6 +6,7 @@ namespace gc.api.core.Contratos.Servicios.LineaCaja
 {
     public interface IApiCajaServicio
     {
+        RespuestaDto ReimprimirZ(ReimpresionZRequestDto req);
         RespuestaDto ValidaIntegridadUsuarioCaja(CajaReqDto req);
         RespuestaDto AperturaCaja(CajaReqDto reqDto);
         RespuestaDto CierreCaja(CajaReqDto reqDto);
