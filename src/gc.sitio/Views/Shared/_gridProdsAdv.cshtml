@@ -7,60 +7,74 @@
     // string sortDirInv = Model.SortDir.Equals("ASC") ? "DESC" : "ASC";
     string sort = Model.Sort;
 }
+<style>
+    .btn-grid-golden {
+        background: transparent !important;
+        border: none !important;
+        color: inherit !important;
+        padding: 0 !important;
+        font-weight: bold;
+    }
 
+        .btn-grid-golden:hover {
+            text-decoration: underline;
+            cursor: pointer;
+        }
+
+</style>
 
 <div class="table-responsive text-nowrap  table-wrapper-modal">
     <table class="table table-sm mb-0 table-hover table-golden" id="tbGridProd">
         <thead class="table-golden-header">
             <tr class="header">
-                <th scope="col">
+                <th scope="col" style="width:10%;text-align: center;">
                     @if (sort.Equals("p_id", StringComparison.InvariantCultureIgnoreCase) && Model.SortDir.Equals("desc"))
                     {
-                        <button class="btn btn-sm btn-secondary btn-grid btn-block" sortDir="desc" sort="p_id" onclick="ordenarColumna(this);"><span>ID </span><i class="bx  bx-chevron-up-circle btn-xs"></i> </button>
+                        <button class="btn btn-grid-golden" sortDir="desc" sort="p_id" onclick="ordenarColumna(this);"><span>ID </span><i class="bx  bx-chevron-up-circle btn-xs"></i> </button>
                     }
                     else
                     {
-                        <button class="btn btn-sm btn-secondary btn-grid btn-block" sortDir="asc" sort="p_id" onclick="ordenarColumna(this);"><span>ID </span><i class="bx  bx-chevron-down-circle btn-xs"></i> </button>
+                        <button class="btn btn-grid-golden" sortDir="asc" sort="p_id" onclick="ordenarColumna(this);"><span>ID </span><i class="bx  bx-chevron-down-circle btn-xs"></i> </button>
                     }
                 </th>
-                <th scope="col">
+                <th scope="col" style="width:50%;text-align: center;">
                     @if (sort.Equals("p_desc", StringComparison.InvariantCultureIgnoreCase) && Model.SortDir.Equals("desc"))
                     {
-                        <button class="btn btn-sm btn-secondary btn-grid btn-block" sortDir="desc" sort="p_desc" onclick="ordenarColumna(this);"><span>Desc </span><i class="bx  bx-chevron-up-circle btn-xs"></i> </button>
+                        <button class="btn btn-grid-golden" sortDir="desc" sort="p_desc" onclick="ordenarColumna(this);"><span>DESCRIPCIÓN </span><i class="bx  bx-chevron-up-circle btn-xs"></i> </button>
                     }
                     else
                     {
-                        <button class="btn btn-sm btn-secondary btn-grid btn-block" sortDir="asc" sort="p_desc" onclick="ordenarColumna(this);"><span>Desc </span><i class="bx  bx-chevron-down-circle btn-xs"></i> </button>
+                        <button class="btn btn-grid-golden" sortDir="asc" sort="p_desc" onclick="ordenarColumna(this);"><span>DESCRIPCIÓN </span><i class="bx  bx-chevron-down-circle btn-xs"></i> </button>
                     }
                 </th>
-                <th scope="col">
+                <th scope="col" style="width:15%;text-align: center;">
                     @if (sort.Equals("p_id_barrado", StringComparison.InvariantCultureIgnoreCase) && Model.SortDir.Equals("desc"))
                     {
-                        <button class="btn btn-sm btn-secondary btn-grid btn-block" sortDir="desc" sort="p_id_barrado" onclick="ordenarColumna(this);"><span>EAN </span><i class="bx  bx-chevron-up-circle btn-xs"></i> </button>
+                        <button class="btn btn-grid-golden" sortDir="desc" sort="p_id_barrado" onclick="ordenarColumna(this);"><span>EAN </span><i class="bx  bx-chevron-up-circle btn-xs"></i> </button>
                     }
                     else
                     {
-                        <button class="btn btn-sm btn-secondary btn-grid btn-block" sortDir="asc" sort="p_id_barrado" onclick="ordenarColumna(this);"><span>EAN </span><i class="bx  bx-chevron-down-circle btn-xs"></i> </button>
+                        <button class="btn btn-grid-golden" sortDir="asc" sort="p_id_barrado" onclick="ordenarColumna(this);"><span>EAN </span><i class="bx  bx-chevron-down-circle btn-xs"></i> </button>
                     }
                 </th>
-                <th scope="col">
+                <th scope="col" style="text-align: center;">
                     @if (sort.Equals("p_id_prov", StringComparison.InvariantCultureIgnoreCase) && Model.SortDir.Equals("desc"))
                     {
-                        <button class="btn btn-sm btn-secondary btn-grid btn-block" sortDir="desc" sort="p_id_prov" onclick="ordenarColumna(this);"><span>PROV </span><i class="bx  bx-chevron-up-circle btn-xs"></i> </button>
+                        <button class="btn btn-grid-golden" sortDir="desc" sort="p_id_prov" onclick="ordenarColumna(this);"><span>ID PROV </span><i class="bx  bx-chevron-up-circle btn-xs"></i> </button>
                     }
                     else
                     {
-                        <button class="btn btn-sm btn-secondary btn-grid btn-block" sortDir="asc" sort="p_id_prov" onclick="ordenarColumna(this);"><span>PROV </span><i class="bx  bx-chevron-down-circle btn-xs"></i> </button>
+                        <button class="btn btn-grid-golden" sortDir="asc" sort="p_id_prov" onclick="ordenarColumna(this);"><span>ID PROV </span><i class="bx  bx-chevron-down-circle btn-xs"></i> </button>
                     }
                 </th>
-                <th scope="col">
+                <th scope="col" style="text-align: center;">
                     @if (sort.Equals("p_activo", StringComparison.InvariantCultureIgnoreCase) && Model.SortDir.Equals("desc"))
                     {
-                        <button class="btn btn-sm btn-secondary btn-grid btn-block" sortDir="desc" sort="p_activo" onclick="ordenarColumna(this);"><span>E </span><i class="bx  bx-chevron-up-circle btn-xs"></i> </button>
+                        <button class="btn btn-grid-golden" sortDir="desc" sort="p_activo" onclick="ordenarColumna(this);"><span>Estado </span><i class="bx  bx-chevron-up-circle btn-xs"></i> </button>
                     }
                     else
                     {
-                        <button class="btn btn-sm btn-secondary btn-grid btn-block" sortDir="asc" sort="p_activo" onclick="ordenarColumna(this);"><span>E </span><i class="bx  bx-chevron-down-circle btn-xs"></i> </button>
+                        <button class="btn btn-grid-golden" sortDir="asc" sort="p_activo" onclick="ordenarColumna(this);"><span>Estado </span><i class="bx  bx-chevron-down-circle btn-xs"></i> </button>
                     }
                 </th>
                 @*  <th scope="col">
@@ -91,11 +105,11 @@
                 if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
 
                 <tr class="@clase" onclick="selectReg(this, 'tbGridProd')" ondblclick="selectRegDbl(this)" data-producto-id="@item.P_id">
-                    <td class="@Model.ObtenerClase(item.P_id)">@item.P_id</td>
+                    <td class="text-sm-center">@item.P_id</td>
                     <td class="@Model.ObtenerClase(item.P_desc)">@item.P_desc</td>
-                    <td class="@Model.ObtenerClase(item.P_id_barrado)">@item.P_id_barrado</td>
-                    <td class="@Model.ObtenerClase(item.P_id_prov)">@item.P_id_prov</td>
-                    <td class="@Model.ObtenerClase(item.P_activo)">@item.P_activo </td>
+                    <td class="text-sm-center">@item.P_id_barrado</td>
+                    <td class="text-sm-center">@item.P_id_prov</td>
+                    <td class="text-sm-center">@item.P_activo </td>
                     @*                     <td class="text-sm-end">@item.P_pcosto</td>
                 <td class="text-sm-end">@item.Ps_stk</td> *@
                 </tr>

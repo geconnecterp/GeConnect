@@ -29,14 +29,16 @@ namespace gc.sitio.Areas.Compras.Controllers
 		private readonly AppSettings _appSettings;
 		private readonly IDepositoServicio _depositoServicio;
 		private readonly IProductoServicio _productoServicio;
+		private readonly ICuentaServicio _cuentaServicio;
 		//private readonly ILogger<CompraController> _logger;
-		public DevolucionAProveedorController(IProductoServicio productoServicio, IDepositoServicio depositoServicio,
+		public DevolucionAProveedorController(IProductoServicio productoServicio, IDepositoServicio depositoServicio, ICuentaServicio cuentaServicio,
 			ILogger<CompraController> logger, IOptions<AppSettings> options, IHttpContextAccessor context) : base(options, context)
 		{
 		//	_logger = logger;
 			_appSettings = options.Value;
 			_depositoServicio = depositoServicio;
 			_productoServicio = productoServicio;
+			_cuentaServicio = cuentaServicio;
 		}
 		public IActionResult Index()
 		{
@@ -57,6 +59,10 @@ namespace gc.sitio.Areas.Compras.Controllers
 				model.ComboBoxes = HelperMvc<ComboGenDto>.ListaGenerica(boxes.Select(x => new ComboGenDto { Id = x.Box_Id, Descripcion = $"{x.Box_Id}__{x.Box_desc}" }));
 				model.ProductosADevolver = ObtenerGridCoreSmart<ProductoADevolverDto>(listaProdAAjustar);
 				DevolucionProductosLista = [];
+				if (ProveedoresLista.Count == 0)
+				{
+					ObtenerProveedores(_cuentaServicio, "BI");
+				}
 				return View(model);
 			}
 			catch (Exception ex)

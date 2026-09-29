@@ -54,18 +54,25 @@
 		height: 1.6rem !important;
 	}
 
+	#tbDetalleDeProductosADevolver > tbody > tr > td {
+		font-size: 12px !important;
+	}
+
+	.fuente-bold {
+		font-weight: bold;
+	}
 </style>
 <div class="table-responsive table-wrapper-full-width" id="containerDetalleDeProductosADevolver">
-	<table class="table table-sm mb-0 table-hover table-golden" id="tbDetalleDeProductosADevolver">
+	<table class="table table-sm table-golden" id="tbDetalleDeProductosADevolver">
 		<thead>
 			<tr class="header">
-				<th style="width:5%;" class="col-header-small align-center">ID</th>
-				<th style="width:20%;" class="col-header-small align-center">Descripción</th>
-				<th style="width:5%;" class="col-header-small align-center">Cta</th>
-				<th style="width:10%;" class="col-header-small align-center">Box</th>
-				<th style="width:5%;" class="col-header-small align-center">Stk Actual</th>
-				<th style="width:5%;" class="col-header-small align-center">Ajuste</th>
-				<th style="width:5%;" class="col-header-small align-center">Stock Ajustado</th>
+				<th style="width:5%;" class="text-center">ID</th>
+				<th style="width:20%;" class="text-center">Descripción</th>
+				<th style="width:5%;" class="text-center">Cta</th>
+				<th style="width:10%;" class="text-center">Box</th>
+				<th style="width:5%;" class="text-center">Stk Actual</th>
+				<th style="width:5%;" class="text-center">Ajuste</th>
+				<th style="width:5%;" class="text-center">Stock Ajustado</th>
 				<th style="width:2%;"></th>
 				<th style="width:0%; display:none;">as_motivo</th>
 			</tr>
@@ -76,17 +83,14 @@
 				@foreach (var item in Model.ListaDatos)
 				{
 					if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
-					@* var res = string.Format(CultureInfo.InvariantCulture, "{0:#,0.000}", @item.as_resultado);
-					var stk_actual = string.Format(CultureInfo.InvariantCulture, "{0:#,0.000}", @item.as_stock);
-					var ajuste = string.Format(CultureInfo.InvariantCulture, "{0:#,0.000}", @item.as_ajuste); *@
 					<tr class="@clase" onclick="selectListaProductoRow(this)">
 						<td class="align-center">@item.p_id</td>
 						<td class="align-left">@item.p_desc</td>
 						<td class="align-center">@item.cta_id</td>
 						<td class="align-center">@item.box_desc</td>
-						<td class="align-right">@GridHelper.FormatearDato(item.as_stock, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
-						<td class="align-right">@GridHelper.FormatearDato(item.as_ajuste, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
-						<td class="align-right">@GridHelper.FormatearDato(item.as_resultado, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
+						<td class="align-right fuente-bold">@GridHelper.FormatearDato(item.as_stock, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
+						<td class="align-right fuente-bold">@GridHelper.FormatearDato(item.as_ajuste, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
+						<td class="align-right fuente-bold">@GridHelper.FormatearDato(item.as_resultado, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
 						<td class="text-center align-middle">
 							<button type="button" class="btn btn-danger btn-icon-compact" title="Rechazar" onclick="quitarProducto('@item.p_id')">
 								<i class="bx bx-trash"></i>

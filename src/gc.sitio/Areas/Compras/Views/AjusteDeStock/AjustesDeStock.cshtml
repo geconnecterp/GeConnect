@@ -80,14 +80,14 @@
 						<div class="col-6" style="float:left; padding: 2px;">
 							<div class="col-sm" id="divDepositos">
 								<div class="input-group input-group-sm fixed-padding-top">
-									<span class="input-group-text fixed-width">Depósito: </span>
+									<span class="input-group-text fixed-width-80">Depósito: </span>
 									@Html.DropDownList("id", depositos, "Seleccionar...", new { @id = "listaDeposito", @class = "form-control activable inputEditable" })
 								</div>
 							</div>
 							<div id="divComboBoxes">
 								<div class="col-sm" id="divComboBox" aria-disabled="true">
 									<div class="input-group input-group-sm fixed-padding-top">
-										<span class="input-group-text fixed-width">Box: </span>
+										<span class="input-group-text fixed-width-80">Box: </span>
 										@Html.DropDownList("id", boxes, "Seleccionar...", new { @id = "listaBox", @class = "form-control activable inputEditable" })
 									</div>
 								</div>
@@ -96,12 +96,12 @@
 						<div class="col-6" style="float:left; padding: 2px;">
 							<div class="col-sm" id="divComboMotivos">
 								<div class="input-group input-group-sm fixed-padding-top">
-									<span class="input-group-text fixed-width-75">Tipo: </span>
+									<span class="input-group-text fixed-width-80">Tipo: </span>
 									@Html.DropDownList("id", motivos, "Seleccionar...", new { @id = "listaMotivo", @class = "form-control activable inputEditable" })
 								</div>
 							</div>
 							<div class="input-group input-group-sm" style="padding-top: 5px;">
-								<span class="input-group-text fixed-width-75">Nota: </span>
+								<span class="input-group-text fixed-width-80">Nota: </span>
 								<input type="text" id="txtNota" class="form-control activable inputEditable" style="width: 80%;" value="" />
 							</div>
 						</div>

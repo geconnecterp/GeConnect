@@ -35,7 +35,7 @@
 			<div class="col-4" style="padding-top: 8px;">
 				<div class="row">
 					<fieldset style="margin: 2px;padding: 2px;">
-						<div class="col-5" style="float:left;">
+						<div class="col-5" style="float:left;padding-left: 5px;">
 							<div class="d-flex flex-column gap-3">
 								<div class="form-check">
 									<input class="form-check-input" type="radio" name="btnradio" id="btnradioManual" checked>
@@ -55,16 +55,16 @@
 							<div class="row" style="min-height: 37px;">
 							</div>
 							<div class="row">
-								<div class="input-group" id="divRevertirDevolucion">
-									<span class="input-group-text fixed-width-75" style="height:35px;">N°: </span>
-									<input type="text" id="txtNroDevolucion" class="align-left" style="width: 50%;" value="" />
+								<div class="input-group input-group-sm" id="divRevertirDevolucion">
+									<span class="input-group-text">N°: </span>
+									<input type="text" id="txtNroDevolucion" class="align-left form-control activable inputEditable" style="width: 65%;max-width: 65%;" value="" />
 									<button type="button" class="btn btn-sm btn-primary btn-sm me-1" style="margin-left:5px;z-index:1;" id="btnRevertirDevolucion">
 										<i class="bx bx-chevron-left"></i>
 									</button>
 								</div>
 							</div>
 							<div class="row" style="padding-top:4px;padding-left:7px;" id="divCargaPrevia">
-								<button type="button" class="btn btn-info btn-sm mt-1 me-1" style="margin-left:5px; width:88%;" id="btnCargaPreviaDP">
+								<button type="button" class="btn btn-info btn-sm mt-1 me-1" style="margin-left:5px; width:90%;" id="btnCargaPreviaDP">
 									<i class="bx bx-upload"></i> Carga Previa
 								</button>
 							</div>
@@ -74,41 +74,48 @@
 			</div>
 			<div class="col-8" style="padding-top: 8px;">
 				<div class="row">
-					<div class="col-4">
-						<div class="col-sm" id="divDepositos">
-							<div class="input-group">
-								<span class="input-group-text" style="padding-left: 5px;">Depósito: </span>
-								@Html.DropDownList("id", depositos, "Seleccionar...", new { @id = "listaDeposito", @class = "form-control activable inputEditable" })
+					<fieldset style="margin: 2px;padding: 2px;">
+						<div class="col-6" style="float:left; padding: 2px;">
+							<div class="col-sm" id="divDepositos">
+								<div class="input-group input-group-sm fixed-padding-top">
+									<span class="input-group-text fixed-width-80">Depósito: </span>
+									@Html.DropDownList("id", depositos, "Seleccionar...", new { @id = "listaDeposito", @class = "form-control activable inputEditable" })
+								</div>
 							</div>
-						</div>
-						<div id="divComboBoxes">
-							<div class="col-sm" id="divComboBox" aria-disabled="true">
-								<div class="input-group fixed-padding-top">
-									<span class="input-group-text" style="padding-left: 5px;padding-left: 40px;">Box: </span>
-									@Html.DropDownList("id", boxes, "Seleccionar...", new { @id = "listaBox", @class = "form-control activable inputEditable" })
+							<div id="divComboBoxes">
+								<div class="col-sm" id="divComboBox" aria-disabled="true">
+									<div class="input-group input-group-sm fixed-padding-top">
+										<span class="input-group-text fixed-width-80">Box: </span>
+										@Html.DropDownList("id", boxes, "Seleccionar...", new { @id = "listaBox", @class = "form-control activable inputEditable" })
+									</div>
 								</div>
 							</div>
 						</div>
-					</div>
-					<div class="col-8">
-						<div>
+						<div class="col-6" style="float:left;padding: 2px;margin-top: 5px;">
+							@* 						<div>
 							<partial name="~/areas/controlcomun/views/cuentacomercial/_ctrBuscarCC.cshtml" />
+						</div> *@
+							<div class="input-group input-group-sm">
+								<span class="input-group-text fixed-width-80">Cuenta</span>
+								<input type="text" class="form-control" name="Rel05" id="Rel05" />
+								@Html.Hidden("Rel05Item")
+							</div>
+							<div class="input-group input-group-sm" style="padding-top: 5px;">
+								<span class="input-group-text fixed-width-80">Nota: </span>
+								<input type="text" id="txtNota" class="form-control activable inputEditable" style="width: 82%;" value="" />
+							</div>
 						</div>
-						<div class="input-group" style="padding-top: 5px;">
-							<span class="input-group-text fixed-width-75">Nota: </span>
-							<input type="text" id="txtNota" class="form-control activable inputEditable" style="width: 87%;" value="" />
+						<div class="row" style="padding-top: 3px;">
+							<div style="text-align: right;align-content: center;">
+								<button type="button" class="btn btn-success btn-sm mt-1 me-1" id="btnConfirmar">
+									<i class="bx bx-badge-check"></i> Confirmar
+								</button>
+								<button type="button" class="btn btn-danger btn-sm mt-1 me-1" id="btnCancelar">
+									<i class="bx bx-x-circle"></i> Cancelar
+								</button>
+							</div>
 						</div>
-					</div>
-				</div>
-				<div class="row" style="padding-top: 5px;">
-					<div style="text-align: right;align-content: center;">
-						<button type="button" class="btn btn-success btn-sm mt-1 me-1" id="btnConfirmar">
-							<i class="bx bx-badge-check"></i> Confirmar
-						</button>
-						<button type="button" class="btn btn-danger btn-sm mt-1 me-1" id="btnCancelar">
-							<i class="bx bx-x-circle"></i> Cancelar
-						</button>
-					</div>
+					</fieldset>
 				</div>
 			</div>
 		</div>
@@ -126,13 +133,13 @@
 							<div class="input-group input-group-sm">
 								<span class="input-group-text">ID: </span>
 								<input type="text" id="txtIdProd" class="form-control form-control-sm" style="width:10%;display: none;" readonly />
-								<input type="text" id="txtProDescripcion" class="form-control form-control-sm" style="width: 30%;height: 32px;" readonly />
+								<input type="text" id="txtProDescripcion" class="form-control form-control-sm" style="width: 40%;height: 32px;" readonly />
 								<span class="input-group-text">UP: </span>
-								<input type="text" id="txtUP" class="form-control form-control-sm activable inputEditable" />
+								<input type="text" id="txtUP" class="form-control form-control-sm activable text-end" />
 								<span class="input-group-text">Bto: </span>
-								<input type="number" id="txtBto" class="form-control form-control-sm activable inputEditable" min="0" />
+								<input type="number" id="txtBto" class="form-control form-control-sm activable text-end" min="0" />
 								<span class="input-group-text">Unid: </span>
-								<input type="text" id="txtUnid" class="form-control form-control-sm activable inputEditable" />
+								<input type="text" id="txtUnid" class="form-control form-control-sm activable text-end" />
 								<input type="text" id="txtUP_ID" style="display:none;" />
 								<input type="text" id="txtBARRADO_ID" style="display:none;" />
 								<input type="text" id="txtID_PROV" style="display:none;" />
@@ -226,7 +233,7 @@
 		var provDesc = "";
 		//
 
-		var busquedaProdBaseUrl = "@Url.Action("BusquedaBase", "producto", new { area = "ControlComun", validarPertenenciaDeProveedor = false })";
+		var busquedaProdBaseUrl = "@Url.Action("BusquedaBase", "producto", new { area = "ControlComun", validarPertenenciaDeProveedor = false, validarEstado = false })";
 		var BuscarBoxesDesdeDepositoURL = "@Url.Action("ObtenerBoxesDesdeDeposito", "devolucionaproveedor", new { area = "Compras" })";
 		var buscarCuentaUrl = "@Url.Action("BuscarCuentaComercial", "compra", new { area = "Compras" })";
 		var AgregarProductoAListaURL = "@Url.Action("AgregarProductoALista", "devolucionaproveedor", new { area = "Compras" })";
@@ -245,15 +252,16 @@
 		var autoComRel02Url = "@Url.Action("BuscarRubros", "abmproducto", new { area = "abms" })";
 		var buscarMetadataURL = "@Url.Action("ObtenerDatosPaginacion", "abmproducto", new { area = "abms" })";
 		var busquedaAvanzadaUrl = "@Url.Action("BusquedaAvanzada", "producto", new { area = "ControlComun" })";
+		var autoComRel011Url = "@Url.Action("BuscarProvs", "devolucionaproveedor", new { area = "Compras" })";
 
 		window.addEventListener("DOMContentLoaded", function() {
 		  document.getElementById("Busqueda").style.width = "100px";
 		  ccWatcher.init();
 		});
 	</script>
+	<script src="~/js/app/busquedas.js" type="text/javascript"></script>
 	<script src="~/js/app/areas/devolucionaproveedor/devaprov.js"></script>
 	<script src="~/js/app/controlcomun/busquedacuentacomercial.js"></script>
-	<script src="~/js/app/busquedas.js" type="text/javascript"></script>
 	<script src="~/js/app/controlcomun/infoRpr.js" type="text/javascript"></script>
 	<script src="~/js/plugins/jquery.simplePagination.js"></script>
 }

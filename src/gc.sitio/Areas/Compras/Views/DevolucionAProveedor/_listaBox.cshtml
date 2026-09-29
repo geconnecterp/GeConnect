@@ -3,10 +3,10 @@
 	var cmbBoxes = Model.ComboBoxes;
 }
 
-<div class="col-sm" id="divComboBox1" aria-disabled="true">
-	<div class="input-group fixed-padding-top">
-		<span class="input-group-text" style="padding-left: 5px;padding-left: 40px;">Box: </span>
-		@Html.DropDownList("id", cmbBoxes, "Seleccionar...", new { @id = "listaBox", @class = "form-control" })
+<div class="col-sm" id="divComboBox" aria-disabled="true">
+	<div class="input-group input-group-sm fixed-padding-top">
+		<span class="input-group-text fixed-width-80">Box: </span>
+		@Html.DropDownList("id", cmbBoxes, "Seleccionar...", new { @id = "listaBox", @class = "form-control activable inputEditable" })
 	</div>
 </div>
 

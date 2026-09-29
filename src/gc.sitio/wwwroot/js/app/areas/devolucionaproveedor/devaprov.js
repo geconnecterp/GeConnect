@@ -1,17 +1,31 @@
 ﻿$(function () {
+	$("#btnDelProd").off("click", DelProd);
 	$("#btnDelProd").on("click", DelProd);
+	$("#btnradioManual").off("click", BtnRadioManual);
 	$("#btnradioManual").on("click", BtnRadioManual);
+	$("#btnCargaPreviaDP").off("click", AbrirCargaPrevia);
 	$("#btnCargaPreviaDP").on("click", AbrirCargaPrevia);
+	$("#btnradioRevertirDevolucion").off("click", BtnRadioRevertirDevolucion);
 	$("#btnradioRevertirDevolucion").on("click", BtnRadioRevertirDevolucion);
+	$("#btnradioCargaPrevia").off("click", BtnRadioCargaPrevia);
 	$("#btnradioCargaPrevia").on("click", BtnRadioCargaPrevia);
+	$("#btnRevertirDevolucion").off("click", ValidarDevolucion);
 	$("#btnRevertirDevolucion").on("click", ValidarDevolucion);
+	$("#listaDeposito").off("change", listaDepositoChange);
 	$("#listaDeposito").on("change", listaDepositoChange);
+	$("#listaBox").off("change", listaBoxesChange);
 	$("#listaBox").on("change", listaBoxesChange);
+	$("#txtUP").off("keyup", analizaInputUP);
 	$("#txtUP").on("keyup", analizaInputUP);
+	$("#txtBto").off("keyup", analizaInputBto);
 	$("#txtBto").on("keyup", analizaInputBto);
+	$("#txtUnid").off("keyup", analizaInputUnid);
 	$("#txtUnid").on("keyup", analizaInputUnid);
+	$("#btnAddProd").off("click", AgregarProdManual);
 	$("#btnAddProd").on("click", AgregarProdManual);
+	$("#btnCancelar").off("click", CancelarDevolucion);
 	$("#btnCancelar").on("click", CancelarDevolucion);
+	$("#btnConfirmar").off("click", ConfirmarDevolucion);
 	$("#btnConfirmar").on("click", ConfirmarDevolucion);
 	//btnConfirmar
 
@@ -90,7 +104,7 @@ function ConfirmarDevolucion() {
 	if ($("#txtNota").val() == "") {
 		AbrirMensaje("Atención", "Debe ingresar una 'Nota' antes de confirmar la devolución.", function () {
 			$("#msjModal").modal("hide");
-			$("#txtNota").focus();
+			$("#txtNota").trigger('focus');
 			return true;
 		}, false, ["Aceptar"], "warn!", null);
 	}
@@ -140,6 +154,7 @@ function ValidarExistenciaDeProductosCargadosParaDevolucion(confirma) {
 										return true;
 									}, false, ["Aceptar"], "warn!", null);
 								} else {
+
 									$("#Cuenta").val("");
 									$("#razonsocial").val("");
 									$("#txtNroDevolucion").val("");
@@ -167,8 +182,13 @@ function ValidarExistenciaDeProductosCargadosParaDevolucion(confirma) {
 									}, false, ["Aceptar"], "warn!", null);
 								} else {
 									console.log(o.jsonstring);
-									$("#Cuenta").val("");
-									$("#razonsocial").val("");
+									AbrirMensaje("Atención", "La devolución se ha registrado con éxito.", function () {
+										$("#msjModal").modal("hide");
+										return true;
+									}, false, ["Aceptar"], "succ!", null);
+									$("#Rel05").val("");
+									$("#listaDeposito").val("");
+									$("#listaBox").val("");
 									$("#tbDetalleDeProductosADevolver tbody tr").remove();
 									$("#txtNota").val("");
 									$("#txtNroDevolucion").val("");
@@ -357,7 +377,7 @@ function verificaEstado(e) {
 		$("#txtBARRADO_ID").val(prod.p_id_barrado);
 		$("#txtID_PROV").val(prod.p_id_prov);
 		$("#txtUP").mask("000.000.000.000", { reverse: true });
-		$("txtBto").mask('#,##0', {
+		$("#txtBto").mask('#,##0', {
 			reverse: true,
 			translation: {
 				'#': {
@@ -369,35 +389,27 @@ function verificaEstado(e) {
 				e.target.value = value.replace(/(?!^)-/g, '').replace(/^,/, '').replace(/^-,/, '-');
 			}
 		});
-		//$("#txtBto").mask("000.000.000.000", {
-		//	reverse: true,
-		//	translation: {
-		//		'#': {
-		//			pattern: /-|\d/,
-		//			recursive: true
-		//		}
-		//	},
-		//	onChange: function (value, e) {
-		//		e.target.value = value.replace(/(?!^)-/g, '').replace(/^,/, '').replace(/^-,/, '-');
-		//	}
-		//});
-		$("#txtUP").val(prod.p_unidad_pres).prop("disabled", false);
-		$("#txtBto").val(prod.bulto).prop("disabled", false);
-		$("#txtUnid").mask("000.000.000.000", { reverse: true });
 
-		if (prod.up_id !== "07") {  //unidades enteras
-			// $("#box").mask("000.000.000.000,00", { reverse: true });
-			$("#txtUnid").mask("000.000.000.000,00", { reverse: true });
+		$("#txtUP").val(prod.p_unidad_pres);
+		$("#txtBto").val(prod.bulto);
+
+		if (prod.up_id === "07") {  //unidades enteras
+			getMaskForInteger("#txtUnid");
 			$("#txtUnid").val(0).prop("disabled", false);
+			$("#txtUP").prop('disabled', false);
+			$("#txtBto").prop('disabled', false);
+			$("#txtUP").trigger('focus');
 		}
 		else { //unidades decimales
-			//$("#txtUnid").val(0).prop("disabled", true);
+			$("#txtUP").prop('disabled', true);
+			$("#txtBto").prop('disabled', true);
+			getMaskForTwoDecimals("#txtUnid");
+			$("#txtUnid").trigger('focus');
 		}
 		$("#Busqueda").val("");
 		if (prod.p_con_vto !== "N") {
 		} else {
 		}
-		$("#txtUP").focus();
 	}
 	return true;
 }
@@ -434,25 +446,31 @@ function InicializaPantalla() {
 }
 
 function analizaInputUP(x) {
-	if (x.which == "13") {
-		$("#txtBto").focus();
+	if (x.key === "Enter" || x.which == "13") {
+		x.preventDefault();
+		x.stopPropagation();
+		$("#txtBto").trigger('focus');
 	}
 }
 
 function analizaInputBto(x) {
-	if (x.which == "13") {
+	if (x.key === "Enter" || x.which == "13") {
+		x.preventDefault();
+		x.stopPropagation();
 		if ($("#txtUnid").prop('disabled')) {
-			$("#btnAddProd").focus();
+			$("#btnAddProd").trigger('focus');
 		}
 		else {
-			$("#txtUnid").focus();
+			$("#txtUnid").trigger('focus');
 		}
 	}
 }
 
 function analizaInputUnid(x) {
-	if (x.which == "13") {
-		$("#btnAddProd").focus();
+	if (x.key === "Enter" || x.which == "13") {
+		x.preventDefault();
+		x.stopPropagation();
+		$("#btnAddProd").trigger('focus');
 	}
 }
 
@@ -600,21 +618,21 @@ function AgregarProdManual() {
 	if ($("#listaDeposito").val() == "") {
 		AbrirMensaje("Atención", "Debe especificar un valor para depósito.", function () {
 			$("#msjModal").modal("hide");
-			$("#listaDeposito").focus();
+			$("#listaDeposito").trigger('focus');
 			return true;
 		}, false, ["Aceptar"], "warn!", null);
 	}
 	else if ($("#listaBox").val() == "") {
 		AbrirMensaje("Atención", "Debe especificar un valor para box.", function () {
 			$("#msjModal").modal("hide");
-			$("#listaBox").focus();
+			$("#listaBox").trigger('focus');
 			return true;
 		}, false, ["Aceptar"], "warn!", null);
 	}
-	else if ($("#Cuenta").val() == "") {
-		AbrirMensaje("Atención", "Debe especificar un valor para cuenta.", function () {
+	else if ($("#Rel05").val() == "") {
+		AbrirMensaje("Atención", "Debe especificar una cuenta válida.", function () {
 			$("#msjModal").modal("hide");
-			$("#Cuenta").focus();
+			$("#Rel05").trigger('focus');
 			return true;
 		}, false, ["Aceptar"], "warn!", null);
 	}
@@ -623,14 +641,14 @@ function AgregarProdManual() {
 			if ($("#txtUP").val() === "") {
 				AbrirMensaje("Atención", "Debe especificar un valor para UP.", function () {
 					$("#msjModal").modal("hide");
-					$("#txtUP").focus();
+					$("#txtUP").trigger('focus');
 					return true;
 				}, false, ["Aceptar"], "warn!", null);
 			}
 			if ($("#txtBto").val() === "") {
 				AbrirMensaje("Atención", "Debe especificar un valor para Bto.", function () {
 					$("#msjModal").modal("hide");
-					$("#txtBto").focus();
+					$("#txtBto").trigger('focus');
 					return true;
 				}, false, ["Aceptar"], "warn!", null);
 			}
@@ -640,7 +658,7 @@ function AgregarProdManual() {
 			if ($("#txtUnid").val() === "") {
 				AbrirMensaje("Atención", "Debe especificar un valor para Unid.", function () {
 					$("#msjModal").modal("hide");
-					$("#txtUnid").focus();
+					$("#txtUnid").trigger('focus');
 					return true;
 				}, false, ["Aceptar"], "warn!", null);
 			}
@@ -648,9 +666,189 @@ function AgregarProdManual() {
 		}
 		if (ajuste !== 0) {
 			var pId = $("#txtIdProd").val();
-			var ctaId = $("#Cuenta").val();
+			var ctaId = $("#Rel05Item").val();
 			AbrirWaiting();
 			ValidarPertenenciaDeProductoAProveedor(pId, ctaId)
 		}
 	}
 }
+
+$("#Rel05").on("focus", function () {
+	if (!$(this).data("autocomplete-selected")) {
+		$(this).val("");
+	}
+});
+
+$("#Rel05").on("keyup", function () {
+	$(this).data("autocomplete-selected", false);
+});
+
+$("#Rel05").autocomplete({
+	source: function (request, response) {
+
+		data = { prefix: request.term }; /*Rel05*/
+
+		$.ajax({
+			url: autoComRel011Url,
+			type: "POST",
+			dataType: "json",
+			data: data,
+			success: function (obj) {
+				response($.map(obj, function (item) {
+					return normalizarClienteAutocomplete(item);
+				}));
+			}
+		})
+	},
+	minLength: 3,
+	select: function (event, ui) {
+		$("#Rel05").data("autocomplete-selected", true);
+
+		provIdSeleccionado = ui.item.id;
+		provDescSeleccionado = ui.item.value;
+
+		$("#Rel05Item").val(ui.item.id);
+		$("#Rel05").val(ui.item.value);
+
+		return true;
+	}
+});
+aplicarRenderClienteAutocomplete($("#Rel05"));
+
+let provIdSeleccionado = "";
+let provDescSeleccionado = "";
+
+function getMaskForInteger(selector) {
+	$(selector).inputmask({
+		alias: 'numeric',
+		groupSeparator: ',',       // separador de miles
+		digits: 0,                 // sin decimales
+		digitsOptional: false,
+		allowMinus: false,
+		prefix: '',
+		suffix: '',
+		rightAlign: true,
+		unmaskAsNumber: true,
+		min: 0
+	});
+}
+
+function getMaskForTwoDecimals(selector) {
+	$(selector).inputmask({
+		alias: 'numeric',
+		groupSeparator: ',',
+		radixPoint: '.',
+		digits: 2,
+		digitsOptional: false,
+		allowMinus: false,
+		prefix: '',
+		suffix: '',
+		rightAlign: true,
+		unmaskAsNumber: true
+	});
+}
+
+function buscarProducto() {
+	AbrirWaiting();
+	var _post = busquedaProdBaseUrl;
+	var valor = $("#Busqueda").val();
+	var validarEstado = false;
+
+	var datos = {};
+	if (typeof validarEstado !== 'undefined') {
+		datos = { busqueda: valor, validarEstado };
+	}
+	else {
+		datos = { busqueda: valor };
+	}
+	$("#tbGridProd").empty();
+	PostGen(datos, _post, function (obj) {
+		if (obj.error === true) {
+			CerrarWaiting();
+			AbrirMensaje("ATENCIÓN", obj.msg, function () {
+				productoBase = null;
+				$("#estadoFuncion").val(false);
+				$("#btnBusquedaBase").prop("disabled", false);
+				$("#msjModal").modal("hide");
+				$("#Busqueda").focus();
+				return true;
+			}, false, ["Aceptar"], "error!", null);
+		}
+		else if (obj.warn === true) {
+			CerrarWaiting();
+			if (obj.producto.p_id === "0000-0000") {
+				AbrirMensaje("ATENCIÓN", obj.msg, function () {
+					productoBase = null;
+					$("#estadoFuncion").val(false);
+					$("#btnBusquedaBase").prop("disabled", false);
+					$("#msjModal").modal("hide");
+					$("#Busqueda").focus();
+					return true;
+				}, false, ["Aceptar"], "error!", null);
+			}
+			else if (obj.producto.p_id === "NO" && valor != "") {
+				if (funcionBusquedaAvanzada === true) {
+					AbrirMensaje("ATENCIÓN", "NO SE ENCONTRO EL PRODUCTO QUE INTENTO BUSCAR. SE ABRIRÁ LA BUSQUEDA AVANZADA.", function () {
+						$("#msjModal").modal("hide");
+						productoBase = null;
+						$("#estadoFuncion").val(false);
+						inicializaBusquedaAvanzada();
+						$("#busquedaModal").modal("toggle");
+						return true;
+					}, false, ["Aceptar"], "error!", null);
+
+					return true;
+				}
+				else {
+					AbrirMensaje("ATENCIÓN", "NO SE ENCONTRO EL PRODUCTO QUE INTENTO BUSCAR.", function () {
+						$("#msjModal").modal("hide");
+						$("#Busqueda").focus();
+						return true;
+					}, false, ["Aceptar"], "error!", null);
+
+				}
+			} else if (obj.producto.p_id === "NO" && valor == "") {
+				if (funcionBusquedaAvanzada === true) {
+					productoBase = null;
+					$("#estadoFuncion").val(false);
+					inicializaBusquedaAvanzada();
+					$("#busquedaModal").modal("toggle");
+				}
+			} else {
+				//encontro producto pero hay warning
+				AbrirMensaje("ATENCIÓN!", obj.msg, function (resp) {
+					if (resp === "SI") {
+						productoBase = obj.producto;
+						$("#estadoFuncion").val(true);
+						$("#estadoFuncion").trigger("change");
+						$("#msjModal").modal("hide");
+						var up = $("#txtUPEnComprobanteRP");
+						if (up) {
+							up.focus();
+						}
+						return true;
+					}
+					else {
+						//se deniega
+						productoBase = null;
+						$("#estadoFuncion").val(false);
+						$("#btnBusquedaBase").prop("disabled", false);
+						$("#msjModal").modal("hide");
+						$("#Busqueda").focus();
+						return true;
+					}
+				},
+					true, ["Aceptar", "Denegar"], "Warning!", null);
+			}
+		}
+		else {
+			//encontro y se presenta
+			productoBase = obj.producto;
+			$("#estadoFuncion").val(true);
+			$("#estadoFuncion").trigger("change");
+			return true;
+		}
+	});
+	return true;
+}
+
