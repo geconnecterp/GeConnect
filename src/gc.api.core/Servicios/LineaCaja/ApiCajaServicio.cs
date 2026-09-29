@@ -23,6 +23,46 @@ namespace gc.api.core.Servicios.LineaCaja
             _logger = logger;
         }
 
+        private static readonly System.Collections.Concurrent.ConcurrentDictionary<string, SemaphoreSlim> ImpresionesZ = new();
+
+        public RespuestaDto ReimprimirZ(ReimpresionZRequestDto req)
+        {
+            if (string.IsNullOrWhiteSpace(req.caja_id) || req.caja_id.Length > 4 ||
+                string.IsNullOrWhiteSpace(req.usu_id) || req.usu_id.Length > 10 ||
+                string.IsNullOrWhiteSpace(req.adm_id) || req.adm_id.Length > 10)
+                return new() { resultado = 2, resultado_msj = "El contexto de caja, usuario o sucursal no es válido." };
+            if (!req.Validar(ReimpresionZRangoDto.Hoy, out var desde, out var hasta, out var error))
+                return new() { resultado = 2, resultado_msj = error };
+
+            var caja = ObtenerDatosCF(req.caja_id);
+            if (caja.adm_id?.Trim() != req.adm_id.Trim() || !ReimpresionZRangoDto.ControladorSoportado(caja.ctrl_id))
+                return new() { resultado = 2, resultado_msj = "El punto de venta no pertenece a la sucursal o no tiene un controlador fiscal compatible con Reimpresión Z." };
+
+            var bloqueo = ImpresionesZ.GetOrAdd(req.caja_id.Trim().ToUpperInvariant(), _ => new SemaphoreSlim(1, 1));
+            if (!bloqueo.Wait(0))
+                return new() { resultado = 2, resultado_msj = "Ya hay una solicitud de Reimpresión Z en curso para esta caja. Espere su resultado." };
+            try
+            {
+                var ps = new List<SqlParameter> {
+                    new("@caja_id", System.Data.SqlDbType.VarChar, 4) { Value = req.caja_id },
+                    new("@usu_id", System.Data.SqlDbType.VarChar, 10) { Value = req.usu_id },
+                    new("@adm_id", System.Data.SqlDbType.VarChar, 10) { Value = req.adm_id },
+                    new("@xfecha", System.Data.SqlDbType.Bit) { Value = req.PorFecha!.Value },
+                    new("@desde", System.Data.SqlDbType.VarChar, 10) { Value = desde },
+                    new("@hasta", System.Data.SqlDbType.VarChar, 10) { Value = hasta }
+                };
+                var res = _repository.EjecutarLstSpExt<RespuestaDto>(ConstantesGC.StoredProcedures.SP_CAJA_REIMPRIMIR_Z, ps);
+                return res?.FirstOrDefault() ?? new() { resultado = -9,
+                    resultado_msj = "No se recibió el resultado. Verifique el controlador antes de repetir la solicitud." };
+            }
+            catch (Exception ex)
+            {
+                _logger.Log(TraceEventType.Error, $"Reimpresión Z: caja={req.caja_id}; error={ex}");
+                return new() { resultado = -9, resultado_msj = "No se pudo determinar el resultado. Verifique el controlador antes de repetir la solicitud." };
+            }
+            finally { bloqueo.Release(); }
+        }
+
         public RespuestaDto ValidaIntegridadUsuarioCaja(CajaReqDto req)
         {
             _logger.Log(TraceEventType.Information, $"{MethodBase.GetCurrentMethod().Name} - request:{JsonConvert.SerializeObject(req)}");

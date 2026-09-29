@@ -29,6 +29,8 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
     .AddCookie(CookieAuthenticationDefaults.AuthenticationScheme, opt =>
     {
         opt.Cookie.Name = "GCPocketCookie";
+        opt.Cookie.HttpOnly = true;
+        opt.Cookie.SecurePolicy = CookieSecurePolicy.Always;
         opt.LoginPath = new PathString("/seguridad/token/login");
         opt.LogoutPath = new PathString("/seguridad/token/logout");
         opt.AccessDeniedPath = new PathString("/seguridad/token/login");  //aca debere generar la ruta para indicar el acceso denegado y volver al login
@@ -77,9 +79,10 @@ app.UseStaticFiles();
 app.UseRouting();
 app.UseSession();
 
-//estas dos llamadas permite establecer la prioridad de HttpContext.User  y ejecutar la autorización para las solicitudes
+//estas dos llamadas permite establecer la prioridad de HttpContext.User  y ejecutar la autorizaciÃ³n para las solicitudes
 //quien sos??
 app.UseAuthentication();
+app.UseMiddleware<gc.pocket.site.Models.Cuenta.AccesoCuentaMiddleware>();
 //se te permite algo??? estas autorizado?
 app.UseAuthorization();
 

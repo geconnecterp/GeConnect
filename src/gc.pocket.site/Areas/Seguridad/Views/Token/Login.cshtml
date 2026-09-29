@@ -65,6 +65,10 @@
                     </div>
                     <span class="pocket-login-eyebrow">BIENVENIDO</span>
                     <h2 id="loginTitle">Ingresá a GECO Pocket</h2>
+                    @if (Context.Request.Query["cambioClave"] == "ok")
+                    {
+                        <p role="status">Contraseña actualizada. Ingrese con su nueva contraseña.</p>
+                    }
                     <p class="pocket-login-lead">Seleccione la administración e ingrese sus credenciales para comenzar.</p>
 
                     <form id="loginForm"

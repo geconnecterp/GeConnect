@@ -1,0 +1,28 @@
+/* Componente compartido por Inicio y Gestión. Identidad Golden de Pocket. */
+.pocket-header { overflow: visible; position: relative; z-index: 1030; }
+.pocket-header-main { border-radius: 8px 8px 0 0; }
+.pocket-account-menu, .pocket-account-menu * { text-transform: none !important; }
+.pocket-account-menu { position: relative; min-width: 0; }
+.pocket-account-trigger { display: flex; align-items: center; gap: .45rem; min-height: 44px; padding: 2px 5px; border: 0; border-radius: .5rem; background: transparent; color: inherit; cursor: pointer; max-width: 100%; }
+.pocket-account-avatar { display: inline-flex; align-items: center; justify-content: center; flex: 0 0 34px; width: 34px; height: 34px; border-radius: 50%; background: var(--bs-golden-bg-light, #fff8e7); color: #493a17; border: 1px solid var(--bs-golden-secondary, #b8860b); font-size: .8rem; font-weight: 800; }
+.pocket-account-summary { display: flex; flex-direction: column; min-width: 0; max-width: 13rem; text-align: left; line-height: 1.2; }
+.pocket-account-summary strong, .pocket-account-summary small { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pocket-account-summary strong { font-size: .8rem; }
+.pocket-account-summary small { font-size: .7rem; }
+.pocket-account-trigger:focus-visible { outline: 2px solid #493a17; outline-offset: 1px; }
+.pocket-account-trigger:hover, .pocket-account-trigger[aria-expanded="true"] { background: rgba(255,255,255,.16); }
+.pocket-account-dropdown { width: min(18rem, calc(100vw - 16px)); min-width: 0; padding: .4rem; color: #363128; border: 1px solid var(--bs-golden-light, #f5e6a3); border-radius: .6rem; box-shadow: 0 6px 18px #36312826; z-index: 1050; }
+.pocket-account-identity { display: flex; flex-direction: column; padding: .4rem .65rem; overflow-wrap: anywhere; line-height: 1.3; }
+.pocket-account-identity strong { font-size: .85rem; }
+.pocket-account-identity span, .pocket-account-identity small { font-size: .75rem; }
+.pocket-account-dropdown .dropdown-item { display: flex; align-items: center; gap: .5rem; min-height: 44px; padding: .4rem .6rem; border-radius: .35rem; font-size: .85rem; white-space: normal; }
+.pocket-account-dropdown .dropdown-item:hover, .pocket-account-dropdown .dropdown-item:focus { background: var(--bs-golden-bg-light, #fff8e7); color: #363128; }
+.pocket-account-dropdown .pocket-account-logout { color: #a12a20; }
+.pocket-header-account { min-width: 0; color: white; }
+@media (max-width: 576px) {
+    .pocket-account-summary, .pocket-account-trigger > i { display: none; }
+    .pocket-account-trigger { width: 44px; justify-content: center; padding: 0; }
+    .pocket-header--collection .pocket-header-main { grid-template-columns: 44px minmax(0,1fr) 44px !important; }
+    .pocket-header--collection .pocket-header-account { grid-column: 3; grid-row: 1 / 3; }
+    .pocket-body .pocket-header--collection .pocket-header-branch { grid-row: 1 / 3; align-self: center; }
+}

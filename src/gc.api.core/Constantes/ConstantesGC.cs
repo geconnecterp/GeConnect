@@ -36,6 +36,7 @@ namespace gc.api.core.Constantes
 			public const string SP_CAJA_BCUENTA_D = "SPGECO_CAJA_B_CUENTA_DATOS";
 			public const string SP_CAJA_CF_CARGA = "SPGECO_CAJA_CF_CARGA";
 			public const string SP_CAJA_CF_CONFIRMAR = "SPGECO_CAJA_CF_CONFIRMAR";
+            public const string SP_CAJA_REIMPRIMIR_Z = "SPGECO_CAJA_Z";
             public const string SP_CAJA_DATOS = "SPGECO_CAJA_DATOS";
 			public const string SP_CAJA_GRAL_CIERRE = "SPGECO_CAJA_Grl_Cierre";
 			public const string SP_CAJA_GRAL_HAB = "SPGECO_CAJA_Grl_Habilitacion";

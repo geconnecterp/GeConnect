@@ -134,7 +134,7 @@ namespace gc.api.Controllers.Security
             var operacionId = Guid.NewGuid();
 
             var resultado = _securityServicio.CambiarClave(
-                usuId, cambio.ClaveActual, cambio.ClaveNueva, admId, ip, operacionId);
+                usuId, cambio.ClaveActual, cambio.ClaveNueva, admId, ip, operacionId, OrigenCambio(cambio.Origen));
 
             return Ok(new ApiResponse<CambioClaveResultadoDto>(resultado));
         }
@@ -158,10 +158,17 @@ namespace gc.api.Controllers.Security
                 ?? HttpContext.Connection.RemoteIpAddress?.ToString();
 
             var resultado = _securityServicio.CambiarClaveForzada(
-                usuId, cambio.ClaveNueva, admId, ip, Guid.NewGuid());
+                usuId, cambio.ClaveNueva, admId, ip, Guid.NewGuid(), OrigenCambio(cambio.Origen));
             return Ok(new ApiResponse<CambioClaveResultadoDto>(resultado));
         }
 
+
+        private static string OrigenCambio(string? origen) => origen?.Trim().ToUpperInvariant() switch
+        {
+            "GC.POCKET" => "GC.POCKET",
+            "GC.CAJA" => "GC.CAJA",
+            _ => "GC.SITIO"
+        };
 
         private (bool, Usuario?) IsValidUser(UserLogin login, bool esUp = false)
         {

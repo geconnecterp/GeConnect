@@ -6,6 +6,7 @@ using gc.infraestructura.Dtos.Administracion;
 using gc.infraestructura.Dtos.Seguridad;
 using gc.infraestructura.Helpers;
 using gc.pocket.site.Controllers;
+using gc.pocket.site.Models.Cuenta;
 using gc.sitio.core.Servicios.Contratos;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -65,7 +66,7 @@ namespace gc.pocket.site.Areas.Seguridad.Controllers
             ViewBag.Admid = HelperMvc<AdministracionLoginDto>.ListaGenerica(adms);
         }
 
-        [HttpPost]
+        [HttpPost, ValidateAntiForgeryToken]
         public async Task<IActionResult> Login(LoginDto autenticar)
         {
             try
@@ -147,7 +148,10 @@ namespace gc.pocket.site.Areas.Seguridad.Controllers
                         var cookieOptions = new CookieOptions
                         {
                             Expires = tokenS.ValidTo,
-                            SameSite = SameSiteMode.Unspecified,
+                            Path = "/",
+                            HttpOnly = true,
+                            Secure = true,
+                            SameSite = SameSiteMode.Lax,
 
                         };
 
@@ -170,6 +174,8 @@ namespace gc.pocket.site.Areas.Seguridad.Controllers
                         //{
                         //    return RedirectToAction("Venta", new RouteValueDictionary(new { area = "Salon", controller = "Bandeja", action = "Venta" }));
                         //}
+                        var cuenta = AccesoCuentaPocket.Redireccion(principal, "/");
+                        if (cuenta != null) return LocalRedirect($"{Request.PathBase}{cuenta}");
                         return RedirectToAction("Index", new RouteValueDictionary(new { area = "", controller = "Home", action = "Index" }));
                     }
                     else
@@ -183,7 +189,10 @@ namespace gc.pocket.site.Areas.Seguridad.Controllers
                     var respuesta = await response.Content.ReadAsStringAsync();
 
                     //ExceptionValidation valid = JsonConvert.DeserializeObject<ExceptionValidation>(respuesta);
-                    _logger.LogError($"Error al autenticar: {respuesta}");
+                    if (response.StatusCode == HttpStatusCode.Forbidden &&
+                        respuesta.Contains("CLAVE_TEMPORAL_VENCIDA", StringComparison.Ordinal))
+                        throw new NegocioException("La contraseña temporal venció. Solicite un nuevo blanqueo al administrador.");
+                    _logger.LogWarning("La API rechazó el acceso a Pocket. Estado {StatusCode}.", response.StatusCode);
                     throw new NegocioException("No se ha podido autenticar. El usuario o contraseña no son correctos.");
                 }
 
@@ -202,7 +211,7 @@ namespace gc.pocket.site.Areas.Seguridad.Controllers
         [HttpGet]
         public async Task<IActionResult> Logout()
         {
-            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            await SesionPocket.Cerrar(HttpContext);
 
             //TENGO QUE HACER LAS ACTUALIZACIONES EN LA API SOBRE EL LOGOUT DEL SISTEMA.
 

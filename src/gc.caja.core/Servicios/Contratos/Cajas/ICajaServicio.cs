@@ -7,6 +7,7 @@ namespace gc.caja.core.Servicios.Contratos.Cajas
 {
     public interface ICajaServicio
     {
+        Task<RespuestaGenerica<RespuestaDto>> ReimprimirZ(ReimpresionZRequestDto req, string token);
         Task<CajaSettings> ObtenerAsync(string ruta);
         Task<RespuestaGenerica<RespuestaDto>> ValidarIntegridadUsuarioCaja(CajaReqDto req, string token);
         Task<RespuestaGenerica<RespuestaDto>> AperturaCaja(CajaReqDto req, string token);

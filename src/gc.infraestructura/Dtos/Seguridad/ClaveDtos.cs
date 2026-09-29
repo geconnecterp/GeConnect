@@ -21,6 +21,8 @@ namespace gc.infraestructura.Dtos.Seguridad
 
     public class CambioClaveRequestDto : Dto
     {
+        // Identifica el canal de auditoría; no concede permisos.
+        public string Origen { get; set; } = "GC.SITIO";
         public string ClaveActual { get; set; } = string.Empty;
         public string ClaveNueva { get; set; } = string.Empty;
     }
@@ -32,6 +34,7 @@ namespace gc.infraestructura.Dtos.Seguridad
 
     public class CambioClaveForzadaRequestDto : Dto
     {
+        public string Origen { get; set; } = "GC.SITIO";
         public string ClaveNueva { get; set; } = string.Empty;
     }
 
