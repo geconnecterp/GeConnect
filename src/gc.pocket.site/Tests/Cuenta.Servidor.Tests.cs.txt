@@ -60,6 +60,19 @@ foreach(var ajax in new[]{false,true}) {
 }
 {var t=Setup(normal);bool reached=false;await new AccesoCuentaMiddleware(_=>{reached=true;return Task.CompletedTask;}).InvokeAsync(t.http);Check(reached,"Usuario normal conserva acceso");}
 {var t=Setup(forced);t.http.Request.Path="/Seguridad/Token/Logout";bool reached=false;await new AccesoCuentaMiddleware(_=>{reached=true;return Task.CompletedTask;}).InvokeAsync(t.http);Check(reached,"Cambio obligatorio permite cerrar sesión");}
+var formatearLog = typeof(gc.api.infra.Datos.Implementacion.Repository<gc.api.core.Entidades.Usuario>)
+    .GetMethod("FormatearComandoParaLog", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static)!;
+var parametrosLog = new[] {
+    new Microsoft.Data.SqlClient.SqlParameter("@clave_actual", "secreto-simulado"),
+    new Microsoft.Data.SqlClient.SqlParameter("@usu_id", "tester")
+};
+foreach (var sp in new[] { "SPGECO_USU_Clave_Cambiar", "SPGECO_USU_Clave_Forzada_Cambiar", "SPGECO_USU_Clave_Blanquear" }) {
+    var texto = (string)formatearLog.Invoke(null, new object[] {sp, parametrosLog})!;
+    Check(!texto.Contains("secreto-simulado") && !texto.Contains("tester"), "No vuelca parámetros de " + sp);
+}
+var logNormal = (string)formatearLog.Invoke(null, new object[] {"SPGECO_INV_Conteos", parametrosLog})!;
+Check(logNormal.Contains("tester") && logNormal.Contains("[REDACTADO]") && !logNormal.Contains("secreto-simulado"),
+    "Conserva diagnóstico operativo sin credenciales");
 Console.WriteLine($"{count} pruebas de servidor aprobadas. API simulada, sin cambiar credenciales reales.");
 class FakeApi:IConfiguracionSeguridadServicio{
  public int Calls;public bool Forced;public string? Actual,Nueva,Token,Origen;public Exception? Error;public CambioClaveResultadoDto Response=new(){resultado=0};

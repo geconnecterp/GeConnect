@@ -33,6 +33,10 @@ public class CuentaController : ControladorBase
         var model = new CuentaViewModel {
             Operador = OperadorCuenta.Desde(User), Obligatoria = obligatoria, Vencida = AccesoCuentaPocket.Vencida(User)
         };
+        ViewBag.AppItem = new gc.infraestructura.EntidadesComunes.Options.AppItem {
+            Nombre = "Mi cuenta",
+            VolverUrl = obligatoria || model.Vencida ? "" : Url.Action("Index", "Home", new { area = "" }) ?? ""
+        };
         try { model.Politica = await _servicio.ObtenerPoliticaClave(TokenCookie); }
         catch (UnauthorizedException) { await SesionPocket.Cerrar(HttpContext); return RedirectToAction("Login", "Token"); }
         catch (Exception) {
