@@ -1,0 +1,43 @@
+@{
+    ViewData["Title"] = "Reimpresión Z";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    bool habilitado = ViewBag.Habilitado == true;
+}
+@section styles {
+    <link rel="stylesheet" href="~/css/pages/reimpresion-z.css" asp-append-version="true" />
+}
+<section class="rz-page" aria-labelledby="rzTitulo">
+    <header class="rz-header">
+        <span class="rz-icon"><i class="bx bx-printer" aria-hidden="true"></i></span>
+        <div><p class="rz-eyebrow">CONTROLADOR FISCAL</p><h1 id="rzTitulo">Reimpresión Z</h1>
+            <p>Elegí un rango de cierres o de fechas para volver a imprimir los reportes.</p></div>
+    </header>
+    <div class="rz-context"><span><i class="bx bx-store-alt" aria-hidden="true"></i> Caja <strong>@ViewBag.Caja</strong></span>
+        <span>@ViewBag.Controlador</span><span>Disponible sin apertura de caja</span></div>
+    <form id="rzForm" class="rz-card" data-url="@Url.Action("Imprimir")"
+          data-hoy="@ViewBag.Hoy" data-min-hasta="@ViewBag.MinHasta" data-habilitado="@(habilitado ? "true" : "false")">
+        @Html.AntiForgeryToken()
+        @if (!habilitado) { <div class="alert alert-warning" role="alert">@ViewBag.Error</div> }
+        <fieldset id="rzCampos" disabled="@(!habilitado)">
+            <legend>Buscar reportes</legend>
+            <div class="rz-modos" role="group" aria-label="Buscar por">
+                <label><input type="radio" name="rzModo" value="numero" checked /> <i class="bx bx-hash" aria-hidden="true"></i> Por número de cierre</label>
+                <label><input type="radio" name="rzModo" value="fecha" /> <i class="bx bx-calendar" aria-hidden="true"></i> Por fecha</label>
+            </div>
+            <p id="rzAyuda" class="rz-help">La diferencia entre Hasta y Desde puede ser de hasta 5. Ejemplo: 5000 a 5005.</p>
+            <div class="rz-rango">
+                <div><label for="rzDesde" class="form-label">Desde</label><input id="rzDesde" class="form-control jsteclado" type="text" inputmode="numeric" maxlength="5" required autocomplete="off" aria-describedby="rzAyuda rzEstado" /></div>
+                <div><label for="rzHasta" class="form-label">Hasta</label><input id="rzHasta" class="form-control jsteclado" type="text" inputmode="numeric" maxlength="5" required autocomplete="off" aria-describedby="rzAyuda rzEstado" /></div>
+            </div>
+        </fieldset>
+        <div id="rzEstado" class="rz-status" role="status" aria-live="polite"></div>
+        <div class="rz-actions">
+            <a id="rzVolver" class="btn btn-outline-secondary" href="@Url.Action("Index", "Home", new { area = "" })"><i class="bx bx-arrow-back" aria-hidden="true"></i> Volver al menú</a>
+            <button id="rzNueva" type="button" class="btn btn-outline-secondary" hidden>Preparar otra solicitud</button>
+            <button id="rzImprimir" type="submit" class="btn btn-success" disabled="@(!habilitado)"><i class="bx bx-printer" aria-hidden="true"></i> Imprimir Z</button>
+        </div>
+    </form>
+</section>
+@section scripts {
+    <script src="~/js/app/reimpresion-z.js" asp-append-version="true"></script>
+}

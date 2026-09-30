@@ -78,6 +78,16 @@
         var login = "@Url.Action("Login", "Token", new { area = "seguridad" })";
         var cambiaMenu = "@Url.Action("CambiarPerfilUsuario", "token", new { area = "Seguridad" })"
         window.gestorModuloPagina = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(gestorModuloId));
+        // MVC incluye el PathBase de la aplicación IIS en estas URLs.
+        window.gestorImpresionUrls = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(new
+        {
+            EnviarEmail = Url.Action("EnviarEmail", "GestorImpresion", new { area = "ControlComun" }),
+            GenerateOutlookWebLink = Url.Action("GenerateOutlookWebLink", "GestorImpresion", new { area = "ControlComun" }),
+            GenerateMailtoLink = Url.Action("GenerateMailtoLink", "GestorImpresion", new { area = "ControlComun" }),
+            GenerateWhatsAppWebLink = Url.Action("GenerateWhatsAppWebLink", "GestorImpresion", new { area = "ControlComun" }),
+            GenerarPaqueteImpresion = Url.Action("GenerarPaqueteImpresion", "GestorImpresion", new { area = "ControlComun" }),
+            GenerarURLsDocumentos = Url.Action("GenerarURLsDocumentos", "GestorImpresion", new { area = "ControlComun" })
+        }));
     </script>
     <script>
         $(function(){

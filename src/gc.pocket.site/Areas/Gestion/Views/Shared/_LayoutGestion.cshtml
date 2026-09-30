@@ -1,8 +1,9 @@
 ﻿@{
     var appItem = ViewBag.AppItem as AppItem;
-    var nombre = User.Claims.First(c => c.Type.Contains("nya")).Value;
-    var userId = User.Claims.First(c => c.Type.Contains("name")).Value;
-    var adm = User.Claims.First(c => c.Type.Contains("AdmId")).Value;
+    var operador = gc.pocket.site.Models.Cuenta.OperadorCuenta.Desde(User);
+    var nombre = operador.Nombre;
+    var userId = operador.Usuario;
+    var adm = User.FindFirst("AdmId")?.Value ?? "";
     (string, (string, (string,bool))) model;
     if (appItem == null)
     {
@@ -15,7 +16,7 @@
     }
 }
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -32,6 +33,7 @@
     <link rel="stylesheet" href="~/css/golden-overlay.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/gc.pocket.site.styles.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/pocket-grids.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/pocket-cuenta-menu.css" asp-append-version="true" />
     @await RenderSectionAsync("styles", required: false)
 </head>
 <body class="pocket-body">
@@ -62,6 +64,7 @@
 
     <script src="~/js/site.js" asp-append-version="true"></script>
     <script src="~/js/app/siteGen.js" asp-append-version="true"></script>
+    <script src="~/js/app/seguridad/cuenta-menu.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
     <script type="text/javascript">
         var MensajeErrorTempData = '@TempData["error"]';

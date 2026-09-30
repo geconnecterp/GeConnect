@@ -1,0 +1,46 @@
+.cuenta-page { max-width: 940px; margin: 0 auto 1rem; color: #363128; }
+.cuenta-page, .cuenta-page * { text-transform: none !important; }
+.cuenta-heading { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: .5rem; margin: .5rem 0 .75rem; }
+.cuenta-eyebrow { font-size: .65rem; letter-spacing: .08em; color: #725b18; }
+.cuenta-heading h1 { font-size: 1.3rem; margin: .15rem 0; }
+.cuenta-heading p { font-size: .8rem; margin: 0; }
+.cuenta-back { display: inline-flex; align-items: center; min-height: 44px; font-size: .85rem; color: #725b18; }
+.cuenta-grid { display: grid; grid-template-columns: minmax(180px, 1fr) minmax(0, 2.5fr); gap: .75rem; }
+.cuenta-identidad, .cuenta-card { min-width: 0; border: 1px solid var(--bs-golden-light); border-radius: .65rem; padding: 1rem; background: white; }
+.cuenta-identidad { background: var(--bs-golden-bg-light); align-self: start; }
+.cuenta-avatar-grande { display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 50%; background: #363128; color: var(--bs-golden-light); font-weight: 700; }
+.cuenta-identidad h2 { font-size: 1rem; margin: .5rem 0 .25rem; overflow-wrap: anywhere; }
+.cuenta-identidad p, .cuenta-nota { font-size: .75rem; }
+.cuenta-identidad dl { margin-bottom: .5rem; font-size: .8rem; overflow-wrap: anywhere; }
+.cuenta-identidad dt { margin-top: .4rem; font-size: .7rem; color: #746f63; }
+.cuenta-identidad dd { margin: 0; }
+.cuenta-card > header { display: flex; gap: .6rem; align-items: center; margin-bottom: .75rem; }
+.cuenta-icon { font-size: 1.4rem; color: #725b18; }
+.cuenta-card h2 { font-size: 1.05rem; margin: 0 0 .25rem; }
+.cuenta-card header p { margin: 0; font-size: .8rem; }
+.cuenta-form-grid { display: grid; grid-template-columns: minmax(0,1fr); gap: .65rem; }
+.cuenta-field { margin-bottom: .65rem; }
+.cuenta-field label { display: block; font-size: .8rem; font-weight: 600; margin-bottom: .2rem; }
+.cuenta-password { display: flex; min-width: 0; }
+.cuenta-password input { min-width: 0; min-height: 44px; border-radius: .35rem 0 0 .35rem; font-size: 16px; }
+.cuenta-toggle { flex: 0 0 44px; border: 1px solid var(--bs-golden-light); border-left: 0; border-radius: 0 .35rem .35rem 0; background: var(--bs-golden-bg-light); color: #493a17; }
+.cuenta-toggle:focus-visible, .cuenta-page a:focus-visible { outline: 2px solid #725b18; outline-offset: 2px; }
+.cuenta-policy { background: var(--bs-golden-bg-light); border-radius: .4rem; padding: .6rem .75rem; font-size: .75rem; }
+.cuenta-policy h3 { font-size: .8rem; margin: 0 0 .3rem; }
+.cuenta-policy ul { padding-left: 1.1rem; margin-bottom: .3rem; }
+.cuenta-policy p { margin-bottom: .3rem; }
+.cuenta-policy .valid, .cuenta-page .match { color: #236739; }
+.cuenta-policy .valid::marker { content: "✓ "; }
+.cuenta-page .no-match { color: #a12a20; }
+.cuenta-actions { display: flex; gap: .5rem; flex-wrap: wrap; margin-top: .8rem; }
+.cuenta-actions .btn { min-height: 44px; font-size: .85rem; display: inline-flex; align-items: center; gap: .35rem; }
+.cuenta-card .alert { font-size: .85rem; padding: .65rem; overflow-wrap: anywhere; }
+@media(max-width: 576px) {
+    .cuenta-grid { display: flex; flex-direction: column; gap: .5rem; }
+    .cuenta-card { order: 0; padding: .7rem; }
+    .cuenta-identidad { order: 1; width: 100%; padding: .7rem; }
+    .cuenta-heading { margin: .25rem 0 .5rem; }
+    .cuenta-heading p, .cuenta-eyebrow { display: none; }
+    .cuenta-heading h1 { font-size: 1.1rem; }
+    .cuenta-actions .btn { flex: 1 1 auto; justify-content: center; }
+}

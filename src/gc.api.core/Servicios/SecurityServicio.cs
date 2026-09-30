@@ -115,7 +115,7 @@ namespace gc.api.core.Servicios
         }
 
         public CambioClaveResultadoDto CambiarClave(string usuId, string claveActual, string claveNueva,
-            string? admId, string? ip, Guid operacionId)
+            string? admId, string? ip, Guid operacionId, string origen = "GC.SITIO")
         {
             var parametros = new List<SqlParameter>
             {
@@ -124,7 +124,7 @@ namespace gc.api.core.Servicios
                 new("@clave_nueva", claveNueva),
                 new("@adm_id", (object?)admId ?? DBNull.Value),
                 new("@ip", (object?)ip ?? DBNull.Value),
-                new("@origen", "GC.SITIO"),
+                new("@origen", origen),
                 new("@operacion_id", operacionId)
             };
 
@@ -182,7 +182,7 @@ namespace gc.api.core.Servicios
         }
 
         public CambioClaveResultadoDto CambiarClaveForzada(string usuId, string claveNueva,
-            string? admId, string? ip, Guid operacionId)
+            string? admId, string? ip, Guid operacionId, string origen = "GC.SITIO")
         {
             return EjecutarOperacionUsuario("SPGECO_USU_Clave_Forzada_Cambiar",
             [
@@ -190,7 +190,7 @@ namespace gc.api.core.Servicios
                 new("@clave_nueva", claveNueva),
                 new("@adm_id", (object?)admId ?? DBNull.Value),
                 new("@ip", (object?)ip ?? DBNull.Value),
-                new("@origen", "GC.SITIO"),
+                new("@origen", origen),
                 new("@operacion_id", operacionId)
             ], operacionId);
         }

@@ -54,6 +54,8 @@ namespace gc.sitio.core.Servicios.Implementacion
             var body = await response.Content.ReadAsStringAsync();
             if (!response.IsSuccessStatusCode)
             {
+                if ((int)response.StatusCode >= 500 || response.StatusCode == HttpStatusCode.RequestTimeout)
+                    throw new NegocioException("No se pudo comprobar el resultado del cambio de contraseña.");
                 _logger.LogWarning("La API rechazó el cambio de contraseña con estado {StatusCode}.", response.StatusCode);
                 return new CambioClaveResultadoDto
                 {
@@ -82,9 +84,13 @@ namespace gc.sitio.core.Servicios.Implementacion
 
             using var response = await client.PostAsync(
                 $"{_appSettings.RutaBase}/api/apitoken/cambio-clave-forzada", content);
+            if (response.StatusCode == HttpStatusCode.Unauthorized)
+                throw new UnauthorizedException("Debe autenticarse nuevamente para continuar.");
             var body = await response.Content.ReadAsStringAsync();
             if (!response.IsSuccessStatusCode)
             {
+                if ((int)response.StatusCode >= 500 || response.StatusCode == HttpStatusCode.RequestTimeout)
+                    throw new NegocioException("No se pudo comprobar el resultado del cambio obligatorio.");
                 return new CambioClaveResultadoDto
                 {
                     resultado = 1,

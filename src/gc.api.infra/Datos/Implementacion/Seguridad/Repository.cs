@@ -32,6 +32,26 @@ namespace gc.api.infra.Datos.Implementacion
             _contexto = dataConnectionContext.ObtenerDbContext();
         }
 
+        internal static string FormatearComandoParaLog(string sp, IEnumerable<SqlParameter> parametros)
+        {
+            // Nunca construir una representación de las credenciales, ni siquiera para DEBUG.
+            if (sp.StartsWith("SPGECO_USU_Clave_", StringComparison.OrdinalIgnoreCase))
+                return $"EXEC {sp} (parámetros de credenciales omitidos)";
+
+            var sb = new StringBuilder().AppendLine($"EXEC {sp}");
+            foreach (var p in parametros)
+            {
+                var nombre = p.ParameterName.TrimStart('@');
+                var sensible = nombre.Contains("clave", StringComparison.OrdinalIgnoreCase) ||
+                    nombre.Contains("password", StringComparison.OrdinalIgnoreCase) ||
+                    nombre.Contains("token", StringComparison.OrdinalIgnoreCase);
+                var valor = sensible ? "'[REDACTADO]'" :
+                    p.Value == null || p.Value == DBNull.Value ? "NULL" : $"'{p.Value}'";
+                sb.AppendLine($"    @{nombre} = {valor},");
+            }
+            return sb.ToString().TrimEnd(',', '\r', '\n');
+        }
+
         public T Find(object id)
         {
             return _contexto.Set<T>().Find(id);
@@ -155,24 +175,8 @@ namespace gc.api.infra.Datos.Implementacion
                     cmd.Parameters.Add(p);
                 }
 
-				// 🔥 DEBUG: imprimir comando SQL que se enviará
-				var sb = new StringBuilder();
-				sb.AppendLine($"EXEC {sp}");
-
-				foreach (SqlParameter p in cmd.Parameters)
-				{
-					string valor = p.Value == null || p.Value == DBNull.Value
-						? "NULL"
-						: $"'{p.Value}'";
-
-					sb.AppendLine($"    @{p.ParameterName} = {valor},");
-				}
-
-				// Quitar la última coma
-				string debugSql = sb.ToString().TrimEnd(',', '\r', '\n');
-
-				Console.WriteLine("SQL ENVIADO AL MOTOR:");
-				Console.WriteLine(debugSql);
+                Console.WriteLine("SQL ENVIADO AL MOTOR:");
+                Console.WriteLine(FormatearComandoParaLog(sp, parametros));
 
 
 				cnn.Open();

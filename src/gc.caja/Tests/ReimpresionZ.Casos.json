@@ -1,0 +1,198 @@
+[
+  {
+    "nombre": "Rango 5000-5005",
+    "porFecha": false,
+    "desde": "5000",
+    "hasta": "5005",
+    "valido": true
+  },
+  {
+    "nombre": "Diferencia 6",
+    "porFecha": false,
+    "desde": "5000",
+    "hasta": "5006",
+    "valido": false
+  },
+  {
+    "nombre": "Un cierre",
+    "porFecha": false,
+    "desde": "7",
+    "hasta": "7",
+    "valido": true
+  },
+  {
+    "nombre": "Rango inverso",
+    "porFecha": false,
+    "desde": "8",
+    "hasta": "7",
+    "valido": false
+  },
+  {
+    "nombre": "Límite superior",
+    "porFecha": false,
+    "desde": "99994",
+    "hasta": "99999",
+    "valido": true
+  },
+  {
+    "nombre": "Sobre límite",
+    "porFecha": false,
+    "desde": "99999",
+    "hasta": "100000",
+    "valido": false
+  },
+  {
+    "nombre": "Cero",
+    "porFecha": false,
+    "desde": "0",
+    "hasta": "0",
+    "valido": false
+  },
+  {
+    "nombre": "Negativo",
+    "porFecha": false,
+    "desde": "-1",
+    "hasta": "1",
+    "valido": false
+  },
+  {
+    "nombre": "Decimal",
+    "porFecha": false,
+    "desde": "1.5",
+    "hasta": "2",
+    "valido": false
+  },
+  {
+    "nombre": "Exponente",
+    "porFecha": false,
+    "desde": "1e3",
+    "hasta": "1001",
+    "valido": false
+  },
+  {
+    "nombre": "Vacío",
+    "porFecha": false,
+    "desde": "",
+    "hasta": "5",
+    "valido": false
+  },
+  {
+    "nombre": "Texto SQL",
+    "porFecha": false,
+    "desde": "1;--",
+    "hasta": "5",
+    "valido": false
+  },
+  {
+    "nombre": "Ceros iniciales",
+    "porFecha": false,
+    "desde": "00001",
+    "hasta": "00006",
+    "valido": true
+  },
+  {
+    "nombre": "Siete días",
+    "porFecha": true,
+    "desde": "2026-09-22",
+    "hasta": "2026-09-29",
+    "valido": true
+  },
+  {
+    "nombre": "Ocho días",
+    "porFecha": true,
+    "desde": "2026-09-21",
+    "hasta": "2026-09-29",
+    "valido": false
+  },
+  {
+    "nombre": "Mismo día",
+    "porFecha": true,
+    "desde": "2026-09-29",
+    "hasta": "2026-09-29",
+    "valido": true
+  },
+  {
+    "nombre": "Fecha futura",
+    "porFecha": true,
+    "desde": "2026-09-29",
+    "hasta": "2026-09-30",
+    "valido": false
+  },
+  {
+    "nombre": "Fechas inversas",
+    "porFecha": true,
+    "desde": "2026-09-29",
+    "hasta": "2026-09-28",
+    "valido": false
+  },
+  {
+    "nombre": "Límite cinco años",
+    "porFecha": true,
+    "desde": "2021-09-22",
+    "hasta": "2021-09-29",
+    "valido": true
+  },
+  {
+    "nombre": "Hasta antiguo",
+    "porFecha": true,
+    "desde": "2021-09-22",
+    "hasta": "2021-09-28",
+    "valido": false
+  },
+  {
+    "nombre": "Desde anterior a cinco años permitido",
+    "porFecha": true,
+    "desde": "2021-09-28",
+    "hasta": "2021-09-29",
+    "valido": true
+  },
+  {
+    "nombre": "Fecha inexistente",
+    "porFecha": true,
+    "desde": "2026-02-29",
+    "hasta": "2026-03-01",
+    "valido": false
+  },
+  {
+    "nombre": "Bisiesto",
+    "porFecha": true,
+    "desde": "2024-02-29",
+    "hasta": "2024-03-01",
+    "valido": true
+  },
+  {
+    "nombre": "Formato incorrecto",
+    "porFecha": true,
+    "desde": "29/09/2026",
+    "hasta": "29/09/2026",
+    "valido": false
+  },
+  {
+    "nombre": "Cero con relleno",
+    "porFecha": false,
+    "desde": "00000",
+    "hasta": "00001",
+    "valido": false
+  },
+  {
+    "nombre": "Desde cero",
+    "porFecha": false,
+    "desde": "0",
+    "hasta": "5",
+    "valido": false
+  },
+  {
+    "nombre": "Mínimo válido",
+    "porFecha": false,
+    "desde": "1",
+    "hasta": "1",
+    "valido": true
+  },
+  {
+    "nombre": "Primer rango completo",
+    "porFecha": false,
+    "desde": "1",
+    "hasta": "6",
+    "valido": true
+  }
+]

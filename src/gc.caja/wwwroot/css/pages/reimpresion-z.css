@@ -1,0 +1,26 @@
+/* Identidad tomada de Home y Cuenta de Caja. Estilos acotados al módulo. */
+.rz-page { --rz-gold:#d4a80d; --rz-ink:#292822; --rz-muted:#6b695f; --rz-border:#d9d7cf; max-width:960px; margin:28px auto 70px; color:var(--rz-ink); }
+.rz-header { display:flex; gap:18px; padding:28px; border-radius:16px 16px 0 0; background:linear-gradient(145deg,#25231e,#363128 65%,#4a3b17); color:#fff; }
+.rz-icon { display:grid; place-items:center; flex:none; width:56px; height:56px; border:1px solid #d4a80d80; border-radius:12px; color:var(--rz-gold); font-size:30px; }
+.rz-eyebrow { color:#efc847; font-size:12px; font-weight:700; letter-spacing:.12em; margin:0 0 6px; }
+.rz-header h1 { font-size:28px; color:inherit; margin:0 0 8px; }
+.rz-header p:last-child { color:#e1ded5; margin:0; }
+.rz-context { display:flex; flex-wrap:wrap; justify-content:space-between; gap:12px; padding:14px 24px; background:#f7f6f1; border:1px solid var(--rz-border); font-size:13px; }
+.rz-card { background:white; border:1px solid var(--rz-border); border-top:0; border-radius:0 0 16px 16px; padding:28px; box-shadow:0 8px 24px #2928220a; }
+.rz-card legend { font-size:18px; font-weight:700; margin-bottom:18px; }
+.rz-modos { display:flex; flex-wrap:wrap; gap:12px; }
+.rz-modos label { display:flex; align-items:center; gap:8px; padding:12px 16px; border:1px solid var(--rz-border); border-radius:8px; cursor:pointer; }
+.rz-modos label:has(input:checked) { border-color:#9f7600; background:#fff8db; font-weight:600; }
+.rz-modos input { accent-color:#9f7600; width:18px; height:18px; }
+.rz-help { color:var(--rz-muted); margin:18px 0; font-size:14px; }
+.rz-rango { display:grid; grid-template-columns:1fr 1fr; gap:24px; }
+.rz-rango input { min-height:48px; font-size:18px; font-variant-numeric:tabular-nums; }
+.rz-status { margin-top:20px; white-space:pre-line; overflow-wrap:anywhere; }
+.rz-status:empty { display:none; }
+.rz-actions { display:flex; justify-content:space-between; flex-wrap:wrap; gap:12px; margin-top:28px; border-top:1px solid var(--rz-border); padding-top:20px; }
+.rz-actions .btn { min-height:44px; display:inline-flex; align-items:center; justify-content:center; gap:8px; }
+.rz-actions [hidden] { display:none; }
+.rz-page :focus-visible { outline:3px solid #9f7600; outline-offset:3px; }
+.rz-page [aria-disabled=true] { opacity:.55; pointer-events:none; }
+.rz-page fieldset:disabled { opacity:.65; }
+@media (max-width:600px) { .rz-page { margin-top:12px; } .rz-header,.rz-card { padding:20px 16px; } .rz-header { gap:12px; } .rz-header h1 { font-size:24px; } .rz-icon { width:42px; height:42px; font-size:24px; } .rz-rango { grid-template-columns:1fr; gap:16px; } .rz-modos label,.rz-actions .btn { width:100%; } .rz-context { padding:12px 16px; } }

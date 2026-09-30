@@ -519,7 +519,7 @@ function enviarEmailGmailConAdjuntos(emailTo, emailSubject, emailBody, archivosP
     console.log(`📎 Archivos a adjuntar: ${archivosParaAdjuntar.length}`);
 
     $.ajax({
-        url: '/ControlComun/GestorImpresion/EnviarEmail',
+        url: window.gestorImpresionUrls.EnviarEmail,
         type: 'POST',
         contentType: 'application/json',
         data: JSON.stringify({
@@ -597,7 +597,7 @@ function enviarEmailOutlookWeb(emailTo, emailSubject, emailBody, enlaces) {
     console.log(`  Enlaces incluidos: ${enlaces.length}`);
 
     $.ajax({
-        url: '/ControlComun/GestorImpresion/GenerateOutlookWebLink',
+        url: window.gestorImpresionUrls.GenerateOutlookWebLink,
         type: 'POST',
         contentType: 'application/json',
         data: JSON.stringify({
@@ -673,7 +673,7 @@ function enviarEmailOutlookLocal(emailTo, emailSubject, emailBody, enlaces) {
     console.log(`  Enlaces incluidos: ${enlaces.length}`);
 
     $.ajax({
-        url: '/ControlComun/GestorImpresion/GenerateMailtoLink',
+        url: window.gestorImpresionUrls.GenerateMailtoLink,
         type: 'POST',
         contentType: 'application/json',
         data: JSON.stringify({
@@ -862,7 +862,7 @@ function enviarWhatsAppSinArchivos(numero, mensaje) {
     console.log('Mensaje:', mensaje);
 
     $.ajax({
-        url: '/ControlComun/GestorImpresion/GenerateWhatsAppWebLink',
+        url: window.gestorImpresionUrls.GenerateWhatsAppWebLink,
         type: 'POST',
         contentType: 'application/json',
         data: JSON.stringify({
@@ -940,7 +940,7 @@ function enviarWhatsAppConEnlaces(numero, mensaje, cantidadArchivos) {
     console.log('Mensaje:', mensaje);
 
     $.ajax({
-        url: '/ControlComun/GestorImpresion/GenerateWhatsAppWebLink',
+        url: window.gestorImpresionUrls.GenerateWhatsAppWebLink,
         type: 'POST',
         contentType: 'application/json',
         data: JSON.stringify({
@@ -1566,11 +1566,12 @@ function actualizarModoImpresion() {
 }
 
 function limpiarColaImpresionIndividual() {
-    if (Array.isArray(window.gestorImpresionUrls)) {
-        window.gestorImpresionUrls.forEach(url => URL.revokeObjectURL(url));
+    // Las URLs blob de PDF son temporales; las rutas MVC del layout se conservan.
+    if (Array.isArray(window.gestorImpresionBlobUrls)) {
+        window.gestorImpresionBlobUrls.forEach(url => URL.revokeObjectURL(url));
     }
 
-    window.gestorImpresionUrls = [];
+    window.gestorImpresionBlobUrls = [];
     $('#colaImpresionIndividualLista').empty();
     $('#colaImpresionIndividual').addClass('d-none');
 }
@@ -1616,7 +1617,7 @@ async function generarColaImpresionIndividual(solicitudes) {
             });
         }
 
-        window.gestorImpresionUrls = documentos.map(documento => documento.url);
+        window.gestorImpresionBlobUrls = documentos.map(documento => documento.url);
         const $lista = $('#colaImpresionIndividualLista').empty();
 
         documentos.forEach(function (documento, indice) {
@@ -1747,7 +1748,7 @@ async function imprimirArchivoSeleccionado() {
     try {
         const contexto = window.gestorDocumentalContexto || {};
         const tituloModulo = window.currentModuleConfig?.moduloTitulo || 'documentos';
-        const response = await fetch('/ControlComun/GestorImpresion/GenerarPaqueteImpresion', {
+        const response = await fetch(window.gestorImpresionUrls.GenerarPaqueteImpresion, {
             method: 'POST',
             credentials: 'same-origin',
             headers: {
@@ -2208,7 +2209,7 @@ function generarURLsDocumentos(archivosSeleccionados) {
 
         // ✅ PASO 2: Enviar al backend para generar URLs
         $.ajax({
-            url: '/ControlComun/GestorImpresion/GenerarURLsDocumentos?' + $.param({
+            url: window.gestorImpresionUrls.GenerarURLsDocumentos + '?' + $.param({
                 contextoId: window.gestorDocumentalContexto?.contextoId || '',
                 moduloGestor: window.gestorDocumentalContexto?.moduloGestor || ''
             }),

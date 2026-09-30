@@ -1,47 +1,31 @@
+@using gc.pocket.site.Models.Cuenta
 @{
-    var usuario = User.Claims.First(c => c.Type.Contains("name")).Value;
-    var nombre = User.Claims.First(c => c.Type.Contains("nya")).Value;
-    var administracionClaim = User.Claims.First(c => c.Type.Contains("AdmId")).Value;
-    var administracionPartes = administracionClaim.Split("#");
-    var sucursal = administracionPartes.Length > 1 ? administracionPartes[1] : administracionClaim;
-    var palabrasNombre = nombre.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-    var iniciales = string.Concat(palabrasNombre.Take(2).Select(palabra => char.ToUpperInvariant(palabra[0])));
+    var operador = OperadorCuenta.Desde(User);
+    var restringida = AccesoCuentaPocket.Forzada(User) || AccesoCuentaPocket.Vencida(User);
+    var accion = AccesoCuentaPocket.Forzada(User) ? "ClaveObligatoria" : "Index";
 }
-
-<div class="dropdown pocket-user-menu">
-    <button type="button"
-            class="pocket-user-trigger dropdown-toggle"
-            data-bs-toggle="dropdown"
-            aria-expanded="false"
-            aria-label="Abrir menú de usuario de @nombre">
-        <span class="pocket-user-avatar" aria-hidden="true">@iniciales</span>
-        <span class="pocket-user-summary">
-            <strong>@nombre</strong>
-            <small>@usuario</small>
-        </span>
-        <i class="bx bx-chevron-down" aria-hidden="true"></i>
-    </button>
-
-    <ul class="dropdown-menu dropdown-menu-end pocket-user-dropdown">
-        <li class="pocket-user-dropdown-header">
-            <span class="pocket-user-avatar" aria-hidden="true">@iniciales</span>
-            <span>
-                <strong>@nombre</strong>
-                <small>Sucursal @sucursal</small>
-            </span>
-        </li>
-        <li><hr class="dropdown-divider" /></li>
-        <li>
-            <a class="dropdown-item" asp-action="Privacy" asp-controller="Home" asp-area="">
-                <i class="bx bx-file me-2" aria-hidden="true"></i>
-                Normativas
-            </a>
-        </li>
-        <li>
-            <a class="dropdown-item pocket-user-logout" asp-action="Logout" asp-controller="Token" asp-area="Seguridad">
-                <i class="bx bx-log-out-circle me-2" aria-hidden="true"></i>
-                Cerrar sesión
-            </a>
-        </li>
-    </ul>
-</div>
+@if (User.Identity?.IsAuthenticated == true)
+{
+    <div class="dropdown pocket-account-menu">
+        <button type="button" class="pocket-account-trigger" data-bs-toggle="dropdown"
+                aria-expanded="false" aria-label="Mi cuenta: @operador.Nombre" title="Mi cuenta">
+            <span class="pocket-account-avatar" aria-hidden="true">@operador.Iniciales</span>
+            <span class="pocket-account-summary"><strong>@operador.Nombre</strong><small>@operador.Usuario</small></span>
+            <i class="bx bx-chevron-down" aria-hidden="true"></i>
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end pocket-account-dropdown">
+            <li class="pocket-account-identity">
+                <strong>@operador.Nombre</strong><span>@operador.Usuario</span><small>@operador.Sucursal</small>
+            </li>
+            <li><hr class="dropdown-divider" /></li>
+            <li><a class="dropdown-item" data-pocket-account-nav asp-area="Seguridad" asp-controller="Cuenta" asp-action="@accion"><i class="bx bx-user" aria-hidden="true"></i> Mi cuenta</a></li>
+            <li><a class="dropdown-item" data-pocket-account-nav asp-area="Seguridad" asp-controller="Cuenta" asp-action="@accion" asp-fragment="cambiar-clave"><i class="bx bx-key" aria-hidden="true"></i> Cambiar contraseña</a></li>
+            @if (!restringida)
+            {
+                <li><a class="dropdown-item" asp-area="" asp-controller="Home" asp-action="Privacy"><i class="bx bx-file" aria-hidden="true"></i> Normativas</a></li>
+            }
+            <li><hr class="dropdown-divider" /></li>
+            <li><a class="dropdown-item pocket-account-logout" data-pocket-account-nav asp-area="Seguridad" asp-controller="Token" asp-action="Logout"><i class="bx bx-log-out-circle" aria-hidden="true"></i> Cerrar sesión</a></li>
+        </ul>
+    </div>
+}
