@@ -1,7 +1,9 @@
 ﻿
+using gc.infraestructura.Dtos.Almacen;
+
 namespace gc.infraestructura.Dtos
 {
-	public class RemitoNoFiscalDto : Dto
+	public class RemitoNoFiscalDto : Dto, IProductoConUnidad
 	{
 		public string emisor_nombre { get; set; } = string.Empty;
 		public string emisor_cuit { get; set; } = string.Empty;
@@ -39,7 +41,7 @@ namespace gc.infraestructura.Dtos
 		public string p_id_barrado { get; set; } = string.Empty;
 		public string p_id_prov { get; set; } = string.Empty;
 		public string up_id { get; set; } = string.Empty;
-		public char up_tipo { get; set; }
+		public string up_tipo { get; set; } = string.Empty;
 		public string up_desc { get; set; } = string.Empty;
 		public int unidad_pres { get; set; }
 		public int bultos { get; set; }
@@ -47,6 +49,6 @@ namespace gc.infraestructura.Dtos
 		public decimal cantidad { get; set; }
 		public decimal costo { get; set; }
 		public decimal costo_tot { get; set; }
-
+		public bool PermiteDecimales => up_tipo == "P";
 	}
 }

@@ -484,16 +484,49 @@ namespace gc.infraestructura.Helpers
 
 			return header;
 		}
-		public static PdfPCell CrearCeldaTexto(string texto, Font fuente)
+		public static PdfPCell CrearCeldaTexto(string texto, Font fuente, int align = 0)
 		{
 			PdfPCell celda = new PdfPCell(new Phrase(texto, fuente))
 			{
 				Border = Rectangle.NO_BORDER,
-				HorizontalAlignment = Element.ALIGN_LEFT,
+				HorizontalAlignment = align,
 				VerticalAlignment = Element.ALIGN_MIDDLE
 			};
 			return celda;
 		}
+		public static PdfPCell CrearCeldaTexto(string texto1, Font fuente1, string texto2, Font fuente2, int align = Element.ALIGN_LEFT)
+		{
+			Phrase frase = new Phrase();
+			frase.Add(new Chunk(texto1, fuente1));
+			frase.Add(new Chunk(texto2, fuente2));
+
+			PdfPCell celda = new PdfPCell(frase)
+			{
+				Border = Rectangle.NO_BORDER,
+				HorizontalAlignment = align,
+				VerticalAlignment = Element.ALIGN_MIDDLE
+			};
+
+			return celda;
+		}
+		public static PdfPCell CrearCeldaTexto(string texto1, Font fuente1, string texto2, Font fuente2, string texto3, Font fuente3, int align = Element.ALIGN_LEFT)
+		{
+			Phrase frase = new Phrase();
+			frase.Add(new Chunk(texto1, fuente1));
+			frase.Add(new Chunk(texto2, fuente2));
+			frase.Add(new Chunk(texto3, fuente3));
+
+			PdfPCell celda = new PdfPCell(frase)
+			{
+				Border = Rectangle.NO_BORDER,
+				HorizontalAlignment = align,
+				VerticalAlignment = Element.ALIGN_MIDDLE
+			};
+
+			return celda;
+		}
+
+
 		public static HeaderFooter GeneraCabecera(string razonsocial, string cuit, string iibb, string direccion, string sucursal, Font fuente1, string titulo, Font fuenteTit, Font normal, Font chica)
 		{
 			return GeneraCabecera(razonsocial, cuit, iibb, direccion, sucursal, fuente1, titulo, fuenteTit, normal, chica, false);

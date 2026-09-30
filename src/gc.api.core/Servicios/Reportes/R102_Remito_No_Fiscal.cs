@@ -86,7 +86,7 @@ namespace gc.api.core.Servicios.Reportes
 
 				#region Generación de Cabecera               
 
-				PdfPTable tabla = GeneraCabeceraPDF2_ParaRemito(solicitud, chico, titulo, tituloBig, logo, _empresaGeco, registros.First().sm_compte);
+				PdfPTable tabla = GeneraCabeceraPDF2_ParaRemito(solicitud, chico, chicoBold, normal, normalBold, titulo, tituloBig, logo, _empresaGeco, registros.First().sm_compte);
 
 				// Convertir la tabla en un Phrase
 				Phrase phrase = [tabla];
@@ -130,10 +130,208 @@ namespace gc.api.core.Servicios.Reportes
 			if (registros == null || registros.Count == 0)
 				return;
 
-			
+			// Espacio
+			pdf.Add(new Paragraph(" ", normal));
+			pdf.Add(new Paragraph(" ", normal));
+
+			var r0 = registros.First();
+
+			// ============================
+			// ENCABEZADO — LÍNEA 1
+			// ============================
+
+			PdfPTable tblHeader = new PdfPTable(2);
+			tblHeader.WidthPercentage = 100;
+			tblHeader.SetWidths(new float[] { 10, 90 });
+
+			tblHeader.AddCell(HeaderLabel("Proveedor:", normal));
+			tblHeader.AddCell(HeaderValue(r0.cm_nombre, normalBold));
+			pdf.Add(tblHeader);
+
+			// ============================
+			// ENCABEZADO — LÍNEA 2
+			// ============================
+			PdfPTable tblHeader2 = new PdfPTable(4);
+			tblHeader2.WidthPercentage = 100;
+			tblHeader2.SetWidths(new float[] { 10, 40, 15, 35 });
+
+			tblHeader2.AddCell(HeaderLabel("Domicilio:", normal));
+			tblHeader2.AddCell(HeaderValue(r0.cm_domicilio, normalBold));
+
+			tblHeader2.AddCell(HeaderLabel("Depósito:", normal));
+			tblHeader2.AddCell(HeaderValue(r0.depo_nombre, normalBold)); 
+
+			pdf.Add(tblHeader2);
+
+			// ============================
+			// ENCABEZADO — LÍNEA 3
+			// ============================
+			PdfPTable tblHeader3 = new PdfPTable(4);
+			tblHeader3.WidthPercentage = 100;
+			tblHeader3.SetWidths(new float[] { 10, 40, 15, 35 });
+
+			tblHeader3.AddCell(HeaderLabel("CUIT/CUIL:", normal));
+			tblHeader3.AddCell(HeaderValue(r0.cm_cuit, normalBold));
+
+			tblHeader3.AddCell(HeaderLabel("Generado por:", normal));
+			tblHeader3.AddCell(HeaderValue(r0.usu_apellidoynombre, normalBold));
+
+			pdf.Add(tblHeader3);
+
+			// Espacio
+			pdf.Add(new Paragraph(" ", normal));
+
+			// ============================
+			// LÍNEA SEPARADORA
+			// ============================
+			PdfPTable lineaSep = new PdfPTable(1);
+			lineaSep.WidthPercentage = 100;
+
+			PdfPCell celdaLinea = new PdfPCell(new Phrase(" "))
+			{
+				Border = Rectangle.NO_BORDER,
+				BorderWidthTop = 1f,   // grosor de la línea
+				Padding = 0f,
+				FixedHeight = 5f       // altura mínima para que la línea se vea
+			};
+
+			lineaSep.AddCell(celdaLinea);
+			pdf.Add(lineaSep);
+
+			// Espacio opcional
+			pdf.Add(new Paragraph(" ", chico));
+
+			// ============================
+			// TABLA DE PRODUCTOS
+			// ============================
+			PdfPTable tbl = new PdfPTable(5);
+			tbl.WidthPercentage = 100;
+			tbl.SetWidths(new float[] { 10, 10, 40, 10, 10 });
+			tbl.HeaderRows = 1; // repetir cabecera en todas las hojas
+
+			// Encabezados
+			tbl.AddCell(HeaderCellBorde("Item", normalBold, Element.ALIGN_CENTER));
+			tbl.AddCell(HeaderCellBorde("Código", normalBold, Element.ALIGN_CENTER));
+			tbl.AddCell(HeaderCellBorde("Descripción", normalBold, Element.ALIGN_CENTER));
+			tbl.AddCell(HeaderCellBorde("Entregado", normalBold, Element.ALIGN_CENTER));
+			tbl.AddCell(HeaderCellBorde("Costo", normalBold, Element.ALIGN_CENTER));
+			var item = 1;
+			foreach (var x in registros)
+			{
+				tbl.AddCell(CellBorde((item++).ToString(), normal, Element.ALIGN_CENTER));
+				tbl.AddCell(CellBorde(x.p_id, normal, Element.ALIGN_CENTER));
+				tbl.AddCell(CellBorde(x.p_id_desc, normal, Element.ALIGN_LEFT));
+
+				string cantidad = GridHelper.FormatearDato(x.cantidad, GridHelper.FormatDato.Monto, x.PermiteDecimales);
+				tbl.AddCell(CellBorde(cantidad, normal, Element.ALIGN_RIGHT));
+
+				string costo = x.costo.ToString("N2");
+				tbl.AddCell(CellBorde(costo, normal, Element.ALIGN_RIGHT));
+			}
+
+			pdf.Add(tbl);
+
+			// ============================
+			// TOTALIZADOR DE COSTO
+			// ============================
+			decimal totalCosto = registros.Sum(x => x.costo);
+
+			PdfPTable tblTotal = new PdfPTable(2);
+			tblTotal.WidthPercentage = 30;                 // ancho del bloque
+			tblTotal.HorizontalAlignment = Element.ALIGN_RIGHT;
+			tblTotal.SetWidths(new float[] { 60, 40 });    // etiqueta / valor
+
+			// Línea separadora superior
+			//PdfPCell linea = new PdfPCell(new Phrase(" "))
+			//{
+			//	Border = Rectangle.NO_BORDER,
+			//	BorderWidthTop = 1f,
+			//	Colspan = 2,
+			//	Padding = 0f,
+			//	FixedHeight = 4f
+			//};
+			//tblTotal.AddCell(linea);
+
+			// Etiqueta
+			PdfPCell lbl = new PdfPCell(new Phrase("Total Costo:", normalBold))
+			{
+				Border = Rectangle.NO_BORDER,
+				HorizontalAlignment = Element.ALIGN_LEFT,
+				PaddingTop = 2f,
+				PaddingBottom = 2f
+			};
+			tblTotal.AddCell(lbl);
+
+			// Valor
+			PdfPCell val = new PdfPCell(new Phrase(totalCosto.ToString("N2"), normalBold))
+			{
+				Border = Rectangle.NO_BORDER,
+				HorizontalAlignment = Element.ALIGN_RIGHT,
+				PaddingTop = 2f,
+				PaddingBottom = 2f
+			};
+			tblTotal.AddCell(val);
+
+			// Agregar al PDF
+			pdf.Add(tblTotal);
+
+
+			Paragraph obs = new Paragraph("Obs: NO APTA PARA LA VENTA", normalBold);
+			obs.Alignment = Element.ALIGN_LEFT;
+			obs.SpacingBefore = 10f;
+			pdf.Add(obs);
 		}
 
 
+		// CELDAS DEL ENCABEZADO
+		// ============================
+
+		private static PdfPCell HeaderLabel(string texto, Font font)
+		{
+			PdfPCell c = new PdfPCell(new Phrase(texto, font));
+			c.HorizontalAlignment = Element.ALIGN_RIGHT;
+			c.VerticalAlignment = Element.ALIGN_MIDDLE;
+			c.Border = Rectangle.NO_BORDER;
+			c.Padding = 2f;
+			return c;
+		}
+
+		private static PdfPCell HeaderValue(string texto, Font font)
+		{
+			PdfPCell c = new PdfPCell(new Phrase(texto, font));
+			c.HorizontalAlignment = Element.ALIGN_LEFT;
+			c.VerticalAlignment = Element.ALIGN_MIDDLE;
+			c.Border = Rectangle.NO_BORDER;
+			c.Padding = 2f;
+			return c;
+		}
+
+		// ============================
+		// CELDAS CON BORDE (TABLA)
+		// ============================
+
+		public static PdfPCell CellBorde(string texto, Font font, int align)
+		{
+			PdfPCell c = new PdfPCell(new Phrase(texto ?? "", font));
+			c.HorizontalAlignment = align;
+			c.VerticalAlignment = Element.ALIGN_MIDDLE;
+			c.Border = Rectangle.BOX;
+			c.BorderWidth = 0.5f;
+			c.Padding = 3f;
+			return c;
+		}
+
+		public static PdfPCell HeaderCellBorde(string texto, Font font, int align)
+		{
+			PdfPCell c = new PdfPCell(new Phrase(texto ?? "", font));
+			c.HorizontalAlignment = align;
+			c.VerticalAlignment = Element.ALIGN_MIDDLE;
+			c.BackgroundColor = new BaseColor(230, 230, 230);
+			c.Border = Rectangle.BOX;
+			c.BorderWidth = 0.5f;
+			c.Padding = 4f;
+			return c;
+		}
 		#endregion
 
 		private List<RemitoNoFiscalDto> ObtenerDatos(ReporteSolicitudDto solicitud, out string titulo, out string subtitulo, out string filtrosString)
