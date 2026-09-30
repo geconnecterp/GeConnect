@@ -27,7 +27,7 @@
 	$("#btnCancelar").on("click", CancelarDevolucion);
 	$("#btnConfirmar").off("click", ConfirmarDevolucion);
 	$("#btnConfirmar").on("click", ConfirmarDevolucion);
-	//btnConfirmar
+	$("#btnBusquedaBase").prop("disabled", false);
 
 	$("#divRevertirDevolucion").find('input').each(function () {
 		$(this).attr('disabled', 'disabled');
@@ -192,6 +192,7 @@ function ValidarExistenciaDeProductosCargadosParaDevolucion(confirma) {
 									$("#tbDetalleDeProductosADevolver tbody tr").remove();
 									$("#txtNota").val("");
 									$("#txtNroDevolucion").val("");
+									ImprimirDV_Generado(o.id);
 								}
 							});
 						}
@@ -206,6 +207,21 @@ function ValidarExistenciaDeProductosCargadosParaDevolucion(confirma) {
 			}, true, ["Aceptar", "Cancelar"], "info!", null);
 		}
 	});
+}
+
+function ImprimirDV_Generado(id) {
+	ReseteoDeReportes();
+	setTimeout(() => {
+		let data = { id: id, sm_tipo: "DV" };
+		cargarReporteEnArre(101, data, "DEVOLUCIÓN A PROVEEDOR", "", "");
+		cargarReporteEnArre(102, data, "REMITO NO FISCAL", "", "");
+		invocacionGestorDoc({});
+	}, 500);
+}
+
+function ReseteoDeReportes() {
+	console.log("Reseto de reportes");
+	ReporteResetArre();
 }
 
 function BtnRadioManual() {

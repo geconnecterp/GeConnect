@@ -481,16 +481,11 @@ namespace gc.sitio.Areas.Compras.Controllers
 				listaTemp.ForEach(x => { x.nota = nota; });
 				DevolucionProductosLista = listaTemp;
 				var json_string = GenerarJsonDesdeLista();
-				var respuesta = await _productoServicio.ConfirmarDP(json_string, AdministracionId, UserName, TokenCookie);
-				if (respuesta == null)
-					return Json(new { error = true, warn = false, msg = "Algo no fue bien al confirmar la devolución, intente nuevamente mas tarde.", jsonstring = json_string });
-				if (respuesta.Count == 0)
-					return Json(new { error = true, warn = false, msg = "Algo no fue bien al confirmar la devolución, intente nuevamente mas tarde.", jsonstring = json_string });
-				if (respuesta.First().resultado != 0)
-					return Json(new { error = false, warn = true, msg = respuesta.First().resultado_msj, jsonstring = json_string });
+				var respuesta = _productoServicio.ConfirmarDP(json_string, AdministracionId, UserName, TokenCookie);
 
 				DevolucionProductosLista = [];
-				return Json(new { error = false, warn = false, msg = respuesta.First().resultado_msj, jsonstring = json_string });
+				return AnalizarRespuesta(respuesta, "El ajuste se ha realizado con éxito.");
+				//return Json(new { error = false, warn = false, msg = respuesta.First().resultado_msj, jsonstring = json_string });
 			}
 			catch (Exception ex)
 			{

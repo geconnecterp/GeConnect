@@ -231,26 +231,27 @@ namespace gc.api.core.Servicios.Reportes
 
 			pdf.Add(tbl);
 
+			// Espacio opcional
+			pdf.Add(new Paragraph(" ", chico));
+
 			// ============================
 			// TOTALIZADOR DE COSTO
 			// ============================
 			decimal totalCosto = registros.Sum(x => x.costo);
 
-			PdfPTable tblTotal = new PdfPTable(2);
-			tblTotal.WidthPercentage = 30;                 // ancho del bloque
+			PdfPTable tblTotal = new PdfPTable(3);
+			tblTotal.WidthPercentage = 100;                 // ancho del bloque
 			tblTotal.HorizontalAlignment = Element.ALIGN_RIGHT;
-			tblTotal.SetWidths(new float[] { 60, 40 });    // etiqueta / valor
+			tblTotal.SetWidths(new float[] { 80, 10, 10 });    // etiqueta / valor
 
-			// Línea separadora superior
-			//PdfPCell linea = new PdfPCell(new Phrase(" "))
-			//{
-			//	Border = Rectangle.NO_BORDER,
-			//	BorderWidthTop = 1f,
-			//	Colspan = 2,
-			//	Padding = 0f,
-			//	FixedHeight = 4f
-			//};
-			//tblTotal.AddCell(linea);
+			PdfPCell lblObs = new PdfPCell(new Phrase("Obs: NO APTA PARA LA VENTA", normal))
+			{
+				Border = Rectangle.NO_BORDER,
+				HorizontalAlignment = Element.ALIGN_LEFT,
+				PaddingTop = 2f,
+				PaddingBottom = 2f
+			};
+			tblTotal.AddCell(lblObs);
 
 			// Etiqueta
 			PdfPCell lbl = new PdfPCell(new Phrase("Total Costo:", normalBold))
@@ -275,11 +276,6 @@ namespace gc.api.core.Servicios.Reportes
 			// Agregar al PDF
 			pdf.Add(tblTotal);
 
-
-			Paragraph obs = new Paragraph("Obs: NO APTA PARA LA VENTA", normalBold);
-			obs.Alignment = Element.ALIGN_LEFT;
-			obs.SpacingBefore = 10f;
-			pdf.Add(obs);
 		}
 
 
