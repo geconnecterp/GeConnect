@@ -294,8 +294,10 @@ namespace gc.sitio.Areas.Mstk.Controllers.RegistrarRemitoExterno
 
 		private void InicializarDatosDeSession(InitCargaRegExt model)
 		{
-			if (ProveedoresLista.Count == 0)
-				ObtenerProveedores(_cuentaServicio, "BI");
+			//if (ProveedoresLista.Count == 0)
+			//	ObtenerProveedores(_cuentaServicio, "BI");
+			if (CuentasLista.Count == 0)
+				ObtenerCuentas(_cuentaServicio, 'D', "%");
 		}
 		protected SelectList ComboTipoComprobante(string afip_id, string opt_id)
 		{

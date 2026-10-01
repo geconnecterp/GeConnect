@@ -33,7 +33,7 @@
 	}
 
 	.radio-block {
-		width: 180px; /* Ajustá según tu imagen */
+		width: 164px; /* Ajustá según tu imagen */
 		display: flex;
 		align-items: center;
 		justify-content: flex-start;
@@ -50,7 +50,7 @@
 	}
 
 	.label-block {
-		width: 90px; /* Ajustá según tu imagen */
+		width: 65px; /* Ajustá según tu imagen */
 		display: flex;
 		align-items: center;
 		justify-content: flex-end;
@@ -77,130 +77,218 @@
 		max-width: 60px !important;
 		min-width: 60px !important;
 	}
+
 	.input-id {
 		width: 120px !important;
 	}
 
 	#Busqueda {
-		width: 70px !important;
-		max-width: 70px !important;
-		min-width: 70px !important;
+		width: 65px !important;
+		max-width: 65px !important;
+		min-width: 65px !important;
+	}
+
+	.width-select-depo {
+		width: 40% !important;
+		max-width: 40% !important;
+	}
+
+	.ancho-boton {
+		width: 100px;
+	}
+
+	.ancho-divs {
+		width: 98%;
+		margin-left: 5px;
 	}
 </style>
-<div class="card mx-auto w-75" style="padding-left:0;padding-right:0;">
-	<div class="card-body p-2">
+<div class="card">
+	<div class="container">
 		<div class="row g-2">
 			<!-- Columna Izquierda -->
-			<div class="col-md-7">
-				<!-- Desde Factura -->
-				<div class="d-flex align-items-center mb-2 row-block">
-					<div class="radio-block">
-						<input class="form-check-input me-1" type="radio" name="TipoRelacion" id="DesdeFactura" value="Factura" checked>
-						<label class="form-check-label" for="DesdeFactura">Desde Factura</label>
+			<div class="col-6" style="padding-top: 8px;padding-right: 0px;">
+				<fieldset style="margin: 0px;padding: 2px;">
+					<!-- Desde Factura -->
+					<div class="d-flex align-items-center mb-2 row-block ancho-divs">
+						<div class="radio-block">
+							<input class="form-check-input me-1" type="radio" name="TipoRelacion" id="DesdeFactura" value="Factura" checked>
+							<label class="form-check-label" for="DesdeFactura">Desde Factura</label>
+						</div>
+
+						<div class="radio-controls d-flex align-items-center">
+							<label class="me-2 mb-0">Tipo:</label>
+
+							@Html.DropDownList("id",
+							Model.TipoComprobantes,
+														"Seleccionar...",
+														new { @id = "listaTipoComprobante", @class = "form-select form-select-sm w-auto inputEditable" })
+
+							<label class="ms-3 me-2 mb-0">N°:</label>
+
+							<input type="text"
+								   id="PtoVta"
+								   name="PtoVta"
+								   class="form-control form-control-sm input-compact w-auto inputEditable"
+								   style="max-width:60px;" />
+
+							<span class="mx-1">-</span>
+
+							<input type="text"
+								   id="NroComprobante"
+								   name="NroComprobante"
+								   class="form-control form-control-sm input-compact w-auto inputEditable"
+								   style="width:100px !important; max-width: 100px !important;" />
+						</div>
 					</div>
+					<!-- Desde Cotización -->
+					<div class="d-flex align-items-center mb-2 row-block ancho-divs">
+						<div class="radio-block">
+							<input class="form-check-input me-1" type="radio" name="TipoRelacion" id="DesdeCotizacion" value="Cotizacion">
+							<label class="form-check-label" for="DesdeCotizacion">Desde Cotización</label>
+						</div>
 
-					<div class="radio-controls d-flex align-items-center">
-						<label class="me-2 mb-0">Tipo:</label>
-
-						@Html.DropDownList("id",
-						Model.TipoComprobantes,
-												"Seleccionar...",
-												new { @id = "listaTipoComprobante", @class = "form-select form-select-sm w-auto" })
-
-						<label class="ms-3 me-2 mb-0">N°:</label>
-
-						<input type="text"
-							   id="PtoVta"
-							   name="PtoVta"
-							   class="form-control form-control-sm input-compact w-auto"
-							   style="max-width:60px;" />
-
-						<span class="mx-1">-</span>
-
-						<input type="text"
-							   id="NroComprobante"
-							   name="NroComprobante"
-							   class="form-control form-control-sm input-compact w-auto"
-							   style="min-width:120px;" />
+						<div class="radio-controls d-flex align-items-center">
+							<label class="me-2 mb-0">N°:</label>
+							<input type="text"
+								   id="NroCotizacion"
+								   name="NroCotizacion"
+								   class="form-control form-control-sm input-compact w-auto"
+								   style="min-width:120px;" />
+						</div>
 					</div>
-				</div>
-				<!-- Desde Cotización -->
-				<div class="d-flex align-items-center mb-2 row-block">
-					<div class="radio-block">
-						<input class="form-check-input me-1" type="radio" name="TipoRelacion" id="DesdeCotizacion" value="Cotizacion">
-						<label class="form-check-label" for="DesdeCotizacion">Desde Cotización</label>
-					</div>
+					<!-- Sin Relación -->
+					<div class="d-flex align-items-center mb-2 row-block ancho-divs">
+						<div class="radio-block">
+							<input class="form-check-input me-1" type="radio" name="TipoRelacion" id="SinRelacion" value="SinRelacion">
+							<label class="form-check-label" for="SinRelacion">Sin Relación</label>
+						</div>
+						<div class="radio-controls d-flex align-items-center">
+							<input type="text"
+								   class="form-control inputEditable form-control-sm input-compact input-full"
+								   name="Rel03"
+								   id="Rel03"
+								   disabled />
 
-					<div class="radio-controls d-flex align-items-center">
-						<label class="me-2 mb-0">N°:</label>
-						<input type="text"
-							   id="NroCotizacion"
-							   name="NroCotizacion"
-							   class="form-control form-control-sm input-compact w-auto"
-							   style="min-width:120px;" />
+							<input id="Rel03Item" name="Rel03Item" type="hidden" value="">
+						</div>
 					</div>
-				</div>
-				<!-- Sin Relación -->
-				<div class="d-flex align-items-center mb-2 row-block">
-					<div class="radio-block">
-						<input class="form-check-input me-1" type="radio" name="TipoRelacion" id="SinRelacion" value="SinRelacion">
-						<label class="form-check-label" for="SinRelacion">Sin Relación</label>
-					</div>
-					<div class="radio-controls d-flex align-items-center">
-						<input type="text"
-							   class="form-control inputEditable form-control-sm input-compact input-full"
-							   name="Rel03"
-							   id="Rel03"
-							   disabled />
-
-						<input id="Rel03Item" name="Rel03Item" type="hidden" value="">
-					</div>
-				</div>
+				</fieldset>
 			</div>
 			<!-- Columna Derecha -->
-			<div class="col-md-5">
+			<div class="col-md-6" style="padding-top: 8px;padding-left: 0px;">
+				<fieldset style="margin: 0px;padding: 2px;">
+					<div class="d-flex align-items-center mb-2 row-block ancho-divs">
+						<!-- Depósito -->
+						<div class="input-group input-group-sm me-2 flex-grow-1">
+							<span class="input-group-text fixed-width-80">Depósito:</span>
+							@Html.DropDownList("id",
+														Model.ComboDepositos,
+														"Seleccionar...",
+														new { @id = "listaDeposito", @class = "form-select form-select-sm input-uniform inputEditable" })
+						</div>
+						<!-- Box -->
+						<div class="input-group input-group-sm flex-grow-1" id="divComboBoxes">
+							<span class="input-group-text fixed-width-80">Box:</span>
+							@Html.DropDownList("id",
+														Model.ComboBoxes,
+														"Seleccionar...",
+														new { @id = "listaBoxes", @class = "form-select form-select-sm input-uniform inputEditable" })
+						</div>
+					</div>
+					<!-- Obs -->
+					<div class="input-group input-group-sm d-flex align-items-center mb-2 row-block ancho-divs">
+						<span class="input-group-text fixed-width-80">Obs: </span>
+						<input type="text"
+							   id="Obs"
+							   name="Obs"
+							   class="form-control form-control-sm input-compact input-uniform inputEditable" />
+					</div>
+					<!-- Botones arriba -->
+					<div class="d-flex justify-content-end gap-2 mt-2 ancho-divs" style="margin-bottom: 5px;">
+						<button type="button" class="btn btn-success btn-sm mt-1 me-1 ancho-boton" id="btnCargar">
+							<i class="bx bx-search"></i> Cargar
+						</button>
+						<button type="button" class="btn btn-success btn-sm mt-1 me-1 ancho-boton" id="btnConfirmar">
+							<i class="bx bx-badge-check"></i> Confirmar
+						</button>
+						<button type="button" class="btn btn-danger btn-sm mt-1 me-1 ancho-boton" id="btnCancelar">
+							<i class="bx bx-x-circle"></i> Cancelar
+						</button>
+					</div>
+				</fieldset>
 				<!-- Depósito -->
-				<div class="d-flex align-items-center mb-2 row-block">
-					<div class="label-block">
-						<label class="mb-0" for="listaDeposito">Depósito:</label>
-					</div>
-					@Html.DropDownList("id",
-										Model.ComboDepositos,
-										"Seleccionar...",
-										new { @id = "listaDeposito", @class = "form-select form-select-sm input-uniform" })
-				</div>
-				<!-- Box -->
-				<div class="d-flex align-items-center mb-2 row-block" id="divComboBoxes">
-					<div class="label-block">
-						<label class="mb-0" for="listaBoxes">BOX:</label>
-					</div>
-					@Html.DropDownList("id",
-										Model.ComboBoxes,
-										"Seleccionar...",
-										new { @id = "listaBoxes", @class = "form-select form-select-sm input-uniform" })
-				</div>
-				<!-- Obs -->
-				<div class="d-flex align-items-center mb-2 row-block">
-					<div class="label-block">
-						<label class="mb-0" for="Obs">Obs:</label>
-					</div>
-
-					<input type="text"
-						   id="Obs"
-						   name="Obs"
-						   class="form-control form-control-sm input-compact input-uniform" />
-				</div>
-				<!-- Botones arriba -->
-				<div class="d-flex justify-content-end gap-2 mt-2">
-					<button type="button" class="btn btn-success btn-sm" id="btnCargar">Cargar</button>
-					<button type="button" class="btn btn-success btn-sm" id="btnConfirmar" disabled>Confirmar</button>
-					<button type="button" class="btn btn-danger btn-sm" id="btnCancelar" disabled>Cancelar</button>
-				</div>
 			</div>
 		</div>
 		<div id="infoComprobanteContainer"></div>
-		<!-- Sección: Detalle de Productos a Ajustar -->
-		<div class="grid-golden mt-3">
+		<!-- Sección: Detalle de Productos -->
+		<div class="row g-1 mt-1">
+			<fieldset style="margin: 2px;padding: 2px;">
+				<legend>
+					<h5>Detalle de Productos</h5>
+				</legend>
+				<div class="row col-12">
+					<div class="col-2" style="padding-right: 0px;">
+						<partial name="~/areas/ControlComun/views/producto/_ctrBuscarProducto.cshtml" model="@busquedaProducto" />
+					</div>
+					<div class="col-9" style="padding-right: 0px;padding-left: 0px;width: 75%;">
+						<div class="input-group input-group-sm">
+							<input id="ProdID" name="ProdID" type="hidden" value="">
+							<input id="UpID" name="UpID" type="hidden" value="">
+							<input id="BarradoID" name="BarradoID" type="hidden" value="">
+							<input id="ProvID" name="ProvID" type="hidden" value="">
+							<input id="BoxID" name="BoxID" type="hidden" value="">
+							<input id="DepoID" name="DepoID" type="hidden" value="">
+							<span class="input-group-text">ID: </span>
+							<input type="text" id="txtIdProd" class="form-control form-control-sm" style="width:10%;display: none;" readonly />
+							<input type="text" id="txtProDescripcion" class="form-control form-control-sm" style="width: 40%;height: 32px;" readonly />
+							<span class="input-group-text">UP: </span>
+							<input type="number" id="txtUP" class="form-control form-control-sm activable text-end" />
+							<span class="input-group-text">Bto: </span>
+							<input type="number" id="txtBto" class="form-control form-control-sm activable text-end" min="0" />
+							<span class="input-group-text">Unid: </span>
+							<input type="text" id="txtUnid" class="form-control form-control-sm activable text-end" />
+							<input type="text" id="txtUP_ID" style="display:none;" />
+							<input type="text" id="txtBARRADO_ID" style="display:none;" />
+							<input type="text" id="txtID_PROV" style="display:none;" />
+						</div>
+					</div>
+					<div class="col-1 text-center align-middle">
+						<button type="button" class="btn btn-primary btn-sm" id="btnAddProd" title="Agregar Producto">
+							<i class="bx bx-plus-circle"></i> Agregar
+						</button>
+					</div>
+				</div>
+				<div class="grid-golden-body" id="divProductos">
+					<div class="table-wrapper" id="containerListaProducto">
+						<table class="table table-sm table-golden" id="tbGridProductos">
+							<thead>
+								<tr class="header">
+									<th class="text-center fw-bold">ID</th>
+									<th class="text-center fw-bold">Descripción</th>
+									<th class="text-center fw-bold">ID Prov</th>
+									<th class="text-center fw-bold">Box</th>
+									<th class="text-center fw-bold" title="Cantidad Comprada">Cant. Comp.</th>
+									<th class="text-center fw-bold" title="Ya entregado">Ya Entr.</th>
+									<th class="text-center fw-bold" title="A entregar">A Entr.</th>
+									<th class="text-center fw-bold" title="A remitir">A Rem.</th>
+									<th class="text-center fw-bold">Acción</th>
+								</tr>
+							</thead>
+							<tbody>
+								@* <tr>
+									<td colspan="9" class="text-center text-muted py-4">
+										<i class="bx bx-info-circle me-2"></i>
+										No hay items para mostrar.
+									</td>
+								</tr> *@
+							</tbody>
+						</table>
+					</div>
+				</div>
+			</fieldset>
+		</div>
+		
+		@* <div class="grid-golden mt-3">
 			<!-- Encabezado -->
 			<div class="grid-golden-header">
 				<div class="row align-items-md-center">
@@ -286,7 +374,7 @@
 							<tr>
 								<td colspan="9" class="text-center text-muted py-4">
 									<i class="bx bx-info-circle me-2"></i>
-										No hay items para mostrar.
+									No hay items para mostrar.
 								</td>
 							</tr>
 						</tbody>
@@ -294,7 +382,7 @@
 				</div>
 			</div>
 
-		</div>
+		</div> *@
 
 	</div>
 </div>
@@ -311,7 +399,7 @@
 		var funcionBusquedaAvanzada = true;
 
 		var BuscarBoxesDesdeDepositoURL = "@Url.Action("ObtenerBoxesDesdeDeposito", "RegistrarRemitoExterno", new { area = "mstk" })";
-		var autoComRel03Url = "@Url.Action("BuscarProvs", "RegistrarRemitoExterno", new { area = "mstk" })";
+		var autoComRel03Url = "@Url.Action("BuscarCuentas", "RegistrarRemitoExterno", new { area = "mstk" })";
 		let validarExistenciaDeProdsURL = "@Url.Action("VerificarExistenciaDeProductosDesdeComprobantes", "RegistrarRemitoExterno", new { area = "mstk" })";
 		let cargarProductosDesdeComprobanteURL = "@Url.Action("CargarProductosDesdeComprobante", "RegistrarRemitoExterno", new { area = "mstk" })";
 		let limpiarProductosCargadosURL = "@Url.Action("LimpiarProductosCargados", "RegistrarRemitoExterno", new { area = "mstk" })";

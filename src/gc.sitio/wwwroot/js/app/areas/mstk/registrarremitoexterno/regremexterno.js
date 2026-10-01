@@ -8,16 +8,34 @@ $(function () {
 });
 
 function InicializarEventos() {
+	$(document).off("click", "#Rel03");
 	$(document).on("click", "#Rel03", function () { $(this).val(""); cta_seleccionada = false; cta_id_seleccionada = ""; });
+	$(document).off("click", "#btnCargar");
 	$(document).on("click", "#btnCargar", btnCargarClick);
+	$(document).off("click", "#btnConfirmar");
 	$(document).on("click", "#btnConfirmar", btnConfirmarClick);
+	$(document).off("click", "#btnCancelar");
 	$(document).on("click", "#btnCancelar", btnCancelarClick);
-	$(document).on("click", "#btnAgregarProducto", btnAgregarProductoClick);
+	$(document).off("click", "#btnAddProd");
+	$(document).on("click", "#btnAddProd", btnAgregarProductoClick);
+	$(document).off("change", "#listaDeposito");
 	$(document).on("change", "#listaDeposito", listaDepositoChange);
+	$(document).off("keyup", "#PtoVta");
 	$(document).on("keyup", "#PtoVta", ControlaKeyUpComptePtoVta);
+	$(document).off("focusout", "#PtoVta");
 	$(document).on("focusout", "#PtoVta", ControlaFocusOutComptePtoVta);
+	$(document).off("keyup", "#NroComprobante");
 	$(document).on("keyup", "#NroComprobante", ControlaKeyUpCompteNro);
+	$(document).off("focusout", "#NroComprobante");
 	$(document).on("focusout", "#NroComprobante", ControlaFocusOutCompteNro);
+	$("#txtUP").off("keyup", analizaInputUP);
+	$("#txtUP").on("keyup", analizaInputUP);
+	$("#txtBto").off("keyup", analizaInputBto);
+	$("#txtBto").on("keyup", analizaInputBto);
+	$("#txtUnid").off("keyup", analizaInputUnid);
+	$("#txtUnid").on("keyup", analizaInputUnid);
+	$("#btnBusquedaBase").prop("disabled", false);
+
 	$("#PtoVta").inputmask("9999");
 	$("#NroComprobante").inputmask("99999999");
 	$(document).ready(function () {
@@ -116,21 +134,50 @@ function InicializarEventos() {
 	CancelarRemito();
 }
 
+function analizaInputUP(x) {
+	if (x.key === "Enter" || x.which == "13") {
+		x.preventDefault();
+		x.stopPropagation();
+		$("#txtBto").trigger('focus');
+	}
+}
+
+function analizaInputBto(x) {
+	if (x.key === "Enter" || x.which == "13") {
+		x.preventDefault();
+		x.stopPropagation();
+		if ($("#txtUnid").prop('disabled')) {
+			$("#btnAddProd").trigger('focus');
+		}
+		else {
+			$("#txtUnid").trigger('focus');
+		}
+	}
+}
+
+function analizaInputUnid(x) {
+	if (x.key === "Enter" || x.which == "13") {
+		x.preventDefault();
+		x.stopPropagation();
+		$("#btnAddProd").trigger('focus');
+	}
+}
+
 function btnAgregarProductoClick() {
 
 	// ============================
 	// 1) Obtener valores del formulario
 	// ============================
 	const prodID = $("#ProdID").val().trim();
-	const prodNombre = $("#ProdNombre").text().trim();
+	const prodNombre = $("#txtProDescripcion").val().trim();
 	const provID = $("#ProvID").val().trim();
-	const upID = $("#UpID").val().trim();
+	const upID = $("#UpID").val().trim() ;
 	const depoID = $("#listaDeposito").val();
 	const boxID = $("#listaBoxes").val();
 
-	let prodUP = parseFloat($("#ProdUP").val().replace(/,/g, "")) || 0;
-	let prodBto = parseFloat($("#ProdBto").val().replace(/,/g, "")) || 0;
-	let prodUnid = parseFloat($("#ProdUnid").val().replace(/,/g, "")) || 0;
+	let prodUP = parseFloat($("#txtUP").val().replace(/,/g, "")) || 0;
+	let prodBto = parseFloat($("#txtBto").val().replace(/,/g, "")) || 0;
+	let prodUnid = parseFloat($("#txtUnid").val().replace(/,/g, "")) || 0;
 
 	let ctaID = "";
 	let ctaDenominacion = "";
@@ -238,7 +285,16 @@ function btnAgregarProductoClick() {
 	const $nuevaFila = tbody.find("tr").last();
 	const $input = $nuevaFila.find("input.editor-celda");
 
-	$input.inputmask(maskConfigEnteros);
+	// ============================
+	// Aplicar máscara según upID
+	// ============================
+	if (upID === "07") {
+		// Unidades enteras
+		$input.inputmask(maskConfigEnteros);
+	} else {
+		// Unidades decimales
+		$input.inputmask(maskConfigDecimales);
+	}
 
 	// 🔥 Forzar alineación derecha dentro de la celda
 	$nuevaFila.find("td.celda-a-remitir").css({
@@ -249,9 +305,9 @@ function btnAgregarProductoClick() {
 
 	// 🔥 Forzar estilo compacto después de Inputmask
 	$input.css({
-		width: "60px",
-		minWidth: "60px",
-		maxWidth: "60px",
+		width: "100px",
+		minWidth: "100px",
+		maxWidth: "100px",
 		padding: "0 4px",
 		height: "22px",
 		lineHeight: "22px",
@@ -264,7 +320,12 @@ function btnAgregarProductoClick() {
 	// 8) Limpiar campos del formulario
 	// ============================
 	$("#ProdID").val("");
+	$("#txtIdProd").val("");
+	$("#txtProDescripcion").val("");
 	$("#UpID").val("");
+	$("#txtUP").val(1);
+	$("#txtBto").val(1);
+	$("#txtUnid").val("");
 	$("#BarradoID").val("");
 	$("#ProvID").val("");
 	$("#ProdNombre").text("");
@@ -1217,14 +1278,17 @@ async function verificaEstado(e) {
 }
 
 function ProcesarCargaProducto(prod) {
-	$("#ProdID").val(prod.p_id);
-	$("#ProdNombre").text(prod.p_desc);
+	//traigo la variable productoBase e hidrato componentes
+	var prod = productoBase;
+
+	$("#txtIdProd").val(prod.p_id);
+	$("#txtProDescripcion").val(prod.p_desc);
 	$("#estadoFuncion").val(false);
-	$("#UpID").val(prod.up_id);
-	$("#BarradoID").val(prod.p_id_barrado);
-	$("#ProvID").val(prod.p_id_prov);
+	$("#txtUP_ID").val(prod.up_id);
+	$("#txtBARRADO_ID").val(prod.p_id_barrado);
+	$("#txtID_PROV").val(prod.p_id_prov);
 	$("#txtUP").mask("000.000.000.000", { reverse: true });
-	$("txtBto").mask('#,##0', {
+	$("#txtBto").mask('#,##0', {
 		reverse: true,
 		translation: {
 			'#': {
@@ -1237,23 +1301,95 @@ function ProcesarCargaProducto(prod) {
 		}
 	});
 
-	$("#ProdUP").val(prod.p_unidad_pres).prop("disabled", false);
-	$("#ProdBto").val(prod.bulto).prop("disabled", false);
-	$("#ProdUnid").mask("000.000.000.000", { reverse: true });
+	$("#txtUP").val(prod.p_unidad_pres);
+	$("#txtBto").val(prod.bulto);
 
-	if (prod.up_id !== "07") {  //unidades enteras
-		// $("#box").mask("000.000.000.000,00", { reverse: true });
-		$("#ProdUnid").mask("000.000.000.000,00", { reverse: true });
-		$("#ProdUnid").val(0).prop("disabled", false);
+	if (prod.up_id === "07") {  //unidades enteras
+		getMaskForInteger("#txtUnid");
+		$("#txtUnid").val(0).prop("disabled", false);
+		$("#txtUP").prop('disabled', false);
+		$("#txtBto").prop('disabled', false);
+		$("#txtUP").trigger('focus');
 	}
 	else { //unidades decimales
-		//$("#txtUnid").val(0).prop("disabled", true);
+		$("#txtUP").prop('disabled', true);
+		$("#txtBto").prop('disabled', true);
+		getMaskForTwoDecimals("#txtUnid");
+		$("#txtUnid").trigger('focus');
 	}
 	$("#Busqueda").val("");
 	if (prod.p_con_vto !== "N") {
 	} else {
 	}
-	$("#ProdUP").focus();
+
+
+	$("#ProdID").val(prod.p_id);
+	$("#ProdNombre").text(prod.p_desc);
+	//$("#estadoFuncion").val(false);
+	$("#UpID").val(prod.up_id);
+	$("#BarradoID").val(prod.p_id_barrado);
+	$("#ProvID").val(prod.p_id_prov);
+	//$("#txtUP").mask("000.000.000.000", { reverse: true });
+	//$("txtBto").mask('#,##0', {
+	//	reverse: true,
+	//	translation: {
+	//		'#': {
+	//			pattern: /-|\d/,
+	//			recursive: true
+	//		}
+	//	},
+	//	onChange: function (value, e) {
+	//		e.target.value = value.replace(/(?!^)-/g, '').replace(/^,/, '').replace(/^-,/, '-');
+	//	}
+	//});
+
+	//$("#ProdUP").val(prod.p_unidad_pres).prop("disabled", false);
+	//$("#ProdBto").val(prod.bulto).prop("disabled", false);
+	//$("#ProdUnid").mask("000.000.000.000", { reverse: true });
+
+	//if (prod.up_id !== "07") {  //unidades enteras
+	//	// $("#box").mask("000.000.000.000,00", { reverse: true });
+	//	$("#ProdUnid").mask("000.000.000.000,00", { reverse: true });
+	//	$("#ProdUnid").val(0).prop("disabled", false);
+	//}
+	//else { //unidades decimales
+	//	//$("#txtUnid").val(0).prop("disabled", true);
+	//}
+	//$("#Busqueda").val("");
+	//if (prod.p_con_vto !== "N") {
+	//} else {
+	//}
+	//$("#ProdUP").focus();
+}
+
+function getMaskForInteger(selector) {
+	$(selector).inputmask({
+		alias: 'numeric',
+		groupSeparator: ',',       // separador de miles
+		digits: 0,                 // sin decimales
+		digitsOptional: false,
+		allowMinus: false,
+		prefix: '',
+		suffix: '',
+		rightAlign: true,
+		unmaskAsNumber: true,
+		min: 0
+	});
+}
+
+function getMaskForTwoDecimals(selector) {
+	$(selector).inputmask({
+		alias: 'numeric',
+		groupSeparator: ',',
+		radixPoint: '.',
+		digits: 2,
+		digitsOptional: false,
+		allowMinus: false,
+		prefix: '',
+		suffix: '',
+		rightAlign: true,
+		unmaskAsNumber: true
+	});
 }
 
 ///Funcion para validar la existencia del prudcto agregado en el comprobante 
@@ -1286,4 +1422,108 @@ function ValidarExistenciaDeProducto(p_id) {
 			resolve(true);
 		});
 	});
+}
+
+function buscarProducto() {
+	AbrirWaiting();
+	var _post = busquedaProdBaseUrl;
+	var valor = $("#Busqueda").val();
+	var validarEstado = false;
+
+	var datos = {};
+	if (typeof validarEstado !== 'undefined') {
+		datos = { busqueda: valor, validarEstado };
+	}
+	else {
+		datos = { busqueda: valor };
+	}
+	$("#tbGridProd").empty();
+	PostGen(datos, _post, function (obj) {
+		if (obj.error === true) {
+			CerrarWaiting();
+			AbrirMensaje("ATENCIÓN", obj.msg, function () {
+				productoBase = null;
+				$("#estadoFuncion").val(false);
+				$("#btnBusquedaBase").prop("disabled", false);
+				$("#msjModal").modal("hide");
+				$("#Busqueda").focus();
+				return true;
+			}, false, ["Aceptar"], "error!", null);
+		}
+		else if (obj.warn === true) {
+			CerrarWaiting();
+			if (obj.producto.p_id === "0000-0000") {
+				AbrirMensaje("ATENCIÓN", obj.msg, function () {
+					productoBase = null;
+					$("#estadoFuncion").val(false);
+					$("#btnBusquedaBase").prop("disabled", false);
+					$("#msjModal").modal("hide");
+					$("#Busqueda").focus();
+					return true;
+				}, false, ["Aceptar"], "error!", null);
+			}
+			else if (obj.producto.p_id === "NO" && valor != "") {
+				if (funcionBusquedaAvanzada === true) {
+					AbrirMensaje("ATENCIÓN", "NO SE ENCONTRO EL PRODUCTO QUE INTENTO BUSCAR. SE ABRIRÁ LA BUSQUEDA AVANZADA.", function () {
+						$("#msjModal").modal("hide");
+						productoBase = null;
+						$("#estadoFuncion").val(false);
+						inicializaBusquedaAvanzada();
+						$("#busquedaModal").modal("toggle");
+						return true;
+					}, false, ["Aceptar"], "error!", null);
+
+					return true;
+				}
+				else {
+					AbrirMensaje("ATENCIÓN", "NO SE ENCONTRO EL PRODUCTO QUE INTENTO BUSCAR.", function () {
+						$("#msjModal").modal("hide");
+						$("#Busqueda").focus();
+						return true;
+					}, false, ["Aceptar"], "error!", null);
+
+				}
+			} else if (obj.producto.p_id === "NO" && valor == "") {
+				if (funcionBusquedaAvanzada === true) {
+					productoBase = null;
+					$("#estadoFuncion").val(false);
+					inicializaBusquedaAvanzada();
+					$("#busquedaModal").modal("toggle");
+				}
+			} else {
+				//encontro producto pero hay warning
+				AbrirMensaje("ATENCIÓN!", obj.msg, function (resp) {
+					if (resp === "SI") {
+						productoBase = obj.producto;
+						$("#estadoFuncion").val(true);
+						$("#estadoFuncion").trigger("change");
+						$("#msjModal").modal("hide");
+						var up = $("#txtUPEnComprobanteRP");
+						if (up) {
+							up.focus();
+						}
+						return true;
+					}
+					else {
+						//se deniega
+						productoBase = null;
+						$("#estadoFuncion").val(false);
+						$("#btnBusquedaBase").prop("disabled", false);
+						$("#msjModal").modal("hide");
+						$("#Busqueda").focus();
+						return true;
+					}
+				},
+					true, ["Aceptar", "Denegar"], "Warning!", null);
+			}
+		}
+		else {
+			//encontro y se presenta
+			productoBase = obj.producto;
+			$("#estadoFuncion").val(true);
+			$("#estadoFuncion").trigger("change");
+			return true;
+		}
+	});
+	return true;
 }

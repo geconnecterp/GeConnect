@@ -3,10 +3,10 @@
 @{
 	var cmbBoxes = Model.ComboBoxes;
 }
-<div class="label-block">
-	<label class="mb-0" for="listaBoxes">BOX:</label>
-</div>
-
+@* <div class="label-block">
+	<label class="mb-0" for="listaBoxes">Box:</label>
+</div> *@
+<span class="input-group-text fixed-width-80">Box: </span>
 @Html.DropDownList("id",
 Model.ComboBoxes,
 "Seleccionar...",
