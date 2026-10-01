@@ -1,0 +1,88 @@
+using System.Reflection;
+using System.Security.Claims;
+using System.IdentityModel.Tokens.Jwt;
+using System.ComponentModel.DataAnnotations;
+using System.Text.Json;
+using gc.caja.Models;
+using gc.caja.Models.Estacion;
+using gc.caja.Areas.Facturacion.Controllers;
+using gc.caja.Areas.Seguridad.Controllers;
+using gc.caja.core.Servicios.Contratos.Cajas;
+using gc.infraestructura.Core.EntidadesComunes.Options;
+using gc.infraestructura.Dtos.Cajas;
+using gc.infraestructura.Dtos.Cajas.Request;
+using gc.infraestructura.Dtos.Gen;
+using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
+
+int total=0;
+void Check(bool ok,string texto) { if(!ok) throw new Exception(texto); total++; Console.WriteLine("OK "+texto); }
+var reloj=new Reloj(); var puestos=new EstacionPuestoServicio(new EphemeralDataProtectionProvider(),reloj);
+EstacionPuesto Puesto(string id="PC-A")=>new(){EstacionId=id,CajaId="0001",AdmId="0000",IP="127.0.0.1",Facturacion=1};
+var pase=puestos.Preparar(Puesto());Check(puestos.Consumir(pase)?.EstacionId=="PC-A","Pase entrega configuración del puesto");Check(puestos.Consumir(pase)==null,"Pase no se puede reutilizar");
+var vencido=puestos.Preparar(Puesto());reloj.Ahora=reloj.Ahora.AddMinutes(3);Check(puestos.Consumir(vencido)==null,"Pase vencido rechazado");
+var h=new DefaultHttpContext{Session=new Memoria()}; puestos.Guardar(h,Puesto());
+Check(puestos.Obtener(h)?.CajaId=="0001" && h.Session.GetString("CajaActual")!.Contains("0001"),"Identificación hidrata CajaActual");
+var cookie=h.Response.Headers.SetCookie.ToString().Split(';')[0];
+var nuevo=new DefaultHttpContext{Session=new Memoria()};nuevo.Request.Headers.Cookie=cookie;
+Check(puestos.Obtener(nuevo)?.EstacionId=="PC-A","Identificación sobrevive al cierre de sesión del operador");
+var diferente=new DefaultHttpContext{Session=new Memoria()};puestos.Guardar(diferente,Puesto("PC-B"));Check(puestos.Obtener(h)?.EstacionId=="PC-A" && puestos.Obtener(diferente)?.EstacionId=="PC-B","Dos navegadores no comparten puesto");
+var invalido=new DefaultHttpContext{Session=new Memoria()};invalido.Request.Headers.Cookie=".gccaja.puesto=alterada";Check(puestos.Obtener(invalido)==null,"Cookie alterada no identifica puesto");
+var directo=new DefaultHttpContext{Session=new Memoria()};Check(puestos.Obtener(directo)==null,"Sin iniciador no existe fallback al archivo del servidor");
+var ec=new EstacionController(puestos){ControllerContext=new(){HttpContext=h}};h.User=new(new ClaimsIdentity([new Claim("name","test")],"test"));
+Check(ec.Iniciar(puestos.Preparar(Puesto("PC-B"))) is ContentResult && puestos.Obtener(h)?.EstacionId=="PC-A","No cambia de puesto con sesión autenticada");
+var incompleto=new EstacionPuesto();Check(!Validator.TryValidateObject(incompleto,new ValidationContext(incompleto),new List<ValidationResult>(),true),"Configuración incompleta rechazada");
+
+(ProductoFactController controller, ProductoProxy api, DefaultHttpContext http, Registro logger) Setup() {
+ var sesion=new Memoria();sesion.SetString("Etiqueta","prueba");
+ var jwt=new JwtSecurityTokenHandler().WriteToken(new JwtSecurityToken(claims:[new Claim("unique_name","operador")],expires:DateTime.UtcNow.AddMinutes(20)));
+ var http=new DefaultHttpContext{Session=sesion,User=new ClaimsPrincipal(new ClaimsIdentity([new Claim("name","operador")],"test"))};http.Request.Headers.Cookie="prueba="+jwt;
+ sesion.SetString("ClienteActual",Newtonsoft.Json.JsonConvert.SerializeObject(new CuentaDatosResultadoDto{cta_id="CLIENTE-ACTUAL",Origen="C",ctc_id="MA",ctac_dto_operacion=12}));
+ var servicio=DispatchProxy.Create<IProductoFactServicio,ProductoProxy>();var proxy=(ProductoProxy)(object)servicio;
+ var logger=new Registro();
+ var controller=new ProductoFactController(Options.Create(new AppSettings()),null!,servicio,null!,new HttpContextAccessor{HttpContext=http},null!,null!,logger){ControllerContext=new(){HttpContext=http}};
+ controller.CajaActual=Puesto().Configuracion();controller.LP_Id="LP-ACTUAL";
+ return(controller,proxy,http,logger);
+}
+RecuperarDetalleRequest Detalle()=>new(){Productos=[new(){Codigo="P1",Cantidad=12},new(){Codigo="NO",Cantidad=1},new(){Codigo="P1",Cantidad=0.75m}]};
+var t=Setup();var respuesta=(JsonResult)await t.controller.RecuperarBackup(Detalle());var datos=JsonSerializer.SerializeToElement(respuesta.Value);
+Check(datos.GetProperty("ok").GetBoolean() && datos.GetProperty("producto").GetArrayLength()==2 && datos.GetProperty("omitidos").GetInt32()==1,"Revalida todos y omite rechazados por negocio");
+Check(t.api.Requests.All(r=>r.lp_id=="LP-ACTUAL" && r.cta_id=="CLIENTE-ACTUAL" && r.ctc_id=="MA" && r.ctac_dto==12 && r.adm_id=="0000"),"Usa cliente, lista, canal, descuento y sucursal actuales");
+Check(t.api.Requests.Select(r=>r.cantidad).SequenceEqual(new decimal[]{12,1,0.75m}) && t.api.Requests.All(r=>!r.bulto),"Cantidades normalizadas conservadas sin multiplicar bultos");
+Check(t.controller.ProductosSeleccionados.Select(p=>p.cantidad_tot).SequenceEqual(new decimal[]{12,0.75m}),"Restaura unidades enteras y decimales aunque el SP multiplique por presentación");
+Check(t.controller.ProductosSeleccionados.Select(p=>p.item).SequenceEqual(new[]{1,2}),"Filas repetidas tienen identificadores únicos");
+Check(t.controller.ProductosSeleccionados.All(p=>p.p_pvta==987 && p.pre_id==null && p.cpf_nro==null),"Recupera precio actual y no vínculos de comprobantes anteriores");
+Check(await t.controller.RecuperarBackup(Detalle()) is ConflictObjectResult && t.api.Requests.Count==3,"No duplica recuperación sobre grilla ocupada");
+var fallo=Setup();fallo.api.Fallar=true;Check(await fallo.controller.RecuperarBackup(Detalle()) is ObjectResult {StatusCode:502} && fallo.controller.ProductosSeleccionados.Count==0,"Fallo de transporte no deja una recuperación parcial");
+var sinCliente=Setup();sinCliente.http.Session.Remove("ClienteActual");Check(await sinCliente.controller.RecuperarBackup(Detalle()) is BadRequestObjectResult && sinCliente.api.Requests.Count==0,"No consulta productos sin cliente");
+var sinLista=Setup();sinLista.controller.LP_Id="";Check(await sinLista.controller.RecuperarBackup(Detalle()) is BadRequestObjectResult && sinLista.api.Requests.Count==0,"No consulta productos sin lista autorizada");
+var inexistente=Setup();inexistente.api.NoExiste=true;var omitido=JsonSerializer.SerializeToElement(((JsonResult)await inexistente.controller.RecuperarBackup(Detalle())).Value);Check(omitido.GetProperty("omitidos").GetInt32()==3 && inexistente.controller.ProductosSeleccionados.Count==0,"Producto no encontrado se omite sin confundirlo con desconexión");
+var trazado=Setup();var id="113030a4-6ae4-4f6c-a4f0-d68a778f6140";trazado.http.Request.Headers["X-Respaldo-Id"]=id;await trazado.controller.RecuperarBackup(Detalle());
+Check(trazado.http.Response.Headers["X-Respaldo-Id"]==id && trazado.logger.Lineas.Any(l=>l.Contains(id)&&l.Contains("Recuperado")) && trazado.logger.Lineas.Any(l=>l.Contains(id)&&l.Contains("Omitido")),"Logs y respuesta correlacionan recuperación y producto omitido");
+Check(fallo.logger.Lineas.Any(l=>l.Contains("HTTP=502")) && fallo.logger.Lineas.Any(l=>l.Contains("Producto=P1")),"Logs identifican producto y rechazo de consulta fallida");
+Check(typeof(ProductoFactController).GetMethod("RecuperarBackup")!.GetCustomAttribute<ValidateAntiForgeryTokenAttribute>()!=null,"Recuperación exige antiforgery");
+Console.WriteLine($"{total} verificaciones correctas.");
+
+public class ProductoProxy:DispatchProxy {
+ public List<ProductoDatosRequestDto> Requests=new();public bool Fallar;public bool NoExiste;
+ protected override object? Invoke(MethodInfo? method,object?[]? args) {
+  if(method?.Name!="ObtenerProductoDatos")throw new NotSupportedException();var r=(ProductoDatosRequestDto)args![0]!;Requests.Add(r);
+  if(NoExiste)return Task.FromResult(new RespuestaGenerica<ProductoDatosResponseDto>{Ok=false,EsWarn=true,ListaEntidad=[]});
+  return Task.FromResult(new RespuestaGenerica<ProductoDatosResponseDto>{Ok=!Fallar,ListaEntidad=[new(){p_id=r.valor,cantidad_tot=r.cantidad*12,respuesta=r.valor=="NO"?1:0,p_pvta=987,pre_id="viejo",cpf_nro="viejo"}]});
+ }
+}
+class Reloj:TimeProvider{public DateTimeOffset Ahora=DateTimeOffset.UtcNow;public override DateTimeOffset GetUtcNow()=>Ahora;}
+class Memoria:ISession{
+ readonly Dictionary<string,byte[]> datos=new();public bool IsAvailable=>true;public string Id=>"test";public IEnumerable<string> Keys=>datos.Keys;
+ public void Clear()=>datos.Clear();public Task CommitAsync(CancellationToken t=default)=>Task.CompletedTask;public Task LoadAsync(CancellationToken t=default)=>Task.CompletedTask;public void Remove(string k)=>datos.Remove(k);public void Set(string k,byte[] v)=>datos[k]=v;public bool TryGetValue(string k,[System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out byte[]? v)=>datos.TryGetValue(k,out v);
+}
+
+class Registro:Microsoft.Extensions.Logging.ILogger<ProductoFactController>{
+ public List<string> Lineas=new();
+ public IDisposable? BeginScope<TState>(TState state) where TState:notnull=>null;
+ public bool IsEnabled(Microsoft.Extensions.Logging.LogLevel level)=>true;
+ public void Log<TState>(Microsoft.Extensions.Logging.LogLevel level,Microsoft.Extensions.Logging.EventId id,TState state,Exception? ex,Func<TState,Exception?,string> formatter)=>Lineas.Add(formatter(state,ex));
+}

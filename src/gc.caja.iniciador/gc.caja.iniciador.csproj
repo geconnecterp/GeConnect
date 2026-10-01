@@ -1,0 +1,4 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup><OutputType>Exe</OutputType><TargetFramework>net8.0</TargetFramework><ImplicitUsings>enable</ImplicitUsings><Nullable>enable</Nullable><ApplicationIcon>Assets\geco-caja-iniciador.ico</ApplicationIcon></PropertyGroup>
+  <ItemGroup><None Update="README.md;cajasettings.ejemplo.json" CopyToPublishDirectory="PreserveNewest" /></ItemGroup>
+</Project>

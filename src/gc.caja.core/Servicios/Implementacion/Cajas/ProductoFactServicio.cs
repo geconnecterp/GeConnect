@@ -243,7 +243,7 @@ namespace gc.caja.core.Servicios.Implementacion.Cajas
                     var resp = apiResponse.Data;
                     if (!resp.Any())
                     {
-                        return new() { Ok = false, Mensaje = "No se encontraron productos según el criterio." };
+                        return new() { Ok = false, EsWarn = true, ListaEntidad = [], Mensaje = "No se encontraron productos según el criterio." };
                     }
                     else
                     {

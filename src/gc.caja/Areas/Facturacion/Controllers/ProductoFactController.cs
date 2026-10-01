@@ -28,7 +28,6 @@ namespace gc.caja.Areas.Facturacion.Controllers
         private readonly INotaCreditoServicio _notaCreditoServicio;
         private readonly IReportesConfigService _reportesConfigService;
         private readonly IReportesService _reportesService;
-        private readonly IBackupProductosServicio _backupServicio;// ✅ NUEVO
 
         public ProductoFactController(
             IOptions<AppSettings> options,
@@ -37,7 +36,6 @@ namespace gc.caja.Areas.Facturacion.Controllers
             INotaCreditoServicio notaCreditoServicio,
             IHttpContextAccessor httpContext,
             IReportesConfigService reportesConfigService,
-            IBackupProductosServicio backupServicio, // ✅ NUEVO
             IReportesService reportesService,
             ILogger<ProductoFactController> logger) : base(options, httpContext, logger)
         {
@@ -46,7 +44,6 @@ namespace gc.caja.Areas.Facturacion.Controllers
             _notaCreditoServicio = notaCreditoServicio;
             _reportesConfigService = reportesConfigService;
             _reportesService = reportesService;
-            _backupServicio = backupServicio;
         }
 
         public IActionResult Index()
@@ -368,75 +365,9 @@ namespace gc.caja.Areas.Facturacion.Controllers
                 _logger?.LogInformation($"   Acumula: {cajaActual.acumula}");
                 _logger?.LogInformation("═══════════════════════════════════════════════════");
 
-                // ✅ ACTUALIZADO v2.3: Guardar en backup con detección basada en ProductosSeleccionados
-                var productosEnSesion = ProductosSeleccionados;
-                try
-                {
-                    // ❶ CRÍTICO: Detectar si es el primer producto de la sesión
-                    // Verificar si ProductosSeleccionados está vacío
-                    
-                    bool esPrimerProductoDeSesion = productosEnSesion == null || !productosEnSesion.Any();
-                    
-                    _logger?.LogInformation("═══════════════════════════════════════════════════");
-                    _logger?.LogInformation("🔍 VERIFICANDO ESTADO DE SESIÓN");
-                    _logger?.LogInformation($"   ProductosSeleccionados Count: {productosEnSesion?.Count ?? 0}");
-                    _logger?.LogInformation($"   Es primer producto: {(esPrimerProductoDeSesion ? "SÍ ✅" : "NO ❌")}");
-                    _logger?.LogInformation("═══════════════════════════════════════════════════");
-                    
-                    // ❷ Si es el primer producto, reiniciar backup
-                    if (esPrimerProductoDeSesion)
-                    {
-                        _logger?.LogInformation("═══════════════════════════════════════════════════");
-                        _logger?.LogInformation("🆕 PRIMER PRODUCTO DE LA SESIÓN DETECTADO");
-                        _logger?.LogInformation("   → ProductosSeleccionados está vacío");
-                        _logger?.LogInformation("   → Reiniciando backup para nueva sesión...");
-                        _logger?.LogInformation("═══════════════════════════════════════════════════");
-
-                        // Reiniciar backup (eliminar archivos previos + crear nuevo)
-                        bool backupReiniciado = await _backupServicio.ReiniciarBackup(
-                            cajaActual.CajaId ?? string.Empty,
-                            UserName ?? string.Empty
-                        );
-
-                        if (backupReiniciado)
-                        {
-                            _logger?.LogInformation("✅ Backup reiniciado correctamente para nueva sesión");
-                        }
-                        else
-                        {
-                            _logger?.LogWarning("⚠️ No se pudo reiniciar el backup (operación continúa)");
-                        }
-                    }
-                    else
-                    {
-                        _logger?.LogInformation("📝 Producto subsiguiente detectado");
-                        _logger?.LogInformation($"   → Ya hay {productosEnSesion?.Count ?? 0} productos en sesión");
-                    }
-                    
-                    // ❸ Guardar cada producto en el backup (ya sea nuevo o existente)
-                    foreach (var producto in productos)
-                    {
-                        if (producto.respuesta == 0) // Solo productos válidos
-                        {
-                            await _backupServicio.GuardarProducto(
-                                producto,
-                                cajaActual.CajaId ?? string.Empty,
-                                UserName ?? string.Empty
-                            );
-                            //verificamos que lavariable productosEnSesion no este en null
-                            if (productosEnSesion == null)                            {productosEnSesion = [];}
-                            productosEnSesion.Add(producto);
-
-                            ProductosSeleccionados = productosEnSesion;
-                            _logger?.LogInformation($"💾 Producto guardado en backup: {producto.p_id}");
-                        }
-                    }
-                }
-                catch (Exception exBackup)
-                {
-                    // ⚠️ No interrumpir flujo si falla backup
-                    _logger?.LogWarning(exBackup, "⚠️ Error al guardar backup (operación continúa)");
-                }
+                var productosEnSesion = ProductosSeleccionados ?? [];
+                productosEnSesion.AddRange(productos.Where(p => p.respuesta == 0));
+                ProductosSeleccionados = productosEnSesion;
 
                 return Json(new
                 {
@@ -1102,7 +1033,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
 
         /// <summary>
         /// ✅ ACTUALIZADO v3.0: Obtiene productos de pre-facturas y los guarda en backup.
-        /// Ahora invoca a IBackupProductosServicio.GuardarProductosEnBloque antes de retornar.
+        /// El navegador respalda la grilla resultante en IndexedDB.
         /// </summary>
         /// <param name="cpf_nros">Lista de códigos de pre-factura (cpf_nro)</param>
         /// <returns>JSON con productos acumulados o error</returns>
@@ -1246,25 +1177,6 @@ namespace gc.caja.Areas.Facturacion.Controllers
                 // ❿ GUARDAR PRODUCTOS ACUMULADOS EN SESIÓN Y BACKUP
                 if (productosAcumulados.Any())
                 {
-                    // ✅ ACTUALIZADO v3.0: Guardar en backup ANTES de retornar
-                    _logger?.LogInformation("💾 Intentando guardar productos de pre-factura en backup...");
-                    bool backupExitoso = await _backupServicio.GuardarProductosEnBloque(
-                        productosAcumulados,
-                        cajaActual.CajaId ?? string.Empty,
-                        UserName ?? string.Empty
-                    );
-
-                    if (!backupExitoso)
-                    {
-                        // Si el backup falla, se loguea una advertencia pero no se detiene el flujo.
-                        // El usuario podrá trabajar, pero los datos no estarán respaldados.
-                        _logger?.LogWarning("⚠️ El guardado en backup de los productos de la pre-factura falló. La operación continuará sin respaldo.");
-                    }
-                    else
-                    {
-                        _logger?.LogInformation("✅ Productos de pre-factura guardados en backup exitosamente.");
-                    }
-
                     // Guardar en sesión para el frontend
                     FacturaProductos = productosAcumulados.Select(p => new ProductoFactJsonDto(p)).ToList();
                     _logger?.LogInformation($"✅ Total productos en sesión: {productosAcumulados.Count}");
@@ -2127,192 +2039,8 @@ namespace gc.caja.Areas.Facturacion.Controllers
             }
         }
 
-        /// <summary>
-        /// ✅ NUEVO v1.0: Verifica si existe un backup pendiente
-        /// </summary>
-        [HttpGet]
-        public async Task<JsonResult> VerificarBackup()
-        {
-            try
-            {
-                if (!VerificarAutenticacion(out IActionResult redirectResult))
-                    return Json(new { ok = false, mensaje = "Sesión expirada" });
-
-                var cajaActual = CajaActual;
-                if (cajaActual == null)
-                {
-                    return Json(new { ok = false, mensaje = "No hay caja abierta" });
-                }
-
-                bool existeBackup = await _backupServicio.ExisteBackup(
-                    cajaActual.CajaId ?? string.Empty,
-                    UserName ?? string.Empty
-                );
-
-                _logger?.LogInformation($"🔍 Verificación de backup: {(existeBackup ? "EXISTE" : "NO EXISTE")}");
-
-                return Json(new
-                {
-                    ok = true,
-                    existeBackup = existeBackup
-                });
-            }
-            catch (Exception ex)
-            {
-                _logger?.LogError(ex, "Error al verificar backup");
-                return Json(new { ok = false, mensaje = "Error al verificar backup" });
-            }
-        }
-
-        /// <summary>
-        /// ✅ NUEVO v1.0: Recupera productos desde el backup
-        /// </summary>
-        [HttpPost]
-        public async Task<JsonResult> RecuperarBackup()
-        {
-            try
-            {
-                if (!VerificarAutenticacion(out IActionResult redirectResult))
-                    return Json(new { ok = false, mensaje = "Sesión expirada" });
-
-                _logger?.LogInformation("═══════════════════════════════════════════════════");
-                _logger?.LogInformation("📂 RECUPERANDO PRODUCTOS DESDE BACKUP");
-                _logger?.LogInformation("═══════════════════════════════════════════════════");
-
-                var cajaActual = CajaActual;
-                if (cajaActual == null)
-                {
-                    _logger?.LogError("❌ No hay caja en sesión");
-                    return Json(new { ok = false, mensaje = "No hay caja abierta" });
-                }
-
-                var clienteActual = ClienteActual;
-                if (clienteActual == null)
-                {
-                    _logger?.LogError("❌ No hay cliente en sesión");
-                    return Json(new { ok = false, mensaje = "Debe seleccionar un cliente primero" });
-                }
-
-                // ❶ Recuperar productos del backup
-                var productos = await _backupServicio.RecuperarBackup(
-                    cajaActual.CajaId ?? string.Empty,
-                    UserName ?? string.Empty
-                );
-
-                if (productos == null || productos.Count == 0)
-                {
-                    _logger?.LogWarning("⚠️ No hay productos en el backup");
-                    return Json(new
-                    {
-                        ok = false,
-                        mensaje = "No hay productos guardados en el respaldo"
-                    });
-                }
-
-                _logger?.LogInformation($"✅ Productos recuperados: {productos.Count}");
-
-                // ❷ Retornar productos en formato compatible con la grilla
-                return Json(new
-                {
-                    ok = true,
-                    mensaje = $"Se recuperaron {productos.Count} productos del respaldo",
-                    producto = productos, // ✅ Mismo formato que ObtenerProductoDatos
-                    acumula = cajaActual.acumula,
-                    esRecuperacion = true // ✅ Flag para identificar que es una recuperación
-                });
-            }
-            catch (Exception ex)
-            {
-                _logger?.LogError(ex, "❌ Error al recuperar backup");
-                return Json(new
-                {
-                    ok = false,
-                    mensaje = "Error al recuperar productos del respaldo"
-                });
-            }
-        }
-
-        /// <summary>
-        /// ✅ NUEVO v1.0: Limpia el backup después de confirmar factura
-        /// </summary>
-        [HttpPost]
-        public async Task<JsonResult> LimpiarBackup()
-        {
-            try
-            {
-                if (!VerificarAutenticacion(out IActionResult redirectResult))
-                    return Json(new { ok = false, mensaje = "Sesión expirada" });
-
-                var cajaActual = CajaActual;
-                if (cajaActual == null)
-                {
-                    return Json(new { ok = false, mensaje = "No hay caja abierta" });
-                }
-
-                bool limpiado = await _backupServicio.LimpiarBackup(
-                    cajaActual.CajaId ?? string.Empty,
-                    UserName ?? string.Empty
-                );
-
-                return Json(new
-                {
-                    ok = limpiado,
-                    mensaje = limpiado ? "Respaldo eliminado" : "Error al limpiar respaldo"
-                });
-            }
-            catch (Exception ex)
-            {
-                _logger?.LogError(ex, "Error al limpiar backup");
-                return Json(new { ok = false, mensaje = "Error al limpiar respaldo" });
-            }
-        }
-
-        /// <summary>
-        /// ✅ NUEVO v1.1: Elimina un producto específico del backup
-        /// </summary>
-        /// <param name="item">Número de item correlativo del producto</param>
-        [HttpPost]
-        public async Task<JsonResult> EliminarProductoBackup(int item)
-        {
-            try
-            {
-                if (!VerificarAutenticacion(out IActionResult redirectResult))
-                    return Json(new { ok = false, mensaje = "Sesión expirada" });
-
-                _logger?.LogInformation("═══════════════════════════════════════════════════");
-                _logger?.LogInformation($"🗑️ ELIMINAR PRODUCTO DEL BACKUP - Item: {item}");
-                _logger?.LogInformation("═══════════════════════════════════════════════════");
-
-                var cajaActual = CajaActual;
-                if (cajaActual == null)
-                {
-                    return Json(new { ok = false, mensaje = "No hay caja abierta" });
-                }
-
-                
-                bool eliminado = await _backupServicio.EliminarProducto(
-                    item,
-                    cajaActual.CajaId ?? string.Empty,
-                    UserName ?? string.Empty
-                );
-
-                if (eliminado)
-                {
-                    _logger?.LogInformation($"✅ Producto {item} eliminado del backup");
-                }
-
-                return Json(new
-                {
-                    ok = eliminado,
-                    mensaje = eliminado ? "Producto eliminado del respaldo" : "Error al eliminar producto"
-                });
-            }
-            catch (Exception ex)
-            {
-                _logger?.LogError(ex, "Error al eliminar producto del backup");
-                return Json(new { ok = false, mensaje = "Error al eliminar producto del respaldo" });
-            }
-        }
+        // El último detalle se conserva en IndexedDB del puesto. La recuperación
+        // se revalida en ProductoFactController.Respaldo.cs con el contexto actual.
     }
 
     // Necesitaremos recibir lista de códigos de pre-factura
