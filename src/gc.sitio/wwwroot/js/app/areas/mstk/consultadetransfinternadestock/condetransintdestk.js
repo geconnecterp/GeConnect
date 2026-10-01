@@ -2,6 +2,8 @@
 let sucRecIdsList = [];
 let tiposIdsList = [];
 let tabsDetallePendientes = 0;
+let tiSeleccionada = "";
+let reCompteSeleccionado = "";
 
 const TabToTableMap = {
 	"navs-top-trans": "#tbTransferencias",
@@ -13,9 +15,14 @@ $(function () {
 
 	InicializarCamposEnFiltros();
 
+	$(document).off("change", "#listaSucursalesEnvia");
 	$(document).on("change", "#listaSucursalesEnvia", ControlalistaSucursalesEnviaSelected);
+	$(document).off("change", "#listaSucursalesRecibe");
 	$(document).on("change", "#listaSucursalesRecibe", ControlalistaSucursalesRecibeSelected);
+	$(document).off("change", "#listaTipos");
 	$(document).on("change", "#listaTipos", ControlalistaTiposSelected);
+	$(document).off("click", "#btnImprimir");
+	$(document).on("click", "#btnImprimir", ControlaBtnImprimir);
 
 	$("#SucursalesEnviaList").on("dblclick", 'option', function () { $(this).remove(); })
 	$("#SucursalesRecibeList").on("dblclick", 'option', function () { $(this).remove(); })
@@ -25,22 +32,41 @@ $(function () {
 		if ($("#divFiltros").hasClass("show")) {
 			$("#divFiltros").collapse("hide");
 			$("#divDetalle").collapse("show");
-		} 
+		}
 		else {
 			$("#divFiltros").collapse("show");
 			$("#divDetalle").collapse("hide");
 		}
 	});
 
-		$("#btnBuscar").on("click", function () {
-			try { MostrarFiltrosAplicados(); } catch (e) { }
-			InicializarPantallaPrincipal();
-		});
-
-		// Mostrar filtros al cargar la pantalla
+	$("#btnBuscar").on("click", function () {
 		try { MostrarFiltrosAplicados(); } catch (e) { }
+		InicializarPantallaPrincipal();
+	});
+
+	// Mostrar filtros al cargar la pantalla
+	try { MostrarFiltrosAplicados(); } catch (e) { }
 });
 
+function ControlaBtnImprimir() {
+	if (tiposIdsList == "S" && reCompteSeleccionado.trim() != "") {
+		ImprimirRemitoExterno(reCompteSeleccionado);
+	}
+}
+
+function ImprimirRemitoExterno(id) {
+	ReseteoDeReportes();
+	setTimeout(() => {
+		let data = { id: id, sm_tipo: "TR" };
+		cargarReporteEnArre(102, data, "REMITO NO FISCAL", "", "");
+		invocacionGestorDoc({});
+	}, 500);
+}
+
+function ReseteoDeReportes() {
+	console.log("Reseto de reportes");
+	ReporteResetArre();
+}
 
 function EvaluarBotonImprimir(tabId) {
 	console.log("Evaluando botón imprimir para tab:", tabId);
@@ -107,8 +133,8 @@ function InicializarPantallaPrincipal() {
 	var hasta = $("#Hasta").val();
 	AbrirWaiting("Cargando información...");
 	PostGenHtml({ sucursalesEnvText, sucursalesRecText, tiposText, desde, hasta }, inicializarPantallPrincipalURL, function (obj) {
-			$("#divDetalle").html(obj);
-			try { MostrarFiltrosAplicados(); } catch (e) { }
+		$("#divDetalle").html(obj);
+		try { MostrarFiltrosAplicados(); } catch (e) { }
 		$(document).on('shown.bs.tab', 'button[data-bs-toggle="tab"]', function (e) {
 			const tabId = $(e.target).attr("data-bs-target").replace("#", "");
 			EvaluarBotonImprimir(tabId);
@@ -211,12 +237,20 @@ function SeleccionarTransferencia(x, grid) {
 	AbrirWaiting("Cargando datos..."); // ← abrir al inicio
 	tabsDetallePendientes = 2; // ← cantidad de tabs a cargar
 	consultarConteos(ti);
+	tiSeleccionada = ti;
+	reCompteSeleccionado = re_compte;
 	// Validación para habilitar o no el tab Remito
 	if (pv_compte && re_compte && pv_compte !== "" && re_compte !== "") {
 		HabilitarTabRemito(true, "");
 		consultarRemito(re_compte);
 	} else {
 		HabilitarTabRemito(false, "El remito no está disponible para esta transferencia");
+	}
+	if (reCompteSeleccionado == "") {
+		$("#btnImprimir").prop('disabled', true);
+	}
+	else {
+		$("#btnImprimir").prop('disabled', false);
 	}
 	FinalizarCargaDetalle(); // ← marcar como completado
 }

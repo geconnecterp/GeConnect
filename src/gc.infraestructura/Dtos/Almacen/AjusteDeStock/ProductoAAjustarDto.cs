@@ -48,6 +48,9 @@ namespace gc.infraestructura.Dtos.Almacen.AjusteDeStock
 		[JsonProperty("at_id")]
 		public string at_id { get; set; } = string.Empty;
 		[DataMember]
+		[JsonProperty("at_tipo")]
+		public string at_tipo { get; set; } = string.Empty;
+		[DataMember]
 		[JsonProperty("nota")]
 		public string nota { get; set; } = string.Empty;
 		[DataMember]

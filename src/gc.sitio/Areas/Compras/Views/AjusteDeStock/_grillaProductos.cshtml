@@ -83,7 +83,13 @@
 				@foreach (var item in Model.ListaDatos)
 				{
 					if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
-					<tr class="@clase" onclick="selectListaProductoRow(this)">
+					<tr class="@clase" 
+						data-depo-id="@item.depo_id"
+						data-box-id="@item.box_id"
+						data-at-id="@item.at_id"
+						data-at-tipo="@item.at_tipo"
+						data-as-motivo="@item.as_motivo"
+						onclick="selectListaProductoRow(this)">
 						<td class="align-center">@item.p_id</td>
 						<td class="align-left">@item.p_desc</td>
 						<td class="align-center">@item.p_id_prov</td>

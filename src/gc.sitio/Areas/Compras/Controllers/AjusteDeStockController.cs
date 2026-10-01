@@ -383,7 +383,8 @@ namespace gc.sitio.Areas.Compras.Controllers
 
 				if (AjusteProductosLista.Where(x => x.p_id.Equals(pId)).Any())
 				{
-					model = ObtenerGridCoreSmart<ProductoAAjustarDto>(AjusteProductosLista);
+					//model = ObtenerGridCoreSmart<ProductoAAjustarDto>(AjusteProductosLista);
+					return UnprocessableEntity($"El producto que esta intentando ingresar {pId} ya existe.");
 				}
 				else
 				{
@@ -417,7 +418,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 						else
 						{
 							stkDecimalAux = productoStk.First().ps_stk;
-							cantidadAux = stkDecimalAux - ((unidadPresDecimalAux * bultoDecimalAux) * us);
+							cantidadAux = stkDecimalAux - ((unidadPresDecimalAux * bultoDecimalAux) + us);
 						}
 
 						var newProduct = new ProductoAAjustarDto()
@@ -509,7 +510,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 			}
 		}
 
-		public async Task<JsonResult> VerificaExistenciaDeAjusteDeStock()
+		public JsonResult VerificaExistenciaDeAjusteDeStock()
 		{
 			try
 			{
@@ -518,13 +519,9 @@ namespace gc.sitio.Areas.Compras.Controllers
 					return Json(new { error = true, warn = false, ok = false, msg = "No autenticado" });
 
 				if (AjusteProductosLista == null || AjusteProductosLista.Count == 0)
-				{
-					return Json(new { error = false, warn = true, msg = "No existen Ajustes de Stock cargado por cancelar." });
-				}
-				else
-				{
 					return Json(new { error = false, warn = false, msg = "" });
-				}
+				else
+					return Json(new { error = false, warn = false, msg = $"Existen {AjusteProductosLista.Count} productos cargados en el Ajuste. ¿Desea cancelar?" });
 			}
 			catch (Exception ex)
 			{
@@ -689,6 +686,8 @@ namespace gc.sitio.Areas.Compras.Controllers
 					bulto = Convert.ToInt32(item.ps_bulto),
 					cantidad = item.ps_stk - (item.as_ajuste),
 					as_motivo = item.as_motivo,
+					at_id = item.at_id,
+					at_tipo = item.at_tipo
 				});
 			}
 			return listaMapeada;

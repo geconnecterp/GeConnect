@@ -695,6 +695,12 @@ function btnConfirmarClick() {
 
 		return; // detener flujo
 	}
+	else {
+		AbrirMensaje("Atención", "Debe agregar al menos un producto al Remito Externo.", function () {
+			$("#msjModal").modal("hide");
+			resolve(false);
+		}, false, ["Aceptar"], "warn!", null);
+	}
 }
 
 function ConfirmarRemito() {
@@ -717,7 +723,7 @@ function ConfirmarRemito() {
 					function () {
 						$('#msjModal').modal('hide');
 						//Imprimir Remito
-						//ImprimirRemitoExterno(obj.id);
+						ImprimirRemitoExterno(obj.id);
 						console.log("Remito Externo Generado: ", obj.id);
 						ResetearPantallaRemito();
 					},
@@ -729,6 +735,20 @@ function ConfirmarRemito() {
 			}, 200);
 		}
 	});
+}
+
+function ImprimirRemitoExterno(id) {
+	ReseteoDeReportes();
+	setTimeout(() => {
+		let data = { id: id, sm_tipo: "RE" };
+		cargarReporteEnArre(102, data, "REMITO NO FISCAL", "", "");
+		invocacionGestorDoc({});
+	}, 500);
+}
+
+function ReseteoDeReportes() {
+	console.log("Reseto de reportes");
+	ReporteResetArre();
 }
 
 function ResetearPantallaRemito() {

@@ -208,6 +208,48 @@ namespace gc.api.core.Servicios.Reportes
 			}
 
 			pdf.Add(tbl);
+
+			// ============================
+			// TOTALIZADOR DE COSTO
+			// ============================
+			decimal totalCosto = registros.Sum(x => x.as_pcosto * x.as_ajuste);
+
+			PdfPTable tblTotal = new PdfPTable(3);
+			tblTotal.WidthPercentage = 100;                 // ancho del bloque
+			tblTotal.HorizontalAlignment = Element.ALIGN_RIGHT;
+			tblTotal.SetWidths(new float[] { 80, 10, 10 });    // etiqueta / valor
+
+			PdfPCell lblObs = new PdfPCell(new Phrase("", normal))
+			{
+				Border = Rectangle.NO_BORDER,
+				HorizontalAlignment = Element.ALIGN_LEFT,
+				PaddingTop = 2f,
+				PaddingBottom = 2f
+			};
+			tblTotal.AddCell(lblObs);
+
+			// Etiqueta
+			PdfPCell lbl = new PdfPCell(new Phrase("Total Costo:", normalBold))
+			{
+				Border = Rectangle.NO_BORDER,
+				HorizontalAlignment = Element.ALIGN_LEFT,
+				PaddingTop = 2f,
+				PaddingBottom = 2f
+			};
+			tblTotal.AddCell(lbl);
+
+			// Valor
+			PdfPCell val = new PdfPCell(new Phrase(totalCosto.ToString("N2"), normalBold))
+			{
+				Border = Rectangle.NO_BORDER,
+				HorizontalAlignment = Element.ALIGN_RIGHT,
+				PaddingTop = 2f,
+				PaddingBottom = 2f
+			};
+			tblTotal.AddCell(val);
+
+			// Agregar al PDF
+			pdf.Add(tblTotal);
 		}
 
 		// ============================

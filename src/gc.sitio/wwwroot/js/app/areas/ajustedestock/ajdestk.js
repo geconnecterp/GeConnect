@@ -53,7 +53,7 @@ function VerificarAntesDeCancelarAjuste() {
 				return true;
 			}, false, ["Aceptar"], "warn!", null);
 		} else {
-			CancelarAjuste();
+			CancelarAjuste(o.msg);
 		}
 	});
 }
@@ -64,9 +64,37 @@ function LimpiarCamposDeProducto() {
 	$("#txtUP").val("");
 	$("#txtBto").val("");
 	$("#txtUnid").val("");
+	$("#txtUP_ID").val("");
+	$("#txtBARRADO_ID").val("");
+	$("#txtID_PROV").val("");
+	$("#btnBusquedaBase").prop("disabled", false);
+	$("#Busqueda").val("");
+	$("#Busqueda").trigger('focus');
 }
 
-function CancelarAjuste() {
+function CancelarAjuste(msg) {
+	if (msg == "") {
+		HandlerCancelarAjuste();
+	}
+	else {
+		AbrirMensaje("ATENCIÓN", msg, function (e) {
+			$("#msjModal").modal("hide");
+			switch (e) {
+				case "SI": //Confirmar
+					HandlerCancelarAjuste();
+					break;
+				case "NO":
+					break;
+				default: //NO
+					break;
+			}
+			return true;
+
+		}, true, ["SI", "NO"], "question!", null);
+	}
+}
+
+function HandlerCancelarAjuste() {
 	AbrirWaiting();
 	var datos = {};
 	PostGenHtml(datos, CancelarAjusteDeStockURL, function (obj) {
@@ -77,6 +105,9 @@ function CancelarAjuste() {
 		$('#listaDeposito>option:eq(0)').attr('selected', true);
 		$('#listaBox>option:eq(0)').attr('selected', true);
 		$('#listaMotivo>option:eq(0)').attr('selected', true);
+		$('#listaDeposito').val("");
+		$('#listaBox').val("");
+		$('#listaMotivo').val("");
 		CerrarWaiting();
 		return true
 	});
@@ -120,38 +151,56 @@ function ConfirmarAjuste() {
 		}, false, ["Aceptar"], "warn!", null);
 	}
 	if (!hayError) {
-		AbrirWaiting();
-		var atId = motivoSplited[0];
-		var atTipo = motivoSplited[1];
-		var datos = { atId, nota, atTipo }
-		PostGen(datos, ConfirmarAjusteDeStockURL, function (o) {
-			CerrarWaiting();
-			if (!o.ok && o.error && o.msg === "No autenticado") {
-				window.location.href = login;
-				return false;
+		AbrirMensaje("ATENCIÓN", "¿Confirma el alta del Ajuste de Stock?", function (e) {
+			$("#msjModal").modal("hide");
+			switch (e) {
+				case "SI": //Confirmar
+					HandlerConfirmarAjuste(nota);
+					break;
+				case "NO":
+					break;
+				default: //NO
+					break;
 			}
+			return true;
 
-			if (o.error === true) {
-				AbrirMensaje("Atención", o.msg, function () {
-					$("#msjModal").modal("hide");
-					return true;
-				}, false, ["Aceptar"], "error!", null);
-			} else if (o.warn === true) {
-				AbrirMensaje("Atención", o.msg, function () {
-					$("#msjModal").modal("hide");
-					return true;
-				}, false, ["Aceptar"], "warn!", null);
-			} else {
-				AbrirMensaje("Atención", o.msg, function () {
-					$("#msjModal").modal("hide");
-					return true;
-				}, false, ["Aceptar"], "succ!", null);
-				$("#tbDetalleDeProductosAAjustar tbody tr").remove(); 
-				$("#txtNota").val("");
-				ImprimirAjusteStk_Generado(o.id);
-			}
-		});
+		}, true, ["SI", "NO"], "question!", null);
+		
 	}
+}
+
+function HandlerConfirmarAjuste(nota) {
+	AbrirWaiting();
+	var atId = motivoSplited[0];
+	var atTipo = motivoSplited[1];
+	var datos = { atId, nota, atTipo }
+	PostGen(datos, ConfirmarAjusteDeStockURL, function (o) {
+		CerrarWaiting();
+		if (!o.ok && o.error && o.msg === "No autenticado") {
+			window.location.href = login;
+			return false;
+		}
+
+		if (o.error === true) {
+			AbrirMensaje("Atención", o.msg, function () {
+				$("#msjModal").modal("hide");
+				return true;
+			}, false, ["Aceptar"], "error!", null);
+		} else if (o.warn === true) {
+			AbrirMensaje("Atención", o.msg, function () {
+				$("#msjModal").modal("hide");
+				return true;
+			}, false, ["Aceptar"], "warn!", null);
+		} else {
+			AbrirMensaje("Atención", o.msg, function () {
+				$("#msjModal").modal("hide");
+				return true;
+			}, false, ["Aceptar"], "succ!", null);
+			$("#tbDetalleDeProductosAAjustar tbody tr").remove();
+			$("#txtNota").val("");
+			ImprimirAjusteStk_Generado(o.id);
+		}
+	});
 }
 
 function ReseteoDeReportes() {
@@ -388,7 +437,7 @@ function verificaEstado(e) {
 			$("#txtUnid").val(0).prop("disabled", false);
 			$("#txtUP").prop('disabled', false);
 			$("#txtBto").prop('disabled', false);
-			$("#txtUP").trigger('focus');
+			$("#txtBto").trigger('focus');
 		}
 		else { //unidades decimales
 			$("#txtUP").prop('disabled', true);
@@ -410,21 +459,28 @@ function AgregarProdManual() {
 	if ($("#listaDeposito").val() == "") {
 		AbrirMensaje("Atención", "Debe especificar un valor para depósito.", function () {
 			$("#msjModal").modal("hide");
-			$("#listaDeposito").focus();
+			$("#listaDeposito").trigger('focus');
 			return true;
 		}, false, ["Aceptar"], "warn!", null);
 	}
 	else if ($("#listaBox").val() == "") {
 		AbrirMensaje("Atención", "Debe especificar un valor para box.", function () {
 			$("#msjModal").modal("hide");
-			$("#listaBox").focus();
+			$("#listaBox").trigger('focus');
 			return true;
 		}, false, ["Aceptar"], "warn!", null);
 	}
 	else if ($("#listaMotivo").val() == "") {
 		AbrirMensaje("Atención", "Debe especificar un valor para tipo.", function () {
 			$("#msjModal").modal("hide");
-			$("#listaMotivo").focus();
+			$("#listaMotivo").trigger('focus');
+			return true;
+		}, false, ["Aceptar"], "warn!", null);
+	}
+	else if ($("#txtIdProd").val().trim() == "") {
+		AbrirMensaje("Atención", "Debe especificar un producto válido.", function () {
+			$("#msjModal").modal("hide");
+			$("#Busqueda").trigger('focus');
 			return true;
 		}, false, ["Aceptar"], "warn!", null);
 	}
@@ -433,14 +489,14 @@ function AgregarProdManual() {
 			if ($("#txtUP").val() === "") {
 				AbrirMensaje("Atención", "Debe especificar un valor para UP.", function () {
 					$("#msjModal").modal("hide");
-					$("#txtUP").focus();
+					$("#txtUP").trigger('focus');
 					return true;
 				}, false, ["Aceptar"], "warn!", null);
 			}
 			if ($("#txtBto").val() === "") {
 				AbrirMensaje("Atención", "Debe especificar un valor para Bto.", function () {
 					$("#msjModal").modal("hide");
-					$("#txtBto").focus();
+					$("#txtBto").trigger('focus');
 					return true;
 				}, false, ["Aceptar"], "warn!", null);
 			}
@@ -480,13 +536,50 @@ function AgregarProdManual() {
 				LimpiarCamposDeProducto();
 				CerrarWaiting();
 				return true
+			}, function (xhr) {
+
+				if (xhr.status === 422) {
+
+					// 🔥 Mensaje Golden
+					AbrirMensaje(
+						"ATENCIÓN",
+						xhr.responseText,
+						function () {
+							$("#msjModal").modal("hide");
+							return true;
+						},
+						false,
+						["Aceptar"],
+						"error!",
+						null
+					);
+
+					CerrarWaiting();
+					return;
+				}
+
+				// Otros errores
+				AbrirMensaje(
+					"ERROR",
+					"Se produjo un error inesperado al intentar agregar el producto.",
+					function () {
+						$("#msjModal").modal("hide");
+						return true;
+					},
+					false,
+					["Aceptar"],
+					"error!",
+					null
+				);
+
+				CerrarWaiting();
 			});
 			CerrarWaiting();
 		}
 		else {
 			AbrirMensaje("Atención", "No se puede cargar un ajuste con '0'.", function () {
 				$("#msjModal").modal("hide");
-				$("#txtUP").focus();
+				$("#txtUP").trigger('focus');
 				return true;
 			}, false, ["Aceptar"], "warn!", null);
 		}
@@ -498,7 +591,7 @@ function ValidarAjuste() {
 	if (ajId === "") {
 		AbrirMensaje("Atención", "Debe ingresar un ID de Ajuste.", function () {
 			$("#msjModal").modal("hide");
-			$("#txtNroAjuste").focus();
+			$("#txtNroAjuste").trigger('focus');
 			return true;
 		}, false, ["Aceptar"], "warn!", null);
 	}
@@ -529,13 +622,48 @@ function RevertirAjuste(ajId) {
 	PostGenHtml(datos, ObtenerProductosDesdeAJRevertidoURL, function (obj) {
 		$("#divDetalleDeProductosAAjustar").html(obj);
 		AddEventListenerToGrid("tbDetalleDeProductosAAjustar");
-		if ($("#tbDetalleDeProductosAAjustar tr")[1] !== undefined && $("#tbDetalleDeProductosAAjustar tr")[1] !== null)
-			ObtenerNotaDesdeProductosRevertidos($("#tbDetalleDeProductosAAjustar tr")[1].children[7].innerText);
+		//if ($("#tbDetalleDeProductosAAjustar tr")[1] !== undefined && $("#tbDetalleDeProductosAAjustar tr")[1] !== null)
+		//	ObtenerNotaDesdeProductosRevertidos($("#tbDetalleDeProductosAAjustar tr")[1].children[7].innerText);
+		if ($("#tbDetalleDeProductosAAjustar tbody tr").length > 0) {
+
+			const $fila = $("#tbDetalleDeProductosAAjustar tbody tr").first();
+
+			const depoId = $fila.data("depo-id");
+			const boxId = $fila.data("box-id");
+			const atId = $fila.data("at-id");
+			const atTipo = $fila.data("at-tipo");
+			const motivo = $fila.data("as-motivo");
+			const idEnTipo = atId + "#" + atTipo;
+
+			// Seleccionar depósito (esto dispara la carga de boxes)
+			$("#listaDeposito").val(depoId).trigger("change");
+
+			// Esperar a que los boxes se carguen y luego seleccionar el correcto
+			seleccionarBoxCuandoEsteListo(boxId);
+
+			// Seleccionar motivo
+			$("#listaMotivo").val(idEnTipo).trigger("change");
+
+			// Cargar nota
+			$("#txtNota").val("Revertido " + motivo);
+		}
+
 		CerrarWaiting();
 		return true
 	});
 	CerrarWaiting();
 }
+
+function seleccionarBoxCuandoEsteListo(boxId) {
+	const interval = setInterval(() => {
+		const $box = $("#listaBox");
+		if ($box.length > 0 && $box.find(`option[value='${boxId}']`).length > 0) {
+			$box.val(boxId).trigger("change");
+			clearInterval(interval);
+		}
+	}, 150);
+}
+
 
 function ObtenerNotaDesdeProductosRevertidos(nota) {
 	$("#txtNota").val("Revertido " + nota);
@@ -779,7 +907,7 @@ function buscarProducto() {
 				$("#estadoFuncion").val(false);
 				$("#btnBusquedaBase").prop("disabled", false);
 				$("#msjModal").modal("hide");
-				$("#Busqueda").focus();
+				$("#Busqueda").trigger('focus');
 				return true;
 			}, false, ["Aceptar"], "error!", null);
 		}
@@ -791,7 +919,7 @@ function buscarProducto() {
 					$("#estadoFuncion").val(false);
 					$("#btnBusquedaBase").prop("disabled", false);
 					$("#msjModal").modal("hide");
-					$("#Busqueda").focus();
+					$("#Busqueda").trigger('focus');
 					return true;
 				}, false, ["Aceptar"], "error!", null);
 			}
@@ -811,7 +939,7 @@ function buscarProducto() {
 				else {
 					AbrirMensaje("ATENCIÓN", "NO SE ENCONTRO EL PRODUCTO QUE INTENTO BUSCAR.", function () {
 						$("#msjModal").modal("hide");
-						$("#Busqueda").focus();
+						$("#Busqueda").trigger('focus');
 						return true;
 					}, false, ["Aceptar"], "error!", null);
 
@@ -833,7 +961,7 @@ function buscarProducto() {
 						$("#msjModal").modal("hide");
 						var up = $("#txtUPEnComprobanteRP");
 						if (up) {
-							up.focus();
+							up.trigger('focus');
 						}
 						return true;
 					}
@@ -843,7 +971,7 @@ function buscarProducto() {
 						$("#estadoFuncion").val(false);
 						$("#btnBusquedaBase").prop("disabled", false);
 						$("#msjModal").modal("hide");
-						$("#Busqueda").focus();
+						$("#Busqueda").trigger('focus');
 						return true;
 					}
 				},
