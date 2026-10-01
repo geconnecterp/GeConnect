@@ -540,10 +540,14 @@ function confirmarOperacionSeguridadUsuario(operacion) {
     }
 
     const esBlanqueo = operacion === "BLANQUEAR";
-    const titulo = esBlanqueo ? "Blanquear contraseña" : "Desbloquear usuario";
+    const titulo = esBlanqueo ? "Blanquear clave de usuario" : "Desbloquear usuario";
+    // AbrirMensaje interpreta HTML: el identificador siempre se presenta como texto.
+    const usuarioVisible = $("<span>").text(usuario).html();
     const mensaje = esBlanqueo
-        ? `¿Confirma el blanqueo de la contraseña del usuario ${usuario}? Deberá definir una contraseña nueva en su próximo ingreso.`
-        : `¿Confirma el desbloqueo del usuario ${usuario}?`;
+        ? `<p>¿Confirma el blanqueo de la clave del usuario <strong>${usuarioVisible}</strong>?</p>
+           <p>Su contraseña actual será reemplazada por la contraseña temporal configurada por la administración.</p>
+           <p class="mb-0"><strong>En su próximo ingreso deberá definir una contraseña nueva.</strong> La clave temporal tiene un vencimiento según la política vigente.</p>`
+        : `¿Confirma el desbloqueo del usuario ${usuarioVisible}?`;
 
     AbrirMensaje(titulo, mensaje, function (respuesta) {
         $("#msjModal").modal("hide");
@@ -567,7 +571,7 @@ function confirmarOperacionSeguridadUsuario(operacion) {
             }
             actualizarAccionesSeguridadUsuario();
         });
-    }, true, ["Aceptar", "Cancelar"], "question!", null);
+    }, true, [esBlanqueo ? "Blanquear clave" : "Desbloquear usuario", "Cancelar"], "warn!", null);
 }
 
 function confirmarDatosJsTree(div) {

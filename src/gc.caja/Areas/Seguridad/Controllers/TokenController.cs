@@ -25,6 +25,7 @@ namespace gc.caja.Areas.Seguridad.Controllers
     [AllowAnonymous] // ✅ AGREGADO: Permite acceso anónimo al controlador
     public class TokenController : ControladorBaseCaja
     {
+        private readonly gc.caja.Models.Estacion.EstacionPuestoServicio _puestos;
         private readonly IConfiguration _configuration;
         private new readonly IHttpContextAccessor _context;
         private readonly ICajaServicio _caja;
@@ -32,8 +33,9 @@ namespace gc.caja.Areas.Seguridad.Controllers
 
         public TokenController(IConfiguration configuration, IHttpContextAccessor context,
             IOptions<AppSettings> appSettings, ICajaServicio caja,
-            ILogger<TokenController> logger) : base(appSettings, context, logger)
+            ILogger<TokenController> logger, gc.caja.Models.Estacion.EstacionPuestoServicio puestos) : base(appSettings, context, logger)
         {
+            _puestos = puestos;
             _configuration = configuration;
             _context = context;
             _appSettings = appSettings.Value;
@@ -45,7 +47,7 @@ namespace gc.caja.Areas.Seguridad.Controllers
             LoginDto login;
             try
             {
-                CajaActual = new();
+                // El puesto proviene del iniciador local, no del disco del servidor.
                 //ComboAdministracion();
                 await RecuperarConfigCaja();
                 ViewBag.CajaConfig = CajaActual;
@@ -73,23 +75,23 @@ namespace gc.caja.Areas.Seguridad.Controllers
         /// <summary>
         /// Me permite levantar la configuracion de la estacion de trabajo
         /// </summary>
-        private async Task RecuperarConfigCaja()
+        private Task RecuperarConfigCaja()
         {
-            var config = await _caja.ObtenerAsync(_appSettings.RutaFileCaja);
-            if (config == null)
-            {
-                throw new NegocioException("No se ha podido cargar la configuración de caja. Si el problema persiste, avise al administrador.");
-            }
-
-            CajaActual = config;
-
+            var puesto = _puestos.Obtener(HttpContext);
+            if (puesto == null)
+                throw new NegocioException("Abra GECO Caja desde el iniciador de este puesto de trabajo.");
+            // En el ingreso se descartan datos operativos de la sesión anterior.
+            CajaActual = puesto.Configuracion();
+            ViewBag.PuestoConfigurado = true;
+            return Task.CompletedTask;
         }
 
-        [HttpPost]
+        [HttpPost, ValidateAntiForgeryToken]
         public async Task<IActionResult> Login(LoginDto autenticar)
         {
             try
             {
+                await RecuperarConfigCaja();
                 var cajaConfig = CajaActual;
 
                 //obtengo IP del cliente
@@ -203,11 +205,12 @@ namespace gc.caja.Areas.Seguridad.Controllers
                     throw new NegocioException("No se ha podido autenticar. El usuario o contraseña no son correctos.");
                 }
 
+                ViewBag.CajaConfig = CajaActual;
                 return View(autenticar);
             }
             catch (Exception ex)
             {
-                await RecuperarConfigCaja();
+                ViewBag.PuestoConfigurado = _puestos.Obtener(HttpContext) != null;
                 ViewBag.CajaConfig = CajaActual;
                 TempData["error"] = ex.Message;               
                 var login = new LoginDto { Fecha = DateTime.Now };

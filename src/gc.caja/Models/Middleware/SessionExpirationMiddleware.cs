@@ -23,6 +23,12 @@ namespace gc.caja.Models.Middleware
 
         public async Task InvokeAsync(HttpContext context)
         {
+            if (context.Request.Path.Equals(new PathString("/Seguridad/Estacion/Preparar")) ||
+                context.Request.Path.Equals(new PathString("/Seguridad/Estacion/Iniciar")))
+            {
+                await _next(context);
+                return;
+            }
             // Rutas públicas que no requieren verificación de sesión
             if (context.Request.Path.StartsWithSegments("/seguridad/Token/Login") ||
                 context.Request.Path.StartsWithSegments("/css") ||

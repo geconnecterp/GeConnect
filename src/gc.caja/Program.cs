@@ -95,6 +95,7 @@ builder.Services.AddHttpClient<IAutorizacionRemotaServicio, AutorizacionRemotaSe
 });
 builder.Services.AddScoped<IAutorizacionRemotaOrquestador, AutorizacionRemotaOrquestador>();
 builder.Services.AddDistributedMemoryCache();
+builder.Services.AddSingleton<gc.caja.Models.Estacion.EstacionPuestoServicio>();
 
 builder.Services.AddHsts(opt =>
 {

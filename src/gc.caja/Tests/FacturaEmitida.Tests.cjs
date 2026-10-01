@@ -20,6 +20,7 @@ const context = vm.createContext({
     recalcularTotalFactura: noop, actualizarGrillaProductos: noop,
     registrarUltimoCambioProducto: noop, actualizarEstadoBotonUltimoDetalle: noop,
     setTimeout: noop, clearTimeout: noop,
+    recuperandoDetalle: false, respaldoSuspendido: false,
     clienteActualFactura: { id: 'CLIENTE-ACTUAL' }, posicionamientoTimer: null
 });
 vm.runInContext(`let productosFactura = [], origenCargaActual = 'directo', modoBloqueoGrilla = '', cajaAcumulaProductos = true;
@@ -65,4 +66,10 @@ run('modoBloqueoGrilla = ""');
 check('aplicarDetalleFacturaEmitida({ok:false, productos:[]})', 0);
 check('aplicarDetalleFacturaEmitida({ok:true, productos:[]})', 0);
 check('aplicarDetalleFacturaEmitida(null)', 0);
+run('productosFactura = []; origenCargaActual = "respaldo"; cajaAcumulaProductos = true;');
+context.p = product('010', 12);
+run('agregarProductoAGrilla(p); agregarProductoAGrilla(p);');
+check('productosFactura.length', 2);
+check('productosFactura[0].item !== productosFactura[1].item', true);
+check('productosFactura.reduce((s,p) => s+p.cantidad_tot,0)', 24);
 console.log(`OK: ${checks} verificaciones de carga, acumulacion, orden, precios, cantidades y bloqueos.`);
