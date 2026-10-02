@@ -274,10 +274,13 @@ namespace gc.sitio.Areas.Compras.Controllers
 			try
 			{
 				if (string.IsNullOrWhiteSpace(ajId))
-				{
 					return Json(new { error = true, warn = false, msg = "Se debe indicar un valor válido para ajuste a revertir." });
-				}
+				
 				var listaAjustesPrevios = await _productoServicio.ObtenerAJREVERTIDO(ajId, TokenCookie);
+
+				if (listaAjustesPrevios==null || listaAjustesPrevios.Count==0)
+					return Json(new { error = false, warn = true, msg = $"No se ha encontrado el ajuste {ajId}." });
+
 				var depo_id = listaAjustesPrevios.First().depo_id;
 				if (DepositoLista != null && DepositoLista.Count > 0)
 				{

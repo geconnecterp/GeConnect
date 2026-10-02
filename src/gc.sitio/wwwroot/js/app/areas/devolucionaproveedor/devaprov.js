@@ -155,13 +155,16 @@ function ValidarExistenciaDeProductosCargadosParaDevolucion(confirma) {
 									}, false, ["Aceptar"], "warn!", null);
 								} else {
 
-									$("#Cuenta").val("");
+									$("#Rel05").val("");
+									$("#Rel05Item").val("");
 									$("#razonsocial").val("");
 									$("#txtNroDevolucion").val("");
 									$("#tbDetalleDeProductosADevolver tbody tr").remove();
-									$('#listaDeposito>option:eq(0)').attr('selected', true);
-									$('#listaBox>option:eq(0)').attr('selected', true);
+									$('#listaDeposito').val("");
+									$('#listaBox').val("");
 									$("#txtNota").val("");
+									LimpiarCamposDeProducto();
+									HabilitarDeshabilitarControlesParaDevolucionRevertido(false);
 								}
 							});
 						}
@@ -207,6 +210,20 @@ function ValidarExistenciaDeProductosCargadosParaDevolucion(confirma) {
 			}, true, ["Aceptar", "Cancelar"], "info!", null);
 		}
 	});
+}
+
+function LimpiarCamposDeProducto() {
+	$("#txtIdProd").val("");
+	$("#txtProDescripcion").val("");
+	$("#txtUP").val("");
+	$("#txtBto").val("");
+	$("#txtUnid").val("");
+	$("#txtUP_ID").val("");
+	$("#txtBARRADO_ID").val("");
+	$("#txtID_PROV").val("");
+	$("#btnBusquedaBase").prop("disabled", false);
+	$("#Busqueda").val("");
+	$("#Busqueda").trigger('focus');
 }
 
 function ImprimirDV_Generado(id) {
@@ -323,40 +340,45 @@ function AbrirCargaPrevia() {
 }
 
 function ValidarDevolucion() {
+	var hayError = false;
 	var dpId = $("#txtNroDevolucion").val();
 	if (dpId === "") {
+		hayError = true;
 		AbrirMensaje("Atención", "Debe ingresar un ID de Devolución.", function () {
 			$("#msjModal").modal("hide");
-			$("#txtNroDevolucion").focus();
+			$("#txtNroDevolucion").trigger('focus');
 			return true;
 		}, false, ["Aceptar"], "warn!", null);
 	}
-	var ctaId = $("#Cuenta").val();
-	if ($("#Cuenta").val() == "") {
+	var ctaId = $("#Rel05Item").val();
+	if (ctaId == "") {
+		hayError = true;
 		AbrirMensaje("Atención", "Debe seleccionar una cuenta válida.", function () {
 			$("#msjModal").modal("hide");
-			$("#Cuenta").focus();
+			$("#Rel05").trigger('focus');
 			return true;
 		}, false, ["Aceptar"], "warn!", null);
 	}
-	AbrirWaiting();
-	var datos = { dpId, ctaId }
-	PostGen(datos, ValidarNroDeDevARevertirURL, function (o) {
-		CerrarWaiting();
-		if (o.error === true) {
-			AbrirMensaje("Atención", o.msg, function () {
-				$("#msjModal").modal("hide");
-				return true;
-			}, false, ["Aceptar"], "error!", null);
-		} else if (o.warn === true) {
-			AbrirMensaje("Atención", o.msg, function () {
-				$("#msjModal").modal("hide");
-				return true;
-			}, false, ["Aceptar"], "warn!", null);
-		} else {
-			RevertirDevolucion(dpId);
-		}
-	});
+	if (!hayError) {
+		AbrirWaiting();
+		var datos = { dpId, ctaId }
+		PostGen(datos, ValidarNroDeDevARevertirURL, function (o) {
+			CerrarWaiting();
+			if (o.error === true) {
+				AbrirMensaje("Atención", o.msg, function () {
+					$("#msjModal").modal("hide");
+					return true;
+				}, false, ["Aceptar"], "error!", null);
+			} else if (o.warn === true) {
+				AbrirMensaje("Atención", o.msg, function () {
+					$("#msjModal").modal("hide");
+					return true;
+				}, false, ["Aceptar"], "warn!", null);
+			} else {
+				RevertirDevolucion(dpId);
+			}
+		});
+	}
 }
 
 function RevertirDevolucion(dpId) {
@@ -366,12 +388,62 @@ function RevertirDevolucion(dpId) {
 	PostGenHtml(datos, ObtenerProductosDesdeDPRevertidoURL, function (obj) {
 		$("#divDetalleDeProductosADevolver").html(obj);
 		AddEventListenerToGrid("tbDetalleDeProductosADevolver");
+		if ($("#tbDetalleDeProductosADevolver tbody tr").length > 0) {
+			const $fila = $("#tbDetalleDeProductosADevolver tbody tr").first();
+			const ctaId = $fila.data("cta-id");
+			const motivo = $fila.data("dv-motivo");
+			cargarAutocompleteRel05ConValor(ctaId);
+
+			$("#txtNota").val("Revertido " + motivo);
+		}
+
 		if ($("#tbDetalleDeProductosADevolver tr")[1] !== undefined && $("#tbDetalleDeProductosADevolver tr")[1] !== null)
 			ObtenerNotaDesdeProductosRevertidos($("#tbDetalleDeProductosADevolver tr")[1].children[7].innerText);
+
+		HabilitarDeshabilitarControlesParaDevolucionRevertido(true);
 		CerrarWaiting();
 		return true
 	});
 	CerrarWaiting();
+}
+
+function cargarAutocompleteRel05ConValor(valor) {
+
+	// Setear el valor en el input
+	$("#Rel05").val(valor);
+
+	// Disparar la búsqueda del autocomplete
+	$("#Rel05").autocomplete("search", valor);
+
+	// Esperar a que el autocomplete reciba el resultado
+	$("#Rel05").on("autocompleteresponse", function (event, ui) {
+
+		// Si devuelve un solo registro → seleccionarlo automáticamente
+		if (ui.content && ui.content.length === 1) {
+
+			const item = ui.content[0];
+
+			// Ejecutar manualmente el select del autocomplete
+			$("#Rel05").data("autocomplete-selected", true);
+
+			provIdSeleccionado = item.id;
+			provDescSeleccionado = item.value;
+
+			$("#Rel05Item").val(item.id);
+			$("#Rel05").val(item.value);
+
+			// Cerrar el menú del autocomplete
+			$("#Rel05").autocomplete("close");
+		}
+	});
+}
+
+
+function HabilitarDeshabilitarControlesParaDevolucionRevertido(value) {
+	$("#listaDeposito").prop("disabled", value);
+	$("#listaBox").prop("disabled", value);
+	$("#Rel05").prop("disabled", value);
+	$("#txtNota").prop("disabled", value);
 }
 
 function ObtenerNotaDesdeProductosRevertidos(nota) {
@@ -414,7 +486,7 @@ function verificaEstado(e) {
 			$("#txtUnid").val(0).prop("disabled", false);
 			$("#txtUP").prop('disabled', false);
 			$("#txtBto").prop('disabled', false);
-			$("#txtUP").trigger('focus');
+			$("#txtBto").trigger('focus');
 		}
 		else { //unidades decimales
 			$("#txtUP").prop('disabled', true);
@@ -519,6 +591,43 @@ function ValidarPertenenciaDeProductoAProveedor(pId, ctaId) {
 				AddEventListenerToGrid("tbDetalleDeProductosADevolver");
 				CerrarWaiting();
 				return true
+			}, function (xhr) {
+
+				if (xhr.status === 422) {
+
+					// 🔥 Mensaje Golden
+					AbrirMensaje(
+						"ATENCIÓN",
+						xhr.responseText,
+						function () {
+							$("#msjModal").modal("hide");
+							return true;
+						},
+						false,
+						["Aceptar"],
+						"error!",
+						null
+					);
+
+					CerrarWaiting();
+					return;
+				}
+
+				// Otros errores
+				AbrirMensaje(
+					"ERROR",
+					"Se produjo un error inesperado al intentar agregar el producto.",
+					function () {
+						$("#msjModal").modal("hide");
+						return true;
+					},
+					false,
+					["Aceptar"],
+					"error!",
+					null
+				);
+
+				CerrarWaiting();
 			});
 			CerrarWaiting();
 		}

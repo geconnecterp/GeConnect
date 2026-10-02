@@ -69,5 +69,8 @@ namespace gc.infraestructura.Dtos.Almacen.DevolucionAProveedor
 		public string up_desc { get; set; } = string.Empty;
 		[JsonProperty("up_tipo")]
 		public string up_tipo { get; set; } = string.Empty;
+		[DataMember]
+		[JsonProperty("dv_motivo")]
+		public string dv_motivo { get; set; } = string.Empty;
 	}
 }

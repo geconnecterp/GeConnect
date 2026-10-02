@@ -6,9 +6,11 @@ using gc.infraestructura.Dtos.Almacen.DevolucionAProveedor;
 using gc.infraestructura.Dtos.Deposito;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.EntidadesComunes.Options;
+using gc.infraestructura.Enumeraciones;
 using gc.infraestructura.Helpers;
 using gc.sitio.Controllers;
 using gc.sitio.core.Servicios.Contratos;
+using gc.sitio.core.Servicios.Contratos.DocManager;
 using gc.sitio.Models.Dto;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -30,15 +32,27 @@ namespace gc.sitio.Areas.Compras.Controllers
 		private readonly IDepositoServicio _depositoServicio;
 		private readonly IProductoServicio _productoServicio;
 		private readonly ICuentaServicio _cuentaServicio;
-		//private readonly ILogger<CompraController> _logger;
+
+		//PARA MODULO DE IMPRESION
+		private readonly DocsManager _docsManager; //recupero los datos desde el appsettings.json
+		private AppModulo _modulo;
+		private string APP_MODULO = AppModulos.DEVOLUCION_A_PROVEEDORES.ToString();
+		private readonly IDocManagerServicio _docMSv;
+
 		public DevolucionAProveedorController(IProductoServicio productoServicio, IDepositoServicio depositoServicio, ICuentaServicio cuentaServicio,
-			ILogger<CompraController> logger, IOptions<AppSettings> options, IHttpContextAccessor context) : base(options, context)
+											  ILogger<CompraController> logger, IOptions<AppSettings> options, IHttpContextAccessor context,
+											  IDocManagerServicio docManager, IOptions<DocsManager> docsManager) : base(options, context)
 		{
 		//	_logger = logger;
 			_appSettings = options.Value;
 			_depositoServicio = depositoServicio;
 			_productoServicio = productoServicio;
 			_cuentaServicio = cuentaServicio;
+
+			//PARA MODULO DE IMPRESION
+			_docsManager = docsManager.Value; //recupero los datos desde el appsettings.json
+			_modulo = _docsManager.Modulos.First(x => x.Id == APP_MODULO);
+			_docMSv = docManager; //instancio el servicio de impresión
 		}
 		public IActionResult Index()
 		{
@@ -54,6 +68,15 @@ namespace gc.sitio.Areas.Compras.Controllers
 			{
 				var titulo = "DEVOLUCIONES A PROVEEDORES";
 				ViewData["Titulo"] = titulo;
+
+				#region Gestor Impresion - Inicializacion de variables
+				//Inicializa el objeto MODAL del GESTOR DE IMPRESIÓN
+				DocumentManager = _docMSv.InicializaObjeto(titulo, _modulo);
+				// en este mismo acto se cargan los posibles documentos
+				//que se pueden imprimir, exportar, enviar por email o whatsapp
+				ArchivosCargadosModulo = _docMSv.GeneraArbolArchivos(_modulo);
+
+				#endregion
 
 				model.ComboDepositos = CargarComboDepositos();
 				model.ComboBoxes = HelperMvc<ComboGenDto>.ListaGenerica(boxes.Select(x => new ComboGenDto { Id = x.Box_Id, Descripcion = $"{x.Box_Id}__{x.Box_desc}" }));
@@ -139,7 +162,8 @@ namespace gc.sitio.Areas.Compras.Controllers
 			{
 				if (DevolucionProductosLista.Where(x => x.p_id.Equals(pId)).Any())
 				{
-					model = ObtenerGridCoreSmart<ProductoADevolverDto>(DevolucionProductosLista);
+					//model = ObtenerGridCoreSmart<ProductoAAjustarDto>(AjusteProductosLista);
+					return UnprocessableEntity($"El producto que esta intentando ingresar {pId} ya existe.");
 				}
 				else
 				{
@@ -261,17 +285,16 @@ namespace gc.sitio.Areas.Compras.Controllers
 			try
 			{
 				if (string.IsNullOrWhiteSpace(dpId))
-				{
 					return Json(new { error = true, warn = false, msg = "Se debe indicar un valor válido para devolución a revertir." });
-				}
+				
 				var listaAjustesPrevios = await _productoServicio.ObtenerDPREVERTIDO(dpId, TokenCookie);
-				if (listaAjustesPrevios == null)
+				if (listaAjustesPrevios == null || listaAjustesPrevios.Count == 0)
 					return Json(new { error = true, warn = false, msg = $"La devolución indicada '{dpId}' no existe." });
-				if (listaAjustesPrevios.Count == 0)
-					return Json(new { error = false, warn = true, msg = $"La devolución indicada '{dpId}' no posee datos." });
+				
 				var unProducto = listaAjustesPrevios.First();
 				if (unProducto.cta_id != ctaId)
 					return Json(new { error = false, warn = true, msg = $"La devolución indicada '{dpId}' no corresponde al proveedor {ctaId}." });
+				
 				return Json(new { error = false, warn = false, msg = "" });
 			}
 			catch (Exception ex)
@@ -579,6 +602,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 					cantidad = item.ps_stk - (item.as_ajuste * -1),
 					as_motivo = item.dv_motivo,
                     dv_compte_revierte = item.dv_compte,
+					dv_motivo = item.dv_motivo
 				});
 			}
 			return listaMapeada;

@@ -12,20 +12,22 @@
 </div>
 <div class="modal-body">
 	<fieldset>
-		<legend>
-			<h5 id="leyendaNuevoProducto">Productos de Depósito/Box</h5>
+		<legend style="margin-bottom: 0px;">
+			<h5 id="leyendaNuevoProducto" style="margin-bottom: 5px;">Productos de Depósito/Box</h5>
 		</legend>
-		<div class="col-sm" id="divDepositosEnCargaPrevia">
-			<div class="input-group input-group-sm fixed-padding-top">
-				<span class="input-group-text fixed-width">Depósito: </span>
-				@Html.DropDownList("id", depositos, "Seleccionar...", new { @id = "listaDepositoEnCargaPrevia", @class = "form-control activable inputEditable" })
-			</div>
-		</div>
-		<div id="divComboBoxesEnCargaPrevia">
-			<div class="col-sm" id="divComboBoxEnCargaPrevia" aria-disabled="true">
+		<div class="row col-12">
+			<div class="col-6" id="divDepositosEnCargaPrevia">
 				<div class="input-group input-group-sm fixed-padding-top">
-					<span class="input-group-text fixed-width">Box: </span>
-					@Html.DropDownList("id", boxes, "Seleccionar...", new { @id = "listaBoxEnCargaPrevia", @class = "form-control activable inputEditable" })
+					<span class="input-group-text fixed-width">Depósito: </span>
+					@Html.DropDownList("id", depositos, "Seleccionar...", new { @id = "listaDepositoEnCargaPrevia", @class = "form-control activable inputEditable" })
+				</div>
+			</div>
+			<div class="col-6" id="divComboBoxesEnCargaPrevia">
+				<div id="divComboBoxEnCargaPrevia" aria-disabled="true">
+					<div class="input-group input-group-sm fixed-padding-top">
+						<span class="input-group-text fixed-width">Box: </span>
+						@Html.DropDownList("id", boxes, "Seleccionar...", new { @id = "listaBoxEnCargaPrevia", @class = "form-control activable inputEditable" })
+					</div>
 				</div>
 			</div>
 		</div>
@@ -64,8 +66,8 @@
 	</fieldset>
 </div>
 <div class="modal-footer">
-	<button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+	<button type="button" class="btn btn-secondary btn-sm mt-1 me-1" data-bs-dismiss="modal" style="width:100px;">
 		Cerrar
 	</button>
-	<button type="button" class="btn btn-primary" onclick="seleccionarProductosDesdeCargaPrevia();">Seleccionar</button>
+	<button type="button" class="btn btn-primary btn-sm mt-1 me-1" style="width:100px;" onclick="seleccionarProductosDesdeCargaPrevia();">Seleccionar</button>
 </div>

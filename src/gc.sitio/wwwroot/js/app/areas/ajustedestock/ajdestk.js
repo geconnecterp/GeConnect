@@ -102,12 +102,10 @@ function HandlerCancelarAjuste() {
 		AddEventListenerToGrid("tbDetalleDeProductosAAjustar");
 		$("#txtNroAjuste").val("");
 		$("#txtNota").val("");
-		$('#listaDeposito>option:eq(0)').attr('selected', true);
-		$('#listaBox>option:eq(0)').attr('selected', true);
-		$('#listaMotivo>option:eq(0)').attr('selected', true);
 		$('#listaDeposito').val("");
 		$('#listaBox').val("");
 		$('#listaMotivo').val("");
+		HabilitarDeshabilitarControlesParaAjusteRevertido(false);
 		CerrarWaiting();
 		return true
 	});
@@ -117,37 +115,37 @@ function ConfirmarAjuste() {
 	var hayError = false;
 	var nota = $("#txtNota").val();
 	if (nota === "") {
+		hayError = true;
 		AbrirMensaje("Atención", "Debe especificar una nota antes de confirmar.", function () {
 			$("#msjModal").modal("hide");
 			$("#txtNota").trigger('focus');
-			hayError = true;
-			return true;
+			return false;
 		}, false, ["Aceptar"], "warn!", null);
 	}
-	var rows = $("#tbDetalleDeProductosAAjustar tr").length;
+	var rows = $("#tbDetalleDeProductosAAjustar tbody tr").length;
 	if (rows <= 0) {
+		hayError = true;
 		AbrirMensaje("Atención", "Debe agregar al menos un producto en el Ajuste de Stock antes de confirmar.", function () {
 			$("#msjModal").modal("hide");
-			hayError = true;
-			return true;
+			return false;
 		}, false, ["Aceptar"], "warn!", null);
 	}
 	var motivo = $("#listaMotivo").val();
 	if (motivo === "") {
-		AbrirMensaje("Atención", "Debe especificar un 'Tipo' antes de confirmar.", function () {
+		hayError = true;
+		AbrirMensaje("Atención", "Debe seleccionar un 'Tipo' antes de confirmar.", function () {
 			$("#msjModal").modal("hide");
 			$("#listaMotivo").trigger('focus');
-			hayError = true;
-			return true;
+			return false;
 		}, false, ["Aceptar"], "warn!", null);
 	}
 	motivoSplited = motivo.split('#');
 	if (motivoSplited.length !== 2) {
-		AbrirMensaje("Atención", "El tipo de ajuste no tiene la configuracion correcta, consulte con el Administrador. Tipo: " + motivoSplited, function () {
+		hayError = true;
+		AbrirMensaje("Atención", "Debe seleccionar un 'Tipo' antes de confirmar.", function () {
 			$("#msjModal").modal("hide");
 			$("#listaMotivo").trigger('focus');
-			hayError = true;
-			return true;
+			return false;
 		}, false, ["Aceptar"], "warn!", null);
 	}
 	if (!hayError) {
@@ -602,11 +600,13 @@ function ValidarAjuste() {
 		if (o.error === true) {
 			AbrirMensaje("Atención", o.msg, function () {
 				$("#msjModal").modal("hide");
+				InicializarCampos();
 				return true;
 			}, false, ["Aceptar"], "error!", null);
 		} else if (o.warn === true) {
 			AbrirMensaje("Atención", o.msg, function () {
 				$("#msjModal").modal("hide");
+				InicializarCampos()
 				return true;
 			}, false, ["Aceptar"], "warn!", null);
 		} else {
@@ -639,13 +639,15 @@ function RevertirAjuste(ajId) {
 			$("#listaDeposito").val(depoId).trigger("change");
 
 			// Esperar a que los boxes se carguen y luego seleccionar el correcto
-			seleccionarBoxCuandoEsteListo(boxId);
+			seleccionarBoxCuandoEsteListo(boxId, true);
 
 			// Seleccionar motivo
 			$("#listaMotivo").val(idEnTipo).trigger("change");
 
 			// Cargar nota
 			$("#txtNota").val("Revertido " + motivo);
+
+			HabilitarDeshabilitarControlesParaAjusteRevertido(true);
 		}
 
 		CerrarWaiting();
@@ -654,13 +656,29 @@ function RevertirAjuste(ajId) {
 	CerrarWaiting();
 }
 
-function seleccionarBoxCuandoEsteListo(boxId) {
+function InicializarCampos() {
+	$("#listaDeposito").val("");
+	$("#listaBox").val("");
+	$("#listaMotivo").val("");
+	$("#txtNota").val("");
+	LimpiarCamposDeProducto();
+}
+
+function HabilitarDeshabilitarControlesParaAjusteRevertido(value) {
+	$("#listaDeposito").prop("disabled", value);
+	$("#listaBox").prop("disabled", value);
+	$("#listaMotivo").prop("disabled", value);
+	$("#txtNota").prop("disabled", value); 
+}
+
+function seleccionarBoxCuandoEsteListo(boxId, deshabilitado = false) {
 	const interval = setInterval(() => {
 		const $box = $("#listaBox");
 		if ($box.length > 0 && $box.find(`option[value='${boxId}']`).length > 0) {
 			$box.val(boxId).trigger("change");
 			clearInterval(interval);
 		}
+		$("#listaBox").prop("disabled", deshabilitado);
 	}, 150);
 }
 
