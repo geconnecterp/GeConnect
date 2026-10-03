@@ -494,7 +494,7 @@ namespace gc.infraestructura.Helpers
 			};
 			return celda;
 		}
-		public static PdfPCell CrearCeldaTexto(string texto1, Font fuente1, string texto2, Font fuente2, int align = Element.ALIGN_LEFT)
+		public static PdfPCell CrearCeldaTexto(string texto1, Font fuente1, string texto2, Font fuente2, int align = Element.ALIGN_LEFT, float paddingRight = 0f)
 		{
 			Phrase frase = new Phrase();
 			frase.Add(new Chunk(texto1, fuente1));
@@ -504,7 +504,8 @@ namespace gc.infraestructura.Helpers
 			{
 				Border = Rectangle.NO_BORDER,
 				HorizontalAlignment = align,
-				VerticalAlignment = Element.ALIGN_MIDDLE
+				VerticalAlignment = Element.ALIGN_MIDDLE,
+				PaddingRight = paddingRight
 			};
 
 			return celda;

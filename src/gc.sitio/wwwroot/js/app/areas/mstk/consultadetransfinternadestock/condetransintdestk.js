@@ -234,6 +234,7 @@ function SeleccionarTransferencia(x, grid) {
 	var ti = $row.data("ti");
 	var pv_compte = $row.data("pv-compte");
 	var re_compte = $row.data("re-compte");
+	let tit_id = $row.data("tit-id");
 	AbrirWaiting("Cargando datos..."); // ← abrir al inicio
 	tabsDetallePendientes = 2; // ← cantidad de tabs a cargar
 	consultarConteos(ti);
@@ -246,7 +247,7 @@ function SeleccionarTransferencia(x, grid) {
 	} else {
 		HabilitarTabRemito(false, "El remito no está disponible para esta transferencia");
 	}
-	if (reCompteSeleccionado == "") {
+	if (reCompteSeleccionado == "" || tit_id != "S") {
 		$("#btnImprimir").prop('disabled', true);
 	}
 	else {

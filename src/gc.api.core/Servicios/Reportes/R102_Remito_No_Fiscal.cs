@@ -63,9 +63,9 @@ namespace gc.api.core.Servicios.Reportes
 				#region Scripts PDF
 				#region instanciamos el pdf
 				pdf = HelperPdf.GenerarInstanciaAndInit(ref writer, out ms, HojaSize.A4, true);
-
+				var reg = registros.FirstOrDefault();
 				// Agregar el evento de pie de página
-				writer.PageEvent = new CustomPdfPageEventHelper(solicitud.Observacion);
+				writer.PageEvent = new RemitoPageEvent(solicitud.Observacion, 40f, reg.cai, Convert.ToDateTime(reg.cai_vto).ToString("dd/MM/yyyy"));
 
 				var logo = HelperPdf.CargaLogo(solicitud.LogoPath, 20, pdf.PageSize.Height - 10, 20);
 
@@ -115,7 +115,9 @@ namespace gc.api.core.Servicios.Reportes
 					return Convert.ToBase64String(ms.ToArray());
 				}
 
-				PdfPTable tabla = GeneraCabeceraPDF2_ParaRemito(solicitud, chico, chicoBold, normal, normalBold, titulo, tituloBig, logo, _empresaGeco, registros.First().sm_compte);
+				var emisor = registros.First().emisor_nombre;
+				var nro_remito = registros.First().emisor_nombre;
+				PdfPTable tabla = GeneraCabeceraPDF2_ParaRemito(solicitud, chico, chicoBold, normal, normalBold, titulo, tituloBig, logo, _empresaGeco, registros.First());
 
 				// Convertir la tabla en un Phrase
 				Phrase phrase = [tabla];
@@ -571,5 +573,140 @@ namespace gc.api.core.Servicios.Reportes
 
 			return GeneraFileXLS(regs, _titulos, _campos);
 		}
+
+		public class RemitoPageEvent : PdfPageEventHelper
+		{
+			private readonly string _footerText;
+			private readonly float _espacioEncabezado;
+			private readonly string _cai;
+			private readonly string _caiVto;
+
+			private PdfTemplate _totalPages;
+			private BaseFont _baseFont;
+
+			public float MargenInferior { get; set; } = 15;
+
+			public RemitoPageEvent(string footerText, float espacioEncabezado, string cai, string caiVto)
+			{
+				_footerText = footerText;
+				_espacioEncabezado = espacioEncabezado;
+				_cai = cai;
+				_caiVto = caiVto;
+			}
+
+			public override void OnOpenDocument(PdfWriter writer, Document document)
+			{
+				_totalPages = writer.DirectContent.CreateTemplate(50, 20);
+				_baseFont = BaseFont.CreateFont(BaseFont.HELVETICA, BaseFont.CP1252, BaseFont.NOT_EMBEDDED);
+			}
+
+			public override void OnStartPage(PdfWriter writer, Document document)
+			{
+				// En la primera página NO agregamos espacio
+				if (writer.PageNumber == 1)
+					return;
+
+				// Reservar espacio real en el flujo del documento
+				PdfPTable espacio = new PdfPTable(1);
+				espacio.WidthPercentage = 100;
+
+				PdfPCell celda = new PdfPCell(new Phrase(" "))
+				{
+					Border = Rectangle.NO_BORDER,
+					FixedHeight = _espacioEncabezado
+				};
+
+				espacio.AddCell(celda);
+
+				document.Add(espacio);
+			}
+
+			public override void OnEndPage(PdfWriter writer, Document document)
+			{
+				PdfContentByte cb = writer.DirectContent;
+				float pageWidth = document.PageSize.Width;
+
+				float footerY = document.BottomMargin - MargenInferior;
+
+				// ============================
+				// LÍNEA HORIZONTAL DEL FOOTER
+				// ============================
+				cb.SetLineWidth(0.5f);
+				cb.MoveTo(document.LeftMargin, footerY + 15);
+				cb.LineTo(pageWidth - document.RightMargin, footerY + 15);
+				cb.Stroke();
+
+				Font footerFont = new Font(_baseFont, 8, Font.NORMAL);
+
+				// ============================
+				// TABLA DEL PIE DE PÁGINA
+				// ============================
+				PdfPTable footerTable = new PdfPTable(3);
+				footerTable.TotalWidth = pageWidth - document.LeftMargin - document.RightMargin;
+				footerTable.SetWidths(new float[] { 35f, 20f, 45f });
+				footerTable.DefaultCell.Border = Rectangle.NO_BORDER;
+
+				string currentDate = DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss");
+
+				footerTable.AddCell(new PdfPCell(new Phrase($"Fecha de Impresión: {currentDate}", footerFont))
+				{
+					Border = Rectangle.NO_BORDER,
+					HorizontalAlignment = Element.ALIGN_LEFT,
+					PaddingTop = 3
+				});
+
+				footerTable.AddCell(new PdfPCell(new Phrase(_footerText, footerFont))
+				{
+					Border = Rectangle.NO_BORDER,
+					HorizontalAlignment = Element.ALIGN_CENTER,
+					PaddingTop = 3
+				});
+
+				Phrase pagePhrase = new Phrase($"Página {writer.PageNumber} de ", footerFont);
+				pagePhrase.Add(new Chunk(Image.GetInstance(_totalPages), 0, 0, true));
+
+				footerTable.AddCell(new PdfPCell(pagePhrase)
+				{
+					Border = Rectangle.NO_BORDER,
+					HorizontalAlignment = Element.ALIGN_RIGHT,
+					PaddingTop = 3
+				});
+
+				footerTable.WriteSelectedRows(0, -1, document.LeftMargin, footerY + 3, cb);
+
+				// ============================
+				// CAI centrado sobre el pie de página
+				// ============================
+				string textoCai = $"CAI: {_cai} - Vto: {_caiVto}";
+				Font caiFont = new Font(_baseFont, 9, Font.BOLD);
+
+				PdfPTable tblCai = new PdfPTable(1);
+				tblCai.TotalWidth = pageWidth - document.LeftMargin - document.RightMargin;
+
+				PdfPCell celdaCai = new PdfPCell(new Phrase(textoCai, caiFont))
+				{
+					Border = Rectangle.NO_BORDER,
+					HorizontalAlignment = Element.ALIGN_CENTER,
+					PaddingTop = 4f,
+					PaddingBottom = 2f
+				};
+
+				tblCai.AddCell(celdaCai);
+
+				float posY = footerY + 40; // Ajustable según estética
+
+				tblCai.WriteSelectedRows(0, -1, document.LeftMargin, posY, cb);
+			}
+
+			public override void OnCloseDocument(PdfWriter writer, Document document)
+			{
+				_totalPages.BeginText();
+				_totalPages.SetFontAndSize(_baseFont, 8);
+				_totalPages.SetTextMatrix(0, 0);
+				_totalPages.ShowText((writer.PageNumber - 1).ToString());
+				_totalPages.EndText();
+			}
+		}
+
 	}
 }

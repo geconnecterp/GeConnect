@@ -1,30 +1,31 @@
 ﻿namespace gc.api.core.Servicios
 {
-	using Microsoft.Extensions.Options;
-	using System;
-	using System.Collections.Generic;
-	using System.Linq;
-	using System.Linq.Dynamic.Core;
-	using System.Threading.Tasks;
+	using ClosedXML.Excel;
+	using gc.api.core.Contratos.Servicios;
 	using gc.api.core.Entidades;
 	using gc.api.core.Interfaces.Datos;
-	using gc.api.core.Contratos.Servicios;
+	using gc.infraestructura.Core.EntidadesComunes;
 	using gc.infraestructura.Core.EntidadesComunes.Options;
 	using gc.infraestructura.Core.Exceptions;
-	using gc.infraestructura.Core.EntidadesComunes;
-	using Microsoft.Data.SqlClient;
-	using iTextSharp.text.pdf;
-	using iTextSharp.text;
-	using System.Text;
-	using ClosedXML.Excel;
-	using gc.infraestructura.Dtos.Consultas;
-	using System.Reflection;
-	using gc.infraestructura.Dtos.DocManager;
+	using gc.infraestructura.Dtos;
 	using gc.infraestructura.Dtos.Almacen;
+	using gc.infraestructura.Dtos.Consultas;
+	using gc.infraestructura.Dtos.DocManager;
 	using gc.infraestructura.Dtos.Gen;
 	using gc.infraestructura.EntidadesComunes.Options;
 	using gc.infraestructura.Helpers;
+	using iTextSharp.text;
+	using iTextSharp.text.pdf;
+	using Microsoft.Data.SqlClient;
+	using Microsoft.Extensions.Options;
+	using System;
+	using System.Collections.Generic;
 	using System.Globalization;
+	using System.Linq;
+	using System.Linq.Dynamic.Core;
+	using System.Reflection;
+	using System.Text;
+	using System.Threading.Tasks;
 
 	public class Servicio<T> : IServicio<T> where T : EntidadBase
 	{
@@ -600,7 +601,7 @@
 			return tabla;
 		}
 
-		protected PdfPTable GeneraCabeceraPDF2_ParaRemito(ReporteSolicitudDto solicitud, Font chico, Font chicoBold, Font normal, Font normalBold, Font titulo, Font tituloBig, Image? logo, EmpresaGeco empresa, string nro_remito, int titHorAlign = Element.ALIGN_LEFT, int subtitHorAlign = Element.ALIGN_LEFT)
+		protected PdfPTable GeneraCabeceraPDF2_ParaRemito(ReporteSolicitudDto solicitud, Font chico, Font chicoBold, Font normal, Font normalBold, Font titulo, Font tituloBig, Image? logo, EmpresaGeco empresa, RemitoNoFiscalDto remito, int titHorAlign = Element.ALIGN_LEFT, int subtitHorAlign = Element.ALIGN_LEFT)
 		{
 			// Tabla principal: 3 columnas
 			PdfPTable tabla = HelperPdf.GeneraTabla(3, new float[] { 45f, 10f, 45f }, 100, 0, 0);
@@ -615,9 +616,9 @@
 			col1.SpacingBefore = 0f;
 			col1.SpacingAfter = 0f;
 
-			col1.AddCell(HelperPdf.CrearCeldaTexto(empresa.Nombre, titulo));
-			col1.AddCell(HelperPdf.CrearCeldaTexto($"{empresa.Direccion.Trim()}, {empresa.Localidad.Trim()}", normalBold));
-			col1.AddCell(HelperPdf.CrearCeldaTexto($"{empresa.Responsabilidad}", normalBold));
+			col1.AddCell(HelperPdf.CrearCeldaTexto(remito.emisor_nombre, titulo));
+			col1.AddCell(HelperPdf.CrearCeldaTexto($"{remito.emisor_domicilio.Trim()}", normalBold));
+			col1.AddCell(HelperPdf.CrearCeldaTexto($"{remito.emisor_afip_desc}", normalBold));
 			col1.AddCell(HelperPdf.CrearCeldaTexto("", normal));
 			col1.AddCell(HelperPdf.CrearCeldaTexto("", normal));
 
@@ -686,11 +687,11 @@
 			PdfPTable col3 = new PdfPTable(1);
 			col3.WidthPercentage = 100;
 
-			col3.AddCell(HelperPdf.CrearCeldaTexto($"N° Remito: {nro_remito}", titulo, Element.ALIGN_RIGHT));
+			col3.AddCell(HelperPdf.CrearCeldaTexto($"N° Remito: {remito.cm_compte}", tituloBig, Element.ALIGN_RIGHT));
 			col3.AddCell(HelperPdf.CrearCeldaTexto("Fecha: ", normal, DateTime.Now.ToString("dd/MM/yyyy"), normalBold, " DOCUMENTO NO VÁLIDO COMO FACTURA", chico, Element.ALIGN_RIGHT));
-			col3.AddCell(HelperPdf.CrearCeldaTexto("CUIT: ", normal, empresa.CUIT, normalBold, Element.ALIGN_RIGHT));
-			col3.AddCell(HelperPdf.CrearCeldaTexto("IB: ", normal, empresa.IngresosBrutos, normalBold, Element.ALIGN_RIGHT));
-			col3.AddCell(HelperPdf.CrearCeldaTexto("Inicio Act.: ", normal, empresa.InicioActividades.ToShortDateString(), normalBold, Element.ALIGN_RIGHT));
+			col3.AddCell(HelperPdf.CrearCeldaTexto("CUIT: ", normal, remito.emisor_cuit, normalBold, Element.ALIGN_RIGHT, 118f));
+			col3.AddCell(HelperPdf.CrearCeldaTexto("IB: ", normal, remito.emisor_ib_nro, normalBold, Element.ALIGN_RIGHT, 118f));
+			col3.AddCell(HelperPdf.CrearCeldaTexto("Inicio Act.: ", normal, remito.emisor_fecha_ini.ToString("dd/MM/yyyy"), normalBold, Element.ALIGN_RIGHT, 125f));
 
 			PdfPCell celdaCol3 = new PdfPCell(col3)
 			{
