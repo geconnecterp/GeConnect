@@ -11,6 +11,7 @@
     <link rel="stylesheet" href="~/css/autorizacionRemota.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/facturaEmitida.css" asp-append-version="true" />
 }
+@Html.AntiForgeryToken()
 <div class="container-fluid p-4">
     <div class="row">
         <div class="col-12">
@@ -146,13 +147,13 @@
 
         var ObtenerCotizacionesUrl = '@Url.Action("ObtenerCotizaciones", "ProductoFact", new { area = "Facturacion" })';
         var ObtenerTiposFacturaEmitidaUrl = '@Url.Action("ObtenerTiposFacturaEmitida", "ProductoFact", new { area = "Facturacion" })';
+        var RecuperarBackupUrl = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Url.Action("RecuperarBackup", "ProductoFact", new { area = "Facturacion" })));
         var CargarFacturaEmitidaUrl = '@Url.Action("CargarFacturaEmitida", "ProductoFact", new { area = "Facturacion" })';
         var CargarCotizacionUrl = '@Url.Action("CargarCotizacion", "ProductoFact", new { area = "Facturacion" })';
 
         var DiferirFacturaUrl =  '@Url.Action("DiferirFactura", "ProductoFact", new { area = "Facturacion" })';
         var DiferirPagoUrl = '@Url.Action("DiferirPago", "ProductoFact", new { area = "Facturacion" })';
 
-        var EliminarProductoBackupUrl = '@Url.Action("EliminarProductoBackup", "ProductoFact", new { area = "Facturacion" })';
         var ObtenerListasPreciosUrl = '@Url.Action("ObtenerListasPrecios", "ProductoFact", new { area = "Facturacion" })';
         var SolicitarCambioListaPrecioUrl = '@Url.Action("SolicitarCambio", "ListaPrecio", new { area = "Facturacion" })';
         var AplicarCambioListaPrecioUrl = '@Url.Action("AplicarCambio", "ListaPrecio", new { area = "Facturacion" })';
@@ -180,6 +181,8 @@
 
     <script src="~/js/app/factOperacion.js" asp-append-version="true"></script>
     <script src="~/js/app/prodfactcalc.js" asp-append-version="true"></script>
+    <script>window.respaldoPuestoClave = @Html.Raw(System.Text.Json.JsonSerializer.Serialize((string?)ViewBag.RespaldoClave));</script>
+    <script src="~/js/app/respaldoProductos.js" asp-append-version="true"></script>
     <script src="~/js/app/prodfact.js" asp-append-version="true"></script>
 
     <script src="~/js/app/fact.js" asp-append-version="true"></script>

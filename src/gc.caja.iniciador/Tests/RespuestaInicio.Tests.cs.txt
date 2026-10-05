@@ -1,0 +1,28 @@
+using System.Net;
+using System.Text;
+var endpoint = new Uri("https://servidor/gccaja/Seguridad/Estacion/Preparar");
+var total = 0;
+async Task Probar(HttpStatusCode estado, string contenido, string tipo, string? error)
+{
+    using var respuesta = new HttpResponseMessage(estado) { Content = new StringContent(contenido, Encoding.UTF8, tipo) };
+    try
+    {
+        var pase = await RespuestaInicio.LeerPaseAsync(respuesta, endpoint);
+        if (error != null || pase != new string('a',64)) throw new Exception("Se aceptó una respuesta inválida.");
+    }
+    catch (InvalidOperationException ex) when (error != null && ex.Message.Contains(error)) { }
+    total++;
+    Console.WriteLine($"OK {estado}: {error ?? "pase válido"}");
+}
+await Probar(HttpStatusCode.OK,"{\"pase\":\""+new string('a',64)+"\"}","application/json",null);
+await Probar(HttpStatusCode.Found,"<html>Login</html>","text/html","redirigió");
+await Probar(HttpStatusCode.TemporaryRedirect,"","text/plain","redirigió");
+await Probar(HttpStatusCode.OK,"<!DOCTYPE html><html>Login</html>","text/html","HTML");
+await Probar(HttpStatusCode.OK,"  <html>Error</html>","application/json","HTML");
+await Probar(HttpStatusCode.NotFound,"<html>Error</html>","text/html","HTTP 404");
+await Probar(HttpStatusCode.Unauthorized,"","text/plain","HTTP 401");
+await Probar(HttpStatusCode.OK,"","application/json","JSON válido");
+await Probar(HttpStatusCode.OK,"{","application/json","JSON válido");
+foreach (var contenido in new[]{"{}","[]","null","{\"pase\":123}","{\"pase\":\"corto\"}","{\"pase\":\""+new string('z',64)+"\"}"})
+    await Probar(HttpStatusCode.OK,contenido,"application/json","pase de inicio válido");
+Console.WriteLine($"{total} verificaciones correctas.");

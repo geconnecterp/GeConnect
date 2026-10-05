@@ -1,0 +1,58 @@
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+using gc.infraestructura.Core.EntidadesComunes.Options;
+using gc.infraestructura.Dtos.Cajas.Request;
+using gc.caja.core.Servicios.Implementacion.Cajas;
+using gc.caja.Areas.Facturacion.Controllers;
+using gc.infraestructura.Dtos.Cajas;
+using gc.infraestructura.Dtos.Cajas.Response;
+using Newtonsoft.Json.Linq;
+using System.Reflection;
+var cases=JArray.Parse(File.ReadAllText(args[0]));
+var catalogo=new Dictionary<string,string>{{"EF","EF"},{"CH","CH"},{"TR","TR"}};
+var efectivo=new[]{new ValoresInsResDto{ins_id="EF",tcf_id="EF"}};
+void Check(bool condition,string name){if(!condition)throw new Exception(name);}
+foreach(var c in cases){
+ var valores=c["values"]!.Select(v=>new Json_Valor{ins_id=(string)v["tipo"]! == "DO"?"DOC":(string)v["tipo"]!,rb_importe=(decimal)v["amount"]!,rb_fecha_valor=DateTime.Today.AddDays((int)v["day"]!)}).ToList();
+ var condiciones=new ReglasCreditoPago.Condiciones((bool)c["registrado"]!, (decimal)c["tope"]!, (int?)c["diasH"], (int?)c["diasD"]);
+ var regla=ReglasCreditoPago.Validar(valores,(decimal)c["total"]!,(decimal)c["nc"]!,(string)c["co"]!,condiciones,catalogo,DateTime.Today);
+ var ok=regla.Ok && VueltoEfectivo.Normalizar(valores,(decimal)c["total"]!,(decimal)c["nc"]!,efectivo,regla.ExcedenteCheques).Ok;
+ Check(ok==(bool)c["ok"]!, (string)c["name"]!);
+ if(ok && c["net"]!=null) Check(valores.Where(v=>v.ins_id=="EF").Sum(v=>v.rb_importe)==(decimal)c["net"]!, "Neto SP: "+c["name"]);
+}
+var cliente=new CuentaDatosResultadoDto{Origen="C",cta_id="C001",ctac_tope_credito=150,fp="[{\"fp_id\":\"H\",\"fp_dias\":1},{\"fp_id\":\"D\",\"fp_dias\":15}]"};
+var cond=ReglasCreditoPago.ObtenerCondiciones(cliente);Check(cond.registrado && cond.dias_cheque==1 && cond.dias_documento==15 && cond.tope==150,"Mapeo fp y tope");
+cliente.fp="invalido";cond=ReglasCreditoPago.ObtenerCondiciones(cliente);Check(cond.dias_cheque==null && cond.dias_documento==null,"fp inválido no concede plazo");
+cliente.Origen="F";Check(!ReglasCreditoPago.ObtenerCondiciones(cliente).registrado,"CF no se convierte en registrado por un ID residual");
+var pertenece=typeof(PDiferidoController).GetMethod("PerteneceAlCliente",BindingFlags.NonPublic|BindingFlags.Static)!;
+bool Match(string cuenta,string doc,CuentaDatosResultadoDto cli)=>(bool)pertenece.Invoke(null,new object[]{new FactPendienteResponseDto{cta_id=cuenta,co_pd_doc=doc},cli})!;
+cliente.cta_documento="20.123.456";
+Check(Match("","20123456",cliente),"CF identificado por documento");
+Check(!Match("","99999999",cliente),"CF no mezcla otra persona");
+Check(!Match("C001","20123456",cliente),"CF no mezcla cuenta registrada con igual documento");
+cliente.cta_documento="";Check(!Match("","",cliente),"Documentos vacíos no identifican CF");
+cliente.Origen="C";Check(Match("c001","",cliente),"Cuenta registrada por ID");Check(!Match("C002","",cliente),"No mezcla cuentas registradas");
+var unknown=ReglasCreditoPago.Validar(new[]{new Json_Valor{ins_id="DESCONOCIDO",rb_importe=100}},100,0,"CD",cond,catalogo,DateTime.Today);
+Check(!unknown.Ok,"Instrumento desconocido bloqueado");
+Console.WriteLine($"PASS: {cases.Count} reglas y neto SP, mapeo de condiciones, clasificación e identidad CF/registrado.");
+
+// API local simulada: probar el servicio real sin consultar ni modificar la base de datos.
+var builder = WebApplication.CreateBuilder();
+builder.Logging.ClearProviders();
+builder.WebHost.UseUrls("http://127.0.0.1:0");
+await using var app = builder.Build();
+string respuesta = "{\"data\":[]}";
+app.MapPost("/api/apipagofactura/ObtenerFacturasPendientes", () => respuesta);
+await app.StartAsync();
+try {
+    var servicio = new FactDiferidaServicio(Options.Create(new AppSettings { RutaBase = app.Urls.Single() }), NullLogger<FactDiferidaServicio>.Instance);
+    var vacio = await servicio.ObtenerFacturasPendientes(new FactPendienteRequestDto(), "");
+    Check(vacio.Ok && !vacio.EsError && !vacio.EsWarn && vacio.ListaEntidad?.Count == 0, "API sin facturas no es error");
+    respuesta = "{\"data\":null}";
+    var invalido = await servicio.ObtenerFacturasPendientes(new FactPendienteRequestDto(), "");
+    Check(!invalido.Ok, "Respuesta nula no se confunde con lista vacía");
+    Console.WriteLine("PASS: servicio real distingue pendientes vacíos de una respuesta inválida.");
+} finally { await app.StopAsync(); }

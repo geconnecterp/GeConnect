@@ -109,23 +109,8 @@ public partial class ProductoFactController
                 return Json(new { ok = false, errores, mensaje = "La factura no contiene productos disponibles para cargar." });
 
             var seleccionados = ProductosSeleccionados ?? [];
-            var backupOk = true;
-            try
-            {
-                if (seleccionados.Count == 0)
-                    backupOk = await _backupServicio.ReiniciarBackup(caja.CajaId, UserName ?? string.Empty);
-                if (backupOk)
-                    backupOk = await _backupServicio.GuardarProductosEnBloque(validos, caja.CajaId, UserName ?? string.Empty);
-            }
-            catch (Exception ex)
-            {
-                backupOk = false;
-                _logger?.LogWarning(ex, "Factura emitida: no fue posible respaldar el detalle.");
-            }
             seleccionados.AddRange(validos);
             ProductosSeleccionados = seleccionados;
-            if (!backupOk)
-                errores.Add("No se pudo guardar el respaldo local de los productos cargados.");
 
             return Json(new
             {

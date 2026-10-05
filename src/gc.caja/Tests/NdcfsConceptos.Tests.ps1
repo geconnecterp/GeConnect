@@ -1,7 +1,7 @@
 $ErrorActionPreference = 'Stop'
 $root = Split-Path $PSScriptRoot
 $source = Get-Content (Join-Path $root 'Areas/Facturacion/Controllers/NotaDebitoCreditoController.cs') -Raw
-$jsonMethod = [regex]::Match($source, '(?s)        private static object CrearJsonConcepto\(.*?(?=        private bool DebeImprimirComprobanteElectronico)').Value.Replace('private static object', 'public static object')
+$jsonMethod = [regex]::Match($source, '(?s)        private static object CrearJsonConcepto\(.*?(?=        private static string NormalizarModoReporte)').Value.Replace('private static object', 'public static object')
 $ivaMethod = [regex]::Match($source, '(?s)        private static decimal CalcularIvaManual\(.*?(?=        private static void AgregarJson)').Value
 $conceptClass = [regex]::Match($source, '(?s)        public sealed class NotaDebitoCreditoConceptoRequest.*?\r?\n        }').Value
 $responseDto = Get-Content (Join-Path $root '../gc.infraestructura/Dtos/Cajas/Response/CalculaFilasResDto.cs') -Raw

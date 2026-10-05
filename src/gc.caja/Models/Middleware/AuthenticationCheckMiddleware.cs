@@ -11,6 +11,12 @@ namespace gc.caja.Models.Middleware
 
         public async Task InvokeAsync(HttpContext context)
         {
+            if (context.Request.Path.Equals(new PathString("/Seguridad/Estacion/Preparar")) ||
+                context.Request.Path.Equals(new PathString("/Seguridad/Estacion/Iniciar")))
+            {
+                await _next(context);
+                return;
+            }
             // ✅ CORREGIDO: Rutas públicas con StringComparison.OrdinalIgnoreCase
             var path = context.Request.Path.Value?.ToLowerInvariant() ?? string.Empty;
 

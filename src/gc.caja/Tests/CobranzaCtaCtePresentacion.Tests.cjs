@@ -10,7 +10,7 @@ function $(selector) { return { length: 1, attr: () => moduleName, hasClass: () 
  val(){return this;}, prop(){return this;}, modal(){return this;} }; }
 const ctx = { $, console: {log(){},warn(){},error(message,error){throw error || Error(message);}},
  window: {location:{replace:url=>destination=url}},
- accesoModuloCCUrl:'/Facturacion/CobranzaCtaCte',
+ MenuCajaUrl:'/gc/Home',
  escapeHtml: s=>String(s).replaceAll('<','&lt;').replaceAll('>','&gt;'),
  poblarDatosClienteCC(){}, seleccionarTodosMovimientosCC(){},
  ocultarLoadingGlobal(){loadingClosed++;},
@@ -38,10 +38,10 @@ test('Grilla muestra descripción escapada y siete columnas, conservando código
 });
 test('Sin descripción no inventa el tipo usando el concepto o el código',()=>{ctx.mostrarCtaCtePendientes({},[{...debit,tco_desc:''}]);assert(rows.includes('Sin descripción'));assert(!rows.includes('<td>006</td>'));});
 test('Grilla vacía conserva alineación de siete columnas',()=>{ctx.mostrarCtaCtePendientes({},[]);assert(rows.includes('colspan="7"'));});
-test('CC confirma con número de recibo y vuelve al propio módulo',()=>{
+test('CC confirma con número de recibo y vuelve al menú',()=>{
  assert.equal(ctx.mostrarResultadoCobranzaCtaCte({rb_compte:'00000123',cm_compte:'NO_MOSTRAR'},'CC'),true);
  assert(message.body.includes('Recibo de cobranza'));assert(message.body.includes('00000123'));assert(!message.body.includes('NO_MOSTRAR'));
- callback();assert.equal(destination,'/Facturacion/CobranzaCtaCte');assert.equal(loadingClosed,1);
+ callback();assert.equal(destination,'/gc/Home');assert.equal(loadingClosed,1);
 });
 test('La bandera del servidor reconoce CC aunque el contexto global no esté',()=>{assert(ctx.mostrarResultadoCobranzaCtaCte({rb_compte:'RC-7',es_cobranza_cuenta_corriente:true},''));assert(message.body.includes('RC-7'));});
 test('CC sin número no muestra una factura como recibo',()=>{ctx.mostrarResultadoCobranzaCtaCte({cm_compte:'FACTURA-99'},'CC');assert(!message.body.includes('FACTURA-99'));assert(message.body.includes('No informado por el servidor'));});

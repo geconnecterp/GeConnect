@@ -1,0 +1,32 @@
+using gc.caja.Models;
+using gc.infraestructura.EntidadesComunes.Options;
+
+var casos = new (string? Ctrl, TipoFact Local, bool Recibo, bool ReporteRecibo, string Tipo, bool Reporte)[] {
+    ("-1", TipoFact.FE, false, false, "FE", true),
+    ("50", TipoFact.CF, false, false, "CF", false),
+    ("50", TipoFact.FE, false, false, "CF", false),
+    ("-1", TipoFact.CF, false, false, "FE", true),
+    (" 50 ", TipoFact.FE, false, false, "CF", false),
+    (null, TipoFact.FE, false, false, "FE", true),
+    ("", TipoFact.CF, false, false, "CF", false),
+    (null, (TipoFact)0, false, false, "OTRO", false),
+    ("desconocido", TipoFact.FE, false, false, "OTRO", false),
+    ("0", TipoFact.FE, false, false, "OTRO", false),
+    ("-1", TipoFact.FE, true, false, "RECIBO", false),
+    ("50", TipoFact.CF, true, false, "RECIBO", false),
+    ("-1", TipoFact.FE, true, true, "RECIBO", true),
+    ("50", TipoFact.CF, true, true, "RECIBO", true)
+};
+foreach (var c in casos)
+{
+    var actual = PresentacionComprobante.Crear(c.Ctrl, c.Local, c.Recibo, c.ReporteRecibo);
+    if (actual.Tipo != c.Tipo || actual.GenerarReporte != c.Reporte)
+        throw new Exception($"Presentación incorrecta: {c}, actual {actual}");
+    if (actual.Tipo != "FE" && actual.Mensaje.Contains("electrónica"))
+        throw new Exception("Mensaje FE en una operación que no es FE.");
+    if (actual.Tipo == "CF" && !actual.Mensaje.Contains("controlador fiscal"))
+        throw new Exception("Falta identificar el controlador.");
+    if (actual.Mensaje.Contains("visualizado") || actual.Mensaje.Contains("impreso"))
+        throw new Exception("No se debe afirmar una visualización/impresión no verificada.");
+}
+Console.WriteLine($"PASS: {casos.Length} escenarios de emisión, discrepancias, respaldo local y recibos.");

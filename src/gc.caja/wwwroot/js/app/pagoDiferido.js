@@ -248,6 +248,7 @@ async function recargarFacturasPendientesDelDia() {
             : [];
 
     estadoCobranzaDiferida.facturasPendientesDia = lista;
+    estadoCobranzaDiferida.tienePendientesCliente = response.tienePendientesCliente;
 
     console.log(
         `✅ Facturas pendientes actualizadas: ${lista.length}`
@@ -441,28 +442,21 @@ async function reiniciarCobranzaDiferida() {
             ? cobranzaDiferidaInicializaUrl
             : '/Facturacion/PDiferido';
 
-    console.log('═══════════════════════════════════════════════════');
-    console.log('🔄 REINICIO TOTAL DE COBRANZA DIFERIDA');
-    console.log(`➡️ Destino final: ${urlIndex}`);
-    console.log('═══════════════════════════════════════════════════');
-
+    let destino = urlIndex;
     try {
         await cerrarModalesCobranzaDiferida();
-
+        await recargarFacturasPendientesDelDia();
+        if (estadoCobranzaDiferida.tienePendientesCliente === false) {
+            destino = typeof MenuCajaUrl !== 'undefined' ? MenuCajaUrl : '/';
+        }
         clienteSeleccionadoVFP = null;
         nombreClienteVFP = '';
         window._facturasSeleccionadasParaCobro = [];
     } catch (error) {
-        /*
-            El pago ya fue confirmado por servidor.
-            Un error visual no debe impedir volver al Index.
-        */
-        console.error(
-            '❌ Error durante cierre de modales CD:',
-            error
-        );
+        // Si no se pudo verificar, volver a consultar desde el módulo; nunca repetir el cobro.
+        console.error('No se pudieron verificar los pendientes después del cobro:', error);
     } finally {
-        window.location.replace(urlIndex);
+        window.location.replace(destino);
     }
 }
 
@@ -570,7 +564,7 @@ function obtenerFacturasDeClienteDesdeMemoria(cliente) {
         type: 'POST',
         contentType: 'application/json',
         dataType: 'json',
-        data: JSON.stringify(cliente.id), // ✅ Enviamos solo el ID del cliente
+        data: JSON.stringify(cliente.id || ''), // ✅ Enviamos solo el ID del cliente
         success: function (response) {
             ocultarLoader();
             console.log('   📥 Respuesta del servidor:', response);
@@ -585,7 +579,13 @@ function obtenerFacturasDeClienteDesdeMemoria(cliente) {
                 return;
             }
 
-            const facturasDelCliente = response.lista;
+            const facturasDelCliente = Array.isArray(response.lista) ? response.lista : [];
+            if (!facturasDelCliente.length) {
+                AbrirMensaje('Sin pendientes', 'El cliente no tiene facturas pendientes de cobro.', function () {
+                    cerrarModalSiEstaAbierto('#msjModal').then(() => $('#modalIdentificarCliente').modal('show'));
+                }, false, ['Aceptar'], 'info');
+                return;
+            }
             console.log(`   ✅ Facturas encontradas: ${facturasDelCliente.length}`);
 
             // Mostrar modal con facturas del cliente específico
@@ -654,8 +654,8 @@ function mostrarModalVerFacturasPendientes(facturas) {
                 : 'N/A';
 
             const importe = parseFloat(factura.cv_importe || 0);
-            const clienteId = sanitizarData(factura.cta_id) || sanitizarData(factura.co_pd_doc) || '---';
-            const clienteDoc = sanitizarData(factura.cta_documento) || '';
+            const clienteId = sanitizarData(factura.cta_id) || '';
+            const clienteDoc = sanitizarData(factura.cta_documento || factura.co_pd_doc) || '';
             const nombreCliente = sanitizarData(factura.cta_denominacion || factura.co_pd_nombre) || 'Cliente sin nombre';
 
             // ✅ CORRECCIÓN: Sanitizar TODOS los data-* attributes
@@ -1121,7 +1121,8 @@ function iniciarCobranzaDesdeVFP() {
     const abrirConfirmacionFacturas = () => {
         buscarClienteYMostrarFacturas(
             criterioClienteBusqueda,
-            facturasPreseleccionadas
+            facturasPreseleccionadas,
+            { clienteId: clienteId, origen: clienteId && clienteId !== 'CF' ? 'C' : 'F', documento: String(clienteDoc) }
         );
     };
 
@@ -1155,7 +1156,7 @@ function iniciarCobranzaDesdeVFP() {
  * @param {string} criterioBusqueda - ID o documento del cliente
  * @param {Array} facturasSeleccionadas - Lista de facturas ya guardadas en sesión
  */
-function buscarClienteYMostrarFacturas(criterioBusqueda, facturasSeleccionadas) {
+function buscarClienteYMostrarFacturas(criterioBusqueda, facturasSeleccionadas, identidad) {
     console.log('═══════════════════════════════════════════════════');
     console.log('🔍 BUSCAR CLIENTE Y MOSTRAR FACTURAS v6.0');
     console.log(`   Criterio: ${criterioBusqueda}`);
@@ -1163,15 +1164,13 @@ function buscarClienteYMostrarFacturas(criterioBusqueda, facturasSeleccionadas) 
 
     mostrarLoader('Cargando datos del cliente...');
 
-    // ✅ USAR LA MISMA URL QUE fact.js
-    const url = typeof BuscarClienteUrl !== 'undefined' && BuscarClienteUrl
-        ? BuscarClienteUrl
-        : '/Facturacion/Cliente/BuscarCliente';
+    // Recuperar exactamente la cuenta o el CF identificado en el comprobante.
+    const url = BuscarClientePorIdCDUrl;
 
     $.ajax({
         url: url,
         type: 'POST',
-        data: { criterio: criterioBusqueda },
+        data: identidad,
         timeout: 30000,
         success: function (response) {
             ocultarLoader();
@@ -1354,7 +1353,7 @@ function mostrarModalFacturasPendientes(cliente, facturas = null) {
                     : 'N/A';
 
                 const importe = parseFloat(factura.cv_importe || 0);
-                const clienteId = sanitizarData(factura.cta_id) || sanitizarData(factura.co_pd_doc) || '---';
+                const clienteId = sanitizarData(factura.cta_id) || '';
                 const nombre = `${factura.co_pd_nombre || cliente.denominacion || 'N/A'} (${clienteId})`;
                 // ✅ CRÍTICO v4.0: Agregar TODOS los data-* attributes necesarios
                 const fila = `

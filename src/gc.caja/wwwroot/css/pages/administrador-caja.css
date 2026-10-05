@@ -1,0 +1,6 @@
+/* Ajustes acotados: conserva la identidad compartida con Cuenta y Reimpresión Z. */
+#admCaja .table { font-size: 14px !important; }
+#admCaja .table thead th { background: #c79b16; color: #24231f; font-size: 14px !important; font-weight: 700; padding: 12px; }
+#admCaja .table tbody td { font-size: 14px !important; padding: 12px; vertical-align: middle; }
+#admCaja .btn { min-height: 44px; }
+#admEstado:not(:empty) { margin-top: 20px; overflow-wrap: anywhere; }

@@ -914,7 +914,7 @@ function mostrarModalDiferirPago() {
                 <li class="mb-1"><i class='bx bx-check text-success'></i> ✅ Se afectará el stock</li>
                 <li class="mb-1"><i class='bx bx-check text-success'></i> ✅ Se registrará en Libro IVA Ventas</li>
                 <li class="mb-1"><i class='bx bx-check text-warning'></i> ⚠️ El pago quedará PENDIENTE en cuenta del cliente</li>
-                <li class="mb-1"><i class='bx bx-check text-warning'></i> ⚠️ Se imprimirá el comprobante</li>
+                <li class="mb-1"><i class='bx bx-check text-warning'></i> La presentación del comprobante dependerá de la configuración del PV</li>
             </ul>
             <div class="alert alert-warning mt-3 mb-0">
                 <i class='bx bx-info-circle'></i> Esta operación NO puede deshacerse fácilmente
@@ -1056,25 +1056,17 @@ function ejecutarDiferirPago() {
 
             console.log('📄 GENERANDO REPORTE DEL COMPROBANTE');
 
-            // ❽ VALIDAR que ModuloReportes esté disponible
-            if (typeof ModuloReportes === 'undefined') {
-                console.error('❌ ModuloReportes no está disponible');
-
-                // ✅ DESBLOQUEAR antes de mostrar error
-                desbloquearPantallaCalculoFactura();
-
-                mostrarMensajeError('Error: Módulo de reportes no cargado');
-                return;
-            }
-
-            // ❾ GENERAR Y VISUALIZAR REPORTE
-            ModuloReportes.generarYVisualizarReporte({
-                tco_letra: comprobante.tco_letra,
-                tco_id: comprobante.tco_id,
-                cm_compte: comprobante.cm_compte,
-                cm_repetido: comprobante.cm_repetido
-            }).then(function (exitoso) {
-                console.log(`📄 Generación de reporte: ${exitoso ? '✅ Exitosa' : '❌ Fallida'}`);
+            // Solo FE abre el reporte. La emisión fiscal ya fue resuelta por el servidor.
+            const reporte = response.debe_imprimir === true && typeof ModuloReportes !== 'undefined'
+                ? ModuloReportes.generarYVisualizarReporte({
+                    tco_letra: comprobante.tco_letra,
+                    tco_id: comprobante.tco_id,
+                    cm_compte: comprobante.cm_compte,
+                    cm_repetido: comprobante.cm_repetido
+                })
+                : Promise.resolve(false);
+            reporte.then(function (exitoso) {
+                console.log(`📄 Reporte: ${response.debe_imprimir !== true ? 'No corresponde para este PV' : (exitoso ? 'Generado' : 'No generado')}`);
 
                 // Esperar 500ms para que el PDF se abra completamente
                 setTimeout(function () {
@@ -1196,6 +1188,12 @@ function ejecutarDiferirPago() {
  * ✅ ACTUALIZADO v11.0: Muestra mensaje de éxito al diferir pago
  * Ajustado para NO mencionar "nueva pestaña" hasta después del mensaje
  */
+function escaparMensajeEmision(valor) {
+    return String(valor || '').replace(/[&<>"']/g, caracter => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+    })[caracter]);
+}
+
 function mostrarMensajeExitoDiferirPago(tipoComprobante, comprobante, numeroComprobante, esRepetido) {
     AbrirMensaje(
         "¡Factura Emitida!",
@@ -1218,7 +1216,7 @@ function mostrarMensajeExitoDiferirPago(tipoComprobante, comprobante, numeroComp
             </div>
             
             <p class="text-muted mb-0">
-                <i class='bx bx-check-circle'></i> El comprobante fue visualizado exitosamente
+                <i class='bx bx-check-circle'></i> ${escaparMensajeEmision(comprobante.mensaje_emision || 'El comprobante fue emitido correctamente.')}
             </p>
         </div>`,
         function () {

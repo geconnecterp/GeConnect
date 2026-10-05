@@ -20,7 +20,6 @@ namespace gc.sitio.core.Extensions
             services.AddScoped<IProductoFactServicio, ProductoFactServicio>();
             services.AddSingleton<IReportesConfigService, ReportesConfigService>();
             services.AddScoped<IReportesService, ReportesService>();
-            services.AddScoped<IBackupProductosServicio, BackupProductosServicio>();
             services.AddScoped<ICheckoutServicio, CheckoutServicio>();
             services.AddScoped<IFactDiferidaServicio, FactDiferidaServicio>();
             services.AddScoped<ICtaCteServicio, CtaCteServicio>();

@@ -339,59 +339,73 @@
             });
     }
 
+    function obtenerRechazoCuenta(cuenta) {
+        const origen = String(cuenta?.origen || '').trim().toUpperCase();
+        if (origen === 'N') return 'El cliente seleccionado no está habilitado.';
+        if (origen === 'Q') return 'El proveedor seleccionado no está habilitado.';
+        if (origen === 'F') return 'Para emitir NC o Factura de Servicio debe seleccionar un cliente registrado con cta_id válido. Consumidor final no está habilitado en este módulo.';
+        if (origen !== 'C' && origen !== 'P') return 'El origen de la cuenta no está habilitado para este módulo.';
+        if (!String(cuenta?.cta_id ?? cuenta?.id ?? '').trim()) return 'La cuenta seleccionada no posee un cta_id válido.';
+        return '';
+    }
+
     function seleccionarCuentaDesdeFila($fila) {
-        logPaso('Seleccion de cuenta desde grilla');
+        if (busquedaEnCurso) return;
         if (!$fila || $fila.length === 0) {
-            logWarn('Seleccion de cuenta invalida: fila vacia');
-            mostrarMensaje('Atencion', 'No se pudo identificar la cuenta seleccionada.', 'warn!');
+            mostrarMensaje('Atención', 'No se pudo identificar la cuenta seleccionada.', 'warn!');
+            return;
+        }
+        const cuenta = {
+            id: String($fila.data('cta-id') || '').trim(),
+            origen: String($fila.data('cta-origen') || '').trim().toUpperCase()
+        };
+        const rechazo = obtenerRechazoCuenta(cuenta);
+        if (rechazo) {
+            mostrarMensaje('Cuenta no habilitada', rechazo, 'warn!');
+            return;
+        }
+        const url = String(window.ndcfsBuscarCuentaPorIdUrl || '').trim();
+        if (!url) {
+            mostrarMensaje('Error', 'No se encontró la URL para cargar la cuenta seleccionada.', 'error!');
             return;
         }
 
-        const origen = String($fila.data('cta-origen') || '').trim().toUpperCase();
-        logPaso('Datos fila seleccionada', {
-            origen: origen,
-            ctaId: $fila.data('cta-id'),
-            documento: $fila.data('cta-documento')
+        // Cargar la fila exacta evita repetir una búsqueda general y reconstruir la grilla.
+        bloquearBusqueda(true);
+        limpiarSeleccionVisual(false);
+        mostrarLoaderNdcfs('Cargando cuenta seleccionada...');
+        $.ajax({
+            url: url, type: 'POST', dataType: 'json', timeout: 30000,
+            data: { clienteId: cuenta.id, origen: cuenta.origen,
+                documento: String($fila.data('cta-documento') || '').trim() }
+        }).done(function (response) {
+            if (!response || response.ok !== true || !response.cliente) {
+                mostrarMensaje('Atención', response?.mensaje || 'No se pudo cargar la cuenta seleccionada.', 'warn!');
+                return;
+            }
+            const recibida = response.cliente;
+            if (String(recibida.cta_id ?? recibida.id ?? '').trim().toUpperCase() !== cuenta.id.toUpperCase() ||
+                String(recibida.origen || '').trim().toUpperCase() !== cuenta.origen) {
+                mostrarMensaje('Atención', 'La respuesta no corresponde a la cuenta seleccionada. Vuelva a seleccionarla.', 'warn!');
+                return;
+            }
+            procesarCuentaSeleccionada(recibida);
+        }).fail(function (xhr) {
+            logError('No se pudo cargar la cuenta seleccionada', { status: xhr?.status });
+            mostrarMensaje('Error de comunicación', 'No se pudo cargar la cuenta. Puede volver a seleccionarla.', 'error!');
+        }).always(function () {
+            bloquearBusqueda(false);
+            ocultarLoaderNdcfs();
         });
-
-        if (origen === 'N' || origen === 'Q') {
-            logWarn('Cuenta bloqueada por origen', { origen: origen });
-            mostrarMensaje(
-                'Cuenta no habilitada',
-                origen === 'Q' ? 'El proveedor seleccionado no esta habilitado.' : 'El cliente seleccionado no esta habilitado.',
-                'warn!'
-            );
-            return;
-        }
-
-        const criterio = origen === 'F'
-            ? String($fila.data('cta-documento') || '').trim()
-            : String($fila.data('cta-id') || '').trim();
-
-        if (!criterio) {
-            logWarn('Cuenta seleccionada sin identificador valido', { origen: origen });
-            mostrarMensaje('Atencion', 'La cuenta seleccionada no posee identificador valido.', 'warn!');
-            return;
-        }
-
-        $(SELECTORES.inputBusqueda).val(criterio);
-        buscarCuenta();
     }
 
     function procesarCuentaSeleccionada(cuenta) {
-        const origen = String(cuenta?.origen || '').trim().toUpperCase();
-        logPaso('Procesando cuenta seleccionada', cuenta);
-
-        if (origen === 'N' || origen === 'Q') {
-            logWarn('Cuenta bloqueada luego de buscar datos completos', { origen: origen });
-            mostrarMensaje(
-                'Cuenta no habilitada',
-                origen === 'Q' ? 'El proveedor seleccionado no esta habilitado.' : 'El cliente seleccionado no esta habilitado.',
-                'warn!'
-            );
+        const rechazo = obtenerRechazoCuenta(cuenta);
+        if (rechazo) {
+            limpiarSeleccionVisual(true);
+            mostrarMensaje('Cuenta no habilitada', rechazo, 'warn!');
             return;
         }
-
         cuentaSeleccionada = cuenta;
         $('#cardGrillaClientes').remove();
         hidratarDatosCuenta(cuenta);
@@ -431,6 +445,12 @@
     }
 
     function registrarCuentaSeleccionada() {
+        if (busquedaEnCurso) return;
+        const rechazo = obtenerRechazoCuenta(cuentaSeleccionada);
+        if (rechazo) {
+            mostrarMensaje('Cuenta no habilitada', rechazo, 'warn!');
+            return;
+        }
         const url = String(window.ndcfsRegistrarCuentaUrl || '').trim();
 
         if (!url) {
@@ -1333,6 +1353,10 @@
             </div>`;
         }
 
+        if (response?.mensaje_emision) {
+            html += `<p class="text-muted mb-2">${escaparHtml(response.mensaje_emision)}</p>`;
+        }
+
         if (mensajeDetalle && mensajeDetalle !== mensajePrincipal) {
             html += `<div class="alert alert-info text-start mb-0">
                 <i class='bx bx-info-circle'></i> ${escaparHtml(mensajeDetalle)}
@@ -1439,6 +1463,7 @@
     }
 
     function limpiarSeleccionVisual() {
+        cuentaSeleccionada = null;
         const mostrarSinCliente = arguments.length === 0 ? true : arguments[0] === true;
         $(SELECTORES.txtNombre).val('');
         $(SELECTORES.txtClienteId).val('');
@@ -1680,6 +1705,8 @@
         busquedaEnCurso = bloquear;
         $(SELECTORES.inputBusqueda).prop('disabled', bloquear);
         $(SELECTORES.btnBuscar).prop('disabled', bloquear);
+        $(SELECTORES.btnCancelar).prop('disabled', bloquear);
+        $('#cardGrillaClientes .btn-seleccionar-cliente').prop('disabled', bloquear);
     }
 
     function mostrarMensaje(titulo, mensaje, tipo) {

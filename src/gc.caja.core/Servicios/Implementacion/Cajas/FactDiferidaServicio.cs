@@ -73,8 +73,8 @@ namespace gc.caja.core.Servicios.Implementacion.Cajas
                     {
                         return new RespuestaGenerica<FactPendienteResponseDto>
                         {
-                            Ok = false,
-                            EsWarn = true,
+                            Ok = true,
+                            EsWarn = false,
                             EsError = false,
                             Mensaje = "No se encontraron facturas pendientes para el cliente.",
                             ListaEntidad = apiResponse.Data

@@ -9,7 +9,7 @@ function extract(name) {
     const end = /^}\r?$/m.exec(source.slice(start));
     return source.slice(start, start + end.index + 1);
 }
-const names = ['obtenerVueltoEfectivoCentavos','desdeCentavosNC','normalizarTexto', 'normalizarTextoUpper', 'esInstrumentoDocumento', 'fechaLocalDocumento',
+const names = ['evaluarReglasPago','validarValorAntesDeAgregar','fechaMaximaCredito','obtenerVueltoEfectivoCentavos','desdeCentavosNC','normalizarTexto', 'normalizarTextoUpper', 'esInstrumentoDocumento', 'fechaLocalDocumento',
     'fechaDocumentoValida', 'formatearVencimientoDocumento', 'importeDocumentoCentavos', 'validarDatosDocumento',
     'construirDatosDocumento', 'construirJsonValores', 'saldoPendienteDocumentoCentavos',
     'abrirModalDetalleDocumento', 'guardarDetalleDocumento', 'procesarInstrumentos', 'agregarValorDirecto',
@@ -33,6 +33,7 @@ class ClockDate extends Date {
     static now() { return new Date(clockNow).getTime(); }
 }
 const ctx = { $, Date: ClockDate,
+    condicionesPagoCliente: {registrado:true,tope:100000,dias_cheque:60,dias_documento:60},
     estadoNC: { cargando: false, disponibles: [] }, pagoParaRetomar: null,
     obtenerCantidadCreditosNCImputados: () => 0,
     ocultarVentanaPago: async selector => { closed.push(selector); },

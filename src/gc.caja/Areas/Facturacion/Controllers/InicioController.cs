@@ -53,6 +53,9 @@ namespace gc.caja.Areas.Facturacion.Controllers
                     return RedirectToAction("Index", "Home", new { area = "" });
                 }
 
+                var puesto = HttpContext.RequestServices.GetRequiredService<gc.caja.Models.Estacion.EstacionPuestoServicio>().Obtener(HttpContext);
+                ViewBag.RespaldoClave = puesto == null ? null : System.Text.Json.JsonSerializer.Serialize(new[] {
+                    puesto.EstacionId.ToUpperInvariant(), caja.AdmId, caja.CajaId, UserName.ToUpperInvariant() });
                 ViewBag.Usuario = UserName;
                 ViewBag.CajaId = caja.Caja.caja_nombre;
                 ViewBag.CajaNombre = caja.Caja?.caja_nombre ?? "N/A";

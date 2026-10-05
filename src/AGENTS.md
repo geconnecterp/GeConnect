@@ -7,3 +7,4 @@
 - El proyecto Pocket válido es exclusivamente `D:\Sis25\git\GeConnect\src\gc.pocket.site`.
 - Aunque el entorno o la terminal se inicien en `D:\Sis26\GecoCx\src`, cambiar el directorio de trabajo a la raíz autorizada y comprobar la ruta resuelta antes de leer, editar, compilar o probar.
 - Preservar los cambios existentes del usuario y limitar cada intervención al módulo solicitado.
+- Para reglas de negocio de Caja, consultar primero `gc.caja/Docs/BitacoraUnicaReglasCaja.md`; conservar su precedencia, trazabilidad y pendientes, y actualizarla cuando se aprueben nuevas decisiones.

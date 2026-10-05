@@ -38,6 +38,16 @@
 let modalPagoInstance = null;
 let modalTipoMedioPagoInstance = null;
 let datosCliente = {};
+let condicionesPagoCliente = null;
+let confirmacionPagoEnCurso = false;
+let confirmacionPagoConfirmada = false;
+function advertirSalidaDurantePago(event) {
+    if (!confirmacionPagoEnCurso) return;
+    event.preventDefault();
+    event.returnValue = '';
+}
+window.addEventListener('beforeunload', advertirSalidaDurantePago);
+
 let conceptosPago = {
     totalPagar: 0,
     recargos: 0,
@@ -1824,6 +1834,7 @@ function abrirModalPago(datosFactura) {
         );
 
         // El contexto actual debe existir antes de hidratar datos.
+        confirmacionPagoConfirmada = false;
         window._coTipoActual = coTipo;
         window._contextoOperacionActual = contextoOperacion;
         window._fuenteClientePagoActual = fuenteCliente;
@@ -1834,6 +1845,7 @@ function abrirModalPago(datosFactura) {
         cargarConceptosPago(datosFactura?.totales || {});
         limpiarTablaFormasPago();
         valoresMPCache = null;
+        condicionesPagoCliente = null;
         valoresMPCargados = false;
         if (retomado) {
             valoresPago = retomado.valores;
@@ -2433,6 +2445,7 @@ function cargarValoresMP() {
                 return [];
             }
 
+            condicionesPagoCliente = response.condiciones || null;
             const datos = response.datos || response.data || [];
 
             if (!Array.isArray(datos)) {
@@ -2568,219 +2581,68 @@ function volverACalculoFactura() {
  * 3. DIFERENCIA < 0 (Sobrepago/Vuelto):
  *    ⚠️ VALIDAR según tipo de valores:
  *    - Si el efectivo recibido cubre el excedente → ✅ PERMITIR (se entregará vuelto)
- *    - Si hay CH (Cheque) Y co_tipo='CR' (Cliente Registrado) → ✅ PERMITIR (cobranza)
+ *    - Solo cheques, sin NC y dentro del tope, únicamente en CD/CC → ✅ PERMITIR
  *    - Cualquier otro caso → ❌ BLOQUEAR
  * 
  * @returns {Object} - { permitir: boolean, mensaje: string, advertencia?: string }
  */
-function validarDiferenciaParaFinalizar() {
-    if (valoresPago.some(esInstrumentoDocumento) &&
-        obtenerTotalOtrosValoresCentavos() + obtenerTotalCreditosNCCentavos() > obtenerTotalNetoCentavos()) {
-        return { permitir: false, mensaje: 'Los documentos no permiten superar el total a pagar ni generar vuelto.' };
-    }
-
-    console.log('═══════════════════════════════════════════════════');
-    console.log('🔍 VALIDAR DIFERENCIA PARA FINALIZAR v20.2');
-    console.log('═══════════════════════════════════════════════════');
-
-    const diferencia = desdeCentavosNC(obtenerTotalNetoCentavos() -
-        obtenerTotalOtrosValoresCentavos() - obtenerTotalCreditosNCCentavos());
-    const totalValores = conceptosPago.totalValores || 0;
-    const totalPagar = conceptosPago.totalPagar || 0;
-
-    console.log(`   Total a pagar: ${formatearMoneda(totalPagar)}`);
-    console.log(`   Total valores: ${formatearMoneda(totalValores)}`);
-    console.log(`   Diferencia: ${formatearMoneda(diferencia)}`);
-    console.log(`   Tipo diferencia: ${diferencia > 0 ? 'POSITIVA (falta)' : diferencia < 0 ? 'NEGATIVA (sobra)' : 'CERO (exacto)'}`);
-
-    // ═══════════════════════════════════════════════════════════
-    // CASO 1: DIFERENCIA > 0 (FALTA PAGAR)
-    // ═══════════════════════════════════════════════════════════
-    if (diferencia > 0) {
-        console.error('❌ DIFERENCIA POSITIVA: Falta pagar');
-        console.error(`   Monto faltante: ${formatearMoneda(diferencia)}`);
-
-        return {
-            permitir: false,
-            mensaje: `
-                <div class="text-start">
-                    <p class="mb-3">
-                        <i class='bx bx-error-circle text-danger fs-3'></i>
-                        <strong class="text-danger">Los valores ingresados no cubren el total de la factura</strong>
-                    </p>
-                    <table class="table table-sm table-bordered mb-3">
-                        <tr>
-                            <td class="text-end fw-bold">Total a pagar:</td>
-                            <td class="text-end"><strong>${formatearMoneda(totalPagar)}</strong></td>
-                        </tr>
-                        <tr>
-                            <td class="text-end fw-bold">Total valores:</td>
-                            <td class="text-end text-warning"><strong>${formatearMoneda(totalValores)}</strong></td>
-                        </tr>
-                        <tr class="table-danger">
-                            <td class="text-end fw-bold">Falta pagar:</td>
-                            <td class="text-end"><strong class="text-danger">${formatearMoneda(diferencia)}</strong></td>
-                        </tr>
-                    </table>
-                    <p class="mb-0">
-                        <i class='bx bx-info-circle'></i> 
-                        Debe agregar más valores de pago o ajustar los montos.
-                    </p>
-                </div>
-            `
-        };
-    }
-
-    // ═══════════════════════════════════════════════════════════
-    // CASO 2: DIFERENCIA = 0 (EXACTO)
-    // ═══════════════════════════════════════════════════════════
-    if (diferencia === 0) {
-        console.log('✅ DIFERENCIA CERO: Monto exacto');
-        console.log('   No se requiere validación adicional');
-
-        return {
-            permitir: true,
-            mensaje: ''
-        };
-    }
-
-    // ═══════════════════════════════════════════════════════════
-    // CASO 3: DIFERENCIA < 0 (SOBREPAGO/VUELTO)
-    // ═══════════════════════════════════════════════════════════
-    console.warn('⚠️ DIFERENCIA NEGATIVA: Sobrepago detectado');
-    console.warn(`   Sobrepago: ${formatearMoneda(Math.abs(diferencia))}`);
-
-    const sobrepago = Math.abs(diferencia);
-
-    // ❶ Analizar tipos de valores ingresados
-    const tiposPago = valoresPago.map(v => v.tcf_id.toUpperCase());
-    const cantidadValores = valoresPago.length;
-
-    console.log('═══════════════════════════════════════════════════');
-    console.log('📊 ANÁLISIS DE VALORES DE PAGO');
-    console.log(`   Total valores: ${cantidadValores}`);
-    console.log(`   Tipos: ${tiposPago.join(', ')}`);
-
-    // ❷ Verificar si todos son efectivo
-    const tieneSoloEfectivo = tiposPago.every(tipo => tipo === 'EF');
-    console.log(`   Solo efectivo: ${tieneSoloEfectivo ? 'SÍ ✅' : 'NO ❌'}`);
-
-    // ❸ Verificar si hay cheques
-    const tieneCheque = tiposPago.includes('CH');
-    console.log(`   Tiene cheque: ${tieneCheque ? 'SÍ ✅' : 'NO ❌'}`);
-
-    console.log('═══════════════════════════════════════════════════');
-
-    // ═══════════════════════════════════════════════════════════
-    // REGLA 1: El efectivo recibido cubre el excedente → PERMITIR (vuelto)
-    // ═══════════════════════════════════════════════════════════
-    if (obtenerVueltoEfectivoCentavos() > 0) {
-        console.log('✅ REGLA 1 APLICADA: El efectivo recibido cubre el vuelto');
-        console.log('   → PERMITIR (se dará vuelto al cliente)');
-
-        return {
-            permitir: true,
-            mensaje: '',
-            advertencia: `
-                <div class="alert alert-info mb-0">
-                    <div class="d-flex align-items-center">
-                        <i class='bx bx-info-circle fs-3 me-2'></i>
-                        <div>
-                            <strong>Vuelto a entregar:</strong><br>
-                            <span class="fs-5 text-primary fw-bold">${formatearMoneda(sobrepago)}</span>
-                        </div>
-                    </div>
-                </div>
-            `,
-            vuelto: sobrepago
-        };
-    }
-
-    // ═══════════════════════════════════════════════════════════
-    // REGLA 2: Si hay cheque y es cliente registrado → PERMITIR
-    // ═══════════════════════════════════════════════════════════
-    if (tieneCheque) {
-        console.log('🔍 REGLA 2: Verificando si es cliente registrado...');
-
-        // Obtener ID del cliente desde el modal de pago
-        const ctaId = $('#txtClienteIdPago').val() || '';
-        const esClienteRegistrado = ctaId && ctaId !== 'N/A' && ctaId.trim() !== '';
-
-        console.log(`   cta_id: "${ctaId}"`);
-        console.log(`   Es cliente registrado: ${esClienteRegistrado ? 'SÍ ✅' : 'NO ❌'}`);
-
-        if (esClienteRegistrado) {
-            console.log('✅ REGLA 2 APLICADA: Hay cheque y es cliente registrado');
-            console.log('   → PERMITIR (operación de cobranza - sobrepago queda a favor del cliente)');
-
-            return {
-                permitir: true,
-                mensaje: '',
-                advertencia: `
-                    <div class="alert alert-warning mb-0">
-                        <div class="d-flex align-items-center">
-                            <i class='bx bx-info-circle fs-3 me-2'></i>
-                            <div>
-                                <strong>Operación de Cobranza</strong><br>
-                                <span class="text-muted">Sobrepago:</span> 
-                                <span class="fs-5 text-warning fw-bold">${formatearMoneda(sobrepago)}</span><br>
-                                <small class="text-muted">
-                                    El sobrepago quedará registrado a favor del cliente
-                                </small>
-                            </div>
-                        </div>
-                    </div>
-                `,
-                sobrepago: sobrepago,
-                esCobranza: true
-            };
-        } else {
-            console.warn('⚠️ REGLA 2 NO APLICA: Hay cheque pero es consumidor final');
+function evaluarReglasPago(valores, permitirSaldoPendiente = false) {
+    const centavos = monto => Math.round(Number(monto) * 100);
+    const tipo = valor => esInstrumentoDocumento(valor) ? 'DO' : String(valor.tcf_id || '').trim().toUpperCase();
+    const total = obtenerTotalNetoCentavos(), nc = obtenerTotalCreditosNCCentavos();
+    if (valores.some(v => !Number.isFinite(Number(v.importe)) || centavos(v.importe) <= 0 || Math.abs(Number(v.importe) * 100 - centavos(v.importe)) > 0.000001))
+        return { error: 'Ingrese importes de pago válidos mayores a cero, con hasta dos decimales.' };
+    const credito = valores.filter(v => ['CH', 'DO'].includes(tipo(v)));
+    if (credito.length) {
+        const condiciones = condicionesPagoCliente;
+        if (!condiciones?.registrado) return { error: 'Cheques y documentos requieren un cliente registrado y sus condiciones de pago cargadas.' };
+        const sumaCredito = credito.reduce((s, v) => s + centavos(v.importe), 0);
+        if (!(Number(condiciones.tope) > 0) || sumaCredito > centavos(condiciones.tope))
+            return { error: 'La suma de cheques y documentos supera el tope de crédito del cliente.' };
+        const hoy = fechaLocalDocumento();
+        for (const valor of credito) {
+            const dias = tipo(valor) === 'CH' ? condiciones.dias_cheque : condiciones.dias_documento;
+            if (!Number.isInteger(dias) || dias < 1) return { error: 'El cliente no tiene un plazo válido configurado para esta forma de pago.' };
+            const fecha = tipo(valor) === 'CH' ? valor.detalle?.fecha_cheque : valor.detalle?.fecha_vencimiento;
+            if (!fechaDocumentoValida(fecha) || fecha < hoy || fecha > fechaMaximaCredito(dias))
+                return { error: `El vencimiento debe estar entre hoy y ${dias} días desde hoy, según la forma de pago del cliente.` };
         }
     }
+    const aplicado = valores.reduce((s, v) => s + centavos(v.importe), 0) + nc;
+    const excedente = aplicado - total;
+    if (excedente < 0 && !permitirSaldoPendiente) return { error: 'Los valores y las NC no cubren el total a pagar.' };
+    if (excedente <= 0) return { error: '' };
+    const soloCheques = ['CD', 'CC'].includes(String(window._coTipoActual || '').toUpperCase()) &&
+        nc === 0 && valores.length > 0 && valores.every(v => tipo(v) === 'CH');
+    if (soloCheques) return { error: '', excedenteCheques: excedente / 100 };
+    const efectivo = valores.filter(v => tipo(v) === 'EF').reduce((s, v) => s + centavos(v.importe), 0);
+    if (efectivo >= excedente)
+        return { error: '', vuelto: excedente / 100 };
+    return { error: 'El pago supera el total permitido. Sólo se admite vuelto de efectivo o una cobranza pagada exclusivamente con cheques dentro del tope de crédito.' };
+}
 
-    // ═══════════════════════════════════════════════════════════
-    // REGLA 3: Cualquier otro caso → BLOQUEAR
-    // ═══════════════════════════════════════════════════════════
-    console.error('❌ REGLA 3 APLICADA: Sobrepago no permitido con estos medios de pago');
-    console.error(`   Tipos de pago: ${tiposPago.join(', ')}`);
-    console.error('   → BLOQUEAR');
+function fechaMaximaCredito(dias) {
+    const fecha = new Date();
+    fecha.setDate(fecha.getDate() + dias);
+    return fechaLocalDocumento(fecha);
+}
 
+function validarValorAntesDeAgregar(valor) {
+    const validacion = evaluarReglasPago([...valoresPago, valor], true);
+    if (validacion.error) {
+        mostrarMensajeError(validacion.error);
+        return false;
+    }
+    return true;
+}
+
+function validarDiferenciaParaFinalizar() {
+    const resultado = evaluarReglasPago(valoresPago);
+    if (resultado.error) return { permitir: false, mensaje: resultado.error };
     return {
-        permitir: false,
-        mensaje: `
-            <div class="text-start">
-                <p class="mb-3">
-                    <i class='bx bx-error-circle text-danger fs-3'></i>
-                    <strong class="text-danger">Sobrepago no permitido con estos medios de pago</strong>
-                </p>
-                <table class="table table-sm table-bordered mb-3">
-                    <tr>
-                        <td class="text-end fw-bold">Total a pagar:</td>
-                        <td class="text-end"><strong>${formatearMoneda(totalPagar)}</strong></td>
-                    </tr>
-                    <tr>
-                        <td class="text-end fw-bold">Total valores:</td>
-                        <td class="text-end text-warning"><strong>${formatearMoneda(totalValores)}</strong></td>
-                    </tr>
-                    <tr class="table-warning">
-                        <td class="text-end fw-bold">Sobrepago:</td>
-                        <td class="text-end"><strong class="text-warning">${formatearMoneda(sobrepago)}</strong></td>
-                    </tr>
-                </table>
-                <div class="alert alert-info mb-3">
-                    <strong>Reglas de negocio:</strong>
-                    <ul class="mb-0 mt-2">
-                        <li>Sobrepago solo se permite con <strong>efectivo</strong></li>
-                        <li>O con <strong>cheques</strong> en operaciones de <strong>cobranza (clientes registrados)</strong></li>
-                    </ul>
-                </div>
-                <p class="mb-0">
-                    <i class='bx bx-info-circle'></i> 
-                    Ajuste los montos o use solo efectivo para poder continuar.
-                </p>
-            </div>
-        `
+        permitir: true, mensaje: '', vuelto: resultado.vuelto || 0,
+        advertencia: resultado.vuelto ? `Vuelto a entregar: ${formatearMoneda(resultado.vuelto)}` :
+            resultado.excedenteCheques ? `Excedente de cheques a favor del cliente: ${formatearMoneda(resultado.excedenteCheques)}` : ''
     };
 }
 
@@ -3406,7 +3268,7 @@ function enviarPagoAlServidor(jsonValores, jsonUniones) {
     console.log('═══════════════════════════════════════════════════');
 
     // Bloquear pantalla
-    mostrarLoadingGlobal('Procesando pago y emitiendo comprobante...');
+    mostrarLoadingGlobal('Confirmando la operación...');
 
     // ═══════════════════════════════════════════════════════════
     // ✅ NUEVO v28.0: SI ES COBRANZA, OBTENER FACTURAS A CANCELAR
@@ -3685,6 +3547,8 @@ function enviarPayloadAlServidor(
     moduloOrigen,
     arrayCancelar
 ) {
+    if (confirmacionPagoEnCurso || confirmacionPagoConfirmada) return;
+    confirmacionPagoEnCurso = true;
     console.log('═══════════════════════════════════════════════════');
     console.log('📦 ENVIAR PAYLOAD AL SERVIDOR v28.1');
     console.log(`   ModuloOrigen: ${moduloOrigen}`);
@@ -3707,7 +3571,7 @@ function enviarPayloadAlServidor(
     );
 
     // ❶ Actualizar mensaje de loading
-    actualizarMensajeLoadingGlobal('Procesando pago y emitiendo comprobante...');
+    actualizarMensajeLoadingGlobal('Confirmando la operación...');
 
     // ❷ URL del endpoint
     const url = typeof finalizarCompraUrl !== 'undefined' && finalizarCompraUrl
@@ -3825,6 +3689,7 @@ function enviarPayloadAlServidor(
         timeout: 120000
     })
         .done(function (response) {
+            confirmacionPagoEnCurso = false;
             console.log('═══════════════════════════════════════════════════');
             console.log('✅ RESPUESTA RECIBIDA DEL SERVIDOR v28.1');
             console.log('═══════════════════════════════════════════════════');
@@ -3838,6 +3703,7 @@ function enviarPayloadAlServidor(
                 return;
             }
 
+            confirmacionPagoConfirmada = true;
             console.log('✅ Respuesta OK del servidor');
 
             // ❽ Detectar advertencia de PV (Punto de Venta)
@@ -3891,7 +3757,7 @@ function enviarPayloadAlServidor(
             // ❿ Generar reporte PDF
             console.log('📄 Iniciando generación de reporte...');
 
-            if (typeof ModuloReportes !== 'undefined') {
+            if (response.debe_imprimir === true && typeof ModuloReportes !== 'undefined') {
                 console.log('✅ ModuloReportes disponible - Generando PDF...');
 
                 ModuloReportes.generarYVisualizarReporte({
@@ -3928,7 +3794,7 @@ function enviarPayloadAlServidor(
                     }
                 });
             } else {
-                console.warn('⚠️ ModuloReportes NO disponible');
+                console.log('Sin reporte en pantalla: emisión del PV o módulo de reportes no disponible.');
                 ocultarLoadingGlobal();
 
                 if (tieneAdvertenciaPV && mensajeAdvertenciaPV) {
@@ -3941,6 +3807,7 @@ function enviarPayloadAlServidor(
             }
         })
         .fail(function (jqXHR, textStatus, errorThrown) {
+            confirmacionPagoEnCurso = false;
             console.log('═══════════════════════════════════════════════════');
             console.error('❌ ERROR EN AJAX - ENVÍO DE PAGO');
             console.log('═══════════════════════════════════════════════════');
@@ -3980,23 +3847,7 @@ function enviarPayloadAlServidor(
             );
         });
 
-    // ⓭ Timeout de seguridad (30 segundos)
-    setTimeout(function () {
-        if ($('#overlayLoadingGlobal').length > 0 && $('#overlayLoadingGlobal').is(':visible')) {
-            console.warn('⚠️ TIMEOUT DE SEGURIDAD ALCANZADO (30s)');
-            ocultarLoadingGlobal();
 
-            AbrirMensaje(
-                "Tiempo de Espera Agotado",
-                "La operación está tomando más tiempo del esperado.<br><br>Verifique el resultado en el sistema.",
-                function () { $("#msjModal").modal("hide"); },
-                false,
-                ["Aceptar"],
-                "warn!",
-                null
-            );
-        }
-    }, 30000);
 }
 
 /**
@@ -4128,7 +3979,7 @@ function procesarPagoExitoso(comprobante, esCobranzaDiferida = false) {
             </div>
             
             <p class="text-muted mb-0">
-                <i class='bx bx-check-circle'></i> ${esRecibo ? 'La cobranza fue registrada correctamente' : 'El comprobante fue visualizado exitosamente'}
+                <i class='bx bx-check-circle'></i> ${escapeHtml(esRecibo ? 'La cobranza fue registrada correctamente' : (comprobante.mensaje_emision || 'El comprobante fue emitido correctamente.'))}
             </p>
         </div>`,
         function () {
@@ -4205,8 +4056,7 @@ function redireccionarAIndexCobranzaDiferida() {
 
 function ejecutarReinicioDespuesDePagoExitoso(esCobranzaDiferida, esCuentaCorriente = false) {
     if (esCuentaCorriente) {
-        const url = typeof accesoModuloCCUrl !== 'undefined' && accesoModuloCCUrl
-            ? accesoModuloCCUrl : '/Facturacion/CobranzaCtaCte';
+        const url = typeof MenuCajaUrl !== 'undefined' && MenuCajaUrl ? MenuCajaUrl : '/';
         window.location.replace(url);
         return;
     }
@@ -4635,6 +4485,7 @@ function limpiarModalPago() {
 
     // Limpieza normal (sin cambios)
     datosCliente = {};
+    condicionesPagoCliente = null;
     conceptosPago = {
         totalPagar: 0,
         recargos: 0,
@@ -6650,6 +6501,8 @@ function agregarValorDirecto(instrumento, tipoMedioPago) {
                 };
 
                 // ❹ Agregar a la tabla
+                if (!validarValorAntesDeAgregar(nuevoValor)) return;
+                valoresPago.push(nuevoValor);
                 agregarFilaValor(nuevoValor);
 
                 // ❺ Actualizar totales
@@ -6682,6 +6535,8 @@ function agregarValorDirecto(instrumento, tipoMedioPago) {
                     detalle: null
                 };
 
+                if (!validarValorAntesDeAgregar(nuevoValor)) return;
+                valoresPago.push(nuevoValor);
                 agregarFilaValor(nuevoValor);
                 actualizarTotalesPago();
             }
@@ -7004,54 +6859,7 @@ function guardarDetalleEfectivo(instrumento, tipoMedioPago) {
         return;
     }
 
-    // ❸ Validación de límite máximo (sin cambios)
-    const diferencia = Math.abs(conceptosPago.diferencia || 0);
-
-    if (monto > diferencia * LIMITE_PORCENTAJE_DIFERENCIA) {
-        console.warn(`⚠️ Monto muy alto: ${monto} > ${diferencia * LIMITE_PORCENTAJE_DIFERENCIA}`);
-
-        const mensajeHtml = `
-        <div class="text-start">
-            <p class="mb-3">El monto ingresado es <strong>mayor</strong> a la diferencia pendiente:</p>
-            <table class="table table-sm table-borderless mb-0">
-                <tr>
-                    <td class="text-end">Monto ingresado:</td>
-                    <td class="text-start"><strong class="text-danger">${instrumento.ins_simbolo} ${formatearNumero(monto, 2)}</strong></td>
-                </tr>
-                <tr>
-                    <td class="text-end">Diferencia pendiente:</td>
-                    <td class="text-start"><strong class="text-warning">${instrumento.ins_simbolo} ${formatearNumero(diferencia, 2)}</strong></td>
-                </tr>
-                <tr>
-                    <td class="text-end">Excedente:</td>
-                    <td class="text-start"><strong class="text-info">${instrumento.ins_simbolo} ${formatearNumero(monto - diferencia, 2)}</strong></td>
-                </tr>
-            </table>
-            <p class="mt-3 mb-0"><i class="bx bx-info-circle"></i> ¿Desea continuar de todos modos?</p>
-        </div>
-    `;
-
-        AbrirMensaje(
-            "¿Monto elevado?",
-            mensajeHtml,
-            function () {
-                $('#msjModal').modal('hide');
-                finalizarGuardadoEfectivo(monto, instrumento, tipoMedioPago);
-            },
-            false,
-            ["Continuar", "Corregir"],
-            "warn!",
-            function () {
-                $('#msjModal').modal('hide');
-                setTimeout(() => {
-                    $('#txtMontoEfectivo').trigger("focus").trigger("select");
-                }, 300);
-            }
-        );
-
-        return;
-    }
-
+    // El excedente de efectivo es vuelto; se valida y netea al confirmar.
     // ❹ Si validaciones OK, finalizar guardado (sin cambios)
     finalizarGuardadoEfectivo(monto, instrumento, tipoMedioPago);
 }
@@ -7083,6 +6891,7 @@ function finalizarGuardadoEfectivo(monto, instrumento, tipoMedioPago) {
     console.log('📦 Nuevo valor creado:', nuevoValor);
 
     // ❷ Agregar a array global
+    if (!validarValorAntesDeAgregar(nuevoValor)) return;
     valoresPago.push(nuevoValor);
 
     // ❸ Agregar fila a la tabla
@@ -7333,18 +7142,8 @@ function actualizarTotalesPago() {
 
         const validacionNC = validarSeleccionNCParaFinalizar();
 
-        if (!pagoBloqueadoPorNC && validacionNC.esValido) {
-            if (
-                hayAlgoAplicado &&
-                Math.abs(diferencia) < 0.01
-            ) {
-                puedeFinalizar = true;
-            } else if (
-                diferencia < 0 &&
-                valoresPago.length > 0
-            ) {
-                puedeFinalizar = obtenerVueltoEfectivoCentavos() > 0;
-            }
+        if (!pagoBloqueadoPorNC && validacionNC.esValido && hayAlgoAplicado) {
+            puedeFinalizar = !evaluarReglasPago(valoresPago).error;
         }
     }
 
@@ -8199,50 +7998,7 @@ function guardarDetalleValeCompra(instrumento, tipoMedioPago) {
 
     console.log(`   📊 Diferencia de factura: ${formatearMoneda(diferenciaFactura)}`);
 
-    if (monto > diferenciaFactura * LIMITE_PORCENTAJE_DIFERENCIA) {
-        console.warn(`⚠️ Monto muy alto: ${monto} > ${diferenciaFactura * LIMITE_PORCENTAJE_DIFERENCIA}`);
 
-        const mensajeHtml = `
-        <div class="text-start">
-            <p class="mb-3">El monto ingresado es <strong>mayor</strong> a la diferencia pendiente:</p>
-            <table class="table table-sm table-borderless mb-0">
-                <tr>
-                    <td class="text-end">Monto ingresado:</td>
-                    <td class="text-start"><strong class="text-danger">${formatearMoneda(monto)}</strong></td>
-                </tr>
-                <tr>
-                    <td class="text-end">Diferencia pendiente:</td>
-                    <td class="text-start"><strong class="text-warning">${formatearMoneda(diferenciaFactura)}</strong></td>
-                </tr>
-                <tr>
-                    <td class="text-end">Excedente:</td>
-                    <td class="text-start"><strong class="text-info">${formatearMoneda(monto - diferenciaFactura)}</strong></td>
-                </tr>
-            </table>
-            <p class="mt-3 mb-0"><i class="bx bx-info-circle"></i> ¿Desea continuar?</p>
-        </div>
-    `;
-
-        AbrirMensaje(
-            "¿Monto elevado?",
-            mensajeHtml,
-            function () {
-                $('#msjModal').modal('hide');
-                finalizarGuardadoValeCompra(monto, instrumento, tipoMedioPago);
-            },
-            false,
-            ["Continuar", "Corregir"],
-            "warn!",
-            function () {
-                $('#msjModal').modal('hide');
-                setTimeout(() => {
-                    $('#txtMontoValeCompra').trigger("focus").trigger("select");
-                }, 300);
-            }
-        );
-
-        return;
-    }
 
     // ❼ Si validaciones OK, finalizar guardado
     finalizarGuardadoValeCompra(monto, instrumento, tipoMedioPago);
@@ -8281,6 +8037,7 @@ function finalizarGuardadoValeCompra(monto, instrumento, tipoMedioPago) {
     console.log('📦 Nuevo valor creado:', nuevoValor);
 
     // ❷ Agregar a array global
+    if (!validarValorAntesDeAgregar(nuevoValor)) return;
     valoresPago.push(nuevoValor);
 
     // ❸ Agregar fila a la tabla
@@ -8787,46 +8544,7 @@ function guardarDetalleTransferencia(instrumento, tipoMedioPago) {
     // ❼ Validar monto <= saldo factura (con tolerancia)
     const diferenciaFactura = Math.abs(conceptosPago.diferencia || 0);
 
-    if (monto > diferenciaFactura * LIMITE_PORCENTAJE_DIFERENCIA) {
-        console.warn(`⚠️ Monto muy alto: ${monto} > ${diferenciaFactura * LIMITE_PORCENTAJE_DIFERENCIA}`);
 
-        const mensajeHtml = `
-        <div class="text-start">
-            <p class="mb-3">El monto ingresado es <strong>mayor</strong> a la diferencia pendiente:</p>
-            <table class="table table-sm table-borderless mb-0">
-                <tr>
-                    <td class="text-end">Monto ingresado:</td>
-                    <td class="text-start"><strong class="text-danger">${formatearMoneda(monto)}</strong></td>
-                </tr>
-                <tr>
-                    <td class="text-end">Diferencia pendiente:</td>
-                    <td class="text-start"><strong class="text-warning">${formatearMoneda(diferenciaFactura)}</strong></td>
-                </tr>
-            </table>
-            <p class="mt-3 mb-0"><i class="bx bx-info-circle"></i> ¿Desea continuar?</p>
-        </div>
-    `;
-
-        AbrirMensaje(
-            "¿Monto elevado?",
-            mensajeHtml,
-            function () {
-                $('#msjModal').modal('hide');
-                finalizarGuardadoTransferencia(monto, nroTransferencia, fechaTransferencia, instrumento, tipoMedioPago);
-            },
-            false,
-            ["Continuar", "Corregir"],
-            "warn!",
-            function () {
-                $('#msjModal').modal('hide');
-                setTimeout(() => {
-                    $('#txtMontoTransferencia').trigger("focus").trigger("select");
-                }, 300);
-            }
-        );
-
-        return;
-    }
 
     // ❽ Si validaciones OK, finalizar guardado
     finalizarGuardadoTransferencia(monto, nroTransferencia, fechaTransferencia, instrumento, tipoMedioPago);
@@ -8866,6 +8584,7 @@ function finalizarGuardadoTransferencia(monto, nroTransferencia, fechaTransferen
     console.log('📦 Nuevo valor creado:', nuevoValor);
 
     // ❸ Agregar a array global
+    if (!validarValorAntesDeAgregar(nuevoValor)) return;
     valoresPago.push(nuevoValor);
 
     // ❹ Agregar fila a la tabla
@@ -9498,46 +9217,7 @@ function guardarDetalleCuponEmpresa(instrumento, tipoMedioPago) {
     // ❺ Validar monto <= saldo factura
     const diferenciaFactura = Math.abs(conceptosPago.diferencia || 0);
 
-    if (monto > diferenciaFactura * LIMITE_PORCENTAJE_DIFERENCIA) {
-        console.warn(`⚠️ Monto muy alto: ${monto} > ${diferenciaFactura * LIMITE_PORCENTAJE_DIFERENCIA}`);
 
-        const mensajeHtml = `
-        <div class="text-start">
-            <p class="mb-3">El monto ingresado es <strong>mayor</strong> a la diferencia pendiente:</p>
-            <table class="table table-sm table-borderless mb-0">
-                <tr>
-                    <td class="text-end">Monto ingresado:</td>
-                    <td class="text-start"><strong class="text-danger">${formatearMoneda(monto)}</strong></td>
-                </tr>
-                <tr>
-                    <td class="text-end">Diferencia pendiente:</td>
-                    <td class="text-start"><strong class="text-warning">${formatearMoneda(diferenciaFactura)}</strong></td>
-                </tr>
-            </table>
-            <p class="mt-3 mb-0"><i class="bx bx-info-circle"></i> ¿Desea continuar?</p>
-        </div>
-    `;
-
-        AbrirMensaje(
-            "¿Monto elevado?",
-            mensajeHtml,
-            function () {
-                $('#msjModal').modal('hide');
-                finalizarGuardadoCuponEmpresa(monto, titular, nroOrden, cuit, instrumento, tipoMedioPago);
-            },
-            false,
-            ["Continuar", "Corregir"],
-            "warn!",
-            function () {
-                $('#msjModal').modal('hide');
-                setTimeout(() => {
-                    $('#txtMontoCupon').trigger("focus").trigger("select");
-                }, 300);
-            }
-        );
-
-        return;
-    }
 
     // ❻ Si validaciones OK, finalizar guardado
     finalizarGuardadoCuponEmpresa(monto, titular, nroOrden, cuit, instrumento, tipoMedioPago);
@@ -9580,6 +9260,7 @@ function finalizarGuardadoCuponEmpresa(monto, titular, nroOrden, cuit, instrumen
     console.log('📦 Nuevo valor creado:', nuevoValor);
 
     // ❸ Agregar a array global
+    if (!validarValorAntesDeAgregar(nuevoValor)) return;
     valoresPago.push(nuevoValor);
 
     // ❹ Agregar fila a la tabla
@@ -9797,7 +9478,9 @@ function abrirModalDetalleCheque(instrumento, tipoMedioPago) {
 
     // ❺ Establecer fecha actual por defecto
     const fechaHoy = new Date().toISOString().split('T')[0];
-    $('#txtFechaCheque').val(fechaHoy);
+    $('#txtFechaCheque').prop('min', fechaLocalDocumento())
+        .prop('max', condicionesPagoCliente?.dias_cheque ? fechaMaximaCredito(condicionesPagoCliente.dias_cheque) : fechaLocalDocumento())
+        .val(fechaLocalDocumento());
 
     // ❻ Calcular monto sugerido
     const diferencia = Math.abs(conceptosPago.diferencia || 0);
@@ -10041,28 +9724,8 @@ function guardarDetalleCheque(instrumento, tipoMedioPago) {
         return;
     }
 
-    // ❺ Validar fecha >= hoy
-    const fechaChq = new Date(fechaCheque);
-    const fechaHoy = new Date();
-    fechaHoy.setHours(0, 0, 0, 0);
-
-    if (fechaChq < fechaHoy) {
-        console.warn('⚠️ Fecha de cheque es pasada');
-        mostrarErrorCampo('#txtFechaCheque', 'La fecha del cheque no puede ser anterior a hoy');
-        return;
-    }
-
-    // ❻ Validar fecha <= hoy + 365 días
-    const diasMaximos = 365;
-    const fechaMaxima = new Date(fechaHoy);
-    fechaMaxima.setDate(fechaMaxima.getDate() + diasMaximos);
-
-    if (fechaChq > fechaMaxima) {
-        console.warn(`⚠️ Fecha de cheque supera el límite de ${diasMaximos} días`);
-        mostrarErrorCampo(
-            '#txtFechaCheque',
-            `La fecha del cheque no puede ser mayor a ${diasMaximos} días desde hoy`
-        );
+    if (!fechaDocumentoValida(fechaCheque) || fechaCheque < fechaLocalDocumento()) {
+        mostrarErrorCampo('#txtFechaCheque', 'La fecha del cheque debe ser válida y no puede ser anterior a hoy');
         return;
     }
 
@@ -10087,51 +9750,7 @@ function guardarDetalleCheque(instrumento, tipoMedioPago) {
         return;
     }
 
-    // ❾ Validar monto <= saldo factura (con tolerancia)
-    const diferenciaFactura = Math.abs(conceptosPago.diferencia || 0);
 
-    if (monto > diferenciaFactura * LIMITE_PORCENTAJE_DIFERENCIA) {
-        console.warn(`⚠️ Monto muy alto: ${monto} > ${diferenciaFactura * LIMITE_PORCENTAJE_DIFERENCIA}`);
-
-        const mensajeHtml = `
-        <div class="text-start">
-            <p class="mb-3">El monto ingresado es <strong>mayor</strong> a la diferencia pendiente:</p>
-            <table class="table table-sm table-borderless mb-0">
-                <tr>
-                    <td class="text-end">Monto ingresado:</td>
-                    <td class="text-start"><strong class="text-danger">${formatearMoneda(monto)}</strong></td>
-                </tr>
-                <tr>
-                    <td class="text-end">Diferencia pendiente:</td>
-                    <td class="text-start"><strong class="text-warning">${formatearMoneda(diferenciaFactura)}</strong></td>
-                </tr>
-            </table>
-            <p class="mt-3 mb-0"><i class="bx bx-info-circle"></i> ¿Desea continuar?</p>
-        </div>
-    `;
-
-        AbrirMensaje(
-            "¿Monto elevado?",
-            mensajeHtml,
-            function () {
-                $('#msjModal').modal('hide');
-                finalizarGuardadoCheque(monto, bancoId, bancoTexto, nroCheque, plaza, fechaCheque, instrumento, tipoMedioPago);
-            },
-            false,
-            ["Continuar", "Corregir"],
-            "warn!",
-            function () {
-                $('#msjModal').modal('hide');
-                setTimeout(() => {
-                    $('#txtMontoCheque').trigger("focus").trigger("select");
-                }, 300);
-            }
-        );
-
-        return;
-    }
-
-    // ❿ Si validaciones OK, finalizar guardado
     finalizarGuardadoCheque(monto, bancoId, bancoTexto, nroCheque, plaza, fechaCheque, instrumento, tipoMedioPago);
 }
 
@@ -10173,6 +9792,7 @@ function finalizarGuardadoCheque(monto, bancoId, bancoTexto, nroCheque, plaza, f
     console.log('📦 Nuevo valor creado:', nuevoValor);
 
     // ❸ Agregar a array global
+    if (!validarValorAntesDeAgregar(nuevoValor)) return;
     valoresPago.push(nuevoValor);
 
     // ❹ Agregar fila a la tabla
@@ -11006,7 +10626,8 @@ function abrirModalDetalleDocumento(instrumento, tipoMedioPago) {
     contextoDocumento = { instrumento, tipoMedioPago, revision: revisionPago };
     $('#txtMontoDocumento').val((saldoPendienteDocumentoCentavos() / 100).toFixed(2));
     const hoy = fechaLocalDocumento();
-    $('#txtVencimientoDocumento').prop('min', hoy).val(hoy);
+    $('#txtVencimientoDocumento').prop('min', hoy)
+        .prop('max', condicionesPagoCliente?.dias_documento ? fechaMaximaCredito(condicionesPagoCliente.dias_documento) : hoy).val(hoy);
     $('#errorDetalleDocumento').text('').addClass('d-none');
     $('#btnGuardarDetalleDocumento').prop('disabled', false);
     $('#formDetalleDocumento').off('submit.documento').on('submit.documento', function (event) {
@@ -11054,6 +10675,11 @@ function guardarDetalleDocumento() {
         importe: importeDocumentoCentavos(monto) / 100, observacion: '',
         detalle: { fecha_vencimiento: fecha }, fecha_creacion: new Date().toISOString()
     };
+    if (!validarValorAntesDeAgregar(valor)) {
+        contextoDocumento = contexto;
+        $('#btnGuardarDetalleDocumento').prop('disabled', false);
+        return;
+    }
     valoresPago.push(valor);
     agregarFilaValor(valor);
     actualizarTotalesPago();

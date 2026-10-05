@@ -8,6 +8,7 @@ $(function () {
 });
 
 function InicializarEventos() {
+	$(document).off("click", "#Rel03");
 	$(document).on("click", "#Rel03", function () { $(this).val(""); cta_seleccionada = false; cta_id_seleccionada = ""; });
 	$(document).off("click", "#btnCargar");
 	$(document).on("click", "#btnCargar", btnCargarClick);
@@ -1311,7 +1312,7 @@ function ProcesarCargaProducto(prod) {
 	$("#txtBARRADO_ID").val(prod.p_id_barrado);
 	$("#txtID_PROV").val(prod.p_id_prov);
 	$("#txtUP").mask("000.000.000.000", { reverse: true });
-	$("txtBto").mask('#,##0', {
+	$("#txtBto").mask('#,##0', {
 		reverse: true,
 		translation: {
 			'#': {

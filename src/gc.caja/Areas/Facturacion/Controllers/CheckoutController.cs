@@ -1146,21 +1146,14 @@ namespace gc.caja.Areas.Facturacion.Controllers
                 }
 
                 var totalOperacionPago = ObtenerTotalOperacionParaNc(esCobranzaGen, importe, subtotalesFactura);
-                var catalogoEfectivo = new List<ValoresInsResDto>();
-                if (ObtenerTotalValoresConvencionales(valores) + validacionNc.TotalImputado > totalOperacionPago &&
-                    !valores.Any(DocumentoCuentaCorriente.EsDocumento))
-                {
-                    var instrumentosEf = await _pagoFactServicio.ObtenerValoresIns(new ValoresInsReqDto
-                    {
-                        tcf_id = "EF", co_tipo = coTipo, cta_id = ctaId,
-                        adm_id = cajaActual.AdmId ?? AdministracionId
-                    }, TokenCookie);
-                    if (instrumentosEf?.Ok != true)
-                        return Json(new { ok = false, mensaje = "No se pudo verificar el efectivo para calcular el vuelto. Vuelva a intentar." });
-                    catalogoEfectivo = instrumentosEf.ListaEntidad?.ToList() ?? [];
-                }
+                var catalogoPago = LeerCatalogoPago(coTipo, clienteActual);
+                var reglasCredito = ReglasCreditoPago.Validar(valores, totalOperacionPago, validacionNc.TotalImputado,
+                    coTipo, ReglasCreditoPago.ObtenerCondiciones(clienteActual), catalogoPago, DateTime.Today);
+                if (!reglasCredito.Ok) return Json(new { ok = false, mensaje = reglasCredito.Mensaje });
+                var catalogoEfectivo = catalogoPago.Where(x => x.Value == "EF")
+                    .Select(x => new ValoresInsResDto { ins_id = x.Key, tcf_id = "EF" }).ToList();
                 var resultadoVuelto = VueltoEfectivo.Normalizar(
-                    valores, totalOperacionPago, validacionNc.TotalImputado, catalogoEfectivo);
+                    valores, totalOperacionPago, validacionNc.TotalImputado, catalogoEfectivo, reglasCredito.ExcedenteCheques);
                 if (!resultadoVuelto.Ok)
                     return Json(new { ok = false, mensaje = resultadoVuelto.Mensaje });
                 if (resultadoVuelto.Vuelto > 0m)
@@ -1168,7 +1161,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
                         resultadoVuelto.Vuelto, ObtenerTotalValoresConvencionales(valores));
 
                 // La deuda seleccionada se cubre con valores y NC canónicas, ya revalidadas.
-                if (esCobranzaCtaCteTemporal && !TotalesCobranzaCtaCte.Coinciden(
+                if (esCobranzaCtaCteTemporal && !reglasCredito.ExcedenteCheques && !TotalesCobranzaCtaCte.Coinciden(
                     importe, ObtenerTotalValoresConvencionales(valores), validacionNc.TotalImputado))
                     return Json(new { ok = false, mensaje = "El total de los medios de pago y las Notas de Crédito no coincide con el importe seleccionado de Cuenta Corriente." });
 
@@ -1604,6 +1597,8 @@ namespace gc.caja.Areas.Facturacion.Controllers
                             : $"Cobro de Cuenta Corriente procesado exitosamente. Recibo Nro {comprobante.rb_compte}")
                         : $"Factura {comprobante.tco_letra} Nro {comprobante.cm_compte} emitida y pagada exitosamente";
 
+                var presentacion = ObtenerPresentacionComprobante(
+                    esCobranzaDiferida || esCobranzaCtaCteTemporal, reporteRecibo: esCobranzaDiferida);
                 var respuestaFinal = new
                 {
                     ok = true,
@@ -1616,6 +1611,8 @@ namespace gc.caja.Areas.Facturacion.Controllers
                             tco_letra = comprobante.tco_letra,
                             tco_id = comprobante.tco_id,
                             cm_compte = comprobante.cm_compte,
+                            tipo_emision = presentacion.Tipo,
+                            mensaje_emision = presentacion.Mensaje,
                             rb_compte = comprobante.rb_compte,
                             cm_repetido = comprobante.cm_repetido,
 
@@ -1629,7 +1626,9 @@ namespace gc.caja.Areas.Facturacion.Controllers
                     },
 
                     resultado_completo = respuestaDto.resultado_msj,
-                    debe_imprimir = !esCobranzaCtaCteTemporal
+                    tipo_emision = presentacion.Tipo,
+                    mensaje_emision = presentacion.Mensaje,
+                    debe_imprimir = presentacion.GenerarReporte
                 };
 
                 // ✅ NUEVO v21.0: Agregar advertencia del PV si existe
@@ -1642,6 +1641,8 @@ namespace gc.caja.Areas.Facturacion.Controllers
                         respuestaFinal.data,
                         respuestaFinal.resultado_completo,
                         respuestaFinal.debe_imprimir,
+                        respuestaFinal.tipo_emision,
+                        respuestaFinal.mensaje_emision,
                         mensaje_advertencia = validacionPV.Mensaje,
                         mostrar_mensaje_pv = true
                     });
@@ -2128,6 +2129,13 @@ namespace gc.caja.Areas.Facturacion.Controllers
             }
         }
 
+        private string ClaveCatalogoPago(string coTipo, CuentaDatosResultadoDto cliente) =>
+            $"PAGO_CATALOGO:{CajaActual.CajaId}:{coTipo.Trim().ToUpperInvariant()}:{cliente.Origen}:{cliente.cta_id}:{cliente.cta_documento}";
+
+        private Dictionary<string, string> LeerCatalogoPago(string coTipo, CuentaDatosResultadoDto cliente) =>
+            new(JsonConvert.DeserializeObject<Dictionary<string, string>>(
+                HttpContext.Session.GetString(ClaveCatalogoPago(coTipo, cliente)) ?? "{}") ?? [], StringComparer.OrdinalIgnoreCase);
+
         [HttpPost]
         public async Task<IActionResult> ObtenerValoresMP([FromBody] ValoresMPReqDto req)
         {
@@ -2195,7 +2203,10 @@ namespace gc.caja.Areas.Facturacion.Controllers
                     }
                 }
 
-                return Json(new { ok = true, error = false, warn = false, mensaje = "Valores MP obtenidos correctamente", datos = res.ListaEntidad });
+                var condiciones = ReglasCreditoPago.ObtenerCondiciones(cli);
+                var medios = res.ListaEntidad?.Where(m => condiciones.registrado ||
+                    (m.tcf_id?.Trim().ToUpperInvariant() is not ("CH" or "DO"))).ToList();
+                return Json(new { ok = true, error = false, warn = false, mensaje = "Valores MP obtenidos correctamente", datos = medios, condiciones });
             }
             catch (Exception ex)
             {
@@ -2256,6 +2267,14 @@ namespace gc.caja.Areas.Facturacion.Controllers
                         return Json(new { ok = false, error = false, warn = true, mensaje = res.Mensaje ?? "Ocurrió una advertencia al obtener los valores Ins" });
                     }
                 }
+                var condiciones = ReglasCreditoPago.ObtenerCondiciones(cli);
+                if (!condiciones.registrado && req.tcf_id?.Trim().ToUpperInvariant() is "CH" or "DO")
+                    return Json(new { ok = false, mensaje = "Cheques y documentos requieren un cliente registrado." });
+                var catalogo = LeerCatalogoPago(req.co_tipo, cli);
+                foreach (var instrumento in res.ListaEntidad ?? [])
+                    if (!string.IsNullOrWhiteSpace(instrumento.ins_id))
+                        catalogo[instrumento.ins_id.Trim()] = instrumento.tcf_id?.Trim().ToUpperInvariant() ?? "";
+                HttpContext.Session.SetString(ClaveCatalogoPago(req.co_tipo, cli), JsonConvert.SerializeObject(catalogo));
                 return Json(new { ok = true, error = false, warn = false, mensaje = "Valores Ins obtenidos correctamente", datos = res.ListaEntidad });
             }
             catch (Exception ex)

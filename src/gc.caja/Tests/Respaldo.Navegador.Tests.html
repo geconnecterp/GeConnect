@@ -1,0 +1,33 @@
+<!doctype html><html lang="es"><meta charset="utf-8"><title>Pruebas de respaldo local GECO</title>
+<style>body{font:18px system-ui;padding:30px;background:#faf8f1;color:#363128}button{padding:14px;background:#c79a17;border:0;border-radius:6px}pre{white-space:pre-wrap}</style>
+<h1>Respaldo del puesto · pruebas sin ventas</h1><p>Base de pruebas separada de los datos del operador.</p>
+<button id="ejecutar">Ejecutar pruebas IndexedDB</button> <button id="reabrir">Verificar persistencia después de recargar</button>
+<pre id="resultado" role="status">Preparado.</pre><script src="/respaldoProductos.js"></script><script>
+const salida = document.getElementById('resultado');
+const db = 'geco-caja-pruebas-puesto';
+function ok(condicion, texto) { if (!condicion) throw new Error(texto); salida.textContent += '\nOK · '+texto; }
+document.getElementById('ejecutar').onclick = async function () {
+ this.disabled=true; salida.textContent='Probando IndexedDB real…';
+ const a=RespaldoProductos.crear('puesto-A/caja1/operador1',db), b=RespaldoProductos.crear('puesto-B/caja1/operador1',db), c=RespaldoProductos.crear('puesto-A/caja1/operador2',db);
+ try {
+ await a.guardar([]); await b.guardar([]); await c.guardar([]);
+ await a.guardar([{p_id:'P001',cantidad_tot:12},{p_id:'P002',cantidad_tot:0.75}]);
+ ok((await a.leer()).productos.length===2,'Alta y cantidad decimal');
+ await a.guardar([{p_id:'P001',cantidad_tot:18},{p_id:'P002',cantidad_tot:0.75}]);
+ ok((await a.leer()).productos[0].cantidad===18,'Modificación de cantidad acumulada');
+ await a.guardar([{p_id:'P002',cantidad_tot:0.75}]);
+ ok((await a.leer()).productos.length===1,'Eliminar fila conserva sólo el producto restante');
+ await a.guardar([]); ok((await a.leer()).productos.length===0,'Eliminar último producto guarda grilla vacía');
+ const tareas=[];for(let i=1;i<=74;i++) tareas.push(a.guardar(Array.from({length:i},(_,j)=>({codigo:'P'+j,cantidad:j+1}))));await Promise.all(tareas);
+ ok((await a.leer()).productos.length===74,'74 altas sucesivas: sin pérdidas ni escrituras fuera de orden');
+ ok((await b.leer()).productos.length===0 && (await c.leer()).productos.length===0,'Aislamiento entre puestos y operadores');
+ const otra=RespaldoProductos.crear('puesto-A/caja1/operador1',db);await otra.leer();await a.guardar([{codigo:'PERSISTE',cantidad:12.5}]);
+ let conflicto=false;try{await otra.guardar([{codigo:'OBSOLETO',cantidad:1}]);}catch(e){conflicto=true;}
+ ok(conflicto && (await a.leer()).productos[0].codigo==='PERSISTE','Otra pestaña no pisa una revisión posterior');await otra.cerrar();
+ let rechazo=false;try{await a.guardar([{codigo:'MAL',cantidad:0}]);}catch(e){rechazo=true;}
+ ok(rechazo && (await a.leer()).productos[0].codigo==='PERSISTE','Datos inválidos conservan respaldo previo');
+ salida.textContent+='\nPRUEBAS CORRECTAS. Recargue y verifique persistencia.';
+ }catch(e){salida.textContent+='\nERROR: '+e.message;}finally{await a.cerrar();await b.cerrar();await c.cerrar();this.disabled=false;}
+};
+document.getElementById('reabrir').onclick=async()=>{const a=RespaldoProductos.crear('puesto-A/caja1/operador1',db);try{const d=await a.leer();ok(d?.productos[0]?.codigo==='PERSISTE' && d.productos[0].cantidad===12.5,'Persistencia verificada después de recargar la página');}catch(e){salida.textContent+='\nERROR: '+e.message;}finally{await a.cerrar();}};
+</script></html>

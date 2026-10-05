@@ -348,6 +348,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
                     });
                 }
 
+                LimpiarContexto();
                 var cuenta = ClienteActual;
                 if (cuenta == null)
                 {
@@ -418,6 +419,9 @@ namespace gc.caja.Areas.Facturacion.Controllers
                         mensaje = "El origen de la cuenta no esta contemplado para este modulo."
                     });
                 }
+
+                if (!EsCuentaRegistradaValida(origen, cuenta.cta_id))
+                    return Json(new { ok = false, mensaje = "La cuenta seleccionada no posee un cta_id válido." });
 
                 var operacionesPermitidas = ObtenerOperacionesPermitidas(origen);
                 var contexto = new NotaDebitoCreditoContextoSesion
@@ -685,6 +689,9 @@ namespace gc.caja.Areas.Facturacion.Controllers
                     });
                 }
 
+                if (contexto.Cuenta is null || !EsCuentaRegistradaValida(contexto.Cuenta.Origen, contexto.Cuenta.cta_id))
+                    return Json(new { ok = false, mensaje = "Debe seleccionar una cuenta registrada y habilitada con cta_id válido." });
+
                 var token = TokenCookie;
                 if (string.IsNullOrWhiteSpace(token))
                 {
@@ -803,7 +810,8 @@ namespace gc.caja.Areas.Facturacion.Controllers
                     });
                 }
 
-                var debeImprimir = DebeImprimirComprobanteElectronico();
+                var presentacion = ObtenerPresentacionComprobante();
+                var debeImprimir = presentacion.GenerarReporte;
                 var reporteModo = NormalizarModoReporte(_appSettings.NotaCreditoReporteModo);
                 var mensajeFinal = CrearMensajeOperacionConfirmada(contexto.CoTipo, comprobanteEmitido.tco_letra, comprobanteEmitido.cm_compte);
 
@@ -816,15 +824,15 @@ namespace gc.caja.Areas.Facturacion.Controllers
                     resultado_completo = respuesta.resultado_msj,
                     comprobante = respuesta.resultado_id,
                     operacion = contexto.CoTipo,
+                    tipo_emision = presentacion.Tipo,
+                    mensaje_emision = presentacion.Mensaje,
                     debe_imprimir = debeImprimir,
                     reporte_modo = reporteModo,
                     reporte = new
                     {
                         habilitado = debeImprimir,
                         modo = reporteModo,
-                        motivo = debeImprimir
-                            ? "Caja configurada para Factura Electronica."
-                            : "La caja no esta configurada para Factura Electronica."
+                        motivo = presentacion.Mensaje
                     },
                     data = new[]
                     {
@@ -835,6 +843,8 @@ namespace gc.caja.Areas.Facturacion.Controllers
                             cm_compte = comprobanteEmitido.cm_compte,
                             cm_repetido = comprobanteEmitido.cm_repetido,
                             co_tipo = contexto.CoTipo,
+                            tipo_emision = presentacion.Tipo,
+                            mensaje_emision = presentacion.Mensaje,
                             debe_imprimir = debeImprimir,
                             reporte_modo = reporteModo
                         }
@@ -880,6 +890,9 @@ namespace gc.caja.Areas.Facturacion.Controllers
 
             return JsonConvert.DeserializeObject<NotaDebitoCreditoContextoSesion>(json);
         }
+
+        private static bool EsCuentaRegistradaValida(string? origen, string? cuentaId) =>
+            (origen?.Trim().ToUpperInvariant() is "C" or "P") && !string.IsNullOrWhiteSpace(cuentaId);
 
         private static List<string> ObtenerOperacionesPermitidas(string origen)
         {
@@ -934,6 +947,9 @@ namespace gc.caja.Areas.Facturacion.Controllers
             {
                 return (false, "No se recibieron datos para calcular.");
             }
+
+            if (contexto.Cuenta is null || !EsCuentaRegistradaValida(contexto.Cuenta.Origen, contexto.Cuenta.cta_id))
+                return (false, "Debe seleccionar una cuenta registrada y habilitada con cta_id válido.");
 
             var coTipo = (request.CoTipo ?? string.Empty).Trim().ToUpperInvariant();
             if (string.IsNullOrWhiteSpace(coTipo))
@@ -1080,15 +1096,6 @@ namespace gc.caja.Areas.Facturacion.Controllers
                 co_tipo = coTipo?.Trim().ToUpperInvariant() ?? string.Empty,
                 item
             };
-        }
-
-        private bool DebeImprimirComprobanteElectronico()
-        {
-            return string.Equals(
-                CajaActual?.Facturacion.ToString(),
-                "FE",
-                StringComparison.OrdinalIgnoreCase
-            );
         }
 
         private static string NormalizarModoReporte(string? modo)

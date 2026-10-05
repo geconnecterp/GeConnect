@@ -43,7 +43,7 @@ Check (-not $r.Ok -and $v[1].rb_importe -eq 1000) 'Excedente mayor al efectivo s
 $v=Lista @((Pago 'ARS' 1000)); $r=Normalizar $v 85000 90000
 Check (-not $r.Ok -and $v[0].rb_importe -eq 1000) 'NC superior a deuda no se convierte en efectivo'
 $v=Lista @((Pago 'DOC' 80000),(Pago 'ARS' 10000)); $r=Normalizar $v 85000
-Check (-not $r.Ok) 'DOC conserva su restricción de no generar vuelto'
+Check ($r.Ok -and $v[0].rb_importe -eq 80000 -and $v[1].rb_importe -eq 5000) 'DOC no cambia: vuelto exclusivamente del efectivo'
 $v=Lista @((Pago 'ARS' 100.01)); $r=Normalizar $v 100
 Check ($r.Ok -and $r.Vuelto -eq 0.01 -and $v[0].rb_importe -eq 100) 'Un centavo de vuelto se descuenta'
 $v=Lista @((Pago 'ARS' 99.99)); $r=Normalizar $v 100

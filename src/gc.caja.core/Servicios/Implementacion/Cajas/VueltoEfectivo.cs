@@ -10,7 +10,7 @@ public static class VueltoEfectivo
     // El navegador conserva lo recibido; al SP se informa sÃ³lo lo que queda en caja.
     // El catÃ¡logo EF proviene del servidor, nunca de una categorÃ­a enviada por el cliente.
     public static Resultado Normalizar(List<Json_Valor> valores, decimal total, decimal nc,
-        IEnumerable<ValoresInsResDto> catalogoEfectivo)
+        IEnumerable<ValoresInsResDto> catalogoEfectivo, bool excedenteChequesValidado = false)
     {
         if (total <= 0m || nc < 0m || nc > total ||
             decimal.Round(total, 2) != total || decimal.Round(nc, 2) != nc ||
@@ -21,8 +21,9 @@ public static class VueltoEfectivo
         if (excedente < 0m)
             return new(false, "El total de los medios de pago y las Notas de CrÃ©dito no cubre el total a pagar.");
         if (excedente == 0m) return new(true, string.Empty);
-        if (valores.Any(DocumentoCuentaCorriente.EsDocumento))
-            return new(false, "Los documentos no permiten superar el total a pagar ni generar vuelto.");
+
+
+        if (excedenteChequesValidado) return new(true, string.Empty);
 
         var idsEfectivo = catalogoEfectivo
             .Where(i => !string.IsNullOrWhiteSpace(i.ins_id) &&

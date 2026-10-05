@@ -1,0 +1,38 @@
+using System.Reflection;
+using System.Runtime.CompilerServices;
+using gc.caja.Areas.Facturacion.Controllers;
+using gc.infraestructura.Dtos.Cajas;
+
+var type = typeof(NotaDebitoCreditoController);
+var cuentaValida = type.GetMethod("EsCuentaRegistradaValida", BindingFlags.NonPublic | BindingFlags.Static)!;
+var operaciones = type.GetMethod("ObtenerOperacionesPermitidas", BindingFlags.NonPublic | BindingFlags.Static)!;
+var validar = type.GetMethod("ValidarSolicitudCalculo", BindingFlags.NonPublic | BindingFlags.Instance)!;
+var contextoType = type.GetNestedType("NotaDebitoCreditoContextoSesion", BindingFlags.NonPublic)!;
+var controller = RuntimeHelpers.GetUninitializedObject(type);
+var casos = new (string? Origen, string? Id, bool Valido)[] {
+    ("C", "C001", true), ("P", "P001", true), (" c ", "C001", true),
+    ("C", "", false), ("P", "  ", false), ("F", "C001", false),
+    ("N", "C001", false), ("Q", "P001", false), ("X", "C001", false), (null, null, false)
+};
+var total = 0;
+foreach(var c in casos)
+{
+    var esValida = (bool)cuentaValida.Invoke(null, new object?[]{c.Origen,c.Id})!;
+    if(esValida != c.Valido) throw new Exception($"Cuenta: {c}");
+    foreach(var op in new[]{"ND","NC","FS"})
+    {
+        var contexto = Activator.CreateInstance(contextoType, nonPublic:true)!;
+        contextoType.GetProperty("Cuenta")!.SetValue(contexto, new CuentaDatosResultadoDto { Origen=c.Origen!, cta_id=c.Id! });
+        var permitidas = operaciones.Invoke(null, new object?[]{c.Origen?.Trim().ToUpperInvariant()})!;
+        contextoType.GetProperty("OperacionesPermitidas")!.SetValue(contexto,permitidas);
+        var req = new NotaDebitoCreditoController.NotaDebitoCreditoCalcularRequest {
+            CoTipo=op, TcoIdOri="001", CmCompteOri="0001-00000001",
+            Conceptos = [ new() { Concepto="SERVICIO", NetoGravado=100, Cantidad=1, AlicuotaIva=21 } ]
+        };
+        var result = ((bool Ok,string Mensaje))validar.Invoke(controller,new[]{contexto,req})!;
+        var esperado = c.Valido && (op != "ND" || c.Origen?.Trim().ToUpperInvariant() == "P");
+        if(result.Ok != esperado) throw new Exception($"Validación {c} {op}: {result}");
+        total++;
+    }
+}
+Console.WriteLine($"PASS: {total} validaciones reales de cuenta y operaciones ND/NC/FS.");

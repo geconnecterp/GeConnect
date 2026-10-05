@@ -56,3 +56,5 @@ node gc.caja/Tests/ReimpresionZ.Tests.cjs
 Recompilar y levantar **gc.api y gc.caja**, iniciar sesión y actualizar el navegador. Verificar botón deshabilitado en FE; habilitado en Hasar 2G con caja abierta/cerrada y modo solo cierre. Entrar por la opción sin apertura y comprobar que no abre ni cierra caja. Revisar escritorio/móvil y teclado numérico. En un controlador de prueba, enviar primero un rango conocido y contrastar la impresión física, mensajes y manejo de desconexión con el DBA.
 
 Limitaciones: el bloqueo de concurrencia reside en una instancia de API, no es una garantía de idempotencia persistente entre instancias o reinicios. Si la API tiene varias réplicas o se necesita deduplicación duradera, habrá que coordinar ese contrato con backend/DBA. La confirmación física sigue dependiendo de la respuesta que el SP hoy no expone.
+
+> Referencia funcional común: [Bitácora única de reglas de Caja](BitacoraUnicaReglasCaja.md). Este documento conserva el detalle técnico y las consultas al DBA.
