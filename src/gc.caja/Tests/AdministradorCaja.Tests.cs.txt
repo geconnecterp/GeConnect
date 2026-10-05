@@ -1,0 +1,119 @@
+using System.Net;
+using System.Security.Claims;
+using System.IdentityModel.Tokens.Jwt;
+using System.Text.Json;
+using gc.caja.Models.Administracion;
+using gc.caja.Areas.Facturacion.Controllers;
+using gc.infraestructura.Core.EntidadesComunes.Options;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
+
+var fake = new FakeApi();
+var client = new HttpClient(fake) { BaseAddress = new Uri("https://api.invalid/") };
+var servicio = new CajaGeneralServicio(client, NullLogger<CajaGeneralServicio>.Instance);
+if (args.Contains("--browser"))
+{
+    // Host de prueba aislado: nunca utiliza la API, credenciales ni base reales.
+    var root = Path.GetFullPath("gc.caja");
+    var builder = WebApplication.CreateBuilder(new WebApplicationOptions { ContentRootPath = root, WebRootPath = Path.Combine(root, "wwwroot") });
+    builder.WebHost.UseUrls("http://127.0.0.1:7289");
+    builder.Services.AddControllersWithViews().AddApplicationPart(typeof(AdministradorCajaController).Assembly);
+    builder.Services.AddAuthorization(); builder.Services.AddDistributedMemoryCache(); builder.Services.AddSession();
+    builder.Services.AddMemoryCache(); builder.Services.AddHttpContextAccessor(); builder.Services.Configure<AppSettings>(_=>{});
+    builder.Services.AddSingleton(servicio);
+    var app = builder.Build(); app.UseStaticFiles(); app.UseRouting(); app.UseSession();
+    app.Use(async (context,next) => { FakeSession(context); await next(); }); app.UseAuthorization();
+    app.MapGet("/escenario/{modo}", (string modo) => { fake.Modo=modo; fake.Calls.Clear(); return Results.Redirect("/Facturacion/AdministradorCaja"); });
+    app.MapControllerRoute("areas", "{area:exists}/{controller=AdministradorCaja}/{action=Index}/{id?}");
+    app.MapControllerRoute("default", "{controller=Home}/{action=Index}/{id?}");
+    Console.WriteLine("PRUEBA AISLADA: /escenario/vacio, /escenario/abiertos, /escenario/error, /escenario/incierto");
+    await app.RunAsync(); return;
+}
+int count=0;
+void Check(bool ok,string nombre) { if(!ok) throw new Exception(nombre); count++; Console.WriteLine("OK " + nombre); }
+foreach(var modo in new[]{"error","html","sinlista","nulo","malpuesto"})
+{
+    fake.Modo=modo; fake.Calls.Clear(); var q=await servicio.Consultar("0007","token-ficticio");
+    Check(!q.Ok, "Consulta " + modo + " no se interpreta como vacía");
+    var c=await servicio.Ejecutar(false,"operador","0007","token-ficticio");
+    Check(!c.Ok && fake.Calls.All(c=>c.Method=="GET"), "Cierre no envía POST con consulta " + modo);
+}
+fake.Modo="abiertos"; fake.Calls.Clear();
+Check(!(await servicio.Ejecutar(false,"operador","0007","token-ficticio")).Ok && fake.Calls.Count==1,"Cierre bloqueado con puestos abiertos");
+fake.Modo="vacio";fake.Calls.Clear();
+Check((await servicio.Ejecutar(false,"operador","0007","token-ficticio")).Ok,"Cierre válido");
+Check(fake.Calls.Select(c=>c.Method).SequenceEqual(new[]{"GET","POST"}),"Reconsulta antes del POST de cierre");
+Check(fake.Calls.Last().Url.EndsWith("CierreCajaGral"),"Ruta cierre correcta");
+fake.Calls.Clear();var apertura=await servicio.Ejecutar(true,"operador","0007","token-ficticio");
+Check(apertura.Ok && apertura.Proceso=="00-77777","Apertura informa proceso");
+Check(fake.Calls.Single().Body.Contains("\"adm_id\":\"0007\"") && fake.Calls.Single().Body.Contains("\"usu_id\":\"operador\""),"Identidad y sucursal enviadas sin PV");
+Check(fake.Calls.Single().Token=="token-ficticio","Propaga token del operador");
+foreach(var modo in new[]{"sinresultado","sinproceso","incierto","html","error"})
+{
+    fake.Modo=modo;var x=await servicio.Ejecutar(true,"operador","0007","token-ficticio");
+    Check(!x.Ok && x.Incierto,"Respuesta " + modo + " no produce falso éxito");
+}
+foreach(var modo in new[]{"warn","rechazo"})
+{
+    fake.Modo=modo;var x=await servicio.Ejecutar(true,"operador","0007","token-ficticio");
+    Check(!x.Ok && !x.Incierto && x.Mensaje=="No autorizado por SP",modo + " conserva mensaje SP");
+}
+var context = new DefaultHttpContext { Session = new MemorySession() }; FakeSession(context);
+var controller = new AdministradorCajaController(Options.Create(new AppSettings()),new HttpContextAccessor{HttpContext=context},
+    NullLogger<AdministradorCajaController>.Instance,servicio,new MemoryCache(new MemoryCacheOptions())) { ControllerContext=new(){HttpContext=context} };
+Check(controller.Index() is ViewResult,"Administrador sin CajaActual y sin apertura");
+fake.Modo="vacio";fake.Calls.Clear();var solicitud=Guid.NewGuid();
+await controller.Apertura(solicitud); await controller.Apertura(solicitud);
+Check(fake.Calls.Count==1,"Repetición del mismo identificador no duplica operación");
+Check(fake.Calls[0].Body.Contains("\"usu_id\":\"operador-prueba\"") && fake.Calls[0].Body.Contains("\"adm_id\":\"0007\""),"Controller usa identidad autenticada");
+Check(await controller.Apertura(Guid.Empty) is BadRequestObjectResult,"Solicitud vacía rechazada");
+foreach(var action in new[]{"Apertura","Cierre"}) Check(typeof(AdministradorCajaController).GetMethod(action)!.IsDefined(typeof(ValidateAntiForgeryTokenAttribute),true),"Antiforgery " + action);
+context.User=new ClaimsPrincipal(new ClaimsIdentity());
+Check(await controller.Cierre(Guid.NewGuid()) is UnauthorizedObjectResult,"Sesión ausente no opera");
+Console.WriteLine($"{count} verificaciones aprobadas. Sin operaciones reales.");
+
+static void FakeSession(HttpContext context)
+{
+    context.User=new ClaimsPrincipal(new ClaimsIdentity(new[]{new Claim("AdmId","0007#Sucursal de prueba"),new Claim(ClaimTypes.Name,"operador-prueba")},"Test"));
+    context.Session.SetString("Etiqueta","prueba");
+    var jwt=new JwtSecurityToken(claims:new[]{new Claim("user","operador-prueba")},expires:DateTime.UtcNow.AddHours(1));
+    context.Request.Headers.Cookie = "prueba="+new JwtSecurityTokenHandler().WriteToken(jwt)+"; "+context.Request.Headers.Cookie;
+}
+class FakeApi : HttpMessageHandler
+{
+    public string Modo="vacio";
+    public List<(string Method,string Url,string Body,string? Token)> Calls=new();
+    protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage r,CancellationToken ct)
+    {
+        Calls.Add((r.Method.Method,r.RequestUri!.ToString(),r.Content==null?"":await r.Content.ReadAsStringAsync(),r.Headers.Authorization?.Parameter));
+        if(Modo=="incierto" && r.Method==HttpMethod.Post) throw new HttpRequestException("Transporte simulado");
+        if(Modo=="error") return new(HttpStatusCode.ServiceUnavailable){Content=new StringContent("error")};
+        if(Modo=="html") return new(HttpStatusCode.OK){Content=new StringContent("<html>Login</html>")};
+        string json=r.Method==HttpMethod.Get ? Modo switch {
+            "sinlista"=>"{}", "nulo"=>"{\"data\":null}", "malpuesto"=>"{\"data\":[{}]}",
+            "abiertos"=>"{\"data\":[{\"caja_id\":\"0001\",\"caja_nombre\":\"Puesto 1\",\"caja_nro_cierre\":12,\"usu_apellidoynombre\":\"Operador de prueba\"}]}",
+            _=>"{\"data\":[]}" } : Modo switch {
+            "sinresultado"=>"{\"data\":{\"resultado_msj\":\"OK\"}}",
+            "sinproceso"=>"{\"data\":{\"resultado\":0}}",
+            "warn"=>"{\"data\":{\"resultado\":2,\"resultado_msj\":\"No autorizado por SP\"}}",
+            "rechazo"=>"{\"data\":{\"resultado\":-1,\"resultado_msj\":\"No autorizado por SP\"}}",
+            _=>"{\"data\":{\"resultado\":0,\"resultado_id\":\"00-77777\",\"resultado_msj\":\"OK\"}}" };
+        return new(HttpStatusCode.OK){Content=new StringContent(json)};
+    }
+}
+class MemorySession:ISession
+{
+    readonly Dictionary<string,byte[]> data=new();public bool IsAvailable=>true;public string Id=>"test";public IEnumerable<string> Keys=>data.Keys;
+    public void Clear()=>data.Clear();public void Remove(string k)=>data.Remove(k);public void Set(string k,byte[] v)=>data[k]=v;
+    public bool TryGetValue(string k,[System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out byte[]? v)=>data.TryGetValue(k,out v);
+    public Task LoadAsync(CancellationToken c=default)=>Task.CompletedTask;public Task CommitAsync(CancellationToken c=default)=>Task.CompletedTask;
+}
+
+[Route("inicio-prueba")]
+public class PreviewInicioController : Controller
+{
+    [HttpGet] public IActionResult Index() { RouteData.Values["controller"] = "Home"; return View("~/Views/Home/Index.cshtml"); }
+}

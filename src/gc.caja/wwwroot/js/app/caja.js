@@ -68,9 +68,14 @@ $(function () {
     // INICIO DEL FLUJO: VALIDACIÃ“N DE INTEGRIDAD
     // ---------------------------------------------------------
     // Consulta de configuración sin apertura ni validación operativa del controlador.
-    $.ajax({ url: ReimpresionZDisponibleUrl, dataType: 'json', timeout: 15000 }).done(function (r) {
-        reimpresionZDisponible = r.habilitado === true;
-    }).always(function () { iniciarFlujoValidacion(); });
+    // Elegir Administración no ejecuta validaciones ni apertura del puesto.
+    $('#loaderOverlay').hide();
+    $('#btnIngresarCaja').one('click', function () {
+        $('#cajaAccesos').addClass('d-none');
+        $.ajax({ url: ReimpresionZDisponibleUrl, dataType: 'json', timeout: 15000 }).done(function (r) {
+            reimpresionZDisponible = r.habilitado === true;
+        }).always(function () { iniciarFlujoValidacion(); });
+    });
     $('<button>', { type: 'button', id: 'btnReimpresionZSinApertura',
         class: 'btn btn-outline-secondary w-100', text: 'Reimprimir Z sin abrir caja' })
         .appendTo('#modalValidacionIngreso .modal-footer').hide()
@@ -605,6 +610,7 @@ $(function () {
                 console.warn("ðŸš« MenÃº configurado: SIN ACCESO");
                 break;
         }
+        $botones.filter('[data-action="administrador"]').prop('disabled', false).removeClass('disabled-menu-item');
         const zHabilitado = reimpresionZDisponible && ['completo', 'parcial', 'solo-cierre'].includes(nivelAccesoMenu);
         $botones.filter('[data-action="reportes-z"]').prop('disabled', !zHabilitado)
             .toggleClass('disabled-menu-item', !zHabilitado).attr('aria-disabled', String(!zHabilitado))
@@ -1647,7 +1653,7 @@ $(function () {
             }
         });
     }
-    function abrirModuloAdministrador() { console.log('ðŸ›¡ï¸ Administrador...'); }
+    function abrirModuloAdministrador() { window.location.assign(AdministradorCajaUrl); }
     function abrirModuloReportesZ() {
         if (reimpresionZDisponible) window.location.assign(ReimpresionZUrl);
     }

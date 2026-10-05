@@ -2461,6 +2461,7 @@ window.NCDevolucion = window.NCDevolucion || {};
                     ${esRepetido ? '<div class="mt-2"><span class="badge bg-warning">Comprobante Repetido</span></div>' : ''}
                 </div>
                 <p class="text-muted text-break mb-0">${escaparHtml(mensaje)}</p>
+                ${response.mensaje_emision ? `<p class="text-muted mt-2 mb-0">${escaparHtml(response.mensaje_emision)}</p>` : ''}
             </div>
         `;
     }

@@ -1,0 +1,629 @@
+[
+  {
+    "name": "Efectivo con vuelto",
+    "co": "CD",
+    "total": 100,
+    "nc": 0,
+    "registrado": true,
+    "tope": 200,
+    "diasH": 30,
+    "diasD": 15,
+    "values": [
+      {
+        "tipo": "EF",
+        "amount": 110,
+        "day": 0
+      }
+    ],
+    "ok": true,
+    "net": 100
+  },
+  {
+    "name": "Caso tester 500000 sobre 205258.89",
+    "co": "CD",
+    "total": 205258.89,
+    "nc": 0,
+    "registrado": true,
+    "tope": 200,
+    "diasH": 30,
+    "diasD": 15,
+    "values": [
+      {
+        "tipo": "EF",
+        "amount": 500000,
+        "day": 0
+      }
+    ],
+    "ok": true,
+    "net": 205258.89
+  },
+  {
+    "name": "NC y efectivo exactos con centavos",
+    "co": "CD",
+    "total": 100.01,
+    "nc": 20,
+    "registrado": true,
+    "tope": 200,
+    "diasH": 30,
+    "diasD": 15,
+    "values": [
+      {
+        "tipo": "EF",
+        "amount": 80.01,
+        "day": 0
+      }
+    ],
+    "ok": true,
+    "net": 80.01
+  },
+  {
+    "name": "NC y efectivo con vuelto",
+    "co": "CD",
+    "total": 100,
+    "nc": 20,
+    "registrado": true,
+    "tope": 200,
+    "diasH": 30,
+    "diasD": 15,
+    "values": [
+      {
+        "tipo": "EF",
+        "amount": 90,
+        "day": 0
+      }
+    ],
+    "ok": true,
+    "net": 80
+  },
+  {
+    "name": "CD solo cheques excedentes",
+    "co": "CD",
+    "total": 100,
+    "nc": 0,
+    "registrado": true,
+    "tope": 200,
+    "diasH": 30,
+    "diasD": 15,
+    "values": [
+      {
+        "tipo": "CH",
+        "amount": 110,
+        "day": 30
+      }
+    ],
+    "ok": true
+  },
+  {
+    "name": "CC solo cheques excedentes",
+    "co": "CC",
+    "total": 100,
+    "nc": 0,
+    "registrado": true,
+    "tope": 200,
+    "diasH": 30,
+    "diasD": 15,
+    "values": [
+      {
+        "tipo": "CH",
+        "amount": 110,
+        "day": 30
+      }
+    ],
+    "ok": true
+  },
+  {
+    "name": "CR solo cheques excedentes",
+    "co": "CR",
+    "total": 100,
+    "nc": 0,
+    "registrado": true,
+    "tope": 200,
+    "diasH": 30,
+    "diasD": 15,
+    "values": [
+      {
+        "tipo": "CH",
+        "amount": 110,
+        "day": 30
+      }
+    ],
+    "ok": false
+  },
+  {
+    "name": "CF solo cheques excedentes",
+    "co": "CF",
+    "total": 100,
+    "nc": 0,
+    "registrado": true,
+    "tope": 200,
+    "diasH": 30,
+    "diasD": 15,
+    "values": [
+      {
+        "tipo": "CH",
+        "amount": 110,
+        "day": 30
+      }
+    ],
+    "ok": false
+  },
+  {
+    "name": "Cheques exactos hasta tope",
+    "co": "CD",
+    "total": 100,
+    "nc": 0,
+    "registrado": true,
+    "tope": 100,
+    "diasH": 30,
+    "diasD": 15,
+    "values": [
+      {
+        "tipo": "CH",
+        "amount": 50,
+        "day": 0
+      },
+      {
+        "tipo": "CH",
+        "amount": 50,
+        "day": 0
+      }
+    ],
+    "ok": true
+  },
+  {
+    "name": "Suma cheques excede tope por centavo",
+    "co": "CD",
+    "total": 100,
+    "nc": 0,
+    "registrado": true,
+    "tope": 100,
+    "diasH": 30,
+    "diasD": 15,
+    "values": [
+      {
+        "tipo": "CH",
+        "amount": 50,
+        "day": 0
+      },
+      {
+        "tipo": "CH",
+        "amount": 50.01,
+        "day": 0
+      }
+    ],
+    "ok": false
+  },
+  {
+    "name": "Cheque y NC no admiten exceso",
+    "co": "CD",
+    "total": 100,
+    "nc": 20,
+    "registrado": true,
+    "tope": 200,
+    "diasH": 30,
+    "diasD": 15,
+    "values": [
+      {
+        "tipo": "CH",
+        "amount": 90,
+        "day": 0
+      }
+    ],
+    "ok": false
+  },
+  {
+    "name": "Cheque y transferencia no admiten exceso",
+    "co": "CD",
+    "total": 100,
+    "nc": 0,
+    "registrado": true,
+    "tope": 200,
+    "diasH": 30,
+    "diasD": 15,
+    "values": [
+      {
+        "tipo": "CH",
+        "amount": 90,
+        "day": 0
+      },
+      {
+        "tipo": "TR",
+        "amount": 20,
+        "day": 0
+      }
+    ],
+    "ok": false
+  },
+  {
+    "name": "Cheque y transferencia exactos",
+    "co": "CD",
+    "total": 100,
+    "nc": 0,
+    "registrado": true,
+    "tope": 200,
+    "diasH": 30,
+    "diasD": 15,
+    "values": [
+      {
+        "tipo": "CH",
+        "amount": 90,
+        "day": 0
+      },
+      {
+        "tipo": "TR",
+        "amount": 10,
+        "day": 0
+      }
+    ],
+    "ok": true
+  },
+  {
+    "name": "Cheque y efectivo con vuelto cubierto",
+    "co": "CD",
+    "total": 100,
+    "nc": 0,
+    "registrado": true,
+    "tope": 200,
+    "diasH": 30,
+    "diasD": 15,
+    "values": [
+      {
+        "tipo": "CH",
+        "amount": 80,
+        "day": 0
+      },
+      {
+        "tipo": "EF",
+        "amount": 30,
+        "day": 0
+      }
+    ],
+    "ok": true,
+    "net": 20
+  },
+  {
+    "name": "Exceso mayor al efectivo",
+    "co": "CD",
+    "total": 100,
+    "nc": 0,
+    "registrado": true,
+    "tope": 200,
+    "diasH": 30,
+    "diasD": 15,
+    "values": [
+      {
+        "tipo": "CH",
+        "amount": 110,
+        "day": 0
+      },
+      {
+        "tipo": "EF",
+        "amount": 10,
+        "day": 0
+      }
+    ],
+    "ok": false
+  },
+  {
+    "name": "Documento exacto en plazo",
+    "co": "CD",
+    "total": 100,
+    "nc": 0,
+    "registrado": true,
+    "tope": 200,
+    "diasH": 30,
+    "diasD": 15,
+    "values": [
+      {
+        "tipo": "DO",
+        "amount": 100,
+        "day": 15
+      }
+    ],
+    "ok": true
+  },
+  {
+    "name": "Documento con exceso",
+    "co": "CD",
+    "total": 100,
+    "nc": 0,
+    "registrado": true,
+    "tope": 200,
+    "diasH": 30,
+    "diasD": 15,
+    "values": [
+      {
+        "tipo": "DO",
+        "amount": 110,
+        "day": 0
+      }
+    ],
+    "ok": false
+  },
+  {
+    "name": "Documento y cheque exactos",
+    "co": "CD",
+    "total": 100,
+    "nc": 0,
+    "registrado": true,
+    "tope": 100,
+    "diasH": 30,
+    "diasD": 15,
+    "values": [
+      {
+        "tipo": "DO",
+        "amount": 40,
+        "day": 0
+      },
+      {
+        "tipo": "CH",
+        "amount": 60,
+        "day": 0
+      }
+    ],
+    "ok": true
+  },
+  {
+    "name": "Documento y cheque superan tope combinado",
+    "co": "CD",
+    "total": 100,
+    "nc": 0,
+    "registrado": true,
+    "tope": 99,
+    "diasH": 30,
+    "diasD": 15,
+    "values": [
+      {
+        "tipo": "DO",
+        "amount": 40,
+        "day": 0
+      },
+      {
+        "tipo": "CH",
+        "amount": 60,
+        "day": 0
+      }
+    ],
+    "ok": false
+  },
+  {
+    "name": "Documento y efectivo: vuelto exclusivamente del efectivo",
+    "co": "CD",
+    "total": 100,
+    "nc": 0,
+    "registrado": true,
+    "tope": 200,
+    "diasH": 30,
+    "diasD": 15,
+    "values": [
+      {
+        "tipo": "DO",
+        "amount": 80,
+        "day": 0
+      },
+      {
+        "tipo": "EF",
+        "amount": 30,
+        "day": 0
+      }
+    ],
+    "ok": true,
+    "net": 20
+  },
+  {
+    "name": "CF cheque no permitido",
+    "co": "CD",
+    "total": 100,
+    "nc": 0,
+    "registrado": false,
+    "tope": 200,
+    "diasH": 30,
+    "diasD": 15,
+    "values": [
+      {
+        "tipo": "CH",
+        "amount": 100,
+        "day": 0
+      }
+    ],
+    "ok": false
+  },
+  {
+    "name": "CF documento no permitido",
+    "co": "CD",
+    "total": 100,
+    "nc": 0,
+    "registrado": false,
+    "tope": 200,
+    "diasH": 30,
+    "diasD": 15,
+    "values": [
+      {
+        "tipo": "DO",
+        "amount": 100,
+        "day": 0
+      }
+    ],
+    "ok": false
+  },
+  {
+    "name": "CF efectivo permitido",
+    "co": "CD",
+    "total": 100,
+    "nc": 0,
+    "registrado": false,
+    "tope": 200,
+    "diasH": 30,
+    "diasD": 15,
+    "values": [
+      {
+        "tipo": "EF",
+        "amount": 100,
+        "day": 0
+      }
+    ],
+    "ok": true
+  },
+  {
+    "name": "Cheque vencimiento fuera de plazo",
+    "co": "CD",
+    "total": 100,
+    "nc": 0,
+    "registrado": true,
+    "tope": 200,
+    "diasH": 30,
+    "diasD": 15,
+    "values": [
+      {
+        "tipo": "CH",
+        "amount": 100,
+        "day": 31
+      }
+    ],
+    "ok": false
+  },
+  {
+    "name": "Documento vencimiento fuera de plazo",
+    "co": "CD",
+    "total": 100,
+    "nc": 0,
+    "registrado": true,
+    "tope": 200,
+    "diasH": 30,
+    "diasD": 15,
+    "values": [
+      {
+        "tipo": "DO",
+        "amount": 100,
+        "day": 16
+      }
+    ],
+    "ok": false
+  },
+  {
+    "name": "Cheque vencido",
+    "co": "CD",
+    "total": 100,
+    "nc": 0,
+    "registrado": true,
+    "tope": 200,
+    "diasH": 30,
+    "diasD": 15,
+    "values": [
+      {
+        "tipo": "CH",
+        "amount": 100,
+        "day": -1
+      }
+    ],
+    "ok": false
+  },
+  {
+    "name": "Documento vencido",
+    "co": "CD",
+    "total": 100,
+    "nc": 0,
+    "registrado": true,
+    "tope": 200,
+    "diasH": 30,
+    "diasD": 15,
+    "values": [
+      {
+        "tipo": "DO",
+        "amount": 100,
+        "day": -1
+      }
+    ],
+    "ok": false
+  },
+  {
+    "name": "Plazo minimo uno permite maÃ±ana",
+    "co": "CD",
+    "total": 100,
+    "nc": 0,
+    "registrado": true,
+    "tope": 200,
+    "diasH": 1,
+    "diasD": 15,
+    "values": [
+      {
+        "tipo": "CH",
+        "amount": 100,
+        "day": 1
+      }
+    ],
+    "ok": true
+  },
+  {
+    "name": "Plazo minimo uno rechaza pasado maÃ±ana",
+    "co": "CD",
+    "total": 100,
+    "nc": 0,
+    "registrado": true,
+    "tope": 200,
+    "diasH": 1,
+    "diasD": 15,
+    "values": [
+      {
+        "tipo": "CH",
+        "amount": 100,
+        "day": 2
+      }
+    ],
+    "ok": false
+  },
+  {
+    "name": "Sin plazo cheque",
+    "co": "CD",
+    "total": 100,
+    "nc": 0,
+    "registrado": true,
+    "tope": 200,
+    "diasH": null,
+    "diasD": 15,
+    "values": [
+      {
+        "tipo": "CH",
+        "amount": 100,
+        "day": 0
+      }
+    ],
+    "ok": false
+  },
+  {
+    "name": "Plazo documento cero invalido",
+    "co": "CD",
+    "total": 100,
+    "nc": 0,
+    "registrado": true,
+    "tope": 200,
+    "diasH": 30,
+    "diasD": 0,
+    "values": [
+      {
+        "tipo": "DO",
+        "amount": 100,
+        "day": 0
+      }
+    ],
+    "ok": false
+  },
+  {
+    "name": "Tope cero no concede credito",
+    "co": "CD",
+    "total": 100,
+    "nc": 0,
+    "registrado": true,
+    "tope": 0,
+    "diasH": 30,
+    "diasD": 15,
+    "values": [
+      {
+        "tipo": "CH",
+        "amount": 100,
+        "day": 0
+      }
+    ],
+    "ok": false
+  }
+]

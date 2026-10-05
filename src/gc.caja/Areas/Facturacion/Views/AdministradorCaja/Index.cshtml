@@ -1,0 +1,40 @@
+@{
+    ViewData["Title"] = "Administrador de Caja";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@section styles {
+    <link rel="stylesheet" href="~/css/pages/reimpresion-z.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/pages/administrador-caja.css" asp-append-version="true" />
+}
+<section class="rz-page" aria-labelledby="admTitulo">
+    <header class="rz-header">
+        <span class="rz-icon"><i class="bx bx-shield-quarter" aria-hidden="true"></i></span>
+        <div><p class="rz-eyebrow">GESTIÓN DE LA SUCURSAL</p><h1 id="admTitulo">Administrador de Caja</h1>
+        <p>Habilitación y cierre general de todos los puestos de la sucursal.</p></div>
+    </header>
+    <div class="rz-context"><span><i class="bx bx-store-alt" aria-hidden="true"></i> Sucursal <strong>@ViewBag.Sucursal</strong></span>
+        <span>Disponible sin apertura de un puesto</span></div>
+    <form id="admCaja" class="rz-card" data-puestos="@Url.Action("Puestos")" data-apertura="@Url.Action("Apertura")"
+          data-cierre="@Url.Action("Cierre")" data-solicitud="@Guid.NewGuid()" data-sucursal="@ViewBag.Sucursal">
+        @Html.AntiForgeryToken()
+        <div class="row g-4">
+            <div class="col-lg-5"><h2 class="h5">Apertura general de cajas</h2>
+                <p>Habilita la operación de la sucursal y obtiene el número de proceso de cobro. Cada cajero realiza luego la apertura de su puesto.</p>
+                <button id="admAbrir" type="button" class="btn btn-success"><i class="bx bx-lock-open-alt" aria-hidden="true"></i> Habilitar cajas</button>
+            </div>
+            <div class="col-lg-7"><h2 class="h5">Cierre general de cajas</h2>
+                <p>Primero deben cerrarse todos los puestos. Esta operación no reemplaza la rendición ni el cierre individual.</p>
+                <button id="admCerrar" type="button" class="btn btn-danger" disabled><i class="bx bx-lock-alt" aria-hidden="true"></i> Cierre general</button>
+            </div>
+        </div>
+        <hr />
+        <div class="d-flex justify-content-between align-items-center gap-2 mb-3"><h2 class="h5 mb-0">Puestos abiertos</h2>
+            <button id="admActualizar" type="button" class="btn btn-outline-secondary"><i class="bx bx-refresh" aria-hidden="true"></i> Actualizar</button></div>
+        <p id="admConsulta" role="status" aria-live="polite">Consultando puestos de la sucursal…</p>
+        <div class="table-responsive"><table class="table table-striped"><thead><tr><th>Cierre N.º</th><th>Punto de venta</th><th>Cajero</th></tr></thead>
+            <tbody id="admPuestos"></tbody></table></div>
+        <div id="admEstado" role="status" aria-live="polite"></div>
+        <div class="rz-actions"><a id="admVolver" class="btn btn-outline-secondary" href="@Url.Action("Index", "Home", new { area = "" })"><i class="bx bx-arrow-back" aria-hidden="true"></i> Volver al inicio</a></div>
+    </form>
+</section>
+@section scripts { <script src="~/js/app/administrador-caja.js" asp-append-version="true"></script> }

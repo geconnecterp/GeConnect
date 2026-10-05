@@ -1,4 +1,5 @@
 ﻿using gc.caja.Controllers;
+using gc.infraestructura.Dtos.Cajas;
 using gc.caja.core.Servicios.Contratos.Cajas;
 using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Dtos.Cajas.Request;
@@ -79,7 +80,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
         /// <param name="clienteId">ID del cliente a filtrar</param>
         /// <returns>Lista de facturas del cliente específico</returns>
         [HttpPost]
-        public JsonResult ObtenerFacturasClienteDesdesesion([FromBody] string clienteId)
+        public JsonResult ObtenerFacturasClienteDesdesesion([FromBody] string? clienteId)
         {
             try
             {
@@ -93,12 +94,12 @@ namespace gc.caja.Areas.Facturacion.Controllers
                     return Json(new { ok = false, mensaje = "Sesión expirada." });
                 }
 
-                // ❶ VALIDAR QUE EL clienteId NO ESTÉ VACÍO
-                if (string.IsNullOrWhiteSpace(clienteId))
-                {
-                    _logger?.LogWarning("❌ clienteId vacío o nulo");
-                    return Json(new { ok = false, mensaje = "El ID del cliente es requerido." });
-                }
+                var cliente = ClienteActual;
+                var consumidorFinal = string.Equals(cliente?.Origen?.Trim(), "F", StringComparison.OrdinalIgnoreCase);
+                var documento = cliente?.cta_documento?.Trim() ?? string.Empty;
+                if (cliente == null || (consumidorFinal ? string.IsNullOrWhiteSpace(documento) : string.IsNullOrWhiteSpace(cliente.cta_id)))
+                    return Json(new { ok = false, mensaje = "Seleccione un cliente identificado antes de consultar pendientes." });
+                clienteId = cliente.cta_id;
 
                 // ❷ OBTENER TODAS LAS FACTURAS DE LA SESIÓN
                 var todasLasFacturas = FacturasPendientesActuales;
@@ -106,14 +107,14 @@ namespace gc.caja.Areas.Facturacion.Controllers
                 if (todasLasFacturas == null || !todasLasFacturas.Any())
                 {
                     _logger?.LogWarning("❌ No hay facturas en la sesión");
-                    return Json(new { ok = false, mensaje = "No hay facturas cargadas en la sesión. Por favor, recargue la página." });
+                    return Json(new { ok = true, lista = Array.Empty<FactPendienteResponseDto>(), mensaje = "No hay facturas pendientes de cobro." });
                 }
 
                 _logger?.LogInformation($"   📦 Total facturas en sesión: {todasLasFacturas.Count}");
 
                 // ❸ FILTRAR FACTURAS DEL CLIENTE ESPECÍFICO
                 var facturasDelCliente = todasLasFacturas
-                    .Where(f => f.cta_id != null && f.cta_id.Equals(clienteId, StringComparison.OrdinalIgnoreCase))
+                    .Where(f => PerteneceAlCliente(f, cliente))
                     .ToList();
 
                 _logger?.LogInformation($"   ✅ Facturas encontradas para cliente {clienteId}: {facturasDelCliente.Count}");
@@ -122,7 +123,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
                 if (!facturasDelCliente.Any())
                 {
                     _logger?.LogWarning($"⚠️ No se encontraron facturas para el cliente {clienteId}");
-                    return Json(new { ok = false, mensaje = $"No se encontraron facturas pendientes para el cliente {clienteId}." });
+                    return Json(new { ok = true, lista = facturasDelCliente, mensaje = "No hay facturas pendientes para este cliente." });
                 }
 
                 // ❺ LOG DETALLADO DE LAS FACTURAS ENCONTRADAS
@@ -153,8 +154,24 @@ namespace gc.caja.Areas.Facturacion.Controllers
         /// Encapsula la lógica de carga y almacenamiento en sesión.
         /// </summary>
         /// <returns>Tupla con lista de facturas y mensaje de error (si lo hay)</returns>
+        private static bool PerteneceAlCliente(FactPendienteResponseDto factura, CuentaDatosResultadoDto cliente)
+        {
+            if (string.Equals(cliente.Origen?.Trim(), "F", StringComparison.OrdinalIgnoreCase))
+                return string.IsNullOrWhiteSpace(factura.cta_id) && DocumentoCoincide(factura.co_pd_doc, cliente.cta_documento);
+            return !string.IsNullOrWhiteSpace(cliente.cta_id) &&
+                string.Equals(factura.cta_id?.Trim(), cliente.cta_id.Trim(), StringComparison.OrdinalIgnoreCase);
+        }
+
+        private static bool DocumentoCoincide(string? primero, string? segundo)
+        {
+            var a = new string((primero ?? "").Where(char.IsDigit).ToArray());
+            var b = new string((segundo ?? "").Where(char.IsDigit).ToArray());
+            return a.Length > 0 && a == b;
+        }
+
         private async Task<(List<FactPendienteResponseDto>? Facturas, string MensajeError)> CargarTodasLasFacturasPendientes()
         {
+            FacturasPendientesActuales = new List<FactPendienteResponseDto>();
             var stopwatch = Stopwatch.StartNew();
 
             try
@@ -421,6 +438,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
                     ok = true,
                     lista = facturasActualizadas,
                     cantidad = facturasActualizadas.Count,
+                    tienePendientesCliente = ClienteActual == null ? (bool?)null : facturasActualizadas.Any(f => PerteneceAlCliente(f, ClienteActual)),
                     mensaje = facturasActualizadas.Count > 0
                         ? "Facturas pendientes actualizadas correctamente."
                         : "No hay facturas pendientes de cobro."

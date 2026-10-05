@@ -84,6 +84,10 @@
     </section>
 </div>
 
+<div id="cajaAccesos" class="d-flex flex-wrap justify-content-center gap-3 my-4">
+    <button id="btnIngresarCaja" type="button" class="btn btn-success btn-lg"><i class="bx bx-store-alt"></i> Operar Caja</button>
+    <a class="btn btn-outline-secondary btn-lg" href="@Url.Action("Index", "AdministradorCaja", new { area = "Facturacion" })"><i class="bx bx-shield-quarter"></i> Administrador de Caja</a>
+</div>
 @await Html.PartialAsync("_LoaderOverlay")
 @await Html.PartialAsync("_ModalValidacion")
 @await Html.PartialAsync("_ModalMenu")
@@ -92,6 +96,7 @@
 
 @section scripts{
     <script type="text/javascript">
+        var AdministradorCajaUrl = '@Url.Action("Index", "AdministradorCaja", new { area = "Facturacion" })';
         var ReimpresionZUrl = '@Url.Action("Index", "ReimpresionZ", new { area = "Facturacion" })';
         var ReimpresionZDisponibleUrl = '@Url.Action("Disponibilidad", "ReimpresionZ", new { area = "Facturacion" })';
         var ValidacionIntegridadUrl = '@Url.Action("ValidacionIntegridad", "Home", new { area = "" })';

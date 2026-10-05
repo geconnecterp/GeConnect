@@ -1973,7 +1973,8 @@ namespace gc.caja.Areas.Facturacion.Controllers
                 }
 
                 var resultadoStock = await RegistrarStockNotaCredito(comprobanteEmitido, token);
-                var debeImprimir = DebeImprimirComprobanteElectronico();
+                var presentacion = ObtenerPresentacionComprobante();
+                var debeImprimir = presentacion.GenerarReporte;
                 var reporteModo = NormalizarModoReporteNC(_appSettings.NotaCreditoReporteModo);
                 var mensajeFinal = $"Nota de Crédito {comprobanteEmitido.tco_letra} Nro {comprobanteEmitido.cm_compte} emitida correctamente.";
 
@@ -1996,15 +1997,15 @@ namespace gc.caja.Areas.Facturacion.Controllers
                         mensaje = resultadoStock.Mensaje,
                         id = resultadoStock.Id
                     },
+                    tipo_emision = presentacion.Tipo,
+                    mensaje_emision = presentacion.Mensaje,
                     debe_imprimir = debeImprimir,
                     reporte_modo = reporteModo,
                     reporte = new
                     {
                         habilitado = debeImprimir,
                         modo = reporteModo,
-                        motivo = debeImprimir
-                            ? "Caja configurada para Factura Electrónica."
-                            : "La caja no está configurada para Factura Electrónica."
+                        motivo = presentacion.Mensaje
                     },
                     data = new[]
                     {
@@ -2015,6 +2016,8 @@ namespace gc.caja.Areas.Facturacion.Controllers
                             cm_compte = comprobanteEmitido.cm_compte,
                             cm_repetido = comprobanteEmitido.cm_repetido,
                             co_tipo = contexto.CoTipo,
+                            tipo_emision = presentacion.Tipo,
+                            mensaje_emision = presentacion.Mensaje,
                             debe_imprimir = debeImprimir,
                             reporte_modo = reporteModo
                         }
@@ -2676,15 +2679,6 @@ namespace gc.caja.Areas.Facturacion.Controllers
             {
                 return [];
             }
-        }
-
-        private bool DebeImprimirComprobanteElectronico()
-        {
-            return string.Equals(
-                CajaActual?.Facturacion.ToString(),
-                "FE",
-                StringComparison.OrdinalIgnoreCase
-            );
         }
 
         private static string NormalizarModoReporteNC(string? modo)

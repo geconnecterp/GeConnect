@@ -70,3 +70,5 @@ Diseño generado con la herramienta integrada de imágenes: caja registradora co
 El iniciador necesita que el servidor tenga publicada la versión que incorpora `EstacionController` y el servicio del puesto. El endpoint `POST Seguridad/Estacion/Preparar` debe responder JSON antes de autenticar al operador. Si responde una redirección al login o HTML, el iniciador lo informa y no abre el navegador: revisar la publicación y el enrutamiento en IIS/proxy. Actualizar solamente el ejecutable local no agrega este endpoint al servidor. No desactivar la autenticación general de Caja ni la validación HTTPS.
 
 Una solicitud de diagnóstico con cuerpo `{}` a ese endpoint debe devolver **400** de validación, porque faltan los datos del puesto; una configuración válida devuelve **200** con un pase. Una respuesta **302** al login no es válida para esta etapa.
+
+> Referencia funcional común: [Bitácora única de reglas de Caja](../gc.caja/Docs/BitacoraUnicaReglasCaja.md). Este documento conserva las instrucciones técnicas de despliegue y recuperación.

@@ -193,6 +193,20 @@ namespace gc.caja.Controllers
             }
         }
 
+        protected gc.caja.Models.PresentacionComprobante ObtenerPresentacionComprobante(
+            bool esRecibo = false, bool reporteRecibo = false)
+        {
+            var puesto = CajaActual;
+            var presentacion = gc.caja.Models.PresentacionComprobante.Crear(
+                puesto?.Caja?.ctrl_id, puesto?.Facturacion ?? (TipoFact)0, esRecibo, reporteRecibo);
+            if (!esRecibo &&
+                ((presentacion.Tipo == "CF" && puesto?.Facturacion == TipoFact.FE) ||
+                 (presentacion.Tipo == "FE" && puesto?.Facturacion == TipoFact.CF)))
+                _logger?.LogWarning("Emisión: configuración local {Facturacion} difiere del PV {CtrlId}. Se utiliza el PV del servidor.",
+                    puesto?.Facturacion, puesto?.Caja?.ctrl_id);
+            return presentacion;
+        }
+
         protected ProductoBusquedaDto ProductoBase
         {
             get

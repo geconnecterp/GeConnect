@@ -25,3 +25,5 @@ Implementación en Sis25. Complejidad media: reutiliza el contrato de seguridad 
 - Compilar `gc.caja/gc.caja.csproj`.
 - Pendiente de comprobación visual en navegador autenticado: escritorio y móvil, abrir avatar, navegar a cuenta y comprobar campos. El navegador integrado no estuvo disponible durante la implementación.
 - El cambio de una contraseña real debe realizarlo el operador. Las pruebas automáticas no invocan la API real ni los SP.
+
+> Referencia funcional común: [Bitácora única de reglas de Caja](BitacoraUnicaReglasCaja.md). Este documento conserva el detalle técnico del módulo.

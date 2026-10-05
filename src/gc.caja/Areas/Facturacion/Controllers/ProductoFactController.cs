@@ -1750,6 +1750,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
                 FacturaSorteos = [];
 
                 // ⓲ RETORNAR RESPUESTA (incluir advertencia si existe)
+                var presentacion = ObtenerPresentacionComprobante();
                 var respuestaFinal = new
                 {
                     ok = true,
@@ -1762,12 +1763,16 @@ namespace gc.caja.Areas.Facturacion.Controllers
                             tco_letra = comprobante.tco_letra,
                             tco_id = comprobante.tco_id,
                             cm_compte = comprobante.cm_compte,
+                            tipo_emision = presentacion.Tipo,
+                            mensaje_emision = presentacion.Mensaje,
                             cm_repetido = comprobante.cm_repetido
                         }
                     },
 
                     resultado_completo = respuestaDto.resultado_msj,
-                    debe_imprimir = true
+                    tipo_emision = presentacion.Tipo,
+                    mensaje_emision = presentacion.Mensaje,
+                    debe_imprimir = presentacion.GenerarReporte
                 };
 
                 // ✅ NUEVO: Agregar advertencia del PV si existe
@@ -1780,6 +1785,8 @@ namespace gc.caja.Areas.Facturacion.Controllers
                         respuestaFinal.data,
                         respuestaFinal.resultado_completo,
                         respuestaFinal.debe_imprimir,
+                        respuestaFinal.tipo_emision,
+                        respuestaFinal.mensaje_emision,
                         mensaje_advertencia = validacionPV.Mensaje,
                         mostrar_mensaje_pv = true
                     });
