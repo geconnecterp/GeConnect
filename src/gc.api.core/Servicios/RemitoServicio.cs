@@ -3,6 +3,9 @@ using gc.api.core.Entidades;
 using gc.api.core.Interfaces.Datos;
 using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Dtos;
+using gc.infraestructura.Dtos.Almacen.AjusteDeStock;
+using gc.infraestructura.Dtos.Almacen.AjusteDeStock.Request;
+using gc.infraestructura.Dtos.Almacen.RemitoExterno;
 using gc.infraestructura.Dtos.Almacen.Rpr;
 using gc.infraestructura.Dtos.Almacen.Tr.Remito;
 using gc.infraestructura.Dtos.Almacen.Tr.Request;
@@ -44,7 +47,7 @@ namespace gc.api.core.Servicios
 		public List<RemitoVerConteoDto> VerConteos(string remCompte)
 		{
 			var sp = Constantes.ConstantesGC.StoredProcedures.SP_RTR_Ver_Conteos;
-			var ps = new List<SqlParameter>()
+			var ps = new List<SqlParameter>()	
 			{
 					new("@re_compte",remCompte),
 			};
@@ -138,7 +141,35 @@ namespace gc.api.core.Servicios
 			return resp.First();
 		}
 
+		public List<RemitoExternoListaDto> ObtenerRemitosExternosLista(RemitoExternoListaRequest req)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_RE_LISTA;
+			var ps = new List<SqlParameter>();
+			if (req.FechaDesde != default && req.FechaHasta != default)
+			{
+				ps.Add(new SqlParameter("@fecha_d", req.FechaDesde));
+				ps.Add(new SqlParameter("@fecha_h", req.FechaHasta));
+			}
 
+			ps.Add(new SqlParameter("@registros", req.Registros));
+			ps.Add(new SqlParameter("@pagina", req.Pagina));
+			ps.Add(new SqlParameter("@ordenar", "as_compte"));
+
+			var ordenes = _repository.EjecutarLstSpExt<RemitoExternoListaDto>(sp, ps, true);
+
+			return ordenes;
+		}
+
+		public List<RemitoExternoDetalleDto> CargarProductosDesdeRemito(string rem_compte)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_RE_DATOS;
+			var ps = new List<SqlParameter>()
+			{
+					new("@rem_compte",rem_compte)
+			};
+			var listaTemp = _repository.EjecutarLstSpExt<RemitoExternoDetalleDto>(sp, ps, true);
+			return listaTemp;
+		}
 		//public RespuestaDto ConfirmarRemitoExterno(ConfirmarRemitoExternoRequest request)
 		//{
 		//	// Normalizar valores vacíos → string vacío

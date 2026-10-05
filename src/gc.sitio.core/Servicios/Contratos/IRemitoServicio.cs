@@ -1,4 +1,6 @@
-﻿using gc.infraestructura.Dtos;
+﻿using gc.infraestructura.Core.EntidadesComunes;
+using gc.infraestructura.Dtos;
+using gc.infraestructura.Dtos.Almacen.RemitoExterno;
 using gc.infraestructura.Dtos.Almacen.Rpr;
 using gc.infraestructura.Dtos.Almacen.Tr.Remito;
 using gc.infraestructura.Dtos.Gen;
@@ -16,5 +18,7 @@ namespace gc.sitio.core.Servicios.Contratos
         Task<List<RTRxULDto>> RTRCargarConteosXUL(string reCompte, string token);
 		Task<RespuestaGenerica<RemitoExternoValidaDto>> CargarProductosDesdeComprobante(RemitoExternoValidaRequest request, string token);
 		RespuestaGenerica<RespuestaDto> ConfirmarRemitoExterno(ConfirmarRemitoExternoRequest request, string token);
+        Task<(List<RemitoExternoListaDto>, MetadataGrid)> ObtenerRemitosExternosLista(RemitoExternoListaRequest filters, string token);
+		Task<List<RemitoExternoDetalleDto>> ObtenerRemitoExternoDetalle(string remCompte, string token);
 	}
 }

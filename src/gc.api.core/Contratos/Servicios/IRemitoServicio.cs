@@ -1,5 +1,6 @@
 ﻿using gc.api.core.Entidades;
 using gc.infraestructura.Dtos;
+using gc.infraestructura.Dtos.Almacen.RemitoExterno;
 using gc.infraestructura.Dtos.Almacen.Rpr;
 using gc.infraestructura.Dtos.Almacen.Tr.Remito;
 using gc.infraestructura.Dtos.Almacen.Tr.Request;
@@ -18,5 +19,7 @@ namespace gc.api.core.Contratos.Servicios
         List<RTRxULDto> RTRCargarConteosXUL(string reCompte);
         List<RemitoExternoValidaDto> CargarProductosDesdeComprobante(RemitoExternoValidaRequest request);
         RespuestaDto ConfirmarRemitoExterno(ConfirmarRemitoExternoRequest request);
+        List<RemitoExternoListaDto> ObtenerRemitosExternosLista(RemitoExternoListaRequest req);
+        List<RemitoExternoDetalleDto> CargarProductosDesdeRemito(string rem_compte);
 	}
 }

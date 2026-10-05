@@ -1,0 +1,66 @@
+﻿@using gc.infraestructura.Helpers
+@using gc.sitio.Areas.Mstk.Models.ConsultaDeRemitoExterno
+@model RemitosExternosModel
+@{
+	var alt = true;
+	string clase = string.Empty;
+}
+<style>
+	.td-nowrap-ellipsis {
+		white-space: nowrap !important;
+		overflow: hidden !important;
+		text-overflow: ellipsis !important;
+		max-width: 220px; /* ajustá según tu diseño */
+		cursor: help; /* indica que tiene tooltip */
+	}
+
+</style>
+<div class="table-responsive table-wrapper-700">
+	<table class="table table-sm table-hover mb-0 table-golden" id="tbRemitos">
+		<thead class="sticky-top table-golden-header-compact">
+			<tr class="header">
+				<th class="text-center">Remito Nro.</th>
+				<th class="text-center">A nombre de</th>
+				<th class="text-center">Fecha</th>
+				<th class="text-center">Cotización N°</th>
+				<th class="text-center">Tipo de Cotización</th>
+				<th class="text-center">Comprobante</th>
+			</tr>
+		</thead>
+		<tbody>
+			@if (Model == null || Model.GrillaRemitos == null || Model.GrillaRemitos.ListaDatos == null || !Model.GrillaRemitos.ListaDatos.Any())
+			{
+				<tr class="fila-vacia">
+					<td colspan="7" class="text-center text-muted py-2">
+						<i class="bx bx-info-circle me-1"></i>
+						No hay items para mostrar.
+					</td>
+				</tr>
+			}
+			else
+			{
+				foreach (var item in Model.GrillaRemitos.ListaDatos)
+				{
+					if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+					var aNombreDe = item.cta_id != null ? $"({item.cta_id}) {item.cta_denominacion}" : $"{item.cta_denominacion}";
+					<tr class="@clase row-ajuste"
+						data-rem-compte="@item.rem_compte"
+						ondblclick="SeleccionarRemito(this,'tbRemitos')">
+						<td class="text-center">@item.rem_compte</td>
+						<td class="text-center">@aNombreDe</td>
+						<td class="text-center">@item.rem_fecha.ToString("dd/MM/yy")</td>
+						<td class="text-start">@item.pre_id</td>
+						<td class="text-start">@item.pre_id</td>
+						<td class="text-start">@item.cm_compte</td>
+					</tr>
+				}
+			}
+		</tbody>
+	</table>
+</div>
+<div class="row mt-3">
+	<div class="offset-md-3 col-md-6">
+		<div id="divPaginacion" class="">
+		</div>
+	</div>
+</div>

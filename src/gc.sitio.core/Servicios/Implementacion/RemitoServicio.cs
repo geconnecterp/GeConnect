@@ -4,6 +4,9 @@ using gc.infraestructura.Core.Exceptions;
 using gc.infraestructura.Core.Helpers;
 using gc.infraestructura.Core.Responses;
 using gc.infraestructura.Dtos;
+using gc.infraestructura.Dtos.Almacen.AjusteDeStock;
+using gc.infraestructura.Dtos.Almacen.AjusteDeStock.Request;
+using gc.infraestructura.Dtos.Almacen.RemitoExterno;
 using gc.infraestructura.Dtos.Almacen.Rpr;
 using gc.infraestructura.Dtos.Almacen.Tr.Remito;
 using gc.infraestructura.Dtos.Almacen.Tr.Request;
@@ -31,6 +34,8 @@ namespace gc.sitio.core.Servicios.Implementacion
         private const string RemitosCargarConteosXUL = "/RTRCargarConteosXUL";
 		private const string RemitoExternoProductosAValidar = "/cargar-productos-desde-comprobante";
 		private const string RemitoExternoConfirmar = "/confirmar-remito-externo";
+		private const string RemitoExternoLista = "/obtener-remitos-externos";
+        private const string RemitoExternoDetalle = "/ObtenerRemitoExternoDetalle";
 
 		private readonly AppSettings _appSettings;
         public RemitoServicio(IOptions<AppSettings> options, ILogger<RemitoServicio> logger) : base(options, logger, RutaAPI)
@@ -375,6 +380,79 @@ namespace gc.sitio.core.Servicios.Implementacion
 			{
 				_logger.LogError(ex, "Error al confirmar el remito externo");
 				return new() { Mensaje = "Algo no fue bien al intentar la confirmación del remito externo. Verifique Log.", EsError = true };
+			}
+		}
+
+		public async Task<(List<RemitoExternoListaDto>, MetadataGrid)> ObtenerRemitosExternosLista(RemitoExternoListaRequest filters, string token)
+		{
+			try
+			{
+				ApiResponse<List<RemitoExternoListaDto>>? apiResponse;
+				HelperAPI helper = new();
+
+				HttpClient client = helper.InicializaCliente(filters, token, out StringContent contentData);
+				HttpResponseMessage response;
+
+				var link = $"{_appSettings.RutaBase}{RutaAPI}{RemitoExternoLista}";
+
+				response = await client.PostAsync(link, contentData);
+
+				if (response.StatusCode == HttpStatusCode.OK)
+				{
+					string stringData = await response.Content.ReadAsStringAsync();
+					if (string.IsNullOrEmpty(stringData))
+					{
+						throw new NegocioException("No se recepcionó una respuesta válida. Intente de nuevo más tarde.");
+					}
+					apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<RemitoExternoListaDto>>>(stringData);
+
+					return (apiResponse.Data, apiResponse.Meta);
+				}
+				else
+				{
+					string stringData = await response.Content.ReadAsStringAsync();
+					_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+
+					throw new NegocioException("Algo no fue bien y el proceso no se completó. Intente de nuevo más tarde. Si el problema persiste informe al Administrador del sistema.");
+				}
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError($"{this.GetType().Name}-{MethodBase.GetCurrentMethod()?.Name} - {ex}");
+
+				throw new Exception("Algo no fue bien al intentar cargar los remitos externos.");
+			}
+		}
+
+		public async Task<List<RemitoExternoDetalleDto>> ObtenerRemitoExternoDetalle(string remCompte, string token)
+		{
+			ApiResponse<List<RemitoExternoDetalleDto>> apiResponse;
+
+			HelperAPI helper = new();
+
+			HttpClient client = helper.InicializaCliente(token);
+			HttpResponseMessage response;
+
+			var link = $"{_appSettings.RutaBase}{RutaAPI}{RemitoExternoDetalle}?rem_compte={remCompte}";
+
+			response = await client.GetAsync(link);
+
+			if (response.StatusCode == HttpStatusCode.OK)
+			{
+				string stringData = await response.Content.ReadAsStringAsync();
+				if (string.IsNullOrEmpty(stringData))
+				{
+					_logger.LogWarning($"La API no devolvió dato alguno. Parametros de busqueda remCompte:{remCompte}");
+					return new();
+				}
+				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<RemitoExternoDetalleDto>>>(stringData) ?? throw new NegocioException("Hubo un problema al deserializar los datos");
+				return apiResponse.Data;
+			}
+			else
+			{
+				string stringData = await response.Content.ReadAsStringAsync();
+				_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+				return new();
 			}
 		}
 	}

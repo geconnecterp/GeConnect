@@ -795,6 +795,8 @@ namespace gc.api.core.Constantes
 
 			public const string SP_RE_VALIDA = "SPGECO_RE_Valida";
 			public const string SP_RE_CONFIRMAR = "SPGECO_RE_Confirmar";
+			public const string SP_RE_LISTA = "SPGECO_RE_Lista";
+			public const string SP_RE_DATOS = "SPGECO_RE_Datos";
 
 			public const string SP_COMPTE_REPO_CAB = "SPGECO_Compte_REPO_Cab";
 			public const string SP_COMPTE_REPO_IVA = "SPGECO_Compte_REPO_IVA";

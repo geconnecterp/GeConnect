@@ -1,9 +1,14 @@
 ﻿using AutoMapper;
 using gc.api.Controllers.Base;
 using gc.api.core.Contratos.Servicios;
+using gc.infraestructura.Core.EntidadesComunes;
 using gc.infraestructura.Core.Interfaces;
 using gc.infraestructura.Core.Responses;
 using gc.infraestructura.Dtos;
+using gc.infraestructura.Dtos.Almacen.AjusteDeStock;
+using gc.infraestructura.Dtos.Almacen.AjusteDeStock.Request;
+using gc.infraestructura.Dtos.Almacen.DevolucionAProveedor;
+using gc.infraestructura.Dtos.Almacen.RemitoExterno;
 using gc.infraestructura.Dtos.Almacen.Rpr;
 using gc.infraestructura.Dtos.Almacen.Tr.Remito;
 using gc.infraestructura.Dtos.Almacen.Tr.Request;
@@ -154,5 +159,85 @@ namespace gc.api.Controllers.Almacen
 
 			return Ok(response);
 		}
+
+		[HttpPost("obtener-remitos-externos")]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<List<RemitoExternoListaDto>>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		public ActionResult<RemitoExternoListaDto> ObtenerRemitosExternosLista(RemitoExternoListaRequest request)
+		{
+			const string msgError = "Error en la invocación de la API - Búsqueda de Remitos Externos";
+			try
+			{
+				if (request == null)
+					return BadRequest("No se recepcionó el filtro de la búsqueda de PI.");
+
+				var resultados = _remSv.ObtenerRemitosExternosLista(request);
+
+				var response = new ApiResponse<List<RemitoExternoListaDto>>(resultados)
+				{
+					Meta = BuildMetadataAjuste(resultados, request)
+				};
+
+				return Ok(response);
+			}
+			catch (Exception ex)
+			{
+				_logger?.LogError(ex, msgError);
+				return StatusCode(StatusCodes.Status500InternalServerError, new { error = true, msg = msgError });
+			}
+		}
+
+		[HttpGet]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<List<RemitoExternoDetalleDto>>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult ObtenerRemitoExternoDetalle(string rem_compte)
+		{
+			ApiResponse<List<RemitoExternoDetalleDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
+			var res = _remSv.CargarProductosDesdeRemito(rem_compte);
+
+			response = new ApiResponse<List<RemitoExternoDetalleDto>>(res);
+
+			return Ok(response);
+		}
+
+		#region métodos privados
+		private static MetadataGrid? BuildMetadataAjuste(List<RemitoExternoListaDto>? lista, RemitoExternoListaRequest filtro)
+		{
+			if (lista == null || lista.Count == 0)
+			{
+				return new MetadataGrid
+				{
+					TotalCount = 0,
+					PageSize = filtro.Registros ?? 0,
+					CurrentPage = filtro.Pagina ?? 0,
+					TotalPages = 0,
+					HasNextPage = false,
+					HasPreviousPage = false,
+					NextPageUrl = null,
+					PreviousPageUrl = null
+				};
+			}
+
+			var reg = lista[0];
+			var pageSize = filtro.Registros ?? 0;
+			var currentPage = filtro.Pagina ?? 0;
+			var totalCount = reg.Total_registros;
+			var totalPages = reg.Total_paginas;
+
+			return new MetadataGrid
+			{
+				TotalCount = totalCount,
+				PageSize = pageSize,
+				CurrentPage = currentPage,
+				TotalPages = totalPages,
+				HasNextPage = currentPage < totalPages,
+				HasPreviousPage = currentPage > 1,
+				NextPageUrl = null,
+				PreviousPageUrl = null
+			};
+		}
+		#endregion
 	}
 }
