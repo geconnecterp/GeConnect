@@ -48,8 +48,8 @@ $(function () {
 try { MostrarFiltrosAplicados(); } catch (e) { }
 
 function InicializarPantallaPrincipal() {
-	f_desde = $("#Desde").val();
-	f_hasta = $("#Hasta").val();
+	f_desde = $("#FechaDesde").val();
+	f_hasta = $("#FechaHasta").val();
 	AbrirWaiting("Cargando información...");
 	PostGenHtml({ f_desde, f_hasta }, inicializarPantallPrincipalURL, function (obj) {
 		$("#divDetalle").html(obj);
@@ -167,7 +167,7 @@ function ProcesarSeleccionFilaEnTabRemitos($fila) {
 
 function EvaluarBotonImprimir(tabId) {
 	console.log("Evaluando botón imprimir para tab:", tabId);
-	const tablaSelector = TabToTableMapAjustes[tabId];
+	const tablaSelector = TabToTableMapRemitos[tabId];
 	if (!tablaSelector) {
 		console.log("tablaSelector:", tablaSelector);
 		$("#btnImprimir").hide();
@@ -198,8 +198,8 @@ function MostrarFiltrosAplicados() {
 
 	if ($target.length === 0) return;
 
-	const desde = $("#Desde").val();
-	const hasta = $("#Hasta").val();
+	const desde = $("#FechaDesde").val();
+	const hasta = $("#FechaHasta").val();
 
 	let html = `
         <div class="d-inline-flex align-items-center"
@@ -219,8 +219,8 @@ function MostrarFiltrosAplicados() {
 
 function ValidarFechasFiltro() {
 
-	let fDesde = $("#Desde").val();
-	let fHasta = $("#Hasta").val();
+	let fDesde = $("#FechaDesde").val();
+	let fHasta = $("#FechaHasta").val();
 
 	// 1) Validar que existan
 	if (!fDesde || !fHasta) {

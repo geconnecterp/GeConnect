@@ -1,7 +1,7 @@
 ﻿using gc.infraestructura.Dtos.Almacen.RemitoExterno;
 using gc.infraestructura.Dtos.Gen;
 
-namespace gc.sitio.Areas.Mstk.Models.ConsultaDeRemitoExterno
+namespace gc.sitio.Areas.Mstk.Models
 {
 	public class RemitoExternoDetalleModel
 	{

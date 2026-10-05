@@ -84,7 +84,7 @@
 						<div class="col-md-5">
 							<label class="fw-bold">Cliente:</label>
 							<span>@h.cta_id - @h.cta_denominacion</span>
-							<input hidden id="cta_id" value="@h.cta_id"/>
+							<input hidden id="cta_id" value="@h.cta_id" />
 							<input hidden id="cta_denominacion" value="@h.cta_denominacion" />
 						</div>
 
@@ -113,10 +113,10 @@
 	<table class="table table-sm table-golden" id="tbGridProductos">
 		<thead>
 			<tr class="header">
-				<th class="text-center fw-bold" style="width: 5%;">ID</th>
-				<th class="text-center fw-bold" style="width: 40%;">Descripción</th>
-				<th class="text-center fw-bold" style="width: 5%;">ID Prov</th>
-				<th class="text-center fw-bold" style="width: 10%;">Box</th>
+				<th class="text-center fw-bold">ID</th>
+				<th class="text-center fw-bold">Descripción</th>
+				<th class="text-center fw-bold">ID Prov</th>
+				<th class="text-center fw-bold">Box</th>
 				<th class="text-center fw-bold" title="Cantidad Comprada">Cant. Comp.</th>
 				<th class="text-center fw-bold" title="Ya entregado">Ya Entr.</th>
 				<th class="text-center fw-bold" title="A entregar">A Entr.</th>
@@ -127,7 +127,12 @@
 		<tbody>
 			@if (Model == null || Model.ListaDatos == null || !Model.ListaDatos.Any())
 			{
-
+				<tr class="fila-vacia">
+					@* <td colspan="9" class="text-center text-muted py-4">
+						<i class="bx bx-info-circle me-2"></i>
+						No hay items para mostrar.
+					</td> *@
+				</tr>
 			}
 			else
 			{

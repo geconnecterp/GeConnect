@@ -1,7 +1,7 @@
 ﻿
 namespace gc.infraestructura.Dtos.Almacen.RemitoExterno
 {
-	public class RemitoExternoDetalleDto : Dto
+	public class RemitoExternoDetalleDto : Dto, IProductoConUnidad
 	{
 		public string rem_compte { get; set; } = string.Empty;
 		public string rem_nombre { get; set; } = string.Empty;
@@ -30,5 +30,9 @@ namespace gc.infraestructura.Dtos.Almacen.RemitoExterno
 		public string box_id { get; set; } = string.Empty;
 		public decimal remd_cantidad { get; set; }
 		public decimal remd_pcosto { get; set; }
+		public string up_id { get; set; } = string.Empty;
+		public string up_tipo { get; set; } = string.Empty;
+		public string up_desc { get; set; } = string.Empty;
+		public bool PermiteDecimales => up_tipo == "P";
 	}
 }

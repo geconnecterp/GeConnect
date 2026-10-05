@@ -1,5 +1,4 @@
 ﻿@using gc.infraestructura.Helpers
-@using gc.sitio.Areas.Mstk.Models.ConsultaDeRemitoExterno
 @model RemitosExternosModel
 @{
 	var alt = true;
@@ -43,15 +42,16 @@
 				{
 					if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
 					var aNombreDe = item.cta_id != null ? $"({item.cta_id}) {item.cta_denominacion}" : $"{item.cta_denominacion}";
-					<tr class="@clase row-ajuste"
+					var compte = $"{item.tco_desc} {item.cm_compte}";
+					<tr class="@clase row-remito"
 						data-rem-compte="@item.rem_compte"
 						ondblclick="SeleccionarRemito(this,'tbRemitos')">
 						<td class="text-center">@item.rem_compte</td>
-						<td class="text-center">@aNombreDe</td>
+						<td class="text-start">@aNombreDe</td>
 						<td class="text-center">@item.rem_fecha.ToString("dd/MM/yy")</td>
 						<td class="text-start">@item.pre_id</td>
-						<td class="text-start">@item.pre_id</td>
-						<td class="text-start">@item.cm_compte</td>
+						<td class="text-start">@item.pret_desc</td>
+						<td class="text-start">@compte</td>
 					</tr>
 				}
 			}

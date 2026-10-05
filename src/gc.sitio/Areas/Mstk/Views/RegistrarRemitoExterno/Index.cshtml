@@ -5,7 +5,6 @@
 }
 @section styles {
 	<link rel="stylesheet" href="~/css/simplePagination.css"   />
-	<link rel="stylesheet" href="~/lib/jstree/themes/default/style.min.css" />
 }
 <style>
 	.btn-icon-compact {
@@ -29,7 +28,7 @@
 	.input-compact {
 		padding: .15rem .25rem !important;
 		font-size: .8rem !important;
-		height: calc(1.7rem) !important;
+		height: calc(1.6rem) !important;
 		line-height: 1.2 !important;
 	}
 
@@ -89,15 +88,24 @@
 		min-width: 100px !important;
 	}
 
-	.input2Editable {
-		border-color: rgb(70, 196, 104);
-		text-align: left;
-		font-weight: 700;
+	.width-select-depo {
+		width: 40% !important;
+		max-width: 40% !important;
+	}
+
+	.ancho-boton {
+		width: 100px;
+	}
+
+	.ancho-divs {
+		width: 98%;
+		margin-left: 5px;
 	}
 </style>
 <div class="card">
 	<div class="container">
-		<div class="row">
+		<div class="row g-2">
+			<!-- Columna Izquierda -->
 			<div class="row col-6" style="padding-top: 8px;">
 				<fieldset style="margin: 2px;padding: 2px;">
 					<!-- Desde Factura -->
@@ -142,6 +150,7 @@
 					</div>
 				</fieldset>
 			</div>
+			<!-- Columna Derecha -->
 			<div class="row col-6" style="padding-top: 8px;">
 				<fieldset style="margin: 2px;padding: 2px;">
 					<div class="row col-12">
@@ -176,6 +185,90 @@
 						<button type="button" class="btn btn-danger btn-sm mt-1 me-1" style="width:100px;" id="btnCancelar">
 							<i class="bx bx-x-circle"></i> Cancelar
 						</button>
+					</div>
+				</fieldset>
+			</div>
+		</div>
+		<div id="infoComprobanteContainer"></div>
+		<!-- Sección: Detalle de Productos -->
+		<div class="row g-1 mt-1">
+			<fieldset style="margin: 2px;padding: 2px;">
+				<legend>
+					<h5>Detalle de Productos</h5>
+				</legend>
+				<div class="row col-12">
+					<div class="col-2" style="padding-right: 0px;">
+						<partial name="~/areas/ControlComun/views/producto/_ctrBuscarProducto.cshtml" model="@busquedaProducto" />
+					</div>
+					<div class="col-9" style="padding-right: 0px;padding-left: 0px;width: 75%;">
+						<div class="input-group input-group-sm">
+							<input id="ProdID" name="ProdID" type="hidden" value="">
+							<input id="UpID" name="UpID" type="hidden" value="">
+							<input id="BarradoID" name="BarradoID" type="hidden" value="">
+							<input id="ProvID" name="ProvID" type="hidden" value="">
+							<input id="BoxID" name="BoxID" type="hidden" value="">
+							<input id="DepoID" name="DepoID" type="hidden" value="">
+							<span class="input-group-text">ID: </span>
+							<input type="text" id="txtIdProd" class="form-control form-control-sm" style="width:10%;display: none;" readonly />
+							<input type="text" id="txtProDescripcion" class="form-control form-control-sm" style="width: 40%;height: 32px;" readonly />
+							<span class="input-group-text">UP: </span>
+							<input type="number" id="txtUP" class="form-control form-control-sm activable text-end" />
+							<span class="input-group-text">Bto: </span>
+							<input type="number" id="txtBto" class="form-control form-control-sm activable text-end" min="0" />
+							<span class="input-group-text">Unid: </span>
+							<input type="text" id="txtUnid" class="form-control form-control-sm activable text-end" />
+							<input type="text" id="txtUP_ID" style="display:none;" />
+							<input type="text" id="txtBARRADO_ID" style="display:none;" />
+							<input type="text" id="txtID_PROV" style="display:none;" />
+						</div>
+					</div>
+					<div class="col-1 text-center align-middle">
+						<button type="button" class="btn btn-primary btn-sm" id="btnAddProd" title="Agregar Producto">
+							<i class="bx bx-plus-circle"></i> Agregar
+						</button>
+					</div>
+				</div>
+				<div class="grid-golden-body" id="divProductos">
+					<div class="table-wrapper" id="containerListaProducto">
+						<table class="table table-sm table-golden" id="tbGridProductos">
+							<thead>
+								<tr class="header">
+									<th class="text-center fw-bold">ID</th>
+									<th class="text-center fw-bold">Descripción</th>
+									<th class="text-center fw-bold">ID Prov</th>
+									<th class="text-center fw-bold">Box</th>
+									<th class="text-center fw-bold" title="Cantidad Comprada">Cant. Comp.</th>
+									<th class="text-center fw-bold" title="Ya entregado">Ya Entr.</th>
+									<th class="text-center fw-bold" title="A entregar">A Entr.</th>
+									<th class="text-center fw-bold" title="A remitir">A Rem.</th>
+									<th class="text-center fw-bold">Acción</th>
+								</tr>
+							</thead>
+							<tbody>
+								@* <tr>
+									<td colspan="9" class="text-center text-muted py-4">
+										<i class="bx bx-info-circle me-2"></i>
+										No hay items para mostrar.
+									</td>
+								</tr> *@
+							</tbody>
+						</table>
+					</div>
+				</div>
+			</fieldset>
+		</div>
+	</div>
+	
+
+	@* <div class="grid-golden mt-3">
+			<!-- Encabezado -->
+			<div class="grid-golden-header">
+				<div class="row align-items-md-center">
+					<div class="col-md-10 col-sm-6">
+						<h5 class="mb-0">
+							<i class="bx bx-package me-2"></i>
+							<strong>Detalle de Productos a Ajustar</strong>
+						</h5>
 					</div>
 				</div>
 			</div>
@@ -253,7 +346,7 @@
 							<tr>
 								<td colspan="9" class="text-center text-muted py-4">
 									<i class="bx bx-info-circle me-2"></i>
-										No hay items para mostrar.
+									No hay items para mostrar.
 								</td>
 							</tr>
 						</tbody>
@@ -261,9 +354,9 @@
 				</div>
 			</div>
 
-		</div>
+		</div> *@
 
-	</div>
+</div>
 </div>
 
 <div id="modalGestorDocumental"></div>

@@ -1,16 +1,11 @@
 ﻿using gc.api.core.Entidades;
 using gc.infraestructura.Core.EntidadesComunes;
 using gc.infraestructura.Core.EntidadesComunes.Options;
-using gc.infraestructura.Dtos.Almacen.AjusteDeStock;
-using gc.infraestructura.Dtos.Almacen.AjusteDeStock.Request;
 using gc.infraestructura.Dtos.Almacen.RemitoExterno;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.EntidadesComunes.Options;
 using gc.infraestructura.Enumeraciones;
-using gc.infraestructura.Helpers;
 using gc.sitio.Areas.Mstk.Models;
-using gc.sitio.Areas.Mstk.Models.ConsultaDeAjusteDeStock;
-using gc.sitio.Areas.Mstk.Models.ConsultaDeRemitoExterno;
 using gc.sitio.core.Servicios.Contratos;
 using gc.sitio.core.Servicios.Contratos.DocManager;
 using Microsoft.AspNetCore.Mvc;
@@ -99,7 +94,7 @@ namespace gc.sitio.Areas.Mstk.Controllers.ConsultaDeRemitoExterno
 		}
 
 		[HttpPost]
-		public async Task<IActionResult> CargarAjustesDeStock(DateTime f_desde, DateTime f_hasta, bool buscaNew, string sort = "p_id", string sortDir = "asc", int pag = 1, bool actualizar = false)
+		public async Task<IActionResult> CargarRemitosExternos(DateTime f_desde, DateTime f_hasta, bool buscaNew, string sort = "p_id", string sortDir = "asc", int pag = 1, bool actualizar = false)
 		{
 			var model = new RemitosExternosModel();
 			var lista = new List<RemitoExternoListaDto>();
