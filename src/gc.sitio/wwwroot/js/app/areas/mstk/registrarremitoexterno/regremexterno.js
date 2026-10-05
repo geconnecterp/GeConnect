@@ -58,7 +58,7 @@ function InicializarEventos() {
 
 	$("#DesdeFactura").prop("checked", true);
 	// Dispara el evento para aplicar habilitación + limpieza
-	$("input[name='TipoRelacion']:checked").trigger("change");
+	
 
 	$(document).on("change", "input[name='TipoRelacion']", function () {
 
@@ -75,6 +75,10 @@ function InicializarEventos() {
 		// Autocompletar Sin Relación
 		const txtAutocompletar = $("#Rel03");
 		const hiddenAutocompletar = $("#Rel03Item");
+
+		// Helpers
+		function disableSimul(ctrl) { ctrl.addClass("input-simul-disabled"); }
+		function enableSimul(ctrl) { ctrl.removeClass("input-simul-disabled"); }
 
 		// Función auxiliar para limpiar
 		function limpiarFactura() {
@@ -100,53 +104,45 @@ function InicializarEventos() {
 		// ============================
 		if (tipo === "Factura") {
 
-			// Habilitar Factura
-			ddlTipo.prop("disabled", false);
-			txtPtoVta.prop("disabled", false);
-			txtNroComprobante.prop("disabled", false);
+			enableSimul(ddlTipo);
+			enableSimul(txtPtoVta);
+			enableSimul(txtNroComprobante);
 
-			// Deshabilitar Cotización + limpiar
-			txtNroCotizacion.prop("disabled", true);
+			disableSimul(txtNroCotizacion);
+			disableSimul(txtAutocompletar);
+
 			limpiarCotizacion();
-
-			// Deshabilitar Autocompletar + limpiar
-			txtAutocompletar.prop("disabled", true);
 			limpiarSinRelacion();
 		}
 
 		else if (tipo === "Cotizacion") {
+			disableSimul(ddlTipo);
+			disableSimul(txtPtoVta);
+			disableSimul(txtNroComprobante);
 
-			// Deshabilitar Factura + limpiar
-			ddlTipo.prop("disabled", true);
-			txtPtoVta.prop("disabled", true);
-			txtNroComprobante.prop("disabled", true);
+			enableSimul(txtNroCotizacion);
+
+			disableSimul(txtAutocompletar);
 			limpiarFactura();
-
-			// Habilitar Cotización
-			txtNroCotizacion.prop("disabled", false);
-
-			// Deshabilitar Autocompletar + limpiar
-			txtAutocompletar.prop("disabled", true);
 			limpiarSinRelacion();
 		}
 
 		else if (tipo === "SinRelacion") {
+			disableSimul(ddlTipo);
+			disableSimul(txtPtoVta);
+			disableSimul(txtNroComprobante);
 
-			// Deshabilitar Factura + limpiar
-			ddlTipo.prop("disabled", true);
-			txtPtoVta.prop("disabled", true);
-			txtNroComprobante.prop("disabled", true);
+			disableSimul(txtNroCotizacion);
+
+			enableSimul(txtAutocompletar);
 			limpiarFactura();
 
-			// Deshabilitar Cotización + limpiar
-			txtNroCotizacion.prop("disabled", true);
 			limpiarCotizacion();
 
-			// Habilitar Autocompletar
-			txtAutocompletar.prop("disabled", false);
 		}
 	});
 	CancelarRemito();
+	$("input[name='TipoRelacion']:checked").trigger("change");
 }
 
 function analizaInputUP(x) {
@@ -414,14 +410,7 @@ function LimpiarTablaDeProductos() {
 			// ✔ Limpiar tabla
 			const tbody = $("#tbGridProductos tbody");
 			tbody.empty();
-			tbody.append(`
-				<tr class="fila-vacia">
-					<td colspan="9" class="text-center text-muted py-4">
-						<i class="bx bx-info-circle me-2"></i>
-						No hay items para mostrar.
-					</td>
-				</tr>
-			`);
+			tbody.append(``);
 		}
 	});
 }
@@ -550,14 +539,7 @@ function CargarEventosTablaProductos() {
 		const filasRestantes = tbody.find("tr").length;
 
 		if (filasRestantes === 0) {
-			tbody.append(`
-				<tr class="fila-vacia">
-					<td colspan="9" class="text-center text-muted py-4">
-						<i class="bx bx-info-circle me-2"></i>
-						No hay items para mostrar.
-					</td>
-				</tr>
-			`);
+			tbody.append(``);
 		} else {
 			RecalcularAlternanciaFilas();
 		}
