@@ -363,8 +363,8 @@ function btnAgregarProductoClick() {
 	$("#BarradoID").val("");
 	$("#ProvID").val("");
 	$("#ProdNombre").text("");
-	$("#ProdUP").val("");
-	$("#ProdBto").val("");
+	$("#txtUP").val("");
+	$("#txtBto").val("");
 	$("#ProdUnid").val("");
 
 	$("#Busqueda").trigger('focus');
@@ -846,9 +846,9 @@ function ResetearPantallaRemito() {
 	$("#DepoID").val("");
 
 	$("#ProdNombre").text("");
-	$("#ProdUP").val("");
-	$("#ProdBto").val("");
-	$("#ProdUnid").val("");
+	$("#txtUP").val("");
+	$("#txtBto").val("");
+	$("#txtUnid").val("");
 
 	// ============================
 	// 3) Limpiar acordeón
@@ -903,8 +903,8 @@ function ResetearPantallaRemito() {
 	// ============================
 	// 9) Deshabilitar sección inferior
 	// ============================
-	$("#ProdID, #ProdUP, #ProdBto, #ProdUnid, #Busqueda").prop("disabled", true);
-	$("#btnAgregarProducto, #btnQuitarProducto, #btnBusquedaBase").prop("disabled", true);
+	$("#ProdID, #txtUP, #txtBto, #txtUnid, #Busqueda").prop("disabled", true);
+	$("#btnAddProd, #btnQuitarProducto, #btnBusquedaBase").prop("disabled", true);
 
 	console.log("Pantalla de remito reseteada correctamente.");
 }
@@ -1049,8 +1049,8 @@ function CancelarRemito() {
 	$("input[name='TipoRelacion']").prop("disabled", false);
 
 	// Deshabilitar sección inferior
-	$("#ProdID, #ProdUP, #ProdBto, #ProdUnid, #Busqueda").prop("disabled", true);
-	$("#btnAgregarProducto, #btnQuitarProducto, #btnBusquedaBase").prop("disabled", true);
+	$("#ProdID, #txtUP, #txtBto, #txtUnid, #Busqueda").prop("disabled", true);
+	$("#btnAddProd, #btnQuitarProducto, #btnBusquedaBase").prop("disabled", true);
 
 	// Botones
 	$("#btnCargar").prop("disabled", false);
@@ -1058,6 +1058,11 @@ function CancelarRemito() {
 	$("#btnCancelar").prop("disabled", true);
 
 	LimpiarTablaDeProductos();
+
+	$("#DesdeFactura").prop("checked", true).trigger("change");
+
+	$("#listaDeposito").val("").trigger("change");
+	$("#Obs").val(""); 
 
 	console.log("CancelarRemito");
 }
@@ -1070,14 +1075,16 @@ function HabilitarCargaDeProductos() {
 	$("input[name='TipoRelacion']").prop("disabled", true);
 
 	// Habilitar sección inferior
-	$("#ProdID, #ProdUP, #ProdBto, #ProdUnid, #Busqueda").prop("disabled", false);
-	$("#btnAgregarProducto, #btnQuitarProducto, #btnBusquedaBase").prop("disabled", false);
+	$("#ProdID, #txtUP, #txtBto, #txtUnid, #Busqueda").prop("disabled", false);
+	$("#btnAddProd, #btnQuitarProducto, #btnBusquedaBase").prop("disabled", false);
 
 	// Botones
 	$("#btnCargar").prop("disabled", true);
 	$("#btnConfirmar").prop("disabled", false);
 	$("#btnCancelar").prop("disabled", false);
 
+
+	$("#Busqueda").trigger('focus');
 	console.log("HabilitarCargaDeProductos");
 }
 
