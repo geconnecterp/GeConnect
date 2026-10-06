@@ -194,8 +194,12 @@ function HandlerConfirmarAjuste(nota) {
 				$("#msjModal").modal("hide");
 				return true;
 			}, false, ["Aceptar"], "succ!", null);
+			$("#listaDeposito").val("");
+			$("#listaMotivo").val("");
+			$("#listaBox").empty();
 			$("#tbDetalleDeProductosAAjustar tbody tr").remove();
 			$("#txtNota").val("");
+			LimpiarCamposDeProducto();
 			ImprimirAjusteStk_Generado(o.id);
 		}
 	});

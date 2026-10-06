@@ -350,18 +350,18 @@ function ValidarDevolucion() {
 			return true;
 		}, false, ["Aceptar"], "warn!", null);
 	}
-	var ctaId = $("#Rel05Item").val();
-	if (ctaId == "") {
-		hayError = true;
-		AbrirMensaje("Atención", "Debe seleccionar una cuenta válida.", function () {
-			$("#msjModal").modal("hide");
-			$("#Rel05").trigger('focus');
-			return true;
-		}, false, ["Aceptar"], "warn!", null);
-	}
+	//var ctaId = $("#Rel05Item").val();
+	//if (ctaId == "") {
+	//	hayError = true;
+	//	AbrirMensaje("Atención", "Debe seleccionar una cuenta válida.", function () {
+	//		$("#msjModal").modal("hide");
+	//		$("#Rel05").trigger('focus');
+	//		return true;
+	//	}, false, ["Aceptar"], "warn!", null);
+	//}
 	if (!hayError) {
 		AbrirWaiting();
-		var datos = { dpId, ctaId }
+		var datos = { dpId }
 		PostGen(datos, ValidarNroDeDevARevertirURL, function (o) {
 			CerrarWaiting();
 			if (o.error === true) {
@@ -392,6 +392,15 @@ function RevertirDevolucion(dpId) {
 			const $fila = $("#tbDetalleDeProductosADevolver tbody tr").first();
 			const ctaId = $fila.data("cta-id");
 			const motivo = $fila.data("dv-motivo");
+			const depoId = $fila.data("depo-id");
+			const boxId = $fila.data("box-id");
+
+			// Seleccionar depósito (esto dispara la carga de boxes)
+			$("#listaDeposito").val(depoId).trigger("change");
+
+			// Esperar a que los boxes se carguen y luego seleccionar el correcto
+			seleccionarBoxCuandoEsteListo(boxId, true);
+
 			cargarAutocompleteRel05ConValor(ctaId);
 
 			$("#txtNota").val("Revertido " + motivo);
@@ -405,6 +414,17 @@ function RevertirDevolucion(dpId) {
 		return true
 	});
 	CerrarWaiting();
+}
+
+function seleccionarBoxCuandoEsteListo(boxId, deshabilitado = false) {
+	const interval = setInterval(() => {
+		const $box = $("#listaBox");
+		if ($box.length > 0 && $box.find(`option[value='${boxId}']`).length > 0) {
+			$box.val(boxId).trigger("change");
+			clearInterval(interval);
+		}
+		$("#listaBox").prop("disabled", deshabilitado);
+	}, 150);
 }
 
 function cargarAutocompleteRel05ConValor(valor) {

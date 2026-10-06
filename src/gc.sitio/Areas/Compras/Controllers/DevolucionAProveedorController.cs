@@ -280,7 +280,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 			}
 		}
 
-		public async Task<JsonResult> ValidarNroDeDevARevertir(string dpId, string ctaId)
+		public async Task<JsonResult> ValidarNroDeDevARevertir(string dpId)
 		{
 			try
 			{
@@ -292,8 +292,8 @@ namespace gc.sitio.Areas.Compras.Controllers
 					return Json(new { error = true, warn = false, msg = $"La devolución indicada '{dpId}' no existe." });
 				
 				var unProducto = listaAjustesPrevios.First();
-				if (unProducto.cta_id != ctaId)
-					return Json(new { error = false, warn = true, msg = $"La devolución indicada '{dpId}' no corresponde al proveedor {ctaId}." });
+				//if (unProducto.cta_id != ctaId)
+				//	return Json(new { error = false, warn = true, msg = $"La devolución indicada '{dpId}' no corresponde al proveedor {ctaId}." });
 				
 				return Json(new { error = false, warn = false, msg = "" });
 			}
