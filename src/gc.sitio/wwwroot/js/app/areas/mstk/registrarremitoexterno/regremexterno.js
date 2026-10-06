@@ -28,6 +28,19 @@ function InicializarEventos() {
 	$(document).on("keyup", "#NroComprobante", ControlaKeyUpCompteNro);
 	$(document).off("focusout", "#NroComprobante");
 	$(document).on("focusout", "#NroComprobante", ControlaFocusOutCompteNro);
+	$(document).off("focus", "#NroComprobante");
+	$(document).on("focus", "#NroComprobante", function () {
+		const val = $(this).val();
+
+		const input = this;
+		setTimeout(() => input.setSelectionRange(0, val.length), 120);
+
+	});
+	$(document).on("click", "#NroComprobante", function (e) {
+		const val = $(this).val();
+		const input = this;
+		setTimeout(() => input.setSelectionRange(0, val.length), 120);
+	});
 
 	$(document).off("keypress", "#PtoVta");
 	$(document).on("keypress", "#PtoVta", function (e) {
@@ -53,12 +66,14 @@ function InicializarEventos() {
 	$("#btnAddProd").off("click", btnAgregarProductoClick);
 	$("#btnAddProd").on("click", btnAgregarProductoClick);
 
-	$("#PtoVta").inputmask("9999");
-	$("#NroComprobante").inputmask("99999999");
+	//$("#PtoVta").inputmask("9999");
+	//$("#NroComprobante").inputmask("99999999");
+	applyIntegerMask("#PtoVta", 4);
+	applyIntegerMask("#NroComprobante", 8);
 
 	$("#DesdeFactura").prop("checked", true);
 	// Dispara el evento para aplicar habilitación + limpieza
-	
+
 
 	$(document).on("change", "input[name='TipoRelacion']", function () {
 
@@ -143,6 +158,12 @@ function InicializarEventos() {
 	});
 	CancelarRemito();
 	$("input[name='TipoRelacion']:checked").trigger("change");
+}
+
+function padMaskedValue(selector, length) {
+	let raw = $(selector).inputmask('unmaskedvalue') || "";
+	let padded = raw.toString().padStart(length, '0');
+	$(selector).val(padded);
 }
 
 function analizaInputUP(x) {
@@ -1060,9 +1081,11 @@ function CancelarRemito() {
 	LimpiarTablaDeProductos();
 
 	$("#DesdeFactura").prop("checked", true).trigger("change");
-
+	$("#listaTipoComprobante").val("");
+	$("#PtoVta").val("");
+	$("#NroComprobante").val("");
 	$("#listaDeposito").val("").trigger("change");
-	$("#Obs").val(""); 
+	$("#Obs").val("");
 
 	console.log("CancelarRemito");
 }
@@ -1187,7 +1210,7 @@ function ControlaFocusOutCompteNro() {
 	if (nro != "") {
 		var aux = $("#NroComprobante").inputmask('unmaskedvalue').padStart(8, '0');
 		$("#NroComprobante").val(aux);
-		$("#listaDeposito").trigger("focus");
+		//$("#listaDeposito").trigger("focus");
 	}
 }
 
@@ -1420,6 +1443,32 @@ function getMaskForTwoDecimals(selector) {
 		unmaskAsNumber: true
 	});
 }
+
+function applyIntegerMask(selector, length) {
+	$(selector).inputmask({
+		mask: ''.padStart(length, '9'),   // ej: length=4 → "9999"
+		placeholder: ''.padStart(length, '0'),
+		showMaskOnFocus: true,
+		showMaskOnHover: false,
+		clearMaskOnLostFocus: false,
+		rightAlign: true,
+
+		// 🔥 Solo números
+		definitions: {
+			'9': {
+				validator: "[0-9]",
+				cardinality: 1
+			}
+		},
+
+		// 🔥 Mantener STRING (no convertir a número)
+		unmaskAsNumber: false,
+
+		// 🔥 Evitar que Inputmask mueva el caret
+		positionCaretOnClick: "select"
+	});
+}
+
 
 ///Funcion para validar la existencia del prudcto agregado en el comprobante 
 function ValidarExistenciaDeProducto(p_id) {

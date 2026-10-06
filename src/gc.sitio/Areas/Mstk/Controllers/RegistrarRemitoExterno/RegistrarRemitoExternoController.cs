@@ -257,12 +257,12 @@ namespace gc.sitio.Areas.Mstk.Controllers.RegistrarRemitoExterno
 					Resultado = false,
 					Mensaje = "El comprobante no permite carga de productos debido a su estado."
 				};
-			if (string.IsNullOrEmpty(item.pre_nombre) || string.IsNullOrEmpty(item.pre_domicilio))
-				return new ResultadoValidacionRemito
-				{
-					Resultado = false,
-					Mensaje = "El comprobante no tiene definido Nombre y Domicilio."
-				};
+			//if (string.IsNullOrEmpty(item.pre_nombre) || string.IsNullOrEmpty(item.pre_domicilio))
+			//	return new ResultadoValidacionRemito
+			//	{
+			//		Resultado = false,
+			//		Mensaje = "El comprobante no tiene definido Nombre y Domicilio."
+			//	};
 			var fechaLimite = DateTime.Now.AddDays(-60);
 			if (item.pre_fecha < fechaLimite)
 				return new ResultadoValidacionRemito
@@ -271,12 +271,12 @@ namespace gc.sitio.Areas.Mstk.Controllers.RegistrarRemitoExterno
 					Mensaje = "El comprobante tiene más de 60 días y no permite carga de productos."
 				};
 
-			if (lista.Exists(x => x.pre_cantidad_ent < x.pre_cantidad))
-				return new ResultadoValidacionRemito
-				{
-					Resultado = false,
-					Mensaje = "Existen ítems con cantidad entregada menor a la cantidad comprada."
-				};
+			//if (lista.Exists(x => x.pre_cantidad_ent < x.pre_cantidad))
+			//	return new ResultadoValidacionRemito
+			//	{
+			//		Resultado = false,
+			//		Mensaje = "Existen ítems con cantidad entregada menor a la cantidad comprada."
+			//	};
 
 			return new ResultadoValidacionRemito
 			{
