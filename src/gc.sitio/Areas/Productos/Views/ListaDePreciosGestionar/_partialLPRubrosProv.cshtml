@@ -45,6 +45,12 @@
 		padding-top: 1px !important;
 		padding-bottom: 1px !important;
 	}
+
+	.activable-disabled {
+		opacity: 0.4;
+		cursor: not-allowed !important;
+		pointer-events: none;
+	}
 </style>
 <div class="grid-golden">
 	<div class="grid-golden-header">
@@ -86,7 +92,7 @@
 								<td class="@Model.ObtenerClase(item.lpp_mgn_principal_porc) cell-fit-content">@GridHelper.FormatearDato(item.lpp_mgn_principal_porc, FormatDato.Monto, true)</td>
 								<td class="text-center align-middle td-btn-icon">
 									<div class="d-flex justify-content-center gap-1">
-										<button type="button" class="btn btn-danger btn-icon-compact activable" title="Quitar elemento" onclick="eliminarItemRubroCta('@item.rub_id','@item.cta_id')">
+										<button type="button" class="btn btn-danger btn-icon-compact activable btn-eliminar" title="Quitar elemento" onclick="eliminarItemRubroCta('@item.rub_id','@item.cta_id')">
 											<i class="bx bx-trash"></i>
 										</button>
 									</div>

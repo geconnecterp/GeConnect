@@ -36,7 +36,23 @@ namespace gc.sitio.Areas.Productos.Controllers.ListaDePreciosGestionar
 				_context.HttpContext?.Session.SetString("ListaPrecio", json);
 			}
 		}
-
+		public List<ListaPrecioRubCtaDto> ListaPrecioRubCtaSinModificar
+		{
+			get
+			{
+				var json = _context.HttpContext?.Session.GetString("ListaPrecioRubCtaSinModificar");
+				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+				{
+					return [];
+				}
+				return JsonConvert.DeserializeObject<List<ListaPrecioRubCtaDto>>(json) ?? [];
+			}
+			set
+			{
+				var json = JsonConvert.SerializeObject(value);
+				_context.HttpContext?.Session.SetString("ListaPrecioRubCtaSinModificar", json);
+			}
+		}
 		public List<ListaPrecioRubCtaDto> ListaPrecioRubCta
 		{
 			get

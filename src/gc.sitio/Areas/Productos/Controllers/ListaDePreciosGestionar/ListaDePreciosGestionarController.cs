@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using System.Security.Cryptography;
 
 namespace gc.sitio.Areas.Productos.Controllers.ListaDePreciosGestionar
 {
@@ -22,6 +23,7 @@ namespace gc.sitio.Areas.Productos.Controllers.ListaDePreciosGestionar
 		private readonly IRubroServicio _rubroServicio;
 		private readonly ICuentaServicio _cuentaServicio;
 		private const string lp_principal = "001";
+		private const string PROV_TODOS = "TODOS";
 		public ListaDePreciosGestionarController(IOptions<AppSettings> options, IHttpContextAccessor contexto, ILogger<ListaDePreciosGestionarController> logger,
 												 IPrecioListaServicio precioListaSrv, IListaDePrecioServicio listaPrcSrv, ISectorServicio sectorServicio,
 												 IRubroServicio rubroServicio, ICuentaServicio cuentaServicio) : base(options, contexto, logger)
@@ -84,6 +86,30 @@ namespace gc.sitio.Areas.Productos.Controllers.ListaDePreciosGestionar
 			}
 		}
 
+		public IActionResult RestaurarListaDePrecioes(string lp_id)
+		{
+			try
+			{
+				if (!VerificarAutenticacion(out IActionResult redirectResult))
+					return redirectResult;
+
+				var listaTemp = _precioListaSrv.ObtenerListaPreciosRubCta(lp_id, TokenCookie).Result.ListaEntidad;
+				ListaPrecioRubCta = listaTemp;
+				var listaPRubCta = ObtenerGridCoreSmart<ListaPrecioRubCtaDto>(listaTemp);
+				return PartialView("_partialLPRubrosProv", listaPRubCta);
+			}
+			catch (Exception ex)
+			{
+				_logger?.LogError(ex, ex.Message);
+				return Json(new
+				{
+					ok = false,
+					error = true,
+					mensaje = ex.Message
+				});
+			}
+		}
+
 		public IActionResult CargarDatosDeListaDePrecioRubCta(string lp_id)
 		{
 			try
@@ -129,7 +155,7 @@ namespace gc.sitio.Areas.Productos.Controllers.ListaDePreciosGestionar
 				var listaSectores = _sectorServicio.GetSectoresLista(TokenCookie);
 				model.ListaSectores = ObtenerListaSectores(listaSectores ?? []);
 				model.Mgn = 0;
-				model.CargarPorSector = true;
+				model.CargarPorSector = false;
 				var listR01 = new List<ComboGenDto>();
 				ViewBag.Rel01List = HelperMvc<ComboGenDto>.ListaGenerica(listR01);
 				if (ProveedoresLista.Count == 0)
@@ -144,74 +170,128 @@ namespace gc.sitio.Areas.Productos.Controllers.ListaDePreciosGestionar
 			}
 		}
 
-		public JsonResult AgregarRegistros(string lpId, string valorSeleccionado, bool porSectores, string ctaId, decimal mgn)
+		public JsonResult AgregarRegistros(string lpId, string valorSeleccionado, bool porSectores, string ctaId, string ctaDesc, decimal mgn)
 		{
 			try
 			{
 				if (!VerificarAutenticacion(out IActionResult redirectResult))
 					return Json(new { error = true, ok = false, mensaje = "No autorizado" });
-				if (string.IsNullOrEmpty(lpId) || string.IsNullOrEmpty(valorSeleccionado) || string.IsNullOrEmpty(ctaId) || mgn <= 0)
-					return Json(new { error = true, ok = false, mensaje = "No se han provisto los datos necesarios." });
+				if (string.IsNullOrEmpty(lpId))
+					return Json(new { error = true, ok = false, mensaje = "No se ha receptado una lista de precios válida." });
+				if (string.IsNullOrEmpty(valorSeleccionado))
+					return Json(new { error = true, ok = false, mensaje = "No se ha seleccionado Rubro/Sector válido." });
+				if (string.IsNullOrEmpty(ctaId))
+					return Json(new { error = true, ok = false, mensaje = "No se ha seleccionado un Proveedor." });
+				if (mgn <= 0)
+					return Json(new { error = true, ok = false, mensaje = "Debe especificar un valor de '% Mg LP' válido (mayor a 0)." });
 
+				var esReemplazo = false;
 				var rubros = new List<RubroListaABMDto>();
 				rubros = porSectores
-					? _sectorServicio.GetRubroParaABM(valorSeleccionado, TokenCookie)
-					: Mapper(_rubroServicio.ObtenerUnRubro(valorSeleccionado, TokenCookie));
+					? _sectorServicio.GetRubroParaABM(valorSeleccionado, TokenCookie) //Rubros de un sector
+					: Mapper(_rubroServicio.ObtenerUnRubro(valorSeleccionado, TokenCookie)); //Un rubro específico
 
 				if (rubros == null || rubros.Count == 0)
 					return Json(new { error = true, ok = false, mensaje = "No se encontraron rubros para los criterios proporcionados." });
 
-				// VALIDACIÓN PREVIA
-				foreach (var r in rubros)
+				// VALIDACIÓN Y REEMPLAZO / AGREGADO
+				if (!porSectores)
 				{
-					// Caso 1: el usuario quiere agregar AZUC / %
-					if (ctaId == "%")
-					{
-						bool existe = ListaPrecioRubCta.Any(x =>
-							x.rub_id == r.Rub_Id); // existe para cualquier proveedor, incluso %
+					// Caso A: rubro puntual
+					var existe = ListaPrecioRubCta
+						.FirstOrDefault(x => x.rub_id == rubros[0].Rub_Id && x.cta_id == ctaId);
 
-						if (existe)
-						{
-							return Json(new
-							{
-								error = true,
-								ok = false,
-								mensaje = $"El rubro {r.Rub_Id} ya existe para algún proveedor y no puede agregarse como '%'."
-							});
-						}
-					}
-					else
+					if (existe != null)
 					{
-						// Caso 2: el usuario quiere agregar AZUC / C0018526
-						bool existe = ListaPrecioRubCta.Any(x =>
-							x.rub_id == r.Rub_Id &&
-							(x.cta_id == "%" || x.cta_id == ctaId));
-
-						if (existe)
-						{
-							return Json(new
-							{
-								error = true,
-								ok = false,
-								mensaje = $"El rubro {r.Rub_Id} ya existe para el proveedor '{ctaId}' o como '%'."
-							});
-						}
+						// REEMPLAZO
+						existe.lpp_mgn_principal_porc = mgn;
+						ListaPrecioRubCta = ListaPrecioRubCta; // persistir en sesión
+						return Json(new { error = false, warn = false, msg = "" });
 					}
+
+					// NO EXISTE → AGREGAR
+					var nuevo = new ListaPrecioRubCtaDto
+					{
+						lp_id = lpId,
+						rub_id = rubros[0].Rub_Id,
+						rub_desc = rubros[0].Rub_Desc,
+						cta_id = ctaId,
+						cta_denominacion = ctaId == "%" ? PROV_TODOS :
+							ProveedoresLista.First(x => x.Cta_Id == ctaId).Cta_Denominacion,
+						lpp_mgn_principal_porc = mgn
+					};
+
+					var listaTemp = ListaPrecioRubCta;
+					listaTemp.Add(nuevo);
+					ListaPrecioRubCta = listaTemp;
+
+					return Json(new { error = false, warn = false, msg = "" });
+				}
+				else
+				{
+					// Caso B: rubros del sector
+					// Si alguno existe → error y NO agrego nada
+					bool algunoExiste = rubros.Any(r =>
+						ListaPrecioRubCta.Any(x => x.rub_id == r.Rub_Id && (x.cta_id == ctaId || ctaId == "%")));
+
+					if (algunoExiste)
+					{
+						return Json(new
+						{
+							error = true,
+							ok = false,
+							mensaje = "Alguno de los rubros del sector ya existe y no pueden agregarse."
+						});
+					}
+
+					// Ninguno existe → agregar todos
+					var listaTemp = ListaPrecioRubCta;
+
+					foreach (var r in rubros)
+					{
+						listaTemp.Add(new ListaPrecioRubCtaDto
+						{
+							lp_id = lpId,
+							rub_id = r.Rub_Id,
+							rub_desc = r.Rub_Desc,
+							cta_id = ctaId,
+							cta_denominacion = ctaId == "%" ? PROV_TODOS :
+								ProveedoresLista.First(x => x.Cta_Id == ctaId).Cta_Denominacion,
+							lpp_mgn_principal_porc = mgn
+						});
+					}
+
+					ListaPrecioRubCta = listaTemp;
+
+					return Json(new { error = false, warn = false, msg = "" });
 				}
 
-				var listaRubros = rubros.Select(r => new ListaPrecioRubCtaDto
+			}
+			catch (Exception ex)
+			{
+				_logger?.LogError(ex, ex.Message);
+				return Json(new
 				{
-					lp_id = lpId,
-					rub_id = r.Rub_Id,
-					rub_desc = r.Rub_Desc,
-					cta_id = ctaId,
-					cta_denominacion = ProveedoresLista.Where(x => x.Cta_Id == ctaId).FirstOrDefault().Cta_Denominacion,
-					lpp_mgn_principal_porc = mgn
+					ok = false,
+					error = true,
+					mensaje = ex.Message
 				});
+			}
+		}
+
+		public JsonResult EliminarItemRubroCta(string rubId, string ctaId)
+		{
+			try
+			{
+				if (!VerificarAutenticacion(out IActionResult redirectResult))
+					return Json(new { error = true, ok = false, mensaje = "No autorizado" });
+
 				var listaTemp = ListaPrecioRubCta;
-				listaTemp.AddRange(listaRubros);
+				var item = listaTemp.Where(x => x.cta_id == ctaId && x.rub_id == rubId).First();
+				if (item != null)
+					listaTemp.Remove(item);
 				ListaPrecioRubCta = listaTemp;
-				return Json(new { error = false, warn = false, msg = "" });
+				return Json(new { error = false, ok = true, mensaje = "" });
 			}
 			catch (Exception ex)
 			{

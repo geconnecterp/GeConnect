@@ -1,6 +1,8 @@
 ﻿var cta_id_seleccionada = "";
+var cta_desc_seleccionada = "";
 var lpId_Seleccionada = "";
 var lpMgnPrincipal_Seleccionada = "";
+let seHanRealizadoModifcaciones = false;
 $(function () {
     InicializaPantalla();
     InicializaEventos();
@@ -68,7 +70,9 @@ function InicializaEventos() {
             PostGenHtml({ lp_id: lpId }, cargarDatosDeListaDePrecioRubCtaURL, function (obj) {
                 CerrarWaiting();
                 $("#divRubrosProv").html(obj);
-                //deshabilitarYBlanquearActivables();
+                InicializarEventosListaDePrecioRubCta();
+                // Deshabilitar botones al cargar
+                deshabilitarYBlanquearActivables2();
             });
 
             AbrirWaiting("Cargando datos...");
@@ -116,6 +120,25 @@ function InicializaEventos() {
     });
 }
 
+function InicializarEventosListaDePrecioRubCta() {
+    $(document).off("click", "#tbGridListaMgnRubCta tbody tr");
+    $(document).on("click", "#tbGridListaMgnRubCta tbody tr", function (e) {
+
+        if ($(e.target).is("button, a, .btn, i")) return;
+
+        const $nuevaFila = $(this);
+        ProcesarSeleccionFilaListaDePrecioRubCta($nuevaFila);
+    });
+}
+
+function ProcesarSeleccionFilaListaDePrecioRubCta($fila) {
+    // Quitar selección previa
+    $("#tbGridListaMgnRubCta tbody tr").removeClass("selected-row");
+    // Marcar fila seleccionada
+    $fila.addClass("selected-row");
+
+}
+
 function ControlaBtnAbmAceptarClick() {
     AbrirMensaje("ATENCIÓN", `Se pueden generar modificaciones masivas de precios, en carga temporal ¿Esta seguro de continuar?`, function (e) {
         $("#msjModal").modal("hide");
@@ -130,7 +153,7 @@ function ControlaBtnAbmAceptarClick() {
         }
         return true;
 
-    }, true, ["Aceptar", "Cancelar"], "question!", null);
+    }, true, ["SI", "NO"], "question!", null);
 }
 
 function handlerBtnAbmAceptarClick() {
@@ -254,6 +277,7 @@ function deshabilitarYBlanquearActivables() {
 
 function ControlaBtnAbmModifClick() {
     habilitarActivables();
+    habilitarActivables2();
     $("#btnAbmAceptar").prop("disabled", false);
     $("#btnAbmCancelar").prop("disabled", false);
     $("#btnAbmModif").prop("disabled", true);
@@ -262,23 +286,76 @@ function ControlaBtnAbmModifClick() {
 }
 
 function ControlaBtnAbmCancelarClick() {
-    deshabilitarYBlanquearActivables();
-    $("#btnAbmAceptar").prop("disabled", true);
-    $("#btnAbmCancelar").prop("disabled", true);
-    $("#btnAbmModif").prop("disabled", false);
+    if (seHanRealizadoModifcaciones) {
+        AbrirMensaje("ATENCIÓN", `¿Cancelar las modificaciones?`, function (e) {
+            $("#msjModal").modal("hide");
+            switch (e) {
+                case "SI":
+                    AbrirWaiting("Cancelando...");
+                    seHanRealizadoModifcaciones = false;
+                    RestaurarListaRubroCta(lpId_Seleccionada);
+                    setTimeout(() => {
+                        deshabilitarYBlanquearActivables();
+                        deshabilitarYBlanquearActivables2();
+                        $("#btnAbmAceptar").prop("disabled", true);
+                        $("#btnAbmCancelar").prop("disabled", true);
+                        $("#btnAbmModif").prop("disabled", false);
 
-    $("#tbGridListaPrecios").removeClass("tabla-bloqueada");
+                        $("#tbGridListaPrecios").removeClass("tabla-bloqueada");
+                        CerrarWaiting();
+                    }, 1000);
+                    break;
+                case "NO":
+                    break;
+                default: //NO
+                    break;
+            }
+            return true;
+
+        }, true, ["SI", "NO"], "question!", null);
+    }
+    else {
+        AbrirWaiting("Cancelando...");
+        seHanRealizadoModifcaciones = false;
+        RestaurarListaRubroCta(lpId_Seleccionada);
+        setTimeout(() => {
+            deshabilitarYBlanquearActivables();
+            deshabilitarYBlanquearActivables2();
+            $("#btnAbmAceptar").prop("disabled", true);
+            $("#btnAbmCancelar").prop("disabled", true);
+            $("#btnAbmModif").prop("disabled", false);
+
+            $("#tbGridListaPrecios").removeClass("tabla-bloqueada");
+            CerrarWaiting();
+        }, 1000);
+    }
 }
+
+function deshabilitarYBlanquearActivables2() {
+    $(".btn-eliminar").each(function () {
+        $(this).prop("disabled", true);
+        $(this).addClass("activable-disabled");
+    });
+}
+
+function habilitarActivables2() {
+    $(".btn-eliminar").each(function () {
+        $(this).prop("disabled", false);
+        $(this).removeClass("activable-disabled");
+    });
+}
+
 function agregarItemRubroCta() {
     AbrirWaiting("Agregando registros...");
     var valorSeleccionado = "";
     var porSectores = $("#chkPorSectores").is(":checked");
     var ctaId = cta_id_seleccionada ? cta_id_seleccionada : "%";
+    var ctaDesc = cta_id_seleccionada ? cta_desc_seleccionada : "TODOS";
     var valorSeleccionado = $("#contenedorSector:visible #listaSectores").val()
         || $("#contenedorRubros:visible #listaRubros").val();
     var mgn = $("#Mgn").inputmask('unmaskedvalue');
     var lpId = lpId_Seleccionada;
-    var data = { lpId, valorSeleccionado, porSectores, ctaId, mgn };
+    var data = { lpId, valorSeleccionado, porSectores, ctaId, ctaDesc, mgn };
     PostGen(data, agregarRegistrosUrl, function (obj) {
         CerrarWaiting();
         if (obj.error === true) {
@@ -288,6 +365,7 @@ function agregarItemRubroCta() {
             }, false, ["Aceptar"], "error!", null);
         }
         else {
+            seHanRealizadoModifcaciones = true;
             actualizarListaRubroCta(lpId_Seleccionada);
             setTimeout(() => {
                 $("#listaSectores").val("");
@@ -297,6 +375,12 @@ function agregarItemRubroCta() {
                 $("#Mgn").val("0.00");
             }, 100);
         }
+    });
+}
+
+function RestaurarListaRubroCta(lpId) {
+    PostGenHtml({ lp_id: lpId }, restaurarListaDePrecioesURL, function (obj) {
+        $("#divRubrosProv").html(obj);
     });
 }
 
@@ -322,7 +406,57 @@ function actualizarDatosComplementariosRubrosCta() {
 
 function eliminarItemRubroCta(rubId, ctaId) {
     // Implement the logic to eliminate the item
+    PostGen({ rubId, ctaId }, eliminarItemRubroCtaURL, function (obj) {
+        CerrarWaiting();
+        if (obj && obj.error === true) {
+            AbrirMensaje("ATENCIÓN", obj.msg, function () {
+                $("#msjModal").modal("hide");
+                return true;
+            }, false, ["Aceptar"], "error!", null);
+        }
+        else {
+            //Quitar item de la tabla 
+            seHanRealizadoModifcaciones = true;
+            const fila = $("#tbGridListaMgnRubCta tbody tr[data-rub-id='" + rubId + "'][data-cta-id='" + ctaId + "']");
+            fila.fadeOut(200, function () {
+                fila.remove();
+            });
+            // Si la tabla queda vacía, mostrar la fila vacía
+            if ($("#tbGridListaMgnRubCta tbody tr").length === 0) {
+                $("#tbGridListaMgnRubCta tbody").html(`
+                    <tr>
+                        <td colspan="11" class="text-center text-muted py-4">
+                            <i class="bx bx-info-circle me-2"></i>
+                            No se encontraron items Rub/Cta
+                        </td>
+                    </tr>
+                `);
+            } else {
+                // Recalcular alternancia
+                RecalcularAlternanciaFilasRubCta();
+            }
+        }
+    });
 }
+
+function RecalcularAlternanciaFilasRubCta() {
+    let alt = true;
+
+    $("#tbGridListaMgnRubCta tbody tr").each(function () {
+
+        // Ignorar fila vacía (si existiera)
+        if ($(this).hasClass("fila-vacia")) return;
+
+        if (alt) {
+            $(this).removeClass().addClass("alt");
+            alt = false;
+        } else {
+            $(this).removeClass();
+            alt = true;
+        }
+    });
+}
+
 
 function SeleccionarPrimeraListaPrecio() {
 
@@ -425,6 +559,7 @@ function cargarEventosSeccionDatosRubCta() {
             // Mostrar SIN el "#"
             $("#Rel01").val(textoSinSeparador);
             cta_id_seleccionada = ui.item.id;
+            cta_desc_seleccionada = textoSinSeparador;
             var opc = "<option value=" + ui.item.id + ">" + textoSinSeparador + "</option>"
 
             event.preventDefault();
