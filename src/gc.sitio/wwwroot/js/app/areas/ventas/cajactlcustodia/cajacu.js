@@ -8,6 +8,7 @@ var guardando_importe = false;
 var existe_edicion = false;
 var ultima_rend_seleccionada = null;
 var restaurar_seleccion = false;
+let vieneDeConfirmarEntrega = false;
 
 $(function () {
 	if ($("#divDetalle").is(":visible")) {
@@ -61,7 +62,17 @@ function InicializarBusqueda() {
 			RestaurarSeleccionEntrega();
 			restaurar_seleccion = false; // reset
 		}
+		if (vieneDeConfirmarEntrega) {
+			vieneDeConfirmarEntrega = false;
+			// Verificar si la tabla tiene filas válidas
+			const tieneFilasValidas = $("#tbVtasPVCtlEntrega tbody tr.row-entrega").length > 0;
 
+			if (!tieneFilasValidas) {
+				// No hay filas válidas → redirigir
+				window.location.href = homeCtlCustodiaUrl;
+				return;
+			}
+		}
 		CerrarWaiting();
 	});
 }
@@ -145,7 +156,105 @@ function InicializaEventosGrillaVtasPVCtlEntregas() {
 	}
 }
 
+function colorearLinea(texto, valor) {
+	let color = "black";
+
+	if (valor < 0) color = "red";        // error
+	else if (valor > 0) color = "orange"; // warning
+	else color = "green";                // ok
+
+	return `<span style="color:${color};">${texto}</span>`;
+}
+
 function ConfirmacionContable() {
+	var listaEntregas = obtenerEntregasSeleccionadasString();
+	vieneDeConfirmarEntrega = true;
+	if (listaEntregas.length === 0) {
+		AbrirMensaje("ATENCIÓN", "Debe seleccionar al menos una Entrega para confirmar.", function () {
+			$("#msjModal").modal("hide");
+			return true;
+		}, false, ["Aceptar"], "error!", null);
+		return;
+	}
+
+	var mensaje = "";
+	var mensajeEnCurso = "";
+	var url = "";
+	var tipoRend = $("#TipoEntrega").val();
+
+	if (tipoRend === "P") {
+		mensaje = "Esta a punto de confirmar las entregas seleccionadas. ¿Desea continuar?";
+		mensajeEnCurso = "Confirmando Entregas seleccionadas...";
+		url = confirmarCtlEntregaUrl;
+	} else {
+		mensaje = "Esta a punto de volver a pendiente las entregas seleccionadas. ¿Desea continuar?";
+		mensajeEnCurso = "Volviendo a pendiente las Entregas seleccionadas...";
+		url = anularCtlEntregaUrl;
+	}
+
+	AbrirMensaje("ATENCIÓN", mensaje, function (e) {
+		$("#msjModal").modal("hide");
+
+		if (e !== "SI") return true;
+
+		var data = { ent_comptes: listaEntregas.join(";"), modo: "MIX" };
+
+		AbrirWaiting(mensajeEnCurso);
+
+		PostGen(data, url, function (obj) {
+			CerrarWaiting();
+
+			// ============================
+			// 🔥 Construcción del mensaje final
+			// ============================
+
+			let mensajeFinal = obj.msg;
+
+			// Caso: todas ERROR
+			if (obj.detalle && Array.isArray(obj.detalle)) {
+				mensajeFinal += "<br><br>";
+
+				obj.detalle.forEach(linea => {
+					// obtener ent_compte desde la línea
+					let ent = linea.match(/entrega\s+([^\s]+)/i)?.[1];
+					let valor = obj.respuestas[ent].entidad.resultado;
+
+					mensajeFinal += colorearLinea(linea, valor) + "<br>";
+				});
+			}
+
+			// Caso: mixto
+			if (obj.errores && Array.isArray(obj.errores)) {
+				mensajeFinal += "<br><br><strong>Errores:</strong><br>";
+
+				obj.errores.forEach(linea => {
+					let ent = linea.match(/entrega\s+([^\s]+)/i)?.[1];
+					let valor = obj.respuestas[ent].entidad.resultado;
+
+					mensajeFinal += colorearLinea(linea, valor) + "<br>";
+				});
+			}
+
+			// ============================
+			// 🔥 Mostrar mensaje según estado
+			// ============================
+
+			AbrirMensaje("ATENCIÓN", mensajeFinal, function () {
+				$("#msjModal").modal("hide");
+
+				InicializarBusqueda();
+				return true;
+			}, false, ["Aceptar"], obj.estadoColor, null);
+
+		});
+
+		return true;
+
+	}, true, ["Aceptar", "Cancelar"], "question!", null);
+}
+
+
+function ConfirmacionContableBack() {
 	var listaEntregas = obtenerEntregasSeleccionadasString();
 	if (listaEntregas.length === 0) {
 		AbrirMensaje("ATENCIÓN", "Debe seleccionar al menos una Entrega para confirmar.", function () {

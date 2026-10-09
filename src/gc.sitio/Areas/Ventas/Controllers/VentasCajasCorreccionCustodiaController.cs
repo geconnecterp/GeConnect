@@ -337,7 +337,6 @@ namespace gc.sitio.Areas.Ventas.Controllers
 		}
 
 		[HttpPost]
-		//public JsonResult ConfirmarCtlEntrega(ConfirmarCtlEntregaInput input)
 		public JsonResult ConfirmarCtlEntrega(string ent_comptes)
 		{
 			try
@@ -346,7 +345,7 @@ namespace gc.sitio.Areas.Ventas.Controllers
 					throw new NegocioException("Faltan datos obligatorios: ent_compte");
 
 				List<string> lista = ent_comptes.Split(';').ToList();
-				// Diccionario: ent_compte → respuesta de la API
+
 				var dictRespuestas = new Dictionary<string, RespuestaGenerica<RespuestaDto>>();
 
 				foreach (var item in lista)
@@ -367,44 +366,103 @@ namespace gc.sitio.Areas.Ventas.Controllers
 					dictRespuestas[item] = respuesta;
 				}
 
-				// Evaluar fallos
-				var fallidos = dictRespuestas
-					.Where(x =>
-						x.Value == null ||
-						!x.Value.Ok ||
-						x.Value.EsError ||
-						(x.Value.Entidad != null && x.Value.Entidad.resultado != 0)
-					)
-					.Select(x => new
-					{
-						ent_compte = x.Key,
-						mensaje = x.Value?.Mensaje
-								   ?? x.Value?.Entidad?.resultado_msj
-								   ?? "Error desconocido"
-					})
-					.ToList();
+				// Clasificación
+				var errores = new List<string>();
+				var exitos = new List<string>();
 
-				// Si todos OK
-				if (fallidos.Count == 0)
+				var valores = new List<short>(); // 🔥 recolectamos los resultados
+
+				foreach (var kv in dictRespuestas)
+				{
+					var ent = kv.Key;
+					var resp = kv.Value;
+
+					short resultado = resp?.Entidad?.resultado ?? -999;
+					valores.Add(resultado);
+
+					bool esError =
+						resp == null ||
+						!resp.Ok ||
+						resp.EsError ||
+						resultado < 0;
+
+					if (esError)
+					{
+						string msg = resp?.Entidad?.resultado_msj
+									 ?? resp?.Mensaje
+									 ?? "Error desconocido";
+
+						errores.Add($"En la entrega {ent} se presentó el siguiente problema: {msg}");
+					}
+					else
+					{
+						exitos.Add($"La entrega {ent} fue confirmada correctamente");
+					}
+				}
+
+				// 🔥 Determinar estadoColor
+				string estadoColor;
+
+				if (errores.Count == 0)
+				{
+					estadoColor = "succ!";
+				}
+				else if (errores.Count == lista.Count)
+				{
+					// todas error → ver si son negativas o positivas
+					if (valores.All(v => v < 0))
+						estadoColor = "error!";
+					else if (valores.All(v => v > 0))
+						estadoColor = "warn!";
+					else
+						estadoColor = "error!"; // mix de positivos y negativos
+				}
+				else
+				{
+					// mixto
+					estadoColor = "error!";
+				}
+
+				// Caso 1: todas OK
+				if (errores.Count == 0)
 				{
 					return Json(new
 					{
 						Ok = true,
 						error = false,
 						warn = false,
-						msg = "Todas las entregas fueron confirmadas correctamente",
+						msg = "Todas las entregas seleccionadas fueron confirmadas con Éxito.",
+						estadoColor,
+						exitos,
 						respuestas = dictRespuestas
 					});
 				}
 
-				// Si hubo fallos
+				// Caso 2: todas ERROR
+				if (errores.Count == lista.Count)
+				{
+					return Json(new
+					{
+						Ok = false,
+						error = true,
+						warn = false,
+						msg = "Todas las entregas presentaron errores",
+						estadoColor,
+						detalle = errores,
+						respuestas = dictRespuestas
+					});
+				}
+
+				// Caso 3: mixto
 				return Json(new
 				{
 					Ok = false,
 					error = true,
-					warn = false,
-					msg = "Algunas entregas no pudieron confirmarse",
-					fallidos,
+					warn = true,
+					msg = "Algunas entregas se confirmaron correctamente y otras presentaron errores",
+					estadoColor,
+					errores,
+					exitos,
 					respuestas = dictRespuestas
 				});
 			}
@@ -413,6 +471,185 @@ namespace gc.sitio.Areas.Ventas.Controllers
 				return Json(new { Ok = false, error = true, warn = false, msg = ex.Message });
 			}
 		}
+
+
+		/// <summary>
+		/// Funcion que simula de forma aleatoria retornos de resultados de Confirmación de Entregas, para fines de ajustes visuales
+		/// </summary>
+		/// <param name="ent_comptes">Lista de id's (ent_compte, separados por ';')</param>
+		/// <param name="modo">Tipo de resultados: 
+		///										OK => Todas las ejecuciones fueron exitosas; 
+		///										MIX => algunas ejecuciones OK, otras con error; 
+		///										ERROR => Todas las ejecuciones con error</param>
+		/// <returns></returns>
+		[HttpPost]
+		public JsonResult ConfirmarCtlEntregaTest(string ent_comptes, string modo)
+		{
+			try
+			{
+				if (string.IsNullOrEmpty(ent_comptes))
+					throw new NegocioException("Faltan datos obligatorios: ent_compte");
+
+				List<string> lista = ent_comptes.Split(';').ToList();
+
+				var dictRespuestas = new Dictionary<string, RespuestaGenerica<RespuestaDto>>();
+				var random = new Random();
+
+				foreach (var item in lista)
+				{
+					short resultado;
+
+					// 🔥 CONTROL DEL MODO
+					switch (modo?.ToUpper())
+					{
+						case "OK":
+							resultado = 0;
+							break;
+
+						case "ERROR":
+							resultado = new short[] { -4, -2, -1 }[random.Next(3)];
+							break;
+
+						case "WARN":
+							resultado = new short[] { 1, 2, 3 }[random.Next(3)];
+							break;
+
+						case "MIX":
+						default:
+							resultado = new short[] { -4, -2, -1, 0, 1, 2 }[random.Next(6)];
+							break;
+					}
+
+					string mensaje = resultado switch
+					{
+						-1 => "Error Update Cajas Entregas.",
+						-2 => "Error Update Cajas Entregas. (V2.0)",
+						-4 => "Error Update Cajas Entregas. (V4.0)",
+						0 => "OK",
+						> 0 => "Advertencia: Resultado positivo simulado.",
+						_ => "Error desconocido"
+					};
+
+					var respuestaSimulada = new RespuestaGenerica<RespuestaDto>
+					{
+						Ok = resultado == 0,
+						EsError = resultado < 0,
+						Mensaje = mensaje,
+						Entidad = new RespuestaDto
+						{
+							resultado = resultado,
+							resultado_msj = mensaje
+						}
+					};
+
+					dictRespuestas[item] = respuestaSimulada;
+				}
+
+				// Clasificación temporal
+				var errores = new List<string>();
+				var exitos = new List<string>();
+				var valores = new List<short>();
+
+				foreach (var kv in dictRespuestas)
+				{
+					var ent = kv.Key;
+					var resp = kv.Value;
+
+					short resultado = resp?.Entidad?.resultado ?? -999;
+					valores.Add(resultado);
+
+					bool esError =
+						resp == null ||
+						!resp.Ok ||
+						resp.EsError ||
+						resultado < 0;
+
+					if (esError)
+					{
+						string msg = resp?.Entidad?.resultado_msj
+									 ?? resp?.Mensaje
+									 ?? "Error desconocido";
+
+						errores.Add($"En la entrega {ent} se presentó el siguiente problema: {msg}");
+					}
+					else
+					{
+						exitos.Add($"La entrega {ent} fue confirmada correctamente");
+					}
+				}
+
+				// 🔥 Determinar estadoColor
+				string estadoColor;
+
+				if (errores.Count == 0)
+				{
+					estadoColor = "succ!";
+				}
+				else if (errores.Count == lista.Count)
+				{
+					if (valores.All(v => v < 0))
+						estadoColor = "error!";
+					else if (valores.All(v => v > 0))
+						estadoColor = "warn!";
+					else
+						estadoColor = "error!";
+				}
+				else
+				{
+					estadoColor = "error!";
+				}
+
+				// Caso 1: todas OK
+				if (errores.Count == 0)
+				{
+					return Json(new
+					{
+						Ok = true,
+						error = false,
+						warn = false,
+						msg = "Todas las entregas seleccionadas fueron confirmadas con éxito",
+						estadoColor,
+						exitos,
+						respuestas = dictRespuestas
+					});
+				}
+
+				// Caso 2: todas ERROR
+				if (errores.Count == lista.Count)
+				{
+					return Json(new
+					{
+						Ok = false,
+						error = true,
+						warn = false,
+						msg = "Todas las entregas presentaron errores",
+						estadoColor,
+						detalle = errores,
+						respuestas = dictRespuestas
+					});
+				}
+
+				// Caso 3: mixto
+				return Json(new
+				{
+					Ok = false,
+					error = true,
+					warn = true,
+					msg = "Algunas entregas se confirmaron correctamente y otras presentaron errores",
+					estadoColor,
+					errores,
+					exitos,
+					respuestas = dictRespuestas
+				});
+			}
+			catch (Exception ex)
+			{
+				return Json(new { Ok = false, error = true, warn = false, msg = ex.Message });
+			}
+		}
+
+
+
 
 
 		[HttpPost]

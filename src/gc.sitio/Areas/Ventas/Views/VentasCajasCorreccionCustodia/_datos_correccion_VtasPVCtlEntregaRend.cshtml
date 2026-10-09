@@ -55,6 +55,10 @@
 		padding: 0 !important;
 		height: 28px !important;
 	}
+
+	.font-bold {
+		font-weight: bold !important;
+	}
 </style>
 <div class="table-responsive table-wrapper-500">
 	<table class="table table-sm table-hover mb-0 table-golden" id="tbVtasPVCtlEntregaRend">
@@ -100,7 +104,7 @@
 						<td class="text-center">@item.rend_fecha.ToString("dd/MM/yy")</td>
 						<td class="text-center">@item.caja_id</td>
 						<td class="text-start">@item.usu_apellidoynombre</td>
-						<td class="text-end">@GridHelper.FormatearPrecio(item.rend_importe_arq, TipoPrecio.Venta)</td>
+						<td class="text-end font-bold">@GridHelper.FormatearPrecio(item.rend_importe_arq, TipoPrecio.Venta)</td>
 						<td class="col-num text-end editable-importe"
 							data-caja-nro-proceso="@item.caja_nro_proceso"
 							data-caja-nro-cierre="@item.caja_nro_cierre"
@@ -112,7 +116,8 @@
 							@if (item.ent_estado_bool)
 							{
 								<input type="text"
-									   class="form-control form-control-sm input-importe"
+									   class="form-control form-control-sm input-importe font-bold"
+									   style="font-weight: bold !important;"
 									   value="@GridHelper.FormatearPrecio(item.rend_importe_ok, TipoPrecio.Venta)"
 									   data-original="@((item.rend_importe_ok).ToString(CultureInfo.InvariantCulture))" />
 							}

@@ -17,8 +17,8 @@
 				<th class="text-center" style="width: 40px;">
 					<input type="checkbox" id="chkSelectAll" />
 				</th>
-				<th class="text-center">Sucursal</th>
-				<th class="text-center">Entrega</th>
+				<th class="text-center">N° Entrega</th>
+				<th class="text-center">Fecha</th>
 				<th class="text-center" title="Comprobante de Retiro">Comp. de Ret.</th>
 				<th class="text-center" title="Fecha de Retiro">Fec. de Ret.</th>
 				<th class="text-center">Estado</th>
@@ -49,12 +49,12 @@
 						<td class="text-center">
 							<input type="checkbox" class="chkRow" />
 						</td>
-						<td class="text-start">@item.adm_nombre</td>
+						<td class="text-start">@item.ent_compte</td>
 						<td class="text-center">@item.ent_fecha.ToString("dd/MM/yy")</td>
 						<td class="text-center">@item.ent_compte_retiro</td>
 						<td class="text-center">@item.ent_fecha.ToString("dd/MM/yy")</td> @* Consultar con carlos sobre este campo porque no viene en el SP *@
 						<td class="text-start">@item.estado_desc</td>
-						<td class="text-end">@GridHelper.FormatearPrecio(item.ent_importe, TipoPrecio.Venta)</td>
+						<td class="text-end font-bold">@GridHelper.FormatearPrecio(item.ent_importe, TipoPrecio.Venta)</td>
 					</tr>
 				}
 			}
