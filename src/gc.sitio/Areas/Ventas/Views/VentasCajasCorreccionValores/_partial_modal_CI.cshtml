@@ -1,4 +1,4 @@
-﻿@model MedioDePagoMUModel
+﻿@model MedioDePagoCIModel
 @{
 }
 <style>
@@ -18,29 +18,31 @@
 @Html.Hidden("rend_fecha_valor", Model.Item?.rend_fecha_valor)
 @Html.Hidden("rend_importe_ok", Model.Item?.rend_importe_ok)
 @Html.Hidden("rend_item", Model.Item?.rend_item)
+@Html.Hidden("cta_id", Model.Item?.cta_id)
 <div class="modal-header">
-	<h5 class="modal-title" id="modalCenterTitle">Mutuales</h5>
+	<h5 class="modal-title" id="modalCenterTitle">Crédito Impositivo</h5>
 	<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 </div>
 <div class="modal-body">
-	<div class="input-group input-group-sm">
-		<span class="input-group-text d-flex align-items-center justify-content-end lbl-sm fixed-width-80">Mutual: </span>
-		@Html.DropDownListFor(m => m.MedioDePagoSeleccionado, Model.ListaMediosDePago, "Seleccionar", new { @id = "listaMediosDePago", @class = "form-control inputEditable activable" })
+	<div class="input-group input-group-sm mt-2">
+		<span class="input-group-text fixed-width-90 justify-content-end">Certificado: </span>
+		<input type="text" asp-for="Certificado" class="form-control activable inputEditable text-start min-width" />
 	</div>
 	<div class="input-group input-group-sm mt-2">
-		<span class="input-group-text fixed-width-80 justify-content-end">Titular: </span>
-		<input type="text" asp-for="Titular" class="form-control activable inputEditable text-start min-width" />
+		<span class="input-group-text fixed-width-90 justify-content-end">CUIT: </span>
+		<input type="text" asp-for="CUIT" class="form-control activable inputEditable text-start min-width" />
 	</div>
 	<div class="input-group input-group-sm mt-2">
-		<span class="input-group-text fixed-width-80 justify-content-end">Nro. Orden: </span>
-		<input type="text" asp-for="NroOrden" class="form-control activable inputEditable text-start min-width" />
+		<span class="input-group-text fixed-width-90 justify-content-end">Razon Social: </span>
+		<input type="text" class="form-control inputEditable min-width-ca" name="Rel01" id="Rel01" />
+		@Html.Hidden("Rel01Item")
 	</div>
 	<div class="input-group input-group-sm mt-2">
-		<span class="input-group-text fixed-width-80 justify-content-end">Cuit: </span>
-		<input type="text" asp-for="Cuit" class="form-control activable inputEditable text-start min-width" />
+		<span class="input-group-text fixed-width-90 justify-content-end">Fecha Emisión: </span>
+		<input type="date" asp-for="FechaEmision" value="@Model.FechaEmision.ToString("yyyy-MM-dd")" class="form-control activable inputEditable text-start min-width" />
 	</div>
 	<div class="input-group input-group-sm mt-2">
-		<span class="input-group-text fixed-width-80 justify-content-end">Importe: </span>
+		<span class="input-group-text fixed-width-90 justify-content-end">Importe: </span>
 		<input type="text" asp-for="Importe" class="form-control activable inputEditable text-start min-width" />
 	</div>
 </div>
@@ -54,4 +56,3 @@
 		</button>
 	</div>
 </div>
-

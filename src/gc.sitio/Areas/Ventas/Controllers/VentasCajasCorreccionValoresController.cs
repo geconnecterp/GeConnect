@@ -242,6 +242,32 @@ namespace gc.sitio.Areas.Ventas.Controllers
 		}
 
 		[HttpPost]
+		public IActionResult ObtenerDetalleDeRendDeCierreSeleccionadoDefault()
+		{
+			var model = new GridCoreSmart<VtasPVCtlRendDetalleDto>();
+			try
+			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+					return RedirectToAction("Login", "Token", new { area = "seguridad" });
+				
+				model = ObtenerGridCoreSmart<VtasPVCtlRendDetalleDto>(VtasPVCtlRendDetalleLista ?? []);
+				return PartialView("_datos_correccion_VtasPVCtlRendDetalle", model);
+			}
+			catch (Exception ex)
+			{
+				RespuestaGenerica<EntidadBase> response = new()
+				{
+					Ok = false,
+					EsError = true,
+					EsWarn = false,
+					Mensaje = ex.Message
+				};
+				return PartialView("_gridMensaje", response);
+			}
+		}
+
+		[HttpPost]
 		public JsonResult ActualizarImporteEnItemDeDetalleDeArqueo(string ins_id, decimal importe)
 		{
 			try
@@ -262,7 +288,7 @@ namespace gc.sitio.Areas.Ventas.Controllers
 		}
 
 		[HttpPost]
-		public JsonResult CargaCtlNuevoItemDetalle(string caja_nro_proceso, int caja_nro_cierre, int caja_nro_rend)
+		public JsonResult CargaCtlNuevoItemDetalle(string caja_nro_proceso, int caja_nro_cierre, int caja_nro_rend, string tcf_id)
 		{
 			try
 			{
@@ -272,12 +298,14 @@ namespace gc.sitio.Areas.Ventas.Controllers
 					throw new NegocioException("Faltan datos obligatorios: nro_cierre");
 				if (caja_nro_rend <= 0)
 					throw new NegocioException("Faltan datos obligatorios: caja_nro_rend");
+				if (string.IsNullOrEmpty(caja_nro_proceso))
+					throw new NegocioException("Faltan datos obligatorios: tcf_id");
 				var request = new CargaCtlNuevoItemDetalleRequest()
 				{
 					caja_nro_proceso = caja_nro_proceso,
 					caja_nro_cierre = caja_nro_cierre,
 					caja_nro_rend = caja_nro_rend,
-					tcf_id = "",
+					tcf_id = tcf_id,
 					nuevo_tcf = false,
 					adm_id = AdministracionId,
 					usu_id = UserName
@@ -677,7 +705,7 @@ namespace gc.sitio.Areas.Ventas.Controllers
 		[HttpPost]
         public JsonResult BuscarClientes(string prefix)
         {
-            var top = ClientesLista.Where(x => x.Cta_Denominacion.ToUpperInvariant().Contains(prefix.ToUpperInvariant()));
+            var top = ClientesLista.Where(x => x.Cta_Lista.ToUpperInvariant().Contains(prefix.ToUpperInvariant()));
             var tipos = top.Select(x => new
             {
                 Id = x.Cta_Id,
@@ -689,7 +717,7 @@ namespace gc.sitio.Areas.Ventas.Controllers
         }
 
 		[HttpPost]
-		public JsonResult ActualizarItemConceptoValorEnDetalleRend(ConceptoValorDesdeCorreccionVtaPVDto detalle, string caja_nro_proceso, int caja_nro_cierre, int caja_nro_rend, string tcf_id, string ins_id, string ins_detalle, int rend_item)
+		public JsonResult ActualizarItemConceptoValorEnDetalleRend(ConceptoValorDesdeCorreccionVtaPVDto detalle, string caja_nro_proceso, int caja_nro_cierre, int caja_nro_rend, string tcf_id, string ins_id, string ins_des, string ins_detalle, int rend_item)
 		{
 			var msg = string.Empty;
 			try
@@ -734,7 +762,7 @@ namespace gc.sitio.Areas.Ventas.Controllers
 				if (item == null)
 					throw new Exception("No se encontró el item para actualizar.");
 
-				ObtenerConceptoValor(item, detalle);
+				ObtenerConceptoValor(item, detalle, ins_id, ins_des);
 
 				// Guardar cambios
 				VtasPVCtlRendDetalleLista = lista;
@@ -748,7 +776,7 @@ namespace gc.sitio.Areas.Ventas.Controllers
 
 		#region Métodos Privados
 
-		private void ObtenerConceptoValor(VtasPVCtlRendDetalleDto source, ConceptoValorDesdeCorreccionVtaPVDto detalle)
+		private void ObtenerConceptoValor(VtasPVCtlRendDetalleDto source, ConceptoValorDesdeCorreccionVtaPVDto detalle, string ins_id, string ins_des)
 		{
 			var dato1_valor = string.IsNullOrWhiteSpace(detalle.op_dato1_valor) && string.IsNullOrWhiteSpace(detalle.op_dato1_desc) ? string.Empty : detalle.op_dato1_valor;
 			var dato2_valor = string.IsNullOrWhiteSpace(detalle.op_dato2_valor) && string.IsNullOrWhiteSpace(detalle.op_dato2_desc) ? string.Empty : $"{detalle.op_dato2_desc}:{detalle.op_dato2_valor}";
@@ -760,6 +788,8 @@ namespace gc.sitio.Areas.Ventas.Controllers
 			source.rend_fecha = detalle.op_fecha_valor.Value;
 			source.concepto_valor = $"{dato1_valor} {dato2_valor} {dato3_valor} {dato_fecha}";
 			source.rend_importe_ok = detalle.op_importe;
+			source.ins_id = ins_id;
+			source.ins_desc = ins_des;
 		}
 		private IMedioDePago ObtenerModelDesdeTcf_id(string tcf_id)
 		{
@@ -801,6 +831,9 @@ namespace gc.sitio.Areas.Ventas.Controllers
 						ListaMediosDePago = ObtenerMediosDePago(tcf_id)
 					};
 					return modelBA;
+				case "CI":
+					var modelCI = new MedioDePagoCIModel();
+					return modelCI;
 				default:
 					var modelNI = new MedioDePagoNIModel();
 					return modelNI;

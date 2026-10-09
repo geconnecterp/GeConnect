@@ -187,7 +187,7 @@ function InicializaEventosGrillaVtasPVCtlCierres() {
 					}
 					return true;
 
-				}, true, ["Aceptar", "Cancelar"], "question!", null);
+				}, true, ["SI", "NO"], "question!", null);
 
 				return; // Detener el click original
 			}
@@ -221,7 +221,7 @@ function EvaluarConfirmacionContable() {
 		}
 		return true;
 
-	}, true, ["Aceptar", "Cancelar"], "question!", null);
+	}, true, ["SI", "NO"], "question!", null);
 }
 
 function ConfirmacionContable() {
@@ -409,7 +409,7 @@ function InicializaEventosGrillaVtasPVCtlRend() {
 					}
 					return true;
 
-				}, true, ["Aceptar", "Cancelar"], "question!", null);
+				}, true, ["SI", "NO"], "question!", null);
 
 				return; // Detener el click original
 			}
@@ -438,7 +438,7 @@ function EvaluarConfirmarCtlArqueo() {
 		}
 		return true;
 
-	}, true, ["Aceptar", "Cancelar"], "question!", null);
+	}, true, ["SI", "NO"], "question!", null);
 
 }
 
@@ -481,7 +481,7 @@ function EvaluarAnularCtlArqueo() {
 				break;
 		}
 		return true;
-	}, true, ["Aceptar", "Cancelar"], "question!", null);
+	}, true, ["SI", "NO"], "question!", null);
 
 }
 
@@ -831,6 +831,10 @@ function AbrirModalEditarValor(tcf_id, ins_id, ins_detalle, rend_item, nro_proce
 			if (tcf_id == "MU") {
 				CargarCamposEnMU();
 			}
+			if (tcf_id == "CI") {
+				InicializarCamposEnTcfId_CI();
+				CargarCamposEnCI();
+			}
 			const $modal = $("#modalEdicionDeValores");
 			$modal.data("tcf-id", tcf_id);
 			$modal.data("ins-id", ins_id);
@@ -852,13 +856,15 @@ function AbrirModalEditarValor(tcf_id, ins_id, ins_detalle, rend_item, nro_proce
 }
 
 const camposPorModal = {
-	"TC": ["MedioDePagoSeleccionado", "NroTarjeta", "Lote", "Cupon", "Importe"],
-	"TD": ["MedioDePagoSeleccionado", "NroTarjeta", "Lote", "Cupon", "Importe"],
+	"TC": ["listaMediosDePago", "NroTarjeta", "Lote", "Cupon", "Importe"],
+	"TD": ["listaMediosDePago", "NroTarjeta", "Lote", "Cupon", "Importe"],
 
 	"MU": ["MedioDePagoSeleccionado", "Titular", "NroOrden", "Cuit", "Importe"],
-	"BA": ["MedioDePagoSeleccionado", "Banco", "NroCuenta", "NroDeposito", "Importe"],
+	"BA": ["listaMediosDePago", "Banco", "NroCuenta", "NroDeposito", "Importe"],
 
-	"CH": ["BcoCheqsSeleccionado", "NroCheque", "Plaza", "FechaVto", "Importe", "Rel01"]
+	"CH": ["BcoCheqsSeleccionado", "NroCheque", "Plaza", "FechaVto", "Importe", "Rel01"],
+
+	"CI": ["Certificado", "CUIT", "Rel01", "FechaEmision", "Importe"]
 };
 
 const reglasValidacion = {
@@ -868,7 +874,9 @@ const reglasValidacion = {
 	"MU": ["#listaMediosDePago", "#Titular", "#NroOrden", "#Cuit", "#Importe"],
 	"BA": ["#listaMediosDePago", "#NroDeposito", "#Importe"],
 
-	"CH": ["#listaBcoCheqs", "#NroCheque", "#Plaza", "#FechaVto", "#Importe", "#Rel01"]
+	"CH": ["#listaBcoCheqs", "#NroCheque", "#Plaza", "#FechaVto", "#Importe", "#Rel01"],
+
+	"CI": ["Certificado", "CUIT", "Rel01", "FechaEmision", "Importe"]
 };
 
 function obtenerDatosDelModal(tcf_id) {
@@ -886,11 +894,19 @@ function obtenerDatosDelModal(tcf_id) {
 
 			if (nombre === "Importe") {
 
-				// Obtener valor unmasked desde Inputmask
 				const unmasked = $campo.inputmask("unmaskedvalue");
-
-				// Convertir a decimal real
 				data[nombre] = parseFloat(unmasked || "0");
+
+			} else if (nombre === "listaMediosDePago") {
+
+				const val = $campo.val(); // ID
+				const texto = $campo.find("option:selected").text(); // "(TC01) Visa Crédito"
+
+				// Quitar "(TC01)" del texto
+				const textoLimpio = texto.replace(/\(.*?\)\s*/g, "").trim();
+
+				// Concatenar ID#Texto
+				data[nombre] = `${val}#${textoLimpio}`;
 
 			} else {
 
@@ -903,6 +919,7 @@ function obtenerDatosDelModal(tcf_id) {
 
 	return data;
 }
+
 
 function convertirImporteADecimal(selector) {
 	const $campo = $(selector);
@@ -970,7 +987,7 @@ function ConfirmarGuardarDetalleDeValor(tcf_id) {
 					break;
 			}
 			return true;
-		}, true, ["Aceptar", "Cancelar"], "question!", null);
+		}, true, ["SI", "NO"], "question!", null);
 	}
 }
 
@@ -1021,6 +1038,10 @@ function GuardarDetalleDeValor(tcf_id) {
 			request = new ObjValorCorreccionVtaPV(tcf_id, $("#listaBcoCheqs option:selected").text(), "Banco", data.NroCheque, "Nº Cheque", data.Plaza, "Plaza", data.Importe, data.FechaVto, $("#Rel01Item").val());
 			break;
 
+		case "CI":
+			url = actualizarItemConceptoValorEnDetalleRendUrl;
+			request = new ObjValorCorreccionVtaPV(tcf_id, data.Certificado, "Cert. Nº", data.CUIT, "Nº CUIT", limpiarDescripcionCliente(clienteDescSelected), "Raz. Social", data.Importe, data.FechaEmision, $("#Rel01Item").val());
+			break;
 		default:
 			AbrirMensaje("ATENCIÓN", "El tipo de instrumento no tiene asociado un marco de guardado.", function () {
 				$("#msjModal").modal("hide");
@@ -1029,7 +1050,21 @@ function GuardarDetalleDeValor(tcf_id) {
 			return;
 	}
 	const $modal = $("#modalEdicionDeValores");
-	const ins_id = $modal.data("ins-id");
+	//const ins_id = $modal.data("ins-id");
+	let ins_id = "";
+	let ins_des = "";
+	if (data.listaMediosDePago != undefined) {
+		let ins = data.listaMediosDePago.split("#");
+		if (ins.length > 1) {
+			ins_id = ins[0];
+			ins_des = ins[1];
+		}
+	}
+	else {
+		ins_id = $("#ins_id").val();
+		ins_des = $("#ins_desc").val();
+	}
+
 	const ins_detalle = $modal.data("ins-detalle");
 	const rend_item = $modal.data("rend-item");
 
@@ -1039,6 +1074,7 @@ function GuardarDetalleDeValor(tcf_id) {
 		caja_nro_rend: caja_nro_rend_selected,
 		tcf_id: tcf_id,
 		ins_id: ins_id,
+		ins_des: ins_des,
 		ins_detalle: ins_detalle,
 		rend_item: rend_item,
 		detalle: request
@@ -1054,57 +1090,72 @@ function GuardarDetalleDeValor(tcf_id) {
 			}, false, ["Aceptar"], "error!", null);
 		}
 		else {
-			// Actualizar concepto_valor en la grilla
-			const selectorFila = `tr.row-pedido[data-ins-id="${ins_id}"][data-rend-item="${rend_item}"]`;
-			const $fila = $(selectorFila);
+			//// Actualizar concepto_valor en la grilla
+			//const selectorFila = `tr.row-pedido[data-ins-id="${ins_id}"][data-rend-item="${rend_item}"]`;
+			//const $fila = $(selectorFila);
 
-			if ($fila.length > 0) {
-				//1 Actualizar concepto_valor en la fila
-				$fila.find("td.col-valores").text(obj.concepto);
-			}
-			// 2) Actualizar importe editable
-			const $inputImporte = $fila.find("td.editable-importe .input-importe");
+			//if ($fila.length > 0) {
+			//	//1 Actualizar concepto_valor en la fila
+			//	$fila.find("td.col-valores").text(obj.concepto);
+			//}
+			//// 2) Actualizar importe editable
+			//const $inputImporte = $fila.find("td.editable-importe .input-importe");
 
-			if ($inputImporte.length > 0) {
+			//if ($inputImporte.length > 0) {
 
-				// Valor decimal real que viene del modal
-				const nuevoImporte = data.Importe;
+			//	// Valor decimal real que viene del modal
+			//	const nuevoImporte = data.Importe;
 
-				// Formatear como lo muestra la grilla (ej: 1.234,56)
-				const importeFormateado = FormatearPrecio(nuevoImporte);
+			//	// Formatear como lo muestra la grilla (ej: 1.234,56)
+			//	const importeFormateado = FormatearPrecio(nuevoImporte);
 
-				// Remover máscara ANTES de setear el valor
-				$inputImporte.inputmask("remove");
+			//	// Remover máscara ANTES de setear el valor
+			//	$inputImporte.inputmask("remove");
 
-				// Setear el valor formateado
-				$inputImporte.val(importeFormateado);
+			//	// Setear el valor formateado
+			//	$inputImporte.val(importeFormateado);
 
-				// Actualizar data-original
-				$inputImporte.data("original", nuevoImporte.toString());
+			//	// Actualizar data-original
+			//	$inputImporte.data("original", nuevoImporte.toString());
 
-				// Volver a aplicar la máscara correctamente
-				//getMaskForMoneyType($inputImporte.selector);
-				getMaskForMoneyType($inputImporte);
+			//	// Volver a aplicar la máscara correctamente
+			//	//getMaskForMoneyType($inputImporte.selector);
+			//	getMaskForMoneyType($inputImporte);
 
-				// 🔥 3) ACTUALIZAR DIFERENCIA
-				const textoArqueo = $fila.find("td.col-num").eq(1).text().trim();
-				const importeArqueo = parseFloat($fila.find("td.col-num").eq(1).data("arqueo")) || 0;
-				//FormatearPrecio
-				//const arqueo = convertirImporteADecimal(textoArqueo);
+			//	// 🔥 3) ACTUALIZAR DIFERENCIA
+			//	const textoArqueo = $fila.find("td.col-num").eq(1).text().trim();
+			//	const importeArqueo = parseFloat($fila.find("td.col-num").eq(1).data("arqueo")) || 0;
+			//	//FormatearPrecio
+			//	//const arqueo = convertirImporteADecimal(textoArqueo);
 				
-				const arqueo = toDecimalSafe(textoArqueo);
-				const diferencia = nuevoImporte - importeArqueo;
+			//	const arqueo = toDecimalSafe(textoArqueo);
+			//	const diferencia = nuevoImporte - importeArqueo;
 
-				const $celdaDif = $fila.find("td.col-num").eq(2);
-				$celdaDif.text(FormatearPrecio(diferencia));
-			}
-
+			//	const $celdaDif = $fila.find("td.col-num").eq(2);
+			//	$celdaDif.text(FormatearPrecio(diferencia));
+			//}
+			AbrirWaiting("Actualizando datos en tabla...");
+			PostGenHtml({}, obtenerDetalleDeRendDeCierreSeleccionadoDefaultUrl, function (html) {
+				CerrarWaiting();
+				$("#divVtasPVCtlRendDetalle").html(html);
+				InicializaEventosGrillaVtasPVCtlRendDetalle();
+			});
 			existe_edicion = true;
 			$("#modalEdicionDeValores").modal("hide");
-			$("#btnGuardarValores").prop("disabled", !HabilitarBotonGuardarValores());
+			setTimeout(function () {
+				$("#btnGuardarValores").prop("disabled", !existe_edicion);
+			}, 500);
+			
 			ActualizarTotalesEnPadre();
 		}
 	});
+}
+
+function limpiarDescripcionCliente(texto) {
+	if (!texto) return "";
+
+	// Elimina cualquier "(...)" incluyendo espacios antes o después
+	return texto.replace(/\s*\(.*?\)\s*/g, "").trim();
 }
 
 function validarCamposObligatorios(tcf_id) {
@@ -1240,31 +1291,90 @@ function habilitarNavegacionEnModal(modalSelector) {
 		const $modal = $(modalSelector);
 
 		const $elements = $modal
-			.find("input:visible:not([disabled]):not([readonly]), select:visible:not([disabled]):not([readonly]), textarea:visible:not([disabled]):not([readonly]), button:visible:not([disabled])");
+			.find("input:visible:not([disabled]):not([readonly]), " +
+				"select:visible:not([disabled]):not([readonly]), " +
+				"textarea:visible:not([disabled]):not([readonly]), " +
+				"button:visible:not([disabled])");
 
 		const index = $elements.index(this);
 
-		// ENTER o TAB → siguiente
-		if (e.key === "Enter" || (e.key === "Tab" && !e.shiftKey)) {
+		const isAceptar = $(this).is("#btnAceptarDesdeModalValores");
+		const isCancelar = $(this).is("#btnSalir");
+		const $primero = $modal.find("#listaMediosDePago");
+
+		// ============================
+		// ENTER
+		// ============================
+		if (e.key === "Enter") {
 			e.preventDefault();
 
+			if (isAceptar) {
+				// ENTER en Aceptar → ejecutar click
+				$(this).trigger("click");
+				return;
+			}
+
+			if (isCancelar) {
+				// ENTER en Cancelar → ejecutar click
+				$(this).trigger("click");
+				return;
+			}
+
+			// ENTER normal → siguiente
 			if (index < $elements.length - 1) {
 				$elements.eq(index + 1).focus();
 			} else {
 				// Último → ejecutar Aceptar
 				$modal.find("#btnAceptarDesdeModalValores").trigger("click");
 			}
+
+			return;
 		}
 
-		// SHIFT+ENTER o SHIFT+TAB → anterior
-		if ((e.key === "Enter" && e.shiftKey) || (e.key === "Tab" && e.shiftKey)) {
+		// ============================
+		// TAB (sin SHIFT)
+		// ============================
+		if (e.key === "Tab" && !e.shiftKey) {
+			e.preventDefault();
+
+			if (isAceptar) {
+				// TAB en Aceptar → pasar a Cancelar (NO ejecutar click)
+				$modal.find("#btnSalir").focus();
+				return;
+			}
+
+			if (isCancelar) {
+				// TAB en Cancelar → volver al primer elemento
+				$primero.focus();
+				return;
+			}
+
+			// TAB normal → siguiente
+			if (index < $elements.length - 1) {
+				$elements.eq(index + 1).focus();
+			} else {
+				// Último → ejecutar Aceptar
+				$modal.find("#btnAceptarDesdeModalValores").trigger("click");
+			}
+
+			return;
+		}
+
+		// ============================
+		// SHIFT+TAB → anterior
+		// ============================
+		if ((e.key === "Tab" && e.shiftKey) || (e.key === "Enter" && e.shiftKey)) {
 			e.preventDefault();
 
 			if (index > 0) {
 				$elements.eq(index - 1).focus();
 			}
+
+			return;
 		}
 	});
+
+
 }
 
 function habilitarNavegacionConEnterEnModal(modalSelector) {
@@ -1320,34 +1430,148 @@ function inicializarCamposTC_TD() {
 }
 
 function CargarCamposEnCH() {
-	//N° Cheque
+	//Banco
 	const rend_dato1_valor = $("#rend_dato1_valor").val() || "";
-	//Plaza
+	//N° Cheque
 	const rend_dato2_valor = $("#rend_dato2_valor").val() || "";
-	//Fecha Vto.
+	//Plaza
 	const rend_dato3_valor = $("#rend_dato3_valor").val() || "";
 	//Importe
 	const rend_importe_ok = $("#rend_importe_ok").val() || 0;
 	//Instrumento
 	const ins_id = $("#ins_id").val() || "";
+	//Fecha Vto
+	const rend_fecha_valor = $("#rend_fecha_valor").val();
+	//CTA_ID
+	const cta_id = $("#cta_id").val();
 
-	if (rend_dato1_valor != "") {
-		$("#NroCheque").val(rend_dato1_valor);
-	}
 	if (rend_dato2_valor != "") {
-		$("#Plaza").val(padLeftZeros(rend_dato2_valor, 6));
+		$("#NroCheque").val(rend_dato2_valor);
 	}
 	if (rend_dato3_valor != "") {
-		$("#FechaVto").val(padLeftZeros(rend_dato3_valor, 6));
+		$("#Plaza").val(padLeftZeros(rend_dato3_valor, 6));
+	}
+	if (rend_fecha_valor != "") {
+		const fechaISO = parseFechaParaInputDate(rend_fecha_valor);
+		$("#FechaVto").val(fechaISO);
 	}
 	if (rend_importe_ok > 0) {
 		$("#Importe").val(FormatearPrecio(rend_importe_ok));
 		getMaskForMoneyType($("#Importe"));
 	}
+	seleccionarBancoPorTexto(rend_dato1_valor);
 	if (ins_id != "") {
 		$("#listaMediosDePago").val(ins_id);
 	}
+	autoseleccionarClientePorCtaId(cta_id);
 }
+
+function parseFechaParaInputDate(fechaStr) {
+	if (!fechaStr) return "";
+
+	// Ejemplo: "26/01/2026 00:00:00"
+	const partes = fechaStr.split(" ");
+
+	if (partes.length === 0) return "";
+
+	const fecha = partes[0]; // "26/01/2026"
+	const [dd, mm, yyyy] = fecha.split("/");
+
+	if (!dd || !mm || !yyyy) return "";
+
+	// Convertir a formato ISO para input date
+	return `${yyyy}-${mm}-${dd}`;
+}
+
+function seleccionarBancoPorTexto(textoBuscado) {
+	const $select = $("#listaBcoCheqs");
+
+	// Normalizar texto buscado
+	const buscado = textoBuscado.trim().toUpperCase();
+
+	let encontrado = null;
+
+	// Recorrer todas las opciones
+	$select.find("option").each(function () {
+		const textoOpcion = $(this).text().trim().toUpperCase();
+
+		// Coincidencia exacta del texto visible
+		if (textoOpcion === buscado) {
+			encontrado = $(this).val();
+			return false; // cortar el each
+		}
+	});
+
+	if (encontrado) {
+		$select.val(encontrado);
+	} else {
+		console.warn("No se encontró el banco:", textoBuscado);
+	}
+}
+
+function autoseleccionarClientePorCtaId(cta_id) {
+	if (!cta_id) return;
+
+	const $input = $("#Rel01");
+
+	// Setear el valor en el input
+	$input.val(cta_id);
+
+	// Si el autocomplete NO está inicializado → inicializarlo
+	if (!$input.data("ui-autocomplete")) {
+		$input.autocomplete({
+			source: function (request, response) {
+				$.ajax({
+					url: autoComRel01Url,
+					type: "POST",
+					dataType: "json",
+					data: { prefix: request.term },
+					success: function (obj) {
+						response($.map(obj, function (item) {
+							return normalizarClienteAutocomplete(item);
+						}));
+					}
+				});
+			},
+			minLength: 0, // 🔥 permite buscar sin escribir
+			select: function (event, ui) {
+				clienteIdSelected = ui.item.id;
+				clienteDescSelected = ui.item.value;
+
+				$("#Rel01Item").val(ui.item.id);
+				$("#Rel01").val(ui.item.value);
+
+				return true;
+			}
+		});
+
+		aplicarRenderClienteAutocomplete($input);
+	}
+
+	// Disparar la búsqueda
+	$input.autocomplete("search", cta_id);
+
+	// Capturar la respuesta
+	$input.one("autocompleteresponse", function (event, ui) {
+
+		if (ui.content && ui.content.length === 1) {
+
+			const item = ui.content[0];
+
+			// Ejecutar manualmente el select
+			clienteIdSelected = item.id;
+			clienteDescSelected = item.value;
+
+			$("#Rel01Item").val(item.id);
+			$("#Rel01").val(item.value);
+
+			// Cerrar menú
+			$input.autocomplete("close");
+		}
+	});
+}
+
+
 
 function CargarCamposEnMU() {
 	//Titular
@@ -1407,6 +1631,45 @@ function CargarCamposEnBA() {
 	if (ins_id != "") {
 		$("#listaMediosDePago").val(ins_id);
 	}
+}
+
+function CargarCamposEnCI() {
+	//Cert. Nº
+	const rend_dato1_valor = $("#rend_dato1_valor").val() || "";
+	//CUIT
+	const rend_dato2_valor = $("#rend_dato2_valor").val() || "";
+	//Raz. Social
+	const rend_dato3_valor = $("#rend_dato3_valor").val() || "";
+	//Importe
+	const rend_importe_ok = $("#rend_importe_ok").val() || 0;
+	//Fecha Emision
+	const rend_fecha_valor = $("#rend_fecha_valor").val();
+	//Instrumento
+	const ins_id = $("#ins_id").val() || "";
+	//CTA_ID
+	const cta_id = $("#cta_id").val();
+
+	if (rend_dato1_valor != "") {
+		$("#Certificado").val(rend_dato1_valor);
+	}
+	if (rend_dato2_valor != "") {
+		$("#CUIT").val(padLeftZeros(rend_dato2_valor, 6));
+	}
+	if (rend_dato3_valor != "") {
+		$("#RazonSocial").val(padLeftZeros(rend_dato3_valor, 6));
+	}
+	if (rend_importe_ok > 0) {
+		$("#Importe").val(FormatearPrecio(rend_importe_ok));
+		getMaskForMoneyType($("#Importe"));
+	}
+	if (ins_id != "") {
+		$("#listaMediosDePago").val(ins_id);
+	}
+	if (rend_fecha_valor != "") {
+		const fechaISO = parseFechaParaInputDate(rend_fecha_valor);
+		$("#FechaEmision").val(fechaISO);
+	}
+	autoseleccionarClientePorCtaId(cta_id);
 }
 
 function CargarCamposEnTC_TD() { 
@@ -1504,6 +1767,46 @@ function InicializarCamposEnTcfId_CH() {
 	});
 }
 
+function InicializarCamposEnTcfId_CI() {
+	$(document).on("keydown.autocomplete", "input#Rel01", function () {
+		$(this).autocomplete({
+			source: function (request, response) {
+
+				data = { prefix: request.term };
+
+				$.ajax({
+					url: autoComRel01Url,
+					type: "POST",
+					dataType: "json",
+					data: data,
+					success: function (obj) {
+						response($.map(obj, function (item) {
+							return normalizarClienteAutocomplete(item);
+						}));
+					}
+				})
+			},
+			minLength: 3,
+			select: function (event, ui) {
+				clienteIdSelected = ui.item.id;
+				clienteDescSelected = ui.item.value;
+
+				return true;
+			}
+		});
+		aplicarRenderClienteAutocomplete($(this));
+	});
+	// Aplicar máscara numérica estricta
+	$("#CUIT").inputmask({
+		mask: "999999999",
+		placeholder: "",
+		showMaskOnHover: false,
+		showMaskOnFocus: true,
+		clearIncomplete: false,
+		rightAlign: false
+	});
+}
+
 function ActualizarValorCampoPlaza(bc_id) {
 
 	if (!bc_id || bc_id === "Seleccionar") {
@@ -1559,6 +1862,7 @@ function CargaCtlNuevoItemDetalle() {
 		caja_nro_proceso: caja_nro_proceso_selected,
 		caja_nro_cierre: caja_nro_cierre_selected,
 		caja_nro_rend: caja_nro_rend_selected,
+		tcf_id: tcf_id_selected
 	};
 	AbrirWaiting("Agregando nuevo registro...");
 	PostGen(data, cargaCtlNuevoItemDetalleUrl, function (obj) {
