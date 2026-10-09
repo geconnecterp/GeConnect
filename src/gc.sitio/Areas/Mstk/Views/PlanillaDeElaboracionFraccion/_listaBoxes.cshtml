@@ -1,0 +1,7 @@
+﻿@model gc.sitio.Areas.Mstk.Models.PlanillaDeElaboracionFraccion.ListaBoxesModel
+@{
+}
+<div class="input-group input-group-sm">
+	<span class="input-group-text">Box: </span>
+	@Html.DropDownList("id", Model.ListaBoxes, "Seleccionar...", new { @id = "listaBox", @class = "form-control activable inputEditable" })
+</div>

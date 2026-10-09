@@ -1,0 +1,47 @@
+﻿@model GridCoreSmart<ProductoModel>
+@{
+	BusquedaProducto busquedaProducto = new();
+}
+<div class="grid-golden">
+	<div class="grid-golden-header">
+		<div class="row align-items-md-center">
+			<div class="col-md-10 col-sm-6 d-flex align-items-center">
+				<h5 class="mb-0 flex-grow-1">
+					<i class="bx bx-package me-2"></i>
+					<strong>Productos Materia Prima</strong>
+				</h5>
+			</div>
+		</div>
+	</div>
+	<div class="grid-golden-body">
+		<div class="row col-12">
+			<div class="col-2" style="padding-right: 0px;">
+				<partial name="~/areas/ControlComun/views/producto/_ctrBuscarProducto.cshtml" model="@busquedaProducto" />
+			</div>
+			<div class="col-9" style="padding-right: 0px;padding-left: 0px;width: 75%;">
+				<div class="input-group input-group-sm">
+					<span class="input-group-text">ID: </span>
+					<input type="text" id="txtIdProd" class="form-control form-control-sm" style="width:10%;display: none;" readonly />
+					<input type="text" id="txtProDescripcion" class="form-control form-control-sm" style="width: 40%;height: 32px;" readonly />
+					<span class="input-group-text">UP: </span>
+					<input type="text" id="txtUP" class="form-control form-control-sm activable text-end" />
+					<span class="input-group-text">Bto: </span>
+					<input type="number" id="txtBto" class="form-control form-control-sm activable text-end" min="0" />
+					<span class="input-group-text">Unid: </span>
+					<input type="text" id="txtUnid" class="form-control form-control-sm activable text-end" />
+					<input type="text" id="txtUP_ID" style="display:none;" />
+					<input type="text" id="txtBARRADO_ID" style="display:none;" />
+					<input type="text" id="txtID_PROV" style="display:none;" />
+				</div>
+			</div>
+			<div class="col-1 text-center align-middle">
+				<button type="button" class="btn btn-primary btn-sm" id="btnAddProd" title="Agregar Producto">
+					<i class="bx bx-plus-circle"></i> Agregar
+				</button>
+			</div>
+		</div>
+		<div class="row">
+			@Html.Partial("_tb_prod_mp", Model)
+		</div>
+	</div>
+</div>

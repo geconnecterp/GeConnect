@@ -1,0 +1,91 @@
+﻿@model PlanillaDeElaboracionFraccionModel
+@{
+	Layout = "~/views/shared/_Layout.cshtml";
+}
+@section styles {
+	<link rel="stylesheet" href="~/css/simplePagination.css" />
+	<link rel="stylesheet" href="~/lib/jstree/themes/default/style.min.css" />
+}
+<div class="container mt-2">
+	<div class="row mb-2">
+		<div class="col-md-6">
+			<div class="d-flex justify-content-sm-around">
+				<button id="btnFiltro" class="btn btn-primary btn-sm mt-1 me-1" type="button" data-bs-toggle="collapse" data-bs-target="#divFiltro" aria-expanded="true" aria-controls="divFiltro">
+					<i class="bx bx-filter bx-xs"></i>
+				</button>
+
+				<button class="btn btn-primary btn-sm mt-1 me-1" type="button" id="btnDetalle" data-bs-toggle="collapse" data-bs-target="#divDetalle" aria-expanded="true" aria-controls="divDetalle" hidden>
+					<i class="bx bx-caret-down"></i>
+				</button>
+
+				<button class="btn btn-secondary btn-sm mt-1 me-1" type="button" id="btnImprimir" title="Imprimir">
+					<i class="bx bx-printer"></i> Imprimir
+				</button>
+			</div>
+		</div>
+	</div>
+	<div id="divDetalle">
+		<div class="row">
+			<div class="col-3">
+				<div class="input-group input-group-sm">
+					<span class="input-group-text">Depósito: </span>
+					@Html.DropDownList("id", Model.ListaDepositos, "Seleccionar...", new { @id = "listaDeposito", @class = "form-control activable inputEditable" })
+				</div>
+			</div>
+			<div class="col-3" id="divComboBox">
+				<div class="input-group input-group-sm">
+					<span class="input-group-text">Box: </span>
+					@Html.DropDownList("id", Model.ListaBoxes, "Seleccionar...", new { @id = "listaBox", @class = "form-control activable inputEditable" })
+				</div>
+			</div>
+			<div class="col-3">
+				<div class="input-group input-group-sm" style="padding-top: 5px;">
+					<span class="input-group-text">Nota: </span>
+					<input type="text" asp-for="Nota" class="form-control activable inputEditable" value="" />
+				</div>
+			</div>
+			<div class="col-3">
+				<button type="button" class="btn btn-success btn-sm mt-1 me-1" id="btnConfirmar">
+					<i class="bx bx-badge-check"></i> Confirmar
+				</button>
+				<button type="button" class="btn btn-danger btn-sm mt-1 me-1" id="btnCancelar">
+					<i class="bx bx-x-circle"></i> Cancelar
+				</button>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-6">
+				@Html.Partial("_partial_elaborados", Model.TablaProductosElaborados)
+			</div>
+			<div class="col-6">
+				@Html.Partial("_partial_materia_prima", Model.TablaProductosMateriaPrima)
+			</div>
+		</div>
+	</div>
+</div>
+
+<!-- para el modal del geston de impresion -->
+<div id="modalGestorDocumental"></div>
+
+@section scripts {
+	<script type="text/javascript">
+		let inicializarPantallPrincipalURL = "@Url.Action("InicializarPantallPrincipal", "PlanillaDeElaboracionFraccion", new { area = "mstk" })";
+		let cargarAjustesDeStockURL = "@Url.Action("CargarAjustesDeStock", "PlanillaDeElaboracionFraccion", new { area = "mstk" })";
+		var buscarMetadataURL = "@Url.Action("ObtenerDatosPaginacion", "PlanillaDeElaboracionFraccion", new { area = "mstk" })";
+		var obtenerDetalleAjusteURL = "@Url.Action("ObtenerDetalleAjustes", "PlanillaDeElaboracionFraccion", new { area = "mstk" })";
+
+		// Gestor de impresión
+		var repoApiUrl = '@Url.Action("ObtenerPdfDesdeAPI", "GestorImpresion", new { area = "ControlComun" })';
+		var OrquestadorDeModulosUrl = "@Url.Action("OrquestadorDeModulos", "GestorImpresion", new { area = "ControlComun" })";
+		var presentarArchivosUrl = "@Url.Action("presentarArchivos", "GestorImpresion", new { area = "ControlComun" })";
+		var enviarEmailUrl = "@Url.Action("EnviarEmail", "GestorImpresion", new { area = "ControlComun" })";
+		var enviarWhatsAppUrl = "@Url.Action("EnviarWhatsApp", "GestorImpresion", new { area = "ControlComun" })";
+		var generadorArchivoUrl = "@Url.Action("GeneradorArchivo", "GestorImpresion", new { area = "ControlComun" })";
+	</script>
+	<script src="~/js/app/areas/docmngr/docmanager.js" asp-append-version="true"></script>
+	<script src="~/js/plugins/jquery.simplePagination.js"></script>
+	<script src="~/lib/jstree/jstree.min.js"></script>
+
+
+	<script src="~/js/app/areas/mstk/planilladeelaboracionfraccion/planillaelabfraccion.js" type="text/javascript"></script>
+}

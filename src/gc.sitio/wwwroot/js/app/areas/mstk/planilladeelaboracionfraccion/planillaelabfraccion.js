@@ -1,0 +1,7 @@
+﻿$(function () {
+	InicializarEventos();
+});
+
+function InicializarEventos() {
+
+}
