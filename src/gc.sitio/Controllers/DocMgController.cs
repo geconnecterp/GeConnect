@@ -50,6 +50,13 @@ namespace gc.sitio.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> GenerarDocumentoPorCodigo(string codigo)
         {
+            if (!_docsManager.LegacyPublicDownloadsEnabled)
+                return StatusCode(StatusCodes.Status410Gone, new
+                {
+                    error = true,
+                    mensaje = "Las descargas se trasladaron al portal de documentos. Solicite un nuevo enlace."
+                });
+
             long? accesoId = null;
             var cronometro = Stopwatch.StartNew();
 

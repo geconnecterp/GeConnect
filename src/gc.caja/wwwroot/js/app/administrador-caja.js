@@ -6,22 +6,29 @@ document.addEventListener('DOMContentLoaded', function () {
     const actualizar = document.getElementById('admActualizar'), volver = document.getElementById('admVolver');
     const consulta = document.getElementById('admConsulta'), filas = document.getElementById('admPuestos');
     const estado = document.getElementById('admEstado');
-    let ocupado = false, consultando = false, puedeCerrar = false, terminado = false;
+    const seccionApertura = document.getElementById('admSeccionApertura');
+    const seccionCierre = document.getElementById('admSeccionCierre');
+    const seccionPuestos = document.getElementById('admSeccionPuestos');
+    let ocupado = false, consultando = false, puedeCerrar = false, puedeAbrir = false, terminado = false;
     const seguro = texto => { const span = document.createElement('span'); span.textContent = texto; return span.innerHTML; };
     function controles() {
-        abrir.disabled = ocupado || terminado || consultando;
+        abrir.disabled = ocupado || terminado || consultando || !puedeAbrir;
         cerrar.disabled = ocupado || terminado || consultando || !puedeCerrar;
         actualizar.disabled = ocupado || consultando;
         volver.setAttribute('aria-disabled', String(ocupado));
         form.setAttribute('aria-busy', String(ocupado || consultando));
     }
     async function consultar() {
-        consultando = true; puedeCerrar = false; controles(); filas.replaceChildren();
-        consulta.textContent = 'Consultando puestos de la sucursal…';
+        consultando = true; puedeCerrar = false; puedeAbrir = false; controles(); filas.replaceChildren();
+        seccionApertura.hidden = seccionCierre.hidden = seccionPuestos.hidden = true;
+        consulta.textContent = 'Consultando habilitación de la sucursal…';
         try {
             const response = await fetch(form.dataset.puestos, { headers: { Accept: 'application/json' }, cache: 'no-store' });
-            const r = await response.json();
-            if (!response.ok || r.ok !== true || !Array.isArray(r.puestos)) throw new Error();
+            const r = await response.json().catch(() => { throw new Error('No se recibió un estado válido de la sucursal. Actualice la consulta.'); });
+            if (!response.ok || typeof r.ok !== 'boolean' || !Array.isArray(r.puestos)) throw new Error('No se pudo consultar el estado de la sucursal. Actualice la consulta.');
+            if (r.habilitada !== true && r.habilitada !== false) throw new Error(r.mensaje || 'Estado de habilitación desconocido.');
+            seccionApertura.hidden = r.habilitada !== false;
+            seccionCierre.hidden = seccionPuestos.hidden = r.habilitada !== true;
             consulta.textContent = r.mensaje;
             r.puestos.forEach(p => {
                 const tr = document.createElement('tr');
@@ -30,12 +37,13 @@ document.addEventListener('DOMContentLoaded', function () {
                 });
                 filas.appendChild(tr);
             });
-            puedeCerrar = r.puestos.length === 0;
-        } catch (_) { consulta.textContent = 'No se pudo verificar si hay puestos abiertos. Actualice la consulta; el cierre general permanece bloqueado.'; }
+            puedeAbrir = r.ok === true && r.habilitada === false;
+            puedeCerrar = r.ok === true && r.habilitada === true && r.puestos.length === 0;
+        } catch (error) { consulta.textContent = error.message && error.message !== 'Failed to fetch' ? error.message : 'No se pudo determinar la habilitación de la sucursal. Actualice la consulta.'; }
         finally { consultando = false; controles(); }
     }
     function ejecutar(apertura) {
-        if (ocupado || terminado || (!apertura && (!puedeCerrar || consultando))) return;
+        if (ocupado || terminado || consultando || (apertura ? !puedeAbrir : !puedeCerrar)) return;
         ocupado = true; controles();
         let decidido = false;
         const nombre = apertura ? 'apertura general' : 'cierre general';
@@ -59,10 +67,15 @@ document.addEventListener('DOMContentLoaded', function () {
             }
             estado.textContent = r.mensaje;
             estado.className = 'alert alert-' + (r.incierto ? 'warning' : r.ok ? 'success' : 'danger');
-            if (terminado) estado.textContent += ' Para iniciar otra gestión, vuelva al inicio.';
+            if (terminado && !r.ok) estado.textContent += ' Para iniciar otra gestión, vuelva al inicio.';
             ocupado = false; controles(); await consultar();
-            AbrirMensaje(r.ok ? 'Operación completada' : 'Administrador de Caja', seguro(r.mensaje),
-                () => $('#msjModal').modal('hide'), false, ['Aceptar'], r.ok ? 'succ!' : 'warn!', null);
+            let resultadoCerrado = false;
+            AbrirMensaje(r.ok ? 'Operación completada' : 'Administrador de Caja', seguro(r.mensaje), () => {
+                if (resultadoCerrado) return;
+                resultadoCerrado = true;
+                $('#msjModal').modal('hide');
+                if (r.ok) window.location.assign(volver.href);
+            }, false, ['Aceptar'], r.ok ? 'succ!' : 'warn!', null);
         }, true, [apertura ? 'Habilitar cajas' : 'Cerrar cajas', 'Cancelar'], 'warn!', null);
     }
     abrir.addEventListener('click', () => ejecutar(true)); cerrar.addEventListener('click', () => ejecutar(false));

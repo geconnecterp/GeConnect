@@ -256,13 +256,8 @@ $(function () {
 
         const resultado = response.resultado;
 
-        if (resultado === 0 && reimpresionZDisponible) {
-            // Permite reportes históricos sin ejecutar AperturaCaja automáticamente.
-            $('#btnOperaSinCaja').hide();
-            $('#btnReimpresionZSinApertura').show();
-            mostrarModalValidacionConOpciones('Puede iniciar la operación de caja o reimprimir reportes Z sin realizar una apertura.');
-        }
-        else if (resultado === 0) {
+        // Operar Caja conserva el ingreso normal; Reimpresión Z se elige explícitamente.
+        if (resultado === 0) {
             // âœ… CORRECTO: Procede automÃ¡ticamente con apertura
             console.log("âœ… ValidaciÃ³n OK - Procediendo automÃ¡ticamente con apertura");
             mostrarLoader("Procediendo a realizar apertura de caja...<br><small class='text-muted'>Inicializando punto de venta</small>");
