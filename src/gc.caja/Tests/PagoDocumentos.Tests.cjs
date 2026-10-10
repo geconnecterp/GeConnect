@@ -7,7 +7,7 @@ function extract(name) {
     const start = source.search(new RegExp('^function ' + name + '\\(', 'm'));
     assert(start >= 0, name);
     const end = /^}\r?$/m.exec(source.slice(start));
-    return source.slice(start, start + end.index + 1);
+    return fs.readFileSync(path.join(__dirname, '../wwwroot/js/app/siteGen.js'), 'utf8').match(/^function esMedioCobroElectronico\([^]*?^}/m)[0] + '\n' + source.slice(start, start + end.index + 1);
 }
 const names = ['evaluarReglasPago','validarValorAntesDeAgregar','fechaMaximaCredito','obtenerVueltoEfectivoCentavos','desdeCentavosNC','normalizarTexto', 'normalizarTextoUpper', 'esInstrumentoDocumento', 'fechaLocalDocumento',
     'fechaDocumentoValida', 'formatearVencimientoDocumento', 'importeDocumentoCentavos', 'validarDatosDocumento',

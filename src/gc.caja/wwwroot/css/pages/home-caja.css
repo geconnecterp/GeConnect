@@ -393,3 +393,32 @@ body:has(.caja-home-dashboard) > .container {
 body:has(.caja-home-dashboard) .footer {
     background: transparent;
 }
+/* Accesos principales separados para evitar selecciones accidentales. */
+.caja-home-accesos {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: clamp(1rem, 6vw, 6rem);
+    width: min(100%, 1560px);
+    margin: 1.5rem auto;
+}
+
+.caja-home-accesos > .btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    width: 100%;
+    max-width: 20rem;
+    min-height: 4rem;
+    padding: 0.75rem 1rem;
+    white-space: normal;
+    text-align: center;
+}
+
+.caja-home-accesos > .btn:first-child {
+    justify-self: start;
+}
+
+.caja-home-accesos > .btn:last-child {
+    justify-self: end;
+}

@@ -49,7 +49,7 @@
                         <div class="w-100">
                             <div class="d-flex justify-content-between align-items-center">
                                 <div>
-                                    <strong>Transferencias Bancarias</strong>
+                                    <strong id="lblTipoDetalleTransferencia">Transferencias Bancarias</strong>
                                     <span class="mx-2">|</span>
                                     <span id="lblInstrumentoTransferencia">-</span>
                                 </div>
@@ -61,7 +61,7 @@
 
                     <!-- Campo: Nro Trasn. -->
                     <div class="mb-3">
-                        <label for="txtNroTransferencia" class="form-label fw-bold">
+                        <label id="lblReferenciaDetalleTransferencia" for="txtNroTransferencia" class="form-label fw-bold">
                             <i class="bx bx-hash"></i> Nro Trasn. <span class="text-danger">*</span>
                         </label>
                         <div class="input-group">
@@ -100,7 +100,7 @@
                                    required>
                         </div>
                         <small class="form-text text-muted">
-                            <i class="bx bx-info-circle"></i> Fecha en que se realizó la transferencia (no puede ser futura)
+                            <span id="ayudaFechaDetalleTransferencia"><i class="bx bx-info-circle"></i> Fecha en que se realizó la transferencia (no puede ser futura)</span>
                         </small>
                     </div>
 

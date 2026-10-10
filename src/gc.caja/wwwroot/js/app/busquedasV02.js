@@ -362,9 +362,33 @@ function selectRegDbl(x) {
 
     console.log(`   ✅ Tiene código de barras válido: ${tieneCodigoBarras ? 'SÍ' : 'NO'}`);
 
+    // Una cantidad previa es opcional; el resto de las entradas conserva el flujo anterior.
+    const entradaPrevia = String($("#txtCodigoProducto").val() || '');
+    const entradaCantidad = entradaPrevia.trim();
+    const matchCantidadPrevia = entradaCantidad.match(/^(\d+(?:\.\d{1,3})?)\+?$/);
+    const pareceCantidad = /^[+-]?\d[\d.,+\s-]*$/.test(entradaCantidad) || entradaCantidad === '+';
+    const cantidadPreviaValida = matchCantidadPrevia &&
+        Number.isFinite(Number(matchCantidadPrevia[1])) && Number(matchCantidadPrevia[1]) > 0;
+
     // ❺ Cerrar modal de búsqueda avanzada
     $("#busquedaModal").modal("hide");
     console.log('   → Modal cerrado');
+
+    if (pareceCantidad && !cantidadPreviaValida) {
+        mostrarMensajeEstado('Ingrese una cantidad mayor a cero, con hasta 3 decimales y un signo + final opcional.', 'warning', 0);
+        $("#txtCodigoProducto").trigger("focus");
+        return;
+    }
+
+    if (cantidadPreviaValida && tieneCodigoBarras) {
+        mostrarMensajeEstado('El producto seleccionado tiene código de barras. No se cargó; se conserva la cantidad para que pueda elegir otro producto.', 'warning', 0);
+        $("#txtCodigoProducto").trigger("focus");
+        return;
+    }
+
+    const entradaProducto = cantidadPreviaValida
+        ? `${matchCantidadPrevia[1]}+${idProducto}`
+        : idProducto;
 
     // ═══════════════════════════════════════════════════════════════════
     // ❻ LÓGICA DIFERENCIAL SEGÚN CÓDIGO DE BARRAS
@@ -385,7 +409,7 @@ function selectRegDbl(x) {
 
         // ❽ Colocar código en el input (para referencia visual)
         setTimeout(() => {
-            $("#txtCodigoProducto").val(idProducto);
+            $("#txtCodigoProducto").val(entradaProducto);
 
             // ❾ CRÍTICO: Disparar búsqueda automática
             // Llamar a la función que procesa la entrada de código

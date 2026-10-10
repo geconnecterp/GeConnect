@@ -370,7 +370,7 @@ function procesarEntradaCodigo() {
             return;
         }
 
-        procesarCodigoConCantidad(codigo, cantidad);
+        procesarCodigoConCantidad(codigo, cantidad, origenCargaActual);
         return;
     }
 
@@ -434,7 +434,7 @@ function procesarCodigoSimple(codigo) {
  * @param {string} codigo - Código EAN o ID del producto
  * @param {number} cantidad - Cantidad (puede ser decimal, ej: 5.123)
  */
-function procesarCodigoConCantidad(codigo, cantidad) {
+function procesarCodigoConCantidad(codigo, cantidad, origenCarga = 'directo') {
     console.log('═══════════════════════════════════════════════════');
     console.log('📦 PROCESANDO CÓDIGO CON CANTIDAD COMODÍN v5.1 (DECIMAL)');
     console.log(`   Código: "${codigo}"`);
@@ -471,7 +471,7 @@ function procesarCodigoConCantidad(codigo, cantidad) {
     console.log('   → El SP decide si multiplica por unidad_pres o no');
 
     // ⬇️ SIEMPRE bulto=true (el SP decide)
-    buscarProductoPorCodigo(TIPO_CARGA.PRODUCTO, codigo, cantidad, true, 'directo');
+    buscarProductoPorCodigo(TIPO_CARGA.PRODUCTO, codigo, cantidad, true, origenCarga);
 
     console.log('═══════════════════════════════════════════════════');
 }
@@ -631,7 +631,7 @@ function buscarProductoPorCodigo(tipoValor, valor, cantidad = 1, bulto = true, o
 
             // Rehabilitar campo y botón
             $txtCodigo.prop('disabled', false).val('');
-            $btnBuscar.prop('disabled', false).html('<i class="bx bx-cart-add"></i> Cargar');
+            $btnBuscar.prop('disabled', false).html('<i class="bx bx-search"></i>');
 
             // Focus en el campo
             $txtCodigo.trigger('focus');

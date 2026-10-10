@@ -1810,3 +1810,30 @@ function ocultarTecladoVirtual() {
     }
 }
 
+
+// Los valores de estos medios ya representan cobros realizados antes de Finalizar.
+// Compartido por pagos de ventas/cobranzas y Cambio e Ingreso de Valores.
+function esMedioCobroElectronico(valor) {
+    if (!valor) return false;
+    const tipo = String(valor.tcf_id || '').trim().toUpperCase();
+    if (['TC', 'TD', 'MP'].includes(tipo)) return true;
+    const descripcion = [valor.tcf_desc, valor.ins_desc].filter(Boolean).join(' ')
+        .normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase();
+    return /\b(TARJETAS?|CLOVER|MERCADO\s*(PAGO|LIBRE))\b/.test(descripcion);
+}
+
+function contieneCobroElectronico(valores) {
+    return Array.isArray(valores) && valores.some(function (valor) {
+        return valor && Number(valor.importe ?? valor.rb_importe) > 0 && esMedioCobroElectronico(valor);
+    });
+}
+
+// Captura manual temporal: reutiliza el formulario, sin invocar al proveedor de cobro.
+function presentarDetalleCobroElectronico(medio, instrumento) {
+    const electronico = esMedioCobroElectronico({ ...medio, ins_desc: instrumento?.ins_desc });
+    $('#modalDetalleTransferenciaLabel').text(electronico ? 'Detalle del cobro realizado' : 'Detalle - Transferencia Bancaria');
+    $('#lblTipoDetalleTransferencia').text(electronico ? (medio.tcf_desc || 'Cobro electrónico') : 'Transferencias Bancarias');
+    $('#lblReferenciaDetalleTransferencia').text(electronico ? 'Referencia del cobro *' : 'Número de transferencia *');
+    $('#txtNroTransferencia').attr('placeholder', electronico ? 'Referencia del comprobante de pago' : 'Número de transferencia');
+    $('#ayudaFechaDetalleTransferencia').text(electronico ? 'Fecha del cobro realizado. No se ejecutará un nuevo cobro.' : 'Fecha en que se realizó la transferencia (no puede ser futura)');
+}
