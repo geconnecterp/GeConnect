@@ -8,6 +8,10 @@ namespace gc.infraestructura.EntidadesComunes.Options
     public class DocsManager
     {
         public string ApiReporteUrl { get; set; } = string.Empty;
+        // Vacío conserva los enlaces actuales durante el despliegue gradual.
+        public string PublicBaseUrl { get; set; } = string.Empty;
+        // Desactivar al completar la migración de /d/{codigo} al portal aislado.
+        public bool LegacyPublicDownloadsEnabled { get; set; } = true;
         public string ApiLink { get; set; } = string.Empty;
         public string Crear { get; set; } = string.Empty;
         public string Obtener { get; set; } = string.Empty;

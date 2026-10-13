@@ -20,7 +20,7 @@ public class AdministradorCajaController : ControladorBaseCaja
         ILogger<AdministradorCajaController> logger, CajaGeneralServicio servicio, IMemoryCache cache)
         : base(options, context, logger) { this.servicio = servicio; this.cache = cache; }
 
-    // Administración requiere login y sucursal, no configuración/apertura/validación operativa del PV.
+    // Administración requiere login y sucursal, no apertura ni validación operativa del PV. El puesto configurado se usa sólo para consultar datos.
     private bool SesionValida() => User.Identity?.IsAuthenticated == true && TieneTokenValido() &&
         !string.IsNullOrWhiteSpace(UserName) && !string.IsNullOrWhiteSpace(AdministracionId);
     [HttpGet]
@@ -35,7 +35,7 @@ public class AdministradorCajaController : ControladorBaseCaja
     public async Task<IActionResult> Puestos()
     {
         if (!SesionValida()) return Unauthorized(new { ok = false, mensaje = "La sesión expiró. Ingrese nuevamente." });
-        return Json(await servicio.Consultar(AdministracionId, TokenCookie));
+        return Json(await servicio.ConsultarEstado(CajaActual?.CajaId ?? "", AdministracionId, TokenCookie));
     }
     [HttpPost, ValidateAntiForgeryToken]
     public Task<IActionResult> Apertura(Guid solicitud) => Ejecutar(true, solicitud);
@@ -52,7 +52,7 @@ public class AdministradorCajaController : ControladorBaseCaja
         try
         {
             if (cache.TryGetValue(clave, out ResultadoGeneral? anterior)) return Json(anterior);
-            var resultado = await servicio.Ejecutar(apertura, UserName, sucursal, TokenCookie);
+            var resultado = await servicio.Ejecutar(apertura, UserName, sucursal, CajaActual?.CajaId ?? "", TokenCookie);
             if (resultado.Ok || resultado.Incierto) cache.Set(clave, resultado, TimeSpan.FromHours(24));
             return Json(resultado);
         }

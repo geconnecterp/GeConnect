@@ -34,41 +34,62 @@ if (args.Contains("--browser"))
 }
 int count=0;
 void Check(bool ok,string nombre) { if(!ok) throw new Exception(nombre); count++; Console.WriteLine("OK " + nombre); }
-foreach(var modo in new[]{"error","html","sinlista","nulo","malpuesto"})
+foreach(var modo in new[]{"error","html","sinestado","estadoinvalido","sucursaldistinta","puestodistinto"})
 {
-    fake.Modo=modo; fake.Calls.Clear(); var q=await servicio.Consultar("0007","token-ficticio");
-    Check(!q.Ok, "Consulta " + modo + " no se interpreta como vacía");
-    var c=await servicio.Ejecutar(false,"operador","0007","token-ficticio");
-    Check(!c.Ok && fake.Calls.All(c=>c.Method=="GET"), "Cierre no envía POST con consulta " + modo);
+    fake.Modo=modo; fake.Calls.Clear(); var q=await servicio.ConsultarEstado("0001","0007","token-ficticio");
+    Check(!q.Ok && q.Habilitada==null, "Estado " + modo + " no permite elegir acción");
+    foreach(var abrir in new[]{true,false}) {
+        var c=await servicio.Ejecutar(abrir,"operador","0007","0001","token-ficticio");
+        Check(!c.Ok && !c.Incierto && fake.Calls.All(c=>c.Method=="GET"), "No envía operación con estado " + modo + "/"+abrir);
+    }
 }
-fake.Modo="abiertos"; fake.Calls.Clear();
-Check(!(await servicio.Ejecutar(false,"operador","0007","token-ficticio")).Ok && fake.Calls.Count==1,"Cierre bloqueado con puestos abiertos");
+fake.Modo="cerrada";fake.Calls.Clear();
+var cerrada=await servicio.ConsultarEstado("0001","0007","token-ficticio");
+Check(cerrada.Ok && cerrada.Habilitada==false && fake.Calls.Count==1,"N consulta DATOS y no consulta puestos");
+Check(!(await servicio.Ejecutar(false,"operador","0007","0001","token-ficticio")).Ok && fake.Calls.All(c=>c.Method=="GET"),"N impide cierre aun forzando solicitud");
 fake.Modo="vacio";fake.Calls.Clear();
-Check((await servicio.Ejecutar(false,"operador","0007","token-ficticio")).Ok,"Cierre válido");
-Check(fake.Calls.Select(c=>c.Method).SequenceEqual(new[]{"GET","POST"}),"Reconsulta antes del POST de cierre");
-Check(fake.Calls.Last().Url.EndsWith("CierreCajaGral"),"Ruta cierre correcta");
-fake.Calls.Clear();var apertura=await servicio.Ejecutar(true,"operador","0007","token-ficticio");
-Check(apertura.Ok && apertura.Proceso=="00-77777","Apertura informa proceso");
-Check(fake.Calls.Single().Body.Contains("\"adm_id\":\"0007\"") && fake.Calls.Single().Body.Contains("\"usu_id\":\"operador\""),"Identidad y sucursal enviadas sin PV");
-Check(fake.Calls.Single().Token=="token-ficticio","Propaga token del operador");
-foreach(var modo in new[]{"sinresultado","sinproceso","incierto","html","error"})
+var habilitada=await servicio.ConsultarEstado("0001","0007","token-ficticio");
+Check(habilitada.Ok && habilitada.Habilitada==true && habilitada.Puestos.Count==0 && fake.Calls.Count==2,"S consulta DATOS y puestos aunque grilla vacía");
+Check(!(await servicio.Ejecutar(true,"operador","0007","0001","token-ficticio")).Ok && fake.Calls.All(c=>c.Method=="GET"),"S impide habilitar nuevamente aun con grilla vacía");
+foreach(var modo in new[]{"sinlista","nulo","malpuesto","errorpuestos"})
 {
-    fake.Modo=modo;var x=await servicio.Ejecutar(true,"operador","0007","token-ficticio");
+    fake.Modo=modo;fake.Calls.Clear();
+    var q=await servicio.ConsultarEstado("0001","0007","token-ficticio");
+    Check(!q.Ok && q.Habilitada==true,"S conocido con consulta puestos fallida: "+modo);
+    Check(!(await servicio.Ejecutar(false,"operador","0007","0001","token-ficticio")).Ok && fake.Calls.All(c=>c.Method=="GET"),"No cierra con consulta puestos fallida: "+modo);
+}
+fake.Modo="abiertos";fake.Calls.Clear();
+Check(!(await servicio.Ejecutar(false,"operador","0007","0001","token-ficticio")).Ok && fake.Calls.Count==2,"Cierre bloqueado con puestos abiertos");
+fake.Modo="vacio";fake.Calls.Clear();
+Check((await servicio.Ejecutar(false,"operador","0007","0001","token-ficticio")).Ok,"Cierre válido");
+Check(fake.Calls.Select(c=>c.Method).SequenceEqual(new[]{"GET","GET","POST"}),"DATOS y puestos se reconsultan antes del cierre");
+Check(fake.Calls.Last().Url.EndsWith("CierreCajaGral"),"Ruta cierre correcta");
+fake.Modo="cerrada";fake.Calls.Clear();
+var apertura=await servicio.Ejecutar(true,"operador","0007","0001","token-ficticio");
+Check(apertura.Ok && apertura.Proceso=="00-77777","Apertura informa proceso");
+Check(fake.Calls.Count==2 && fake.Calls[0].Url.Contains("ObtenerDatosCF"),"DATOS se reconsulta antes de habilitar");
+Check(fake.Calls.Last().Body.Contains("\"adm_id\":\"0007\"") && fake.Calls.Last().Body.Contains("\"usu_id\":\"operador\""),"Identidad y sucursal correctas");
+Check(fake.Calls.Last().Token=="token-ficticio","Propaga token del operador");
+foreach(var modo in new[]{"sinresultado","sinproceso","incierto","posthtml","posterror"})
+{
+    fake.Modo=modo;var x=await servicio.Ejecutar(true,"operador","0007","0001","token-ficticio");
     Check(!x.Ok && x.Incierto,"Respuesta " + modo + " no produce falso éxito");
 }
 foreach(var modo in new[]{"warn","rechazo"})
 {
-    fake.Modo=modo;var x=await servicio.Ejecutar(true,"operador","0007","token-ficticio");
+    fake.Modo=modo;var x=await servicio.Ejecutar(true,"operador","0007","0001","token-ficticio");
     Check(!x.Ok && !x.Incierto && x.Mensaje=="No autorizado por SP",modo + " conserva mensaje SP");
 }
+fake.Modo="cerrada";fake.Calls.Clear();
+Check(!(await servicio.ConsultarEstado("","0007","token-ficticio")).Ok && fake.Calls.Count==0,"Sin identificación de estación no consulta otro puesto");
 var context = new DefaultHttpContext { Session = new MemorySession() }; FakeSession(context);
 var controller = new AdministradorCajaController(Options.Create(new AppSettings()),new HttpContextAccessor{HttpContext=context},
     NullLogger<AdministradorCajaController>.Instance,servicio,new MemoryCache(new MemoryCacheOptions())) { ControllerContext=new(){HttpContext=context} };
-Check(controller.Index() is ViewResult,"Administrador sin CajaActual y sin apertura");
-fake.Modo="vacio";fake.Calls.Clear();var solicitud=Guid.NewGuid();
+Check(controller.Index() is ViewResult,"Administrador sin apertura del puesto");
+fake.Modo="cerrada";fake.Calls.Clear();var solicitud=Guid.NewGuid();
 await controller.Apertura(solicitud); await controller.Apertura(solicitud);
-Check(fake.Calls.Count==1,"Repetición del mismo identificador no duplica operación");
-Check(fake.Calls[0].Body.Contains("\"usu_id\":\"operador-prueba\"") && fake.Calls[0].Body.Contains("\"adm_id\":\"0007\""),"Controller usa identidad autenticada");
+Check(fake.Calls.Count==2 && fake.Calls.Count(c=>c.Method=="POST")==1,"Repetición del mismo identificador no duplica operación");
+Check(fake.Calls.Last().Body.Contains("\"usu_id\":\"operador-prueba\"") && fake.Calls.Last().Body.Contains("\"adm_id\":\"0007\""),"Controller usa identidad autenticada");
 Check(await controller.Apertura(Guid.Empty) is BadRequestObjectResult,"Solicitud vacía rechazada");
 foreach(var action in new[]{"Apertura","Cierre"}) Check(typeof(AdministradorCajaController).GetMethod(action)!.IsDefined(typeof(ValidateAntiForgeryTokenAttribute),true),"Antiforgery " + action);
 context.User=new ClaimsPrincipal(new ClaimsIdentity());
@@ -79,6 +100,7 @@ static void FakeSession(HttpContext context)
 {
     context.User=new ClaimsPrincipal(new ClaimsIdentity(new[]{new Claim("AdmId","0007#Sucursal de prueba"),new Claim(ClaimTypes.Name,"operador-prueba")},"Test"));
     context.Session.SetString("Etiqueta","prueba");
+    context.Session.SetString("CajaActual", "{\"CajaId\":\"0001\"}");
     var jwt=new JwtSecurityToken(claims:new[]{new Claim("user","operador-prueba")},expires:DateTime.UtcNow.AddHours(1));
     context.Request.Headers.Cookie = "prueba="+new JwtSecurityTokenHandler().WriteToken(jwt)+"; "+context.Request.Headers.Cookie;
 }
@@ -89,6 +111,15 @@ class FakeApi : HttpMessageHandler
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage r,CancellationToken ct)
     {
         Calls.Add((r.Method.Method,r.RequestUri!.ToString(),r.Content==null?"":await r.Content.ReadAsStringAsync(),r.Headers.Authorization?.Parameter));
+        if (r.RequestUri!.AbsolutePath.EndsWith("ObtenerDatosCF") && Modo!="html" && Modo!="error")
+        {
+            var datos=new Dictionary<string,object> { ["caja_id"]=Modo=="puestodistinto"?"0099":"0001", ["adm_id"]=Modo=="sucursaldistinta"?"9999":"0007" };
+            if(Modo!="sinestado") datos["caja_habilitadas"]=Modo=="estadoinvalido"?"X":
+                new[]{"cerrada","sinresultado","sinproceso","incierto","warn","rechazo","posthtml","posterror"}.Contains(Modo)?"N":"S";
+            return new(HttpStatusCode.OK){Content=new StringContent(JsonSerializer.Serialize(new{data=datos}))};
+        }
+        if (Modo=="posthtml" && r.Method==HttpMethod.Post) return new(HttpStatusCode.OK){Content=new StringContent("<html>Login</html>")};
+        if ((Modo=="posterror" && r.Method==HttpMethod.Post) || Modo=="errorpuestos") return new(HttpStatusCode.ServiceUnavailable){Content=new StringContent("error")};
         if(Modo=="incierto" && r.Method==HttpMethod.Post) throw new HttpRequestException("Transporte simulado");
         if(Modo=="error") return new(HttpStatusCode.ServiceUnavailable){Content=new StringContent("error")};
         if(Modo=="html") return new(HttpStatusCode.OK){Content=new StringContent("<html>Login</html>")};

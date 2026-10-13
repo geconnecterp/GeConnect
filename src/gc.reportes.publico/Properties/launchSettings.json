@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "gc.reportes.publico": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "applicationUrl": "https://localhost:7318;http://localhost:5318",
+      "environmentVariables": { "ASPNETCORE_ENVIRONMENT": "Development" }
+    }
+  }
+}

@@ -366,8 +366,8 @@ function renderizarInstrumentosCambioValores() {
 function actualizarFormularioInstrumentoCambioValores() {
     const medio = obtenerMedioSeleccionadoCambioValores();
     const tipo = obtenerTipoMedioCambioValores(medio);
-    const usaModalDetalle = tipo === 'CH' || tipo === 'BA';
     const instrumento = obtenerInstrumentoSeleccionadoCambioValores();
+    const usaModalDetalle = tipo === 'CH' || tipo === 'BA' || esMedioCobroElectronico({ ...medio, ins_desc: instrumento?.ins_desc });
 
     configurarDatoCambioValores(1, usaModalDetalle ? '' : instrumento?.ins_dato1_desc);
     configurarDatoCambioValores(2, usaModalDetalle ? '' : instrumento?.ins_dato2_desc);
@@ -405,7 +405,7 @@ function agregarValorCambioValores() {
         abrirModalChequeCambioValores(medio, instrumento);
         return;
     }
-    if (tipoMedio === 'BA') {
+    if (tipoMedio === 'BA' || esMedioCobroElectronico({ ...medio, ins_desc: instrumento.ins_desc })) {
         abrirModalTransferenciaCambioValores(medio, instrumento);
         return;
     }
@@ -537,6 +537,7 @@ function guardarDetalleChequeCambioValores() {
 
 function abrirModalTransferenciaCambioValores(medio, instrumento) {
     contextoDetalleCambioValores = { medio: medio, instrumento: instrumento };
+    presentarDetalleCobroElectronico(medio, instrumento);
     limpiarValidacionesCambioValores($('#modalDetalleTransferencia'));
     $('#lblInstrumentoTransferencia').text(instrumento.ins_desc || instrumento.ins_id || '-');
     $('#hdnBancoIdTransferencia').val(instrumento.ins_id || '');
@@ -571,7 +572,7 @@ function guardarDetalleTransferenciaCambioValores() {
         dato3: nroTransferencia.padStart(15, '0'),
         fechaValor: fechaTransferencia,
         importe: monto,
-        observacion: `Transf ${nroTransferencia}`
+        observacion: `${esMedioCobroElectronico(contextoDetalleCambioValores.medio) ? 'Cobro' : 'Transf'} ${nroTransferencia}`
     });
 
     $('#modalDetalleTransferencia').modal('hide');
@@ -644,6 +645,11 @@ function prepararConfirmacionCambioValores() {
     if (finalizandoCambioValores) return;
     if (!valoresCambioValores.length) {
         mostrarMensajeCambioValores('Atencion', 'Debe cargar al menos un valor antes de finalizar.', 'warn!');
+        return;
+    }
+
+    if (contieneCobroElectronico(valoresCambioValores)) {
+        confirmarOperacionCambioValores();
         return;
     }
 

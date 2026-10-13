@@ -1353,8 +1353,20 @@ namespace gc.sitio.Areas.ControlComun.Controllers
                 }
 
                 var enlaces = new List<EnlaceArchivoDto>();
-                var dominioBase = _setting.PathApp?.TrimEnd('/')
-                    ?? $"{Request.Scheme}://{Request.Host}";
+                string dominioBase;
+                try
+                {
+                    var direccionActual = !string.IsNullOrWhiteSpace(_setting.PathApp)
+                        ? _setting.PathApp
+                        : $"{Request.Scheme}://{Request.Host}{Request.PathBase}";
+                    dominioBase = gc.sitio.Helpers.EnlacePublicoUrl.ResolverBase(
+                        _docsManager.PublicBaseUrl, direccionActual, _docsManager.LegacyPublicDownloadsEnabled);
+                }
+                catch (ArgumentException)
+                {
+                    // Fallar antes de crear códigos. No volver silenciosamente al sitio interno.
+                    return Json(new { error = true, msg = "La dirección del portal público de documentos no está configurada correctamente. Consulte al administrador." });
+                }
 
                 // ✅ NUEVO: Obtener usuario actual
                 var usuarioId = UserName;
@@ -1430,12 +1442,10 @@ namespace gc.sitio.Areas.ControlComun.Controllers
 
                         // ✅ PASO 2: Construir URL con el código retornado
                         var codigo = apiResponse.Data.Codigo;
-                        var urlDocumento = $"{dominioBase}/d/{codigo}";
+                        var urlDocumento = $"{dominioBase}/d/{Uri.EscapeDataString(codigo)}";
 
                         _logger?.LogInformation(
-                            "✅ URL generada para '{Titulo}': {Url} (expira: {Expira})",
-                            solicitud.Titulo,
-                            urlDocumento,
+                            "Enlace de documento generado (expira: {Expira})",
                             apiResponse.Data.ExpiraEnUtc);
 
                         enlaces.Add(new EnlaceArchivoDto

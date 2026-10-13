@@ -1,0 +1,27 @@
+@model Geco.Reportes.Publico.Models.AvisoModel
+@{ Layout = null; }
+<!doctype html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow, noarchive" />
+    <title>@Model.Titulo · Café América</title>
+    <link rel="stylesheet" href="@Url.Content("~/portal.css")" />
+</head>
+<body>
+    <main>
+        <p class="brand">CAFÉ AMÉRICA <span>GECO · DOCUMENTOS</span></p>
+        <div class="card">
+            <p class="eyebrow">PORTAL DE DOCUMENTOS</p>
+            <h1>@Model.Titulo</h1>
+            <p>@Model.Mensaje</p>
+            @if (!string.IsNullOrEmpty(Model.Referencia))
+            {
+                <p class="reference">Referencia de atención: <code>@Model.Referencia</code></p>
+            }
+        </div>
+        <p class="foot">El enlace permite acceder al documento. No lo compartas con terceros.</p>
+    </main>
+</body>
+</html>

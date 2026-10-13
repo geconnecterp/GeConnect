@@ -1,7 +1,7 @@
 const fs=require('node:fs'),path=require('node:path'),vm=require('node:vm'),assert=require('node:assert/strict');
 const source=fs.readFileSync(path.join(__dirname,'../wwwroot/js/app/pagoFactura.js'),'utf8');
 const cd=fs.readFileSync(path.join(__dirname,'../wwwroot/js/app/pagoDiferido.js'),'utf8');
-const extract=(s,n)=>{const m=s.match(new RegExp('^(?:async )?function '+n+'\\([^]*?^}', 'm'));assert(m,n);return m[0];};
+const extract=(s,n)=>{const m=s.match(new RegExp('^(?:async )?function '+n+'\\([^]*?^}', 'm'));assert(m,n);return fs.readFileSync(path.join(__dirname,'../wwwroot/js/app/siteGen.js'),'utf8').match(/^function esMedioCobroElectronico\([^]*?^}/m)[0]+'\n'+m[0];};
 const cases=JSON.parse(fs.readFileSync(path.join(__dirname,'ReglasPago.Casos.json'),'utf8'));
 const ctx=vm.createContext({console:{log(){},warn(){},error(){}},window:{_coTipoActual:'CD'},Date,
  formatearMoneda:String,normalizarTextoUpper:x=>String(x||'').trim().toUpperCase()});

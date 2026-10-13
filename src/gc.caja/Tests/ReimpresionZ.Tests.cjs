@@ -76,3 +76,20 @@ for (const nivel of ['completo','parcial','solo-cierre','ninguno','desconocido']
     }
 }
 console.log(casosMenu + ' pruebas de disponibilidad en menú aprobadas.');
+
+// Regresión: el ingreso válido no ofrece Z; la caja cerrada conserva la alternativa explícita.
+const validarIngreso = caja.match(/function procesarValidacionIntegridad\(response\) \{[\s\S]*?\r?\n    \}/)[0];
+for (const disponible of [true, false]) {
+    for (const resultado of [0, 3]) {
+        let aperturas=0, modales=0, zVisible=false;
+        const jq = selector => ({text(){return this;},show(){return this;},hide(){return this;},toggle(v){if(selector==='#btnReimpresionZSinApertura') zVisible=v;return this;}});
+        vm.runInNewContext(validarIngreso + '; procesarValidacionIntegridad({resultado:'+resultado+',mensaje:"Estado de prueba"});', {
+            $:jq, reimpresionZDisponible:disponible, console:{log(){},warn(){},error(){}},
+            mostrarLoader(){}, setTimeout:f=>f(), procesarAperturaCaja(){aperturas++;}, mostrarModalValidacionConOpciones(){modales++;}
+        });
+        assert.equal(aperturas,resultado===0?1:0);
+        assert.equal(modales,resultado===3?1:0);
+        assert.equal(zVisible,resultado===3&&disponible);
+    }
+}
+console.log('4 escenarios de ingreso: caja válida sin desvío Z y caja cerrada con opción Z.');

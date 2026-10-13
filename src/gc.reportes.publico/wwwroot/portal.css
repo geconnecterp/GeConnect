@@ -1,0 +1,8 @@
+:root{color-scheme:light;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;color:#292822;background:#f7f6f1}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;place-items:center;padding:24px}
+main{width:min(100%,660px)}.brand{font-weight:750;letter-spacing:.08em;color:#363128;margin:0 0 24px}
+.brand span{display:block;font-size:.7rem;letter-spacing:.13em;margin-top:6px;color:#706747}
+.card{background:#fff;border:1px solid #d9d7cf;border-top:5px solid #d4a80d;border-radius:14px;padding:clamp(24px,5vw,44px);box-shadow:0 12px 32px #2928220a}
+.eyebrow{font-size:.72rem;font-weight:700;letter-spacing:.14em;color:#806000}h1{font-size:clamp(1.6rem,5vw,2.1rem);line-height:1.18;margin:18px 0}
+p{line-height:1.6}.reference{margin-top:30px;border-top:1px solid #e8e5db;padding-top:18px;font-size:.8rem;color:#625d50;overflow-wrap:anywhere}
+.foot{font-size:.8rem;color:#625d50;margin-top:22px}code{font-size:inherit}

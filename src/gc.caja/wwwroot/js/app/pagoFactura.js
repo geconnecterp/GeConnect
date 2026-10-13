@@ -40,9 +40,10 @@ let modalTipoMedioPagoInstance = null;
 let datosCliente = {};
 let condicionesPagoCliente = null;
 let confirmacionPagoEnCurso = false;
+let preparandoConfirmacionPago = false;
 let confirmacionPagoConfirmada = false;
 function advertirSalidaDurantePago(event) {
-    if (!confirmacionPagoEnCurso) return;
+    if (!confirmacionPagoEnCurso && !(typeof preparandoConfirmacionPago !== 'undefined' && preparandoConfirmacionPago)) return;
     event.preventDefault();
     event.returnValue = '';
 }
@@ -2733,6 +2734,19 @@ function construirJsonValores() {
             return;
         }
 
+        // Captura temporal de tarjeta/MP/Clover: mismo detalle que transferencia,
+        // sin cambiar el instrumento de catálogo ni emitir un nuevo cobro.
+        if (esMedioCobroElectronico(valor)) {
+            const referencia = String(valor.detalle?.nro_transferencia || '').trim();
+            if (referencia.length < 5 || !valor.detalle?.fecha_transferencia) {
+                throw new Error('Complete referencia y fecha del cobro realizado antes de finalizar.');
+            }
+            valorBackend.rb_dato3_valor = referencia.padStart(15, '0');
+            valorBackend.rb_fecha_valor = valor.detalle.fecha_transferencia;
+            jsonValores.push(valorBackend);
+            return;
+        }
+
         // ❷ MAPEO ESPECÍFICO SEGÚN TIPO DE PAGO
         switch (tcfIdUpper) {
             case 'EF': // ✅ EFECTIVO
@@ -3002,6 +3016,7 @@ function construirJsonValores() {
 // }
 
 function finalizarPago() {
+    if (preparandoConfirmacionPago || confirmacionPagoEnCurso || confirmacionPagoConfirmada) return;
     console.log('═══════════════════════════════════════════════════');
     console.log('✅ FINALIZAR PAGO CON NC');
     console.log('═══════════════════════════════════════════════════');
@@ -3076,6 +3091,13 @@ function finalizarPago() {
         return;
     }
     const jsonUniones = construirJsonUnionesNC();
+
+    // Registrar el cobro ya realizado sin ofrecer una cancelación ficticia.
+    // Las validaciones y la construcción contractual siguen siendo las mismas.
+    if (contieneCobroElectronico(valoresPago)) {
+        enviarPagoAlServidor(jsonValores, jsonUniones);
+        return;
+    }
 
     const totalNC = conceptosPago.totalCreditosNC || 0;
     const totalOtrosValores = conceptosPago.totalOtrosValores || 0;
@@ -3211,6 +3233,8 @@ function finalizarPago() {
  * @param {Array<Object>} jsonValores - Array de Json_Valores construido
  */
 function enviarPagoAlServidor(jsonValores, jsonUniones) {
+    if (preparandoConfirmacionPago || confirmacionPagoEnCurso || confirmacionPagoConfirmada) return;
+    preparandoConfirmacionPago = true;
     console.log('═══════════════════════════════════════════════════');
     console.log('📤 ENVIANDO PAGO AL SERVIDOR v28.0');
     console.log('═══════════════════════════════════════════════════');
@@ -3302,6 +3326,7 @@ function enviarPagoAlServidor(jsonValores, jsonUniones) {
                     //para lo unico que me sirve recuperar las facturas es para confirmar que las mismas estan. pero las tengo resguardadas en session las que se van a cobrar.
                     if (!responseFacturas || !responseFacturas.ok) {
                         console.error('❌ No se pudieron obtener las facturas');
+                        preparandoConfirmacionPago = false;
                         ocultarLoadingGlobal();
 
                         AbrirMensaje(
@@ -3339,6 +3364,7 @@ function enviarPagoAlServidor(jsonValores, jsonUniones) {
                         error: errorThrown
                     });
 
+                    preparandoConfirmacionPago = false;
                     ocultarLoadingGlobal();
 
                     AbrirMensaje(
@@ -3548,6 +3574,7 @@ function enviarPayloadAlServidor(
     arrayCancelar
 ) {
     if (confirmacionPagoEnCurso || confirmacionPagoConfirmada) return;
+    preparandoConfirmacionPago = false;
     confirmacionPagoEnCurso = true;
     console.log('═══════════════════════════════════════════════════');
     console.log('📦 ENVIAR PAYLOAD AL SERVIDOR v28.1');
@@ -6273,6 +6300,10 @@ function confirmarSeleccionInstrumento() {
 
     // ❷ Esperar cierre y abrir modal de detalle
     setTimeout(() => {
+        if (esMedioCobroElectronico({ ...window._tipoMedioPagoActual, ins_desc: window._instrumentoSeleccionado.ins_desc })) {
+            abrirModalDetalleTransferencia(window._instrumentoSeleccionado, window._tipoMedioPagoActual);
+            return;
+        }
         const tcfId = window._tipoMedioPagoActual.tcf_id.toUpperCase();
 
         switch (tcfId) {
@@ -6314,14 +6345,6 @@ function confirmarSeleccionInstrumento() {
                     window._instrumentoSeleccionado,
                     window._tipoMedioPagoActual
                 );
-                break;
-
-            case 'TC': // Tarjeta Crédito
-            case 'TD': // Tarjeta Débito
-                console.warn('⚠️ Modal de tarjeta por implementar');
-                if (typeof toastr !== 'undefined') {
-                    toastr.info('Funcionalidad de tarjetas en desarrollo');
-                }
                 break;
 
             default:
@@ -6388,7 +6411,7 @@ function procesarInstrumentos(instrumentos, tipoMedioPago) {
         console.log('═══════════════════════════════════════════════════');
 
         // ❺ Verificar si el MP requiere modal de detalle obligatorio
-        if (requiereModalDetalle(tcfId)) {
+        if (requiereModalDetalle(tcfId) || esMedioCobroElectronico({ ...tipoMedioPago, ins_desc: instrumentoUnico.ins_desc })) {
             console.log('✅ FLUJO ESPECIAL: MP con modal obligatorio');
             console.log(`   Abriendo modal de detalle para ${tcfId}...`);
 
@@ -8218,6 +8241,7 @@ function requiereModalDetalle(tcfId) {
     console.log(`🔍 Verificando si ${tcfId} requiere modal de detalle...`);
 
     const tiposConModalObligatorio = [
+        'TC', 'TD', 'MP', // Captura temporal del cobro mediante formulario de transferencia
         'VA',  // Vales de Compra
         'BA',  // ✅ NUEVO v19.3: Transferencias Bancarias
         'MU',  // ✅ NUEVO v19.5: Órdenes/Cupones de Mutuales
@@ -8238,6 +8262,10 @@ function requiereModalDetalle(tcfId) {
 function abrirModalDetalleSegunTipo(instrumento, tipoMedioPago) {
     const documento = esInstrumentoDocumento(instrumento) ? instrumento : null;
     if (documento) { abrirModalDetalleDocumento(documento, tipoMedioPago); return; }
+    if (esMedioCobroElectronico({ ...tipoMedioPago, ins_desc: instrumento?.ins_desc })) {
+        abrirModalDetalleTransferencia(instrumento, tipoMedioPago);
+        return;
+    }
     console.log('═══════════════════════════════════════════════════');
     console.log('🔓 ABRIR MODAL DETALLE SEGÚN TIPO v19.3');
     console.log(`   Tipo MP: ${tipoMedioPago.tcf_id} - ${tipoMedioPago.tcf_desc}`);
@@ -8358,13 +8386,15 @@ function abrirModalDetalleTransferencia(instrumento, tipoMedioPago) {
     }
 
     // ❸ Hidratar información del banco seleccionado
-    $('#lblInstrumentoTransferencia').text(instrumento.ins_desc || 'Banco sin nombre');
+    presentarDetalleCobroElectronico(tipoMedioPago, instrumento);
+    $('#txtNroTransferencia').val('');
+    $('#lblInstrumentoTransferencia').text(instrumento.ins_desc || 'Instrumento sin nombre');
     $('#hdnBancoIdTransferencia').val(instrumento.ins_id);
 
     console.log(`   ✅ Banco cargado: ${instrumento.ins_desc}`);
 
     // ❹ Establecer fecha actual por defecto
-    const fechaHoy = new Date().toISOString().split('T')[0];
+    const fechaHoy = fechaLocalDocumento();
     $('#txtFechaTransferencia').val(fechaHoy);
 
     // ❺ Calcular importe sugerido (diferencia pendiente)
@@ -8485,7 +8515,7 @@ function guardarDetalleTransferencia(instrumento, tipoMedioPago) {
         console.warn('⚠️ Número de transferencia inválido');
         mostrarErrorCampo(
             '#txtNroTransferencia',
-            'Debe ingresar un número de transferencia válido (mínimo 5 caracteres)'
+            'Debe ingresar una referencia válida (mínimo 5 caracteres)'
         );
         return;
     }
@@ -8576,7 +8606,7 @@ function finalizarGuardadoTransferencia(monto, nroTransferencia, fechaTransferen
         ins_desc: instrumento.ins_desc,
         ins_simbolo: instrumento.ins_simbolo || '$',
         importe: monto,
-        observacion: `Transf ${nroTransferencia} - ${fechaTransferencia}`,
+        observacion: `${esMedioCobroElectronico(tipoMedioPago) ? 'Cobro' : 'Transf'} ${nroTransferencia} - ${fechaTransferencia}`,
         detalle: detalleTransferencia,
         fecha_creacion: new Date().toISOString()
     };
@@ -8599,7 +8629,7 @@ function finalizarGuardadoTransferencia(monto, nroTransferencia, fechaTransferen
     // ❼ Notificación
     if (typeof toastr !== 'undefined') {
         toastr.success(
-            `Transferencia agregada: ${formatearMoneda(monto)} - ${instrumento.ins_desc}`,
+            `${esMedioCobroElectronico(tipoMedioPago) ? 'Cobro agregado' : 'Transferencia agregada'}: ${formatearMoneda(monto)} - ${instrumento.ins_desc}`,
             'Valor guardado',
             { timeOut: 3000 }
         );
