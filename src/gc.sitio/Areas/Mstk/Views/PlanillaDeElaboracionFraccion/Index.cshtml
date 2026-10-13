@@ -44,13 +44,13 @@
 					@Html.DropDownList("id", Model.ListaBoxes, "Seleccionar...", new { @id = "listaBox", @class = "form-control activable inputEditable" })
 				</div>
 			</div>
-			<div class="col-3">
+			<div class="col-4">
 				<div class="input-group input-group-sm">
 					<span class="input-group-text">Nota: </span>
 					<input type="text" asp-for="Nota" class="form-control activable inputEditable" value="" />
 				</div>
 			</div>
-			<div class="col-3">
+			<div class="col-2" style="text-align: end;">
 				<button type="button" class="btn btn-success btn-sm me-1" id="btnConfirmar">
 					<i class="bx bx-badge-check"></i> Confirmar
 				</button>

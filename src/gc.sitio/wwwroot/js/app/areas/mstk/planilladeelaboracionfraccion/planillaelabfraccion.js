@@ -127,7 +127,18 @@ function BuscarBoxDesdeDeposito() {
     var datos = { depoId };
     PostGenHtml(datos, BuscarBoxesDesdeDepositoURL, function (obj) {
         $("#divComboBox").html(obj);
-        $("#listaBoxes").on("change", listaBoxesChange);
+        const $lista = $("#listaBox");
+        const opciones = $lista.find("option");
+
+        // Si solo hay 1 opción real (excluyendo "Seleccionar...")
+        if (opciones.length === 2) {
+            // opciones[0] = "Seleccionar..."
+            // opciones[1] = único box
+            const unicoValor = opciones.eq(1).val();
+            $lista.val(unicoValor).trigger("change");
+        }
+
+        $lista.on("change", listaBoxesChange);
         CerrarWaiting();
         return true
     });
