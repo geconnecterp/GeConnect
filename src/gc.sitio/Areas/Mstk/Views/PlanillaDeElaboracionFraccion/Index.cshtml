@@ -6,7 +6,13 @@
 	<link rel="stylesheet" href="~/css/simplePagination.css" />
 	<link rel="stylesheet" href="~/lib/jstree/themes/default/style.min.css" />
 }
-<div class="container mt-2">
+<style>
+	.padding-container {
+		padding-left: 0px;
+		padding-right: 0px;
+	}
+</style>
+<div class="container mt-2 padding-container">
 	<div class="row mb-2">
 		<div class="col-md-6">
 			<div class="d-flex justify-content-sm-around">
@@ -25,7 +31,7 @@
 		</div>
 	</div>
 	<div id="divDetalle">
-		<div class="row">
+		<div class="row mb-1">
 			<div class="col-3">
 				<div class="input-group input-group-sm">
 					<span class="input-group-text">Depósito: </span>
@@ -39,25 +45,25 @@
 				</div>
 			</div>
 			<div class="col-3">
-				<div class="input-group input-group-sm" style="padding-top: 5px;">
+				<div class="input-group input-group-sm">
 					<span class="input-group-text">Nota: </span>
 					<input type="text" asp-for="Nota" class="form-control activable inputEditable" value="" />
 				</div>
 			</div>
 			<div class="col-3">
-				<button type="button" class="btn btn-success btn-sm mt-1 me-1" id="btnConfirmar">
+				<button type="button" class="btn btn-success btn-sm me-1" id="btnConfirmar">
 					<i class="bx bx-badge-check"></i> Confirmar
 				</button>
-				<button type="button" class="btn btn-danger btn-sm mt-1 me-1" id="btnCancelar">
+				<button type="button" class="btn btn-danger btn-sm me-1" id="btnCancelar">
 					<i class="bx bx-x-circle"></i> Cancelar
 				</button>
 			</div>
 		</div>
 		<div class="row">
-			<div class="col-6">
+			<div class="col-6" id="divTablaProductosElaborados">
 				@Html.Partial("_partial_elaborados", Model.TablaProductosElaborados)
 			</div>
-			<div class="col-6">
+			<div class="col-6" id="divTablaProductosMateriaPrima">
 				@Html.Partial("_partial_materia_prima", Model.TablaProductosMateriaPrima)
 			</div>
 		</div>
@@ -69,6 +75,9 @@
 
 @section scripts {
 	<script type="text/javascript">
+		var funcionBusquedaAvanzada = true;
+
+		let BuscarBoxesDesdeDepositoURL = "@Url.Action("ObtenerBoxesDesdeDeposito", "PlanillaDeElaboracionFraccion", new { area = "mstk" })";
 		let inicializarPantallPrincipalURL = "@Url.Action("InicializarPantallPrincipal", "PlanillaDeElaboracionFraccion", new { area = "mstk" })";
 		let cargarAjustesDeStockURL = "@Url.Action("CargarAjustesDeStock", "PlanillaDeElaboracionFraccion", new { area = "mstk" })";
 		var buscarMetadataURL = "@Url.Action("ObtenerDatosPaginacion", "PlanillaDeElaboracionFraccion", new { area = "mstk" })";
@@ -81,11 +90,19 @@
 		var enviarEmailUrl = "@Url.Action("EnviarEmail", "GestorImpresion", new { area = "ControlComun" })";
 		var enviarWhatsAppUrl = "@Url.Action("EnviarWhatsApp", "GestorImpresion", new { area = "ControlComun" })";
 		var generadorArchivoUrl = "@Url.Action("GeneradorArchivo", "GestorImpresion", new { area = "ControlComun" })";
+
+		//Busqueda de productos
+		var busquedaProdBaseUrl = "@Url.Action("BusquedaBase", "producto", new { area = "ControlComun", validarPertenenciaDeProveedor = false })";
+		var autoComRel01Url = "@Url.Action("BuscarProvs", "abmproducto", new { area = "abms" })";
+		var autoComRel02Url = "@Url.Action("BuscarRubros", "abmproducto", new { area = "abms" })";
+		var buscarMetadataURL = "@Url.Action("ObtenerDatosPaginacion", "abmproducto", new { area = "abms" })";
+		var busquedaAvanzadaUrl = "@Url.Action("BusquedaAvanzada", "producto", new { area = "ControlComun" })";
 	</script>
 	<script src="~/js/app/areas/docmngr/docmanager.js" asp-append-version="true"></script>
 	<script src="~/js/plugins/jquery.simplePagination.js"></script>
 	<script src="~/lib/jstree/jstree.min.js"></script>
-
+	<script src="~/js/app/busquedas.js" type="text/javascript"></script>
+	<script src="~/js/app/controlcomun/infoRpr.js" type="text/javascript"></script>
 
 	<script src="~/js/app/areas/mstk/planilladeelaboracionfraccion/planillaelabfraccion.js" type="text/javascript"></script>
 }

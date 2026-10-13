@@ -1,6 +1,8 @@
 ﻿using gc.api.core.Entidades;
 using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Dtos.Almacen;
+using gc.infraestructura.Dtos.Almacen.AjusteDeStock;
+using gc.infraestructura.Dtos.Deposito;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Helpers;
 using gc.sitio.Areas.Mstk.Models.PlanillaDeElaboracionFraccion;
@@ -51,6 +53,36 @@ namespace gc.sitio.Areas.Mstk.Controllers.PlanillaDeElaboracionFraccion
 			}
 		}
 
+		public async Task<IActionResult> ObtenerBoxesDesdeDeposito(string depoId)
+		{
+			var model = new ListaBoxesModel();
+			try
+			{
+				if (!VerificarAutenticacion(out IActionResult redirectResult))
+					return redirectResult;
+
+				if (depoId != "0")
+					model.ListaBoxes = CargarComboBoxes(depoId);
+				else
+				{
+					List<DepositoInfoBoxDto> boxes = [];
+					model.ListaBoxes = HelperMvc<ComboGenDto>.ListaGenerica(boxes.Select(x => new ComboGenDto { Id = x.Box_Id, Descripcion = $"{x.Box_Id}__{x.Box_desc}" }));
+				}
+				return PartialView("_listaBoxes", model);
+			}
+			catch (Exception ex)
+			{
+				RespuestaGenerica<EntidadBase> response = new()
+				{
+					Ok = false,
+					EsError = true,
+					EsWarn = false,
+					Mensaje = ex.Message
+				};
+				return PartialView("_gridMensaje", response);
+			}
+		}
+
 		#region Metodos Privados
 		private void CargarDatosIniciales(PlanillaDeElaboracionFraccionModel model)
 		{
@@ -68,6 +100,12 @@ namespace gc.sitio.Areas.Mstk.Controllers.PlanillaDeElaboracionFraccion
 		private SelectList ComboDepositos(List<DepositoDto> depos)
 		{
 			var lista = depos.Select(x => new ComboGenDto { Id = x.Depo_Id, Descripcion = x.Depo_Nombre });
+			return HelperMvc<ComboGenDto>.ListaGenerica(lista);
+		}
+		private SelectList CargarComboBoxes(string depoId)
+		{
+			var adms = _depositoServicio.BuscarBoxPorDeposito(depoId, TokenCookie).Result;
+			var lista = adms.Select(x => new ComboGenDto { Id = x.Box_Id, Descripcion = $"{x.Box_Id}__{x.Box_desc}" });
 			return HelperMvc<ComboGenDto>.ListaGenerica(lista);
 		}
 		#endregion
