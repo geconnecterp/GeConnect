@@ -84,6 +84,11 @@
 
 @section scripts {
 	<script type="text/javascript">
+		let totalRegs = 0;
+		let pagRegs = 0;
+		let pags = 0;
+		let pagina = 1;
+		let search = "";
 		var funcionBusquedaAvanzada = true;
 
 		let BuscarBoxesDesdeDepositoURL = "@Url.Action("ObtenerBoxesDesdeDeposito", "PlanillaDeElaboracionFraccion", new { area = "mstk" })";

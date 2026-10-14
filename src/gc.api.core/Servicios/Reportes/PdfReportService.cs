@@ -149,6 +149,7 @@ namespace gc.api.core.Servicios.Reportes
 				{ InfoReporte.R100_Ajuste_De_Stock, new R100_Ajuste_De_Stock(uow,apiProdSv,empresa,ctaSv, logger) },
 				{ InfoReporte.R101_Devolucion_A_Proveedor, new R101_Devolucion_A_Proveedor(uow,apiProdSv,empresa,ctaSv, logger) },
 				{ InfoReporte.R102_Remito_No_Fiscal, new R102_Remito_No_Fiscal(uow,apiProdSv,empresa,ctaSv, logger) },
+				{ InfoReporte.R103_Planilla_Elaboracion_Y_Fraccion, new R103_Planilla_Elaboracion_Y_Fraccion(uow,apiProdSv,empresa,ctaSv, logger) },
 			}; 
             _logger = logger;
         }

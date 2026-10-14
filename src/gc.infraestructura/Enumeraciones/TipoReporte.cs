@@ -108,5 +108,6 @@ namespace gc.infraestructura.Enumeraciones
         R100_Ajuste_De_Stock = 100,
 		R101_Devolucion_A_Proveedor = 101,
 		R102_Remito_No_Fiscal = 102,
+		R103_Planilla_Elaboracion_Y_Fraccion = 103
 	}
 }

@@ -1126,9 +1126,9 @@ namespace gc.infraestructura.Helpers
 			return DefineFontWithStyle("Arial", 14, Font.NORMAL, 0, 0, 0);
 		}
 
-		public static Font FontTituloPredeterminado()
+		public static Font FontTituloPredeterminado(bool bold = true)
 		{
-			return DefineFontWithStyle("Arial", 12, Font.BOLD, 0, 0, 0);
+			return DefineFontWithStyle("Arial", 12, bold ? Font.BOLD : Font.NORMAL, 0, 0, 0);
 		}
 
 		public static Font FontSubtituloPredeterminado(bool bold = false)

@@ -1,16 +1,28 @@
 ﻿let desdeProdElaborado = false;
 let bloqueDestino = null;
+let primerClick = false;
 
 $(function () {
 	InicializarEventos();
 	if ($("#divDetalle").is(":visible")) {
 		ModificacionesLocales();
 	}
+	//$("#divDetalle").find("#btnBusquedaBase").removeAttr("id");
 });
 
 function InicializarEventos() {
 	// Delegación para ambos botones con ID duplicado
-	$(document).on("click", "#btnBusquedaBase", function () {
+	$(document).on("click", ".clsBtnBusquedaBase", function () {
+
+		if (!primerClick) {
+			primerClick = true;
+			console.log("primerClick", primerClick);
+		}
+		else { 
+			primerClick = false;
+			console.log("primerClick", primerClick);
+			return;
+		}
 
 		// Detectar el bloque padre
 		const bloque = $(this).closest(".grid-golden");
@@ -19,24 +31,21 @@ function InicializarEventos() {
 
 		if (bloque.find("strong").text().includes("Elaborados")) {
 			origen = "elaborados";
-		} else if (bloque.find("strong").text().includes("Materia Prima")) {
+			desdeProdElaborado = true;
+		} else {
 			origen = "materiaPrima";
+			desdeProdElaborado = false;
 		}
 
 		console.log("Botón presionado desde:", origen);
 
 		// Obtener el input asociado
-		const inputBusqueda = bloque.find("input[asp-for='Busqueda']");
+		var inputBusqueda = bloque.find("input[name='Busqueda']").first();
 		console.log("Valor ingresado:", inputBusqueda.val());
 
-		// Lógica según origen
-		if (origen === "elaborados") {
-			desdeProdElaborado = true;
-		} else {
-			desdeProdElaborado = false;
-		}
 		// Guardamos el bloque destino
 		bloqueDestino = bloque;
+		buscarProducto();
 	});
 	// Handler para el input de búsqueda del componente común
 	$(document).on("keydown", "input[name='Busqueda']", function (e) {
@@ -132,9 +141,9 @@ function InicializarEventos() {
 		const $nuevaFila = $(this);
 		ProcesarSeleccionFilaEnProdElab($nuevaFila);
 	});
-	$(document).off("click", "#btnConfirmar");
-	$(document).on("click", "#btnConfirmar", function (e) {
-
+	$(document).off("click", "#btnImprimir");
+	$(document).on("click", "#btnImprimir", function (e) {
+		ImprimirPlanilla("00-00007147");
 	});
 	$(document).off("click", "#btnCancelar");
 	$(document).on("click", "#btnCancelar", function (e) {
@@ -280,7 +289,7 @@ function ConfirmarCarga() {
 					function () {
 						$('#msjModal').modal('hide');
 						//Imprimir Remito
-						//ImprimirPlanilla(obj.id);
+						ImprimirPlanilla(obj.id);
 						console.log("Planilla de Elaboración y Fracción Generada: ", obj.id);
 						ResetearPantalla();
 					},
@@ -297,10 +306,18 @@ function ConfirmarCarga() {
 function ImprimirPlanilla(id) {
 	ReseteoDeReportes();
 	setTimeout(() => {
-		let data = { id: id, sm_tipo: "RE" };
-		cargarReporteEnArre(102, data, "REMITO NO FISCAL", "", "");
+		let data = { pe_compte: id };
+		cargarReporteEnArre(103, data, "PLANILLA DE ELABORACIÓN Y FRACCIÓN", "", "");
 		invocacionGestorDoc({});
 	}, 500);
+}
+
+function ConstruirDescripcionFiltro(nombre, idList) {
+
+	// Si está activo → obtener valores
+	const texto = $(idList).find("option:selected").text();
+
+	return `${nombre}: ${texto}`;
 }
 
 function ReseteoDeReportes() {

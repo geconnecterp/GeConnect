@@ -15,6 +15,7 @@ using gc.infraestructura.Dtos.Almacen.Tr.Transferencia;
 using gc.infraestructura.Dtos.Box;
 using gc.infraestructura.Dtos.CuentaComercial;
 using gc.infraestructura.Dtos.Gen;
+using gc.infraestructura.Dtos.Mstk;
 using gc.infraestructura.Dtos.Mstk.Request;
 using gc.infraestructura.Dtos.Productos;
 using gc.infraestructura.Dtos.Productos.Impositivo;
@@ -145,5 +146,6 @@ namespace gc.api.core.Contratos.Servicios
 		List<RemitoNoFiscalDto> ObtenerRemitoNoFiscal(RemitoNoFiscalRequest request);
 
 		RespuestaDto ConfirmarPlanillaElaboracionYFraccion(ConfirmarPlanillaDeElabYFraccRequest request);
+		List<PlanillaElabYFraccionDto> ObtenerPlanillaDeElabYFraccion(string ep_compte);
 	}
 }

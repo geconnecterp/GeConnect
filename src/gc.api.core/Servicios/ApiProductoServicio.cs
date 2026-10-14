@@ -23,6 +23,7 @@ using gc.infraestructura.Dtos.Almacen.Tr.Transferencia;
 using gc.infraestructura.Dtos.Box;
 using gc.infraestructura.Dtos.CuentaComercial;
 using gc.infraestructura.Dtos.Gen;
+using gc.infraestructura.Dtos.Mstk;
 using gc.infraestructura.Dtos.Mstk.Request;
 using gc.infraestructura.Dtos.Productos;
 using gc.infraestructura.Dtos.Productos.Impositivo;
@@ -2034,6 +2035,18 @@ namespace gc.api.core.Servicios
 
 			var resp = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
 			return resp.First();
+		}
+
+		public List<PlanillaElabYFraccionDto> ObtenerPlanillaDeElabYFraccion(string pe_compte)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_PEF_DATOS;
+			var ps = new List<SqlParameter>
+			{
+				new("@pe_compte", pe_compte),
+			};
+			var rem = _repository.EjecutarLstSpExt<PlanillaElabYFraccionDto>(sp, ps, true);
+
+			return rem;
 		}
 	}
 }
