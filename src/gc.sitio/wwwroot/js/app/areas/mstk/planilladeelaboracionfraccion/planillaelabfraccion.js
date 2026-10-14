@@ -256,6 +256,7 @@ function InicializarEventos() {
 }
 
 function ConfirmarCarga() {
+	AbrirWaiting("Guardando Planilla de Elaboración y Fracción...");
 	const depoId = $("#listaDeposito").val();
 	const boxId = $("#listaBox").val();
 	const nota = $("#Nota").val();
@@ -330,7 +331,7 @@ function obtenerProductosDeTabla(selectorTabla) {
 		});
 	});
 
-	return productos;
+	return JSON.stringify(productos);
 }
 
 
