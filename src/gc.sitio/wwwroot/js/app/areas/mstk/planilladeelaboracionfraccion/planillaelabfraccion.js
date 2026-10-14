@@ -16,11 +16,11 @@ function InicializarEventos() {
 
 		if (!primerClick) {
 			primerClick = true;
-			console.log("primerClick", primerClick);
+			//console.log("primerClick", primerClick);
 		}
 		else { 
 			primerClick = false;
-			console.log("primerClick", primerClick);
+			//console.log("primerClick", primerClick);
 			return;
 		}
 
@@ -41,7 +41,7 @@ function InicializarEventos() {
 
 		// Obtener el input asociado
 		var inputBusqueda = bloque.find("input[name='Busqueda']").first();
-		console.log("Valor ingresado:", inputBusqueda.val());
+		//console.log("Valor ingresado:", inputBusqueda.val());
 
 		// Guardamos el bloque destino
 		bloqueDestino = bloque;
@@ -682,9 +682,15 @@ function ProcesarCargaProducto(prod) {
 	// Detectar si el bloque es Elaborados o Materia Prima
 	const esElaborados = bloqueDestino.find("strong").text().includes("Elaborados");
 	const esMateriaPrima = bloqueDestino.find("strong").text().includes("Materia Prima");
+	console.log("esElaborados", esElaborados);
+	console.log("esMateriaPrima", esMateriaPrima);
+
+
 
 	// VALIDACIÓN DE TIPO DE PRODUCTO SEGÚN MÓDULO
 	if (esElaborados) {
+		// Limpia el input de Materia Prima
+		$("#divTablaProductosMateriaPrima").find("input[name='Busqueda']").val("");
 		if (prod.p_elaboracion !== "S") {
 			AbrirMensaje("ATENCIÓN",
 				`El producto (${prod.p_id}) ${prod.p_desc} no es del tipo Elaboración Propia.`, function () {
@@ -697,6 +703,8 @@ function ProcesarCargaProducto(prod) {
 	}
 
 	if (esMateriaPrima) {
+		// Limpia el input de Elaborados
+		$("#divTablaProductosElaborados").find("input[name='Busqueda']").val("");
 		if (prod.p_materia_prima !== "S") {
 			AbrirMensaje("ATENCIÓN", `El producto (${prod.p_id}) ${prod.p_desc} no es del tipo Materia Prima.`, function () {
 				$("#msjModal").modal("hide");
@@ -908,7 +916,9 @@ function buscarProducto() {
 					bloqueDestino.find("#estadoFuncion").val(false);
 
 					inicializaBusquedaAvanzada();
-					$("#busquedaModal").modal("toggle");
+					if (!$("#busquedaModal").hasClass("show")) {
+						$("#busquedaModal").modal("toggle");
+					}
 				}
 
 				return;
