@@ -475,7 +475,7 @@ function ValidarExistenciaDeProductos() {
 				}
 				return true;
 
-			}, true, ["Aceptar", "Cancelar"], "question!", null);
+			}, true, ["SI", "NO"], "question!", null);
 		}
 	});
 }
@@ -792,7 +792,7 @@ function btnConfirmarClick() {
 				}
 			},
 			true,
-			['Confirmar', 'Cancelar'],
+			['SI', 'NO'],
 			'info!',
 			null
 		);
@@ -821,7 +821,7 @@ function ConfirmarRemito() {
 					function () {
 						$('#msjModal').modal('hide');
 						//Imprimir Remito
-						//ImprimirRemitoExterno(obj.id);
+						ImprimirRemitoExterno(obj.id);
 						console.log("Remito Externo Generado: ", obj.id);
 						ResetearPantallaRemito();
 					},
@@ -833,6 +833,20 @@ function ConfirmarRemito() {
 			}, 200);
 		}
 	});
+}
+
+function ImprimirRemitoExterno(id) {
+	ReseteoDeReportes();
+	setTimeout(() => {
+		let data = { id: id, sm_tipo: "RE" };
+		cargarReporteEnArre(102, data, "REMITO NO FISCAL", "", "");
+		invocacionGestorDoc({});
+	}, 500);
+}
+
+function ReseteoDeReportes() {
+	console.log("Reseto de reportes");
+	ReporteResetArre();
 }
 
 function ResetearPantallaRemito() {
@@ -1050,7 +1064,7 @@ function btnCancelarClick() {
 				}
 			},
 			true,
-			['Confirmar', 'Cancelar'],
+			['SI', 'NO'],
 			'info!',
 			null
 		);

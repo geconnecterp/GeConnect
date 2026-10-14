@@ -1,15 +1,19 @@
 ﻿using gc.api.core.Entidades;
 using gc.infraestructura.Core.EntidadesComunes.Options;
+using gc.infraestructura.Core.Exceptions;
+using gc.infraestructura.Dtos;
 using gc.infraestructura.Dtos.Almacen;
 using gc.infraestructura.Dtos.Almacen.AjusteDeStock;
 using gc.infraestructura.Dtos.Deposito;
 using gc.infraestructura.Dtos.Gen;
+using gc.infraestructura.Dtos.Mstk.Request;
 using gc.infraestructura.Helpers;
 using gc.sitio.Areas.Mstk.Models.PlanillaDeElaboracionFraccion;
 using gc.sitio.core.Servicios.Contratos;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Options;
+using System.Reflection;
 
 namespace gc.sitio.Areas.Mstk.Controllers.PlanillaDeElaboracionFraccion
 {
@@ -18,11 +22,13 @@ namespace gc.sitio.Areas.Mstk.Controllers.PlanillaDeElaboracionFraccion
 	{
 		private readonly AppSettings _setting;
 		private readonly IDepositoServicio _depositoServicio;
+		private readonly IProductoServicio _prodSrv;
 		public PlanillaDeElaboracionFraccionController(IOptions<AppSettings> options, IHttpContextAccessor contexto, ILogger<PlanillaDeElaboracionFraccionController> logger,
-													   IDepositoServicio depositoServicio) : base(options, contexto, logger)
+													   IDepositoServicio depositoServicio, IProductoServicio prodSrv) : base(options, contexto, logger)
 		{
 			_setting = options.Value;
-			_depositoServicio = depositoServicio;		
+			_depositoServicio = depositoServicio;
+			_prodSrv = prodSrv;
 		}
 
 		public IActionResult Index()
@@ -60,6 +66,12 @@ namespace gc.sitio.Areas.Mstk.Controllers.PlanillaDeElaboracionFraccion
 			{
 				if (!VerificarAutenticacion(out IActionResult redirectResult))
 					return redirectResult;
+				if (string.IsNullOrEmpty(depoId))
+				{
+					var listaNew = new List<ComboGenDto>();
+					var hlp = HelperMvc<ComboGenDto>.ListaGenerica(listaNew);
+					return PartialView("_listaBoxes", new ListaBoxesModel() { ListaBoxes = hlp });
+				}
 
 				if (depoId != "0")
 					model.ListaBoxes = CargarComboBoxes(depoId);
@@ -81,6 +93,36 @@ namespace gc.sitio.Areas.Mstk.Controllers.PlanillaDeElaboracionFraccion
 				};
 				return PartialView("_gridMensaje", response);
 			}
+		}
+
+		[HttpPost]
+		public async Task<JsonResult> ConfirmarPlanilla(ConfirmarPlanillaDeElabYFraccRequest request)
+		{
+			string msg = "";
+			try
+			{
+				if (!VerificarAutenticacion(out IActionResult redirectResult))
+					return Json(redirectResult);
+				if (request == null)
+					return Json(new { error = true, msg = "No se recibieron los datos para la confirmación del remito." });
+
+				request.adm_id = AdministracionId;
+				request.usu_id = UserName;
+				PrintProperties(request);
+				var respuesta = _prodSrv.ConfirmarPlanillaElaboracionYFraccion(request, TokenCookie);
+				return AnalizarRespuesta(respuesta, "La acción se ejecutó correctamente.");
+			}
+			catch (NegocioException ex)
+			{
+				return Json(new { error = false, warn = true, msg = ex.Message });
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, $"{this.GetType().Name}-{MethodBase.GetCurrentMethod()?.Name} Error al intentar confirmar");
+				msg = $"Hubo algún inconveniente al intentar Confirmar la Planilla de Elaboración y Fracción.";
+			}
+
+			return Json(new { error = true, msg });
 		}
 
 		#region Metodos Privados

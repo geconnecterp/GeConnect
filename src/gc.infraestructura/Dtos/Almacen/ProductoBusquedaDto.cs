@@ -12,7 +12,9 @@
         public string P_alta_rotacion { get; set; } = string.Empty;
         public string P_con_vto { get; set; } = string.Empty;
         public string P_peso { get; set; } = string.Empty;
-        public string up_id { get; set; } = string.Empty; //= 00 => decimal -> acepto lo que traiga (3 decimales)
+		public string P_elaboracion { get; set; } = string.Empty;
+		public string P_materia_prima { get; set; } = string.Empty;
+		public string up_id { get; set; } = string.Empty; //= 00 => decimal -> acepto lo que traiga (3 decimales)
         public string up_tipo { get; set; } = string.Empty;
         public string Rub_id { get; set; } = string.Empty;
         public string Rub_desc { get; set; } = string.Empty;

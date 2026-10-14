@@ -23,6 +23,7 @@ using gc.infraestructura.Dtos.Almacen.Tr.Transferencia;
 using gc.infraestructura.Dtos.Box;
 using gc.infraestructura.Dtos.CuentaComercial;
 using gc.infraestructura.Dtos.Gen;
+using gc.infraestructura.Dtos.Mstk.Request;
 using gc.infraestructura.Dtos.Productos;
 using gc.infraestructura.Dtos.Productos.Impositivo;
 using gc.infraestructura.Dtos.Productos.OrdenDeReparto;
@@ -2014,6 +2015,25 @@ namespace gc.api.core.Servicios
 			var rem = _repository.EjecutarLstSpExt<RemitoNoFiscalDto>(sp, ps, true);
 
 			return rem;
+		}
+
+		public RespuestaDto ConfirmarPlanillaElaboracionYFraccion(ConfirmarPlanillaDeElabYFraccRequest request)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_PEF_CONFIRMAR;
+
+			var ps = new List<SqlParameter>()
+			{
+				new("@depo_id", request.depoId),
+				new("@box_id", request.boxId),
+				new("@motivo", request.nota),
+				new("@json_ef", request.json_elab),
+				new("@json_mp", request.json_mat_prim),
+				new("@adm_id", request.adm_id),
+				new("@usu_id", request.usu_id),
+			};
+
+			var resp = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
+			return resp.First();
 		}
 	}
 }

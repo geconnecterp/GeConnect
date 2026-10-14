@@ -3,6 +3,7 @@ using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Core.Exceptions;
 using gc.infraestructura.Core.Helpers;
 using gc.infraestructura.Core.Responses;
+using gc.infraestructura.Dtos;
 using gc.infraestructura.Dtos.ABM;
 using gc.infraestructura.Dtos.Almacen;
 using gc.infraestructura.Dtos.Almacen.AjusteDeStock;
@@ -139,6 +140,8 @@ namespace gc.sitio.core.Servicios.Implementacion
 		private const string PI_Pendiente_Detalle = "/PIPendienteDetalle";
 
 		private const string CONFIRMAR_CARGA_PREVIA = "/Confirmar-Carga-Previa";
+
+		private const string CONFIRMAR_PLANILLA_ELAB_FRACC = "/confirmar-planilla-elaboracion-fraccion";
 
 
 		private readonly AppSettings _appSettings;
@@ -3231,6 +3234,46 @@ namespace gc.sitio.core.Servicios.Implementacion
 				string stringData = await response.Content.ReadAsStringAsync();
 				_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
 				return new();
+			}
+		}
+
+		public RespuestaGenerica<RespuestaDto> ConfirmarPlanillaElaboracionYFraccion(ConfirmarPlanillaDeElabYFraccRequest request, string token)
+		{
+			try
+			{
+				ApiResponse<RespuestaDto> apiResponse;
+
+				HelperAPI helper = new HelperAPI();
+
+				HttpClient client = helper.InicializaCliente(request, token, out StringContent contentData);
+				HttpResponseMessage response;
+
+				var link = $"{_appSettings.RutaBase}{RutaAPI}{CONFIRMAR_PLANILLA_ELAB_FRACC}";
+
+				response = client.PostAsync(link, contentData).Result;
+
+				if (response.StatusCode == HttpStatusCode.OK)
+				{
+					string stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+					if (string.IsNullOrEmpty(stringData))
+					{
+						_logger.LogWarning($"La API devolvió error.");
+						return new();
+					}
+					apiResponse = JsonConvert.DeserializeObject<ApiResponse<RespuestaDto>>(stringData) ?? throw new Exception("Error al deserializar la respuesta de la API.");
+					return new RespuestaGenerica<RespuestaDto>() { Entidad = apiResponse.Data };
+				}
+				else
+				{
+					string stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+					_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+					return new();
+				}
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, "Error al confirmar la planilla de elab. y fracción.");
+				return new() { Mensaje = "Algo no fue bien al intentar la confirmación de la planilla de elab. y fracción.. Verifique Log.", EsError = true };
 			}
 		}
 	}

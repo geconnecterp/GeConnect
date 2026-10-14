@@ -805,6 +805,12 @@ namespace gc.api.core.Constantes
 			#region PV
 			public const string SP_PV_REMITO_REPO = "SPGECO_PV_REMITO_REPO";
 			#endregion
+
+			#region PEF
+			public const string SP_PEF_CONFIRMAR = "SPGECO_PEF_Confirmar";
+			public const string SP_PEF_DATOS = "SPGECO_PEF_Datos";
+			public const string SP_PEF_LISTA = "SPGECO_PEF_Lista";
+			#endregion
 		}
 
 		public static class StoredFunctions

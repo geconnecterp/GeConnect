@@ -1,0 +1,32 @@
+﻿.fade-in-row {
+    animation: fadeInRow 0.25s ease-out;
+}
+
+@keyframes fadeInRow {
+    from {
+        opacity: 0;
+        transform: translateY(-4px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.fade-out-row {
+    animation: fadeOutRow 0.2s ease-in forwards;
+}
+
+@keyframes fadeOutRow {
+    from {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    to {
+        opacity: 0;
+        transform: translateY(4px);
+    }
+}
+

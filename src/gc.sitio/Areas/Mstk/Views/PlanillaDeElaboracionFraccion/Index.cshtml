@@ -5,11 +5,20 @@
 @section styles {
 	<link rel="stylesheet" href="~/css/simplePagination.css" />
 	<link rel="stylesheet" href="~/lib/jstree/themes/default/style.min.css" />
+	<link rel="stylesheet" href="~/css/mstk/plan-elab-fracc.css" />
 }
 <style>
 	.padding-container {
 		padding-left: 0px;
 		padding-right: 0px;
+	}
+
+	#divTablaProductosElaborados {
+		padding-right: 5px;
+	}
+
+	#divTablaProductosMateriaPrima {
+		padding-left: 5px;
 	}
 </style>
 <div class="container mt-2 padding-container">
@@ -78,10 +87,7 @@
 		var funcionBusquedaAvanzada = true;
 
 		let BuscarBoxesDesdeDepositoURL = "@Url.Action("ObtenerBoxesDesdeDeposito", "PlanillaDeElaboracionFraccion", new { area = "mstk" })";
-		let inicializarPantallPrincipalURL = "@Url.Action("InicializarPantallPrincipal", "PlanillaDeElaboracionFraccion", new { area = "mstk" })";
-		let cargarAjustesDeStockURL = "@Url.Action("CargarAjustesDeStock", "PlanillaDeElaboracionFraccion", new { area = "mstk" })";
-		var buscarMetadataURL = "@Url.Action("ObtenerDatosPaginacion", "PlanillaDeElaboracionFraccion", new { area = "mstk" })";
-		var obtenerDetalleAjusteURL = "@Url.Action("ObtenerDetalleAjustes", "PlanillaDeElaboracionFraccion", new { area = "mstk" })";
+		let confirmarPlanillaUrl = "@Url.Action("ConfirmarPlanilla", "PlanillaDeElaboracionFraccion", new { area = "mstk" })";
 
 		// Gestor de impresión
 		var repoApiUrl = '@Url.Action("ObtenerPdfDesdeAPI", "GestorImpresion", new { area = "ControlComun" })';

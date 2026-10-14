@@ -16,6 +16,7 @@ using gc.infraestructura.Dtos.Box;
 using gc.infraestructura.Dtos.CuentaComercial;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.General;
+using gc.infraestructura.Dtos.Mstk.Request;
 using gc.infraestructura.Dtos.Productos;
 using gc.infraestructura.EntidadesComunes.Options;
 using Microsoft.Win32;
@@ -124,5 +125,6 @@ namespace gc.sitio.core.Servicios.Contratos
 		Task<List<TRRemitoDto>> TRRemitoDetalleDesdeTI(string re_compte, string token);
 		Task<(List<DevolucionProveedoresListaDto>, MetadataGrid)> DevolucionAProveedoresLista(CargarDevolucionesRequest filters, string token);
 		Task<List<BoxInfoExtendedDto>> InformacionDeBoxesLista(InformacionDeBoxesListaRequest request, string token);
+		RespuestaGenerica<RespuestaDto> ConfirmarPlanillaElaboracionYFraccion(ConfirmarPlanillaDeElabYFraccRequest request, string token);
 	}
 }

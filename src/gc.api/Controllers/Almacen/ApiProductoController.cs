@@ -23,7 +23,8 @@ namespace gc.api.Controllers.Almacen
     using gc.infraestructura.Dtos.CuentaComercial;
     using gc.infraestructura.Dtos.Gen;
     using gc.infraestructura.Dtos.General;
-    using gc.infraestructura.Dtos.Productos;
+	using gc.infraestructura.Dtos.Mstk.Request;
+	using gc.infraestructura.Dtos.Productos;
     using gc.infraestructura.Dtos.Productos.Impositivo;
     using gc.infraestructura.EntidadesComunes.Options;
     using Microsoft.AspNetCore.Authorization;
@@ -1776,6 +1777,19 @@ namespace gc.api.Controllers.Almacen
 			List<BoxInfoExtendedDto> resp = _productosSv.InformacionDeBoxesLista(request);
 
 			var response = new ApiResponse<List<BoxInfoExtendedDto>>(resp);
+			return Ok(response);
+		}
+
+		[HttpPost("confirmar-planilla-elaboracion-fraccion")]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<RespuestaDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		public ActionResult<RespuestaDto> ConfirmarPlanillaElaboracionYFraccion(ConfirmarPlanillaDeElabYFraccRequest req)
+		{
+			if (req == null)
+				return BadRequest("No se recepcionaron los valores para la creación de la planilla de elaboración y fracción");
+
+			var resultado = _productosSv.ConfirmarPlanillaElaboracionYFraccion(req);
+			var response = new ApiResponse<RespuestaDto>(resultado);
 			return Ok(response);
 		}
 
