@@ -1,0 +1,120 @@
+{
+  "filename": "Libro_IVA_Ventas_Manual_y_Documentacion_2026-10-14.pdf",
+  "title": "Libro IVA Ventas Manual y documentación técnica",
+  "subtitle": "GECO · Consulta Detalle · Versión documental 1.0 · 14 de octubre de 2026",
+  "pages": [
+    {
+      "title": "Libro IVA Ventas",
+      "blocks": [
+        {"type":"h2","text":"Manual de uso y documentación técnica"},
+        {"type":"p","text":"El módulo permite consultar comprobantes de ventas de un período, revisar sus conceptos impositivos y exportar el conjunto completo a Excel. La grilla muestra una fila por comprobante y conceptos en columnas fijas. La consulta es de solo lectura: no modifica comprobantes ni realiza el cierre del libro."},
+        {"type":"p","text":"Esta versión incorpora filtros alineados con GECO, paneles Filtro y Detalle coordinados, aviso de espera, aprovechamiento de la altura disponible y paginador numerado Golden con salto directo. La exportación conserva los criterios consultados y no queda limitada a la página visible. TXT sigue pendiente de definición; no existe una opción habilitada para ese formato."},
+        {"type":"table","widths":[0.3,0.7],"rows":[["Identificación","Valor"],["Menú","imp_lv_det · Detalle IVA Ventas"],["Área y controlador","Libros · IvaVentasDetalleController"],["Ruta del sitio","/Libros/IvaVentasDetalle (anteponer la ruta base del despliegue cuando corresponda)"],["Datos","SPGECO_IVA_V_D; sin modificaciones al SP en las mejoras de interfaz y paginación"],["Exportación","Excel XLSX mediante gc.api.report; sin utilizar la interfaz del gestor de impresión"]]},
+        {"type":"h2","text":"Cómo usar este documento"},
+        {"type":"p","text":"Las secciones 1 a 4 explican el uso para operadores. Las secciones 5 a 8 detallan contratos, arquitectura, mantenimiento y pruebas para desarrollo y soporte. La última sección registra límites y pendientes para que no se confundan con funciones ya disponibles."},
+        {"type":"meta","text":"Base de implementación verificada: D:\\Sis25\\git\\GeConnect\\src. Responsable de decisiones funcionales: Juan José Benzonelli. Preparación y revisión técnica: Gabriel. La fecha identifica esta consolidación documental, no atribuye una fecha exacta a cada cambio histórico."}
+      ]
+    },
+    {
+      "title":"1 Consulta rápida y estado inicial",
+      "blocks":[
+        {"type":"steps","items":["Ingresar a GECO con un perfil habilitado y abrir Detalle IVA Ventas desde el menú correspondiente.","Seleccionar Año y Mes. Al abrir se propone el período actual según la fecha argentina. Se ofrecen el año en curso y los cinco anteriores.","Elegir Filas por página. Las opciones habituales son 50, 100, 250 y 500. El inicio utiliza hasta 100, según la configuración del sitio; no modifica el tamaño global de otros módulos.","Activar únicamente los filtros opcionales necesarios y completar sus valores. Al entrar, esos filtros están desmarcados y sus controles deshabilitados.","Presionar Ver. Esperar el spinner y el mensaje de consulta; no repetir la acción durante la carga.","Revisar el resumen junto a Detalle de comprobantes, el rango de filas y el total. Navegar por las páginas o exportar a Excel."]},
+        {"type":"h2","text":"Qué muestra la grilla"},
+        {"type":"p","text":"Cada fila identifica el comprobante y muestra importes no gravados, exentos, gravados e IVA de las alícuotas 27%, 21% y 10,5%, percepciones, impuestos internos y total. También incluye datos del cliente, CAE y referencias de caja. No gravado y Exento son columnas distintas."},
+        {"type":"p","text":"Desplazar horizontalmente dentro de la grilla para ver los 30 conceptos. El encabezado permanece visible durante el desplazamiento vertical; el paginador queda fuera del área de filas. Los importes se presentan con dos decimales y formato argentino. Los valores nulos se muestran como un guion largo, no como cero."},
+        {"type":"h2","text":"Elegir un tamaño práctico"},
+        {"type":"p","text":"100 filas es un buen punto de partida en una grilla ancha. Usar 250 o 500 cuando resulte útil revisar más registros juntos. El máximo de 500 reduce el volumen de HTML respecto de páginas de 5.000; no garantiza que la consulta SQL sea inmediata. La demora también depende de los filtros, el servidor y el volumen del período."},
+        {"type":"meta","text":"Ejemplo probado en desarrollo: noviembre de 2025 devolvió 153.245 registros, con 307 páginas al seleccionar 500 filas. Es evidencia de una consulta concreta, no un total fijo del módulo."}
+      ]
+    },
+    {
+      "title":"2 Filtros disponibles",
+      "blocks":[
+        {"type":"table","widths":[0.22,0.43,0.35],"rows":[["Filtro","Uso","Regla"],["Año y Mes","Seleccionar el período del libro.","Obligatorios; últimos seis años, Enero a Diciembre."],["Filas por página","Cantidad máxima visible en cada consulta.","Hasta 500; no limita Excel."],["Rango de fechas","Activar y elegir Desde y Hasta.","Ambas fechas dentro del mes y año seleccionados; Desde no puede superar Hasta."],["CUIT","Activar e ingresar texto o patrón.","Hasta 15 caracteres y no vacío si se activa. Sin validar formato ni dígito verificador."],["Sucursales","Activar y seleccionar una o varias administraciones.","Sin activar se incluyen administraciones activas."],["Tipos de comprobante","Activar y seleccionar uno o varios tipos.","Sin activar se incluyen todos los tipos del alcance del SP."],["Cajas","Activar y seleccionar uno o varios puntos de venta.","Sin activar se incluyen todas las cajas del alcance del SP."]]},
+        {"type":"h2","text":"Selección múltiple"},
+        {"type":"p","text":"En escritorio, mantener Ctrl para seleccionar opciones no consecutivas o Mayús para seleccionar un intervalo. En pantallas táctiles, utilizar el selector que presente el navegador. Si un filtro de lista está activo, debe contener al menos una selección. Los filtros son independientes y se combinan al consultar."},
+        {"type":"h2","text":"Buscar por coincidencia de CUIT"},
+        {"type":"p","text":"Un CUIT completo busca ese valor; un patrón como 20% busca valores que comienzan por 20. El símbolo % permite coincidencias parciales porque el contrato utiliza LIKE. El módulo no agrega separadores ni corrige el identificador: ingresar el valor según el dato que se desea consultar."},
+        {"type":"h2","text":"Cambiar una consulta"},
+        {"type":"p","text":"Abrir Filtro no borra la consulta. Pero al cambiar un criterio se descartan los resultados anteriores y se deshabilita Exportar hasta ejecutar Ver nuevamente. Así no se puede descargar inadvertidamente una consulta que corresponda a otros filtros."},
+        {"type":"meta","text":"La restricción de fechas se aplica al período seleccionado, incluso si es histórico. No obliga a usar el mes calendario actual cuando el operador consulta otro período."}
+      ]
+    },
+    {
+      "title":"3 Botones y paginación",
+      "blocks":[
+        {"type":"table","widths":[0.25,0.75],"rows":[["Control","Comportamiento"],["Filtro","Alterna entre los criterios y el detalle conservando la consulta mientras no se editen los filtros."],["Detalle","Cierra la consulta, elimina los resultados y vuelve a mostrar los filtros conservados. No restablece los valores iniciales."],["Inicializar","Restablece los valores iniciales de la pantalla y descarta la consulta. Se ve dentro del filtro."],["Ver","Consulta los criterios actuales desde la primera página. Se ve dentro del filtro."],["Exportar Excel","Visible en la barra superior, junto al grupo de navegación. Solo habilitado con consulta válida, registros y sin operación en curso."]]},
+        {"type":"h2","text":"Navegar sin perder los filtros"},
+        {"type":"p","text":"El número resaltado indica la página que ya llegó del servidor. Pulsar otro número, las flechas anterior/siguiente o primera/última solicita esa página con los mismos criterios. Durante la espera se mantiene la página confirmada, aparece el spinner y se bloquean los controles para evitar solicitudes repetidas."},
+        {"type":"p","text":"Los puntos suspensivos representan páginas intermedias omitidas; no son botones. Se muestran hasta siete números, incluidos el primero y el último, aunque existan cientos de páginas."},
+        {"type":"steps","items":["Para un salto lejano, escribir un entero en Ir a página.","Pulsar Ir o Enter. Escribir por sí solo o salir del campo no ejecuta la consulta.","Si el número es cero, negativo, decimal o mayor al total, corregirlo según el aviso. No se cambia de página.","Al llegar a la última página se deshabilitan siguiente y última; al volver a la primera se deshabilitan anterior y primera."]},
+        {"type":"p","text":"Con una única página no aparece Ir a página. Sin registros no hay paginador ni exportación habilitada. En móvil los controles se distribuyen en varias líneas; pueden ocultarse las dobles flechas, pero siguen disponibles los números de primera y última página."}
+      ]
+    },
+    {
+      "title":"4 Exportar todos los registros a Excel",
+      "blocks":[
+        {"type":"steps","items":["Ejecutar Ver y comprobar que el resumen muestre el período y los criterios deseados.","Presionar Exportar Excel desde cualquier página. No es necesario volver a la primera ni mantener abierto el filtro.","Esperar el mensaje de generación. La operación puede demorar más que una página: solicita todos los registros filtrados.","Guardar o abrir Libro_IVA_Ventas_AAAA-MM.xlsx mediante la descarga del navegador. El navegador decide la carpeta o presenta el diálogo de guardado.","En Excel, revisar el período, el resumen de criterios y Comprobantes exportados. La primera fila de columnas está en la fila 5 y los datos comienzan en la fila 6."]},
+        {"type":"h2","text":"Qué incluye el archivo"},
+        {"type":"p","text":"Excel utiliza las mismas 30 columnas y orden de conceptos de la grilla. Los importes son números con dos decimales, las fechas son fechas y los identificadores se mantienen como texto para conservar ceros y evitar interpretaciones como fórmulas. Los nulos quedan vacíos. Incluye autofiltro y las cinco primeras filas inmovilizadas."},
+        {"type":"p","text":"Se generan hojas IVA Ventas 1, IVA Ventas 2 y siguientes cuando corresponda, con hasta 1.000.000 de registros por hoja. La cantidad solicitada no está limitada a 500 ni a 5.000. El servidor verifica cantidad recibida y claves duplicadas antes de entregar el archivo; ante inconsistencia no entrega un Excel parcial."},
+        {"type":"h2","text":"Una consulta nueva al exportar"},
+        {"type":"p","text":"La exportación vuelve a leer los datos con los filtros aplicados. Si se agregaron o modificaron comprobantes entre Ver y Exportar, el total puede diferir de la pantalla. No es una instantánea inmovilizada del momento de la primera consulta; esa advertencia también figura dentro del archivo."},
+        {"type":"h2","text":"Si no se puede exportar"},
+        {"type":"p","text":"Si el botón está deshabilitado, ejecutar una consulta con resultados y esperar que termine. Si el servidor informa otras exportaciones en curso, intentar más tarde. Si el mensaje indica inconsistencia o dato inválido, no utilizar archivos de una ejecución anterior como resultado actual: comunicar el período y el mensaje a soporte. TXT continúa pendiente de formato y aprobación."}
+      ]
+    },
+    {
+      "title":"5 Arquitectura y contratos",
+      "blocks":[
+        {"type":"p","text":"El navegador consulta gc.sitio. El sitio obtiene listas y páginas desde gc.api y solicita Excel a gc.api.report. Las dos APIs reutilizan IvaVentasServicio e IvaVentasDatos para acceso y validación. El navegador no recibe credenciales de SQL ni llama directamente a la API de reportes."},
+        {"type":"table","widths":[0.35,0.65],"rows":[["Capa","Entrada o responsabilidad"],["gc.sitio · Libros","IvaVentasDetalleController: GET Index, POST Consultar y POST ExportarExcel."],["gc.api","GET api/iva-ventas/opciones; POST api/iva-ventas/consultar."],["gc.api.report","POST api/iva-ventas/excel; XLSX binario."],["IvaVentasServicio","Acceso al menú, consistencia de página y verificación de exportación completa."],["IvaVentasDatos","Invocación parametrizada de dbo.SPGECO_IVA_V_D y lectura del contrato de columnas."],["IvaVentasExcel","Generación XLSX con ClosedXML; no usa el modal del gestor de impresión."]]},
+        {"type":"h2","text":"Seguridad y configuración existente"},
+        {"type":"p","text":"El sitio valida sesión y antiforgery en POST. Las APIs requieren autenticación y verifican perfil, administración y acceso a imp_lv_det; un cambio obligatorio de clave pendiente impide el acceso. El cliente envía Bearer y los encabezados X-Geco-Perfil y X-Geco-Menu. La serialización del cliente utiliza Newtonsoft.Json con TypeNameHandling.None."},
+        {"type":"p","text":"IvaVentasCliente utiliza AppSettings.RutaBase para gc.api y DocsManager.ApiReporteUrl para reportes. Se preserva la ruta base del despliegue al construir las URL. No se agrega una credencial específica de IVA. El menú es administrado por Juan mediante su script; esta documentación no representa una modificación del menú."},
+        {"type":"h2","text":"Tiempos y recursos"},
+        {"type":"p","text":"El cliente HTTP y el comando principal SQL tienen un tiempo máximo de 10 minutos; las listas SQL usan 120 segundos. La API de reportes admite dos exportaciones simultáneas por proceso mediante SemaphoreSlim. Estos límites no reemplazan la configuración de IIS/proxy ni garantizan que cualquier volumen quepa en memoria."}
+      ]
+    },
+    {
+      "title":"6 Parámetros y datos del procedimiento",
+      "blocks":[
+        {"type":"table","widths":[0.3,0.7],"rows":[["Parámetro SQL","Valor enviado por C#"],["@periodo y @mes","Año de 4 caracteres y mes de 2, con cero inicial."],["@f, @fecha_d, @fecha_h","Indicador de rango y fechas seleccionadas. Sin rango, se envían los extremos del período; el SP aplica su propia rama sin filtro."],["@cuit y @cuit_like","Indicador y texto/patrón; % cuando está desactivado."],["@adm y @adm_list","Indicador y IDs de sucursales distintos separados por comas; lista vacía cuando no filtra."],["@tco y @tco_list","Indicador y IDs de tipos de comprobante separados por comas."],["@caja y @caja_list","Indicador y IDs de cajas separados por comas."],["@registros y @pagina","Consulta: tamaño validado de 1 a 500 y página positiva. Excel: 2147483647 y 1."],["@ordenar","Se envía cm_fecha; el orden efectivo depende del SP. No hay ordenamiento interactivo de columnas en esta pantalla."]]},
+        {"type":"h2","text":"Listas iniciales"},
+        {"type":"p","text":"Sucursales: SPGECO_Administraciones con @adm_activa = S. Comprobantes: SPGECO_Tipos_Comprobantes con @opt_id = LB y @afip_id = %. Cajas: SPGECO_CAJA_Lista. El nombre utilizado por el código es @afip_id, no la variante @afio_id del resumen inicial. Se presentan descripciones e IDs; no se utilizan autocompletados en estas listas."},
+        {"type":"h2","text":"Contrato del resultado"},
+        {"type":"p","text":"El lector espera las propiedades de IvaVentasDetalleDto: 30 columnas de negocio más total_registros y total_paginas. El servicio calcula las páginas a partir del total y del tamaño solicitado. Si una página posterior queda vacía, vuelve a consultar la primera para recuperar metadatos y evitar un estado incoherente."},
+        {"type":"p","text":"La exportación verifica que cada total_registros coincida con la cantidad recibida y que la clave compuesta suc, tipo, pv, compte y repetido no se duplique. Esa verificación detecta inconsistencias; no crea una transacción de lectura inmutable ni reemplaza un orden estable en SQL."}
+      ]
+    },
+    {
+      "title":"7 Últimas mejoras y tratamiento de errores",
+      "blocks":[
+        {"type":"table","widths":[0.31,0.69],"rows":[["Mejora","Resultado implementado"],["Conversión de fecha CAE","cm_cae_vto CHAR(8) se interpreta estrictamente como yyyyMMdd en C#. Fechas inválidas generan error de dato, sin cambiar el SP ni inventar una fecha."],["Mensajes de error","Se distinguen validación, sesión/permisos, comunicación y datos inválidos. Se evita mostrar HTML de un proxy o datos fiscales en el diagnóstico."],["Filtro uniforme","Controles compactos, grupos alineados, switches y listas múltiples; Inicializar y Ver tienen el mismo ancho."],["Paneles coordinados","Detalle cierra consulta conservando filtros; Inicializar restablece valores. Los botones de búsqueda se ocultan con el filtro."],["Carga y espacio útil","Spinner con aviso de demora, bloqueo de acciones y altura de detalle calculada reservando el pie del sitio. Resumen junto al título."],["Paginador Golden","Números acotados, extremos, salto por Ir o Enter, validación, foco y presentación responsive. Componente reutilizable opt-in."],["Exportación preservada","Permanece fuera del filtro, se habilita con registros y conserva exportación completa mediante API Report."]]},
+        {"type":"h2","text":"Recuperación operativa"},
+        {"type":"p","text":"Si falla una consulta, se limpia el resultado y se conservan los filtros para reintentar; no quedan filas de una consulta anterior aparentando pertenecer a la nueva. Si falla una exportación, no se entrega archivo parcial y puede mantenerse la consulta que estaba en pantalla."},
+        {"type":"p","text":"Ante un dato inválido, soporte debe revisar el campo indicado y los registros del servidor. Ante sesión vencida, volver a ingresar. Si no cargan las listas al abrir, los controles quedan deshabilitados y se solicita revisar conectividad y SP de listas. Un aviso de BrowserLink no permite por sí solo diagnosticar un fallo SQL o HTTP."},
+        {"type":"meta","text":"Los cambios de paginación no sustituyen GridCoreSmart ni jquery.simplePagination en otros módulos. CSS y JS del nuevo componente se cargan explícitamente en Libro IVA."}
+      ]
+    },
+    {
+      "title":"8 Referencias de mantenimiento",
+      "blocks":[
+        {"type":"p","text":"Todas las rutas de esta sección son relativas a D:\\Sis25\\git\\GeConnect\\src. La documentación se conserva en Documentacion/LibroIvaVentas; sus fuentes JSON y generador permiten actualizar los PDF sin modificar el código de la aplicación."},
+        {"type":"table","widths":[0.27,0.73],"rows":[["Responsabilidad","Archivos de referencia"],["Interfaz y estados","gc.sitio/Areas/Libros/Views/IvaVentasDetalle/{Index,_Filtro,_Grilla}.cshtml\ngc.sitio/wwwroot/js/app/libros/iva-ventas-detalle.js\ngc.sitio/wwwroot/css/modules/iva-ventas-detalle.css"],["Paginador reutilizable","gc.sitio/Models/Components/PaginadorNumerado.cs\ngc.sitio/Views/Shared/Components/_PaginadorNumerado.cshtml\ngc.sitio/wwwroot/{css,js}/components/gc-pager.{css,js}"],["Entrada del sitio","gc.sitio/Areas/Libros/Controllers/IvaVentasDetalleController.cs\ngc.sitio.core/Servicios/Implementacion/Libros/IvaVentasCliente.cs"],["Contrato de filtros y datos","gc.infraestructura/Dtos/Libros/IvaVentasFiltro.cs\ngc.infraestructura/Dtos/Libros/IvaVentasDetalleDto.cs\ngc.infraestructura/Dtos/Libros/IvaVentasDatoInvalidoException.cs"],["Consulta y exportación","gc.api.infra/Datos/Implementacion/IvaVentasDatos.cs\ngc.api.core/Servicios/Libros/IvaVentasServicio.cs\ngc.api.core/Servicios/Reportes/IvaVentasExcel.cs"],["Endpoints API","gc.api/Controllers/Libros/IvaVentasController.cs\ngc.api.report/Controllers/IvaVentasController.cs"],["Pruebas","gc.iva.tests/Program.cs\ngc.iva.tests/iva-ventas-panels.cjs\ngc.iva.tests/gc-pager.cjs"]]},
+        {"type":"h2","text":"Reutilizar el componente"},
+        {"type":"p","text":"La skill web-paginador-numerado empaqueta el modelo, la parcial, CSS, JS y pruebas del componente. El nav emite gc:page con detail.page; cada módulo atiende el evento, consulta con sus filtros aplicados y actualiza la página confirmada. No contiene SQL, estado de sesión ni exportación. Su tema se adapta al sistema destino."},
+        {"type":"meta","text":"Antes de publicar, incluir los tres proyectos del flujo cuando haya cambios en sus capas: gc.sitio, gc.api y gc.api.report. No es necesario recompilar por la incorporación de estos documentos y de la skill personal."}
+      ]
+    },
+    {
+      "title":"9 Evidencias y pendientes",
+      "blocks":[
+        {"type":"table","widths":[0.39,0.61],"rows":[["Verificación realizada","Resultado registrado"],["Consulta real noviembre de 2025","153.245 registros; 307 páginas de 500. Se probaron páginas 1, 5, 70 y 307. Última página con 245 filas."],["Una página y consulta vacía","16 registros en una página; sin salto directo. Consulta vacía sin paginador y con Exportar deshabilitado."],["Controles y espera","Spinner, bloqueo de botones/input, filtros conservados, validación de saltos inválidos y foco sobre página confirmada."],["Responsive real","Escritorio 1440 × 900 y pantalla angosta 390 × 844. Paginador accesible y sin desbordamiento horizontal del body."],["Excel desde pantalla","Exportación filtrada con mensaje de éxito. La descarga completa anterior fue confirmada por el usuario; no se atribuye una exportación de 153.245 filas a esta última prueba."],["Pruebas automatizadas previas","30 pruebas JS combinadas y 96 comprobaciones C#, incluyendo generación Excel de 5.001 registros y 30 columnas. No son pruebas de carga concurrente."],["Compilación previa del sitio","0 errores; 821 advertencias registradas. Las advertencias existentes no se interpretan como certificación de ausencia de defectos."]]},
+        {"type":"h2","text":"Pendientes explícitos"},
+        {"type":"list","items":["TXT: definir columnas, orden, separador, codificación, formato numérico/fecha y requisitos del receptor antes de implementarlo.","Orden SQL: consultar con el DBA el uso efectivo de @ordenar y la inclusión de repetido como criterio de desempate. El módulo no cambia el SP ni ofrece una ordenación que el servidor no garantice.","Volúmenes extremos: medir memoria y tiempo de generación de Excel bajo concurrencia. El proceso actual materializa registros y archivo en memoria; un límite de petición grande no equivale a capacidad ilimitada.","Extensión del estilo de filtros: propuesta separada, aún no aplicada a otros módulos. No copiar la semántica de Detalle de una consulta a un ABM sin revisar su cancelación y selección."]},
+        {"type":"meta","text":"Próxima revisión documental: actualizar este registro cuando cambien contratos del DBA, se apruebe TXT o se incorporen nuevas pruebas. No incluir credenciales ni datos fiscales completos de clientes en bitácoras generales."}
+      ]
+    }
+  ]
+}

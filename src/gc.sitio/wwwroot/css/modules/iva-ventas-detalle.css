@@ -1,0 +1,46 @@
+/* Filtro IVA: reutiliza el patrón de _filtroBase, sin modificar estilos compartidos. */
+.iva-ventas{--iva-gold:var(--bs-golden-primary,#d4af37);--iva-border:#e8d79c;min-width:0;padding-top:.75rem}
+.iva-ventas fieldset{min-width:0}
+.iva-ventas [hidden]{display:none!important}
+.iva-ventas .iva-navigation{display:flex;align-items:center;flex-wrap:wrap;gap:.5rem}
+.iva-ventas .iva-navigation>.btn{height:34px;display:inline-flex;align-items:center;justify-content:center;gap:.35rem;white-space:nowrap}
+.iva-ventas #iva-exportar{margin-left:auto}
+.iva-ventas .iva-filter{padding:0;margin:0}
+.iva-ventas .iva-filter .form-check-label{font-size:.875rem}
+.iva-ventas .iva-filter .input-group-text{display:flex;white-space:nowrap}
+.iva-ventas .iva-filter .input-group>.form-control,.iva-ventas .iva-filter .input-group>.form-select{min-width:0}
+.iva-ventas .iva-filter select[multiple]{width:100%;height:108px;font-size:.8125rem}
+.iva-ventas .iva-filter fieldset:disabled .form-control,.iva-ventas .iva-filter fieldset:disabled .form-select{background-color:var(--bs-secondary-bg,#eceef1)}
+.iva-ventas small,.iva-ventas .iva-help,.iva-ventas .iva-aplicados{font-size:.78rem;color:#626c7b}
+.iva-ventas .iva-actions{display:flex;justify-content:space-around;align-items:center;flex-wrap:wrap;gap:1rem;margin:1rem 0}
+.iva-ventas .iva-actions>.btn{width:150px;flex:0 0 150px;display:inline-flex;justify-content:center;align-items:center;white-space:nowrap}
+.iva-ventas .iva-actions .bx{flex-shrink:0}
+.iva-ventas .iva-detail{position:relative;height:calc(100dvh - 240px);min-height:260px;min-width:0}
+.iva-ventas #iva-resultado{height:100%;min-height:0;min-width:0}
+.iva-ventas .iva-panel{display:flex;flex-direction:column;height:100%;background:#fff;border:1px solid var(--iva-border);border-radius:.6rem;padding:.65rem .8rem;min-height:0;min-width:0}
+.iva-ventas .iva-grid-heading{display:flex;align-items:baseline;justify-content:space-between;gap:.35rem 1rem;flex-wrap:wrap;padding:0 0 .6rem;flex-shrink:0}
+.iva-ventas .iva-grid-context{display:flex;align-items:baseline;flex-wrap:wrap;gap:.25rem .75rem;min-width:0;flex:1 1 600px}
+.iva-ventas .iva-grid-context h2{flex-shrink:0}
+.iva-ventas .iva-aplicados{flex:1 1 380px;margin:0;overflow-wrap:anywhere}
+.iva-ventas .iva-count{font-size:.78rem;font-variant-numeric:tabular-nums}
+.iva-ventas h2{font-size:1rem;margin:0;font-weight:700}
+.iva-ventas .iva-message{margin:.5rem 0;padding:.5rem .75rem}.iva-ventas .iva-message:empty{display:none}
+.iva-ventas .iva-empty{text-align:center;padding:2rem 1rem;background:#fff;border:1px dashed var(--iva-border);border-radius:.5rem;color:#626c7b;margin-top:1rem}
+.iva-ventas .iva-table-wrap{flex:1 1 auto;min-height:0;max-width:100%;overflow:auto;overscroll-behavior:contain;border:1px solid #e6deca;border-radius:.3rem}
+.iva-ventas .iva-table{border-collapse:separate;border-spacing:0;font-size:.8rem;width:max-content;min-width:100%}
+.iva-ventas th{position:sticky;top:0;background:#926e0b;color:white;z-index:1;white-space:nowrap;text-align:left;padding:.6rem .7rem}
+.iva-ventas td{padding:.45rem .7rem;border-bottom:1px solid #e9e7e0;white-space:nowrap}
+.iva-ventas tr:nth-child(even){background:#fffcf3}.iva-ventas tbody tr:hover{background:#fff0be}
+.iva-ventas .iva-importe{text-align:right;font-variant-numeric:tabular-nums;min-width:135px}
+.iva-ventas .iva-texto{max-width:300px;overflow:hidden;text-overflow:ellipsis}
+.iva-ventas #iva-resultado[aria-busy=true]{opacity:.35;pointer-events:none}
+.iva-ventas .iva-loading{position:absolute;inset:0;z-index:2;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1rem;padding:1.5rem;text-align:center;background:rgba(255,252,243,.94);border:1px solid var(--iva-border);border-radius:.6rem;color:#45443e}
+.iva-ventas .iva-loading .spinner-border{color:var(--bs-golden-secondary,#926e0b);flex-shrink:0}
+.iva-ventas #iva-cargando-texto{max-width:36rem}
+.iva-ventas :focus-visible{outline:2px solid var(--bs-golden-secondary,#b8860b);outline-offset:2px}
+@media(prefers-reduced-motion:reduce){.iva-ventas .iva-loading .spinner-border{animation:none}}
+@media(max-width:575.98px){
+    .iva-ventas .filter-golden-body,.iva-ventas .filter-golden-footer{padding:12px}
+    .iva-ventas .iva-actions{justify-content:center;gap:.75rem}
+    .iva-ventas .iva-panel{padding:.65rem}
+}

@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="../gc.sitio/Models/Components/PaginadorNumerado.cs" Link="PaginadorNumerado.cs" />
+    <ProjectReference Include="../gc.api.infra/gc.api.infra.csproj" />
+    <ProjectReference Include="../gc.sitio.core/gc.sitio.core.csproj" />
+  </ItemGroup>
+</Project>
