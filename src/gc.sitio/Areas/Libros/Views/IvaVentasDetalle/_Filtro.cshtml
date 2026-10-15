@@ -1,0 +1,112 @@
+@using gc.infraestructura.Dtos.Libros
+@model IvaVentasFiltro
+@{
+    var opciones = (IvaVentasOpciones)ViewBag.Opciones;
+    string? error = ViewBag.Error;
+    var meses = new[] { "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre" };
+    var tamanios = new[] { 50, 100, 250, 500, Model.Registros }.Distinct().OrderBy(x => x);
+}
+@if (error != null) { <div class="alert alert-warning" role="alert">@error</div> }
+<form id="iva-filtros" novalidate>
+    @Html.AntiForgeryToken()
+    <fieldset disabled="@(error != null)" class="filter-golden iva-filter">
+        <legend class="visually-hidden">Período y filtros del Libro IVA Ventas</legend>
+        <div id="divFiltro" class="filter-golden-body">
+            <div class="row g-3 align-items-center">
+                <div class="col-md-3 col-sm-6">
+                    <div class="input-group input-group-sm">
+                        <label for="iva-periodo" class="input-group-text">Año</label>
+                        <select id="iva-periodo" name="Periodo" class="form-select" required>
+                            @for (var anio = Model.Periodo; anio >= Model.Periodo - 5; anio--) { <option value="@anio" selected="@(anio == Model.Periodo)">@anio</option> }
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-5 col-sm-6">
+                    <div class="input-group input-group-sm">
+                        <label for="iva-mes" class="input-group-text">Mes</label>
+                        <select id="iva-mes" name="Mes" class="form-select" required>
+                            @for (var mes = 1; mes <= 12; mes++) { <option value="@mes" selected="@(mes == Model.Mes)">@meses[mes - 1]</option> }
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="input-group input-group-sm">
+                        <label for="iva-registros" class="input-group-text">Filas por página</label>
+                        <select id="iva-registros" name="Registros" class="form-select">
+                            @foreach (var tam in tamanios) { <option value="@tam" selected="@(tam == Model.Registros)">@tam</option> }
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <p class="iva-help mt-3">Los criterios son independientes entre sí. Active solamente los filtros que necesite.</p>
+            <div class="row g-3 mt-0">
+                <div class="col-md-8">
+                    <div class="form-check form-switch mb-2">
+                        <input id="iva-toggle-fechas" class="form-check-input" type="checkbox" name="Fechas" value="true" data-enable="iva-fechas" />
+                        <label for="iva-toggle-fechas" class="form-check-label">Rango de fechas</label>
+                    </div>
+                    <fieldset id="iva-fechas" disabled>
+                        <div class="row g-2">
+                            <div class="col-sm-6"><div class="input-group input-group-sm">
+                                <label for="iva-desde" class="input-group-text">Desde</label>
+                                <input id="iva-desde" type="date" name="Desde" class="form-control" required />
+                            </div></div>
+                            <div class="col-sm-6"><div class="input-group input-group-sm">
+                                <label for="iva-hasta" class="input-group-text">Hasta</label>
+                                <input id="iva-hasta" type="date" name="Hasta" class="form-control" required />
+                            </div></div>
+                        </div>
+                    </fieldset>
+                    <small>Dentro del mes y año seleccionados.</small>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-check form-switch mb-2">
+                        <input id="iva-toggle-cuit" class="form-check-input" type="checkbox" name="PorCuit" value="true" data-enable="iva-cuit" />
+                        <label for="iva-toggle-cuit" class="form-check-label">CUIT</label>
+                    </div>
+                    <fieldset id="iva-cuit" disabled><div class="input-group input-group-sm">
+                        <label for="iva-texto-cuit" class="input-group-text">Texto o patrón</label>
+                        <input id="iva-texto-cuit" type="text" name="Cuit" maxlength="15" class="form-control" required autocomplete="off" />
+                    </div></fieldset>
+                    <small>Sin validación de formato. % permite buscar coincidencias parciales.</small>
+                </div>
+            </div>
+            <div class="row g-3 mt-0">
+                <div class="col-md-4">
+                    <div class="form-check form-switch mb-2">
+                        <input id="iva-toggle-sucursales" class="form-check-input" type="checkbox" name="PorSucursal" value="true" data-enable="iva-sucursales" />
+                        <label for="iva-toggle-sucursales" class="form-check-label">Sucursales</label>
+                    </div>
+                    <fieldset id="iva-sucursales" disabled><select name="Sucursales" multiple size="4" class="form-select form-select-sm" aria-label="Sucursales" required>
+                        @foreach (var o in opciones.Sucursales) { <option value="@o.Id">@o.Texto</option> }
+                    </select></fieldset>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-check form-switch mb-2">
+                        <input id="iva-toggle-comprobantes" class="form-check-input" type="checkbox" name="PorComprobante" value="true" data-enable="iva-comprobantes" />
+                        <label for="iva-toggle-comprobantes" class="form-check-label">Tipos de comprobante</label>
+                    </div>
+                    <fieldset id="iva-comprobantes" disabled><select name="Comprobantes" multiple size="4" class="form-select form-select-sm" aria-label="Tipos de comprobante" required>
+                        @foreach (var o in opciones.Comprobantes) { <option value="@o.Id">@o.Texto</option> }
+                    </select></fieldset>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-check form-switch mb-2">
+                        <input id="iva-toggle-cajas" class="form-check-input" type="checkbox" name="PorCaja" value="true" data-enable="iva-cajas" />
+                        <label for="iva-toggle-cajas" class="form-check-label">Cajas</label>
+                    </div>
+                    <fieldset id="iva-cajas" disabled><select name="Cajas" multiple size="4" class="form-select form-select-sm" aria-label="Cajas" required>
+                        @foreach (var o in opciones.Cajas) { <option value="@o.Id">@o.Texto</option> }
+                    </select></fieldset>
+                </div>
+            </div>
+            <p class="iva-help mt-3 mb-0">Puede seleccionar varias opciones con Ctrl o Mayús. Sin filtro de sucursal se incluyen las administraciones activas.</p>
+        </div>
+        <div class="filter-golden-footer">
+            <div class="iva-actions">
+                <button type="reset" class="btn btn-lg btn-danger"><i class="bx bx-sm bx-x-circle" aria-hidden="true"></i> Inicializar</button>
+                <button type="submit" class="btn btn-lg btn-success"><i class="bx bx-sm bx-search" aria-hidden="true"></i> Ver</button>
+            </div>
+        </div>
+    </fieldset>
+</form>

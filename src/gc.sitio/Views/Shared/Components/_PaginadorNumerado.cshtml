@@ -1,0 +1,30 @@
+@model gc.sitio.Models.Components.PaginadorNumerado
+@* Opt-in: el módulo carga gc-pager.css/js y atiende gc:page.
+   Representa la página confirmada por el servidor, no una selección optimista. *@
+<nav class="gc-pager" data-gc-pager data-current="@Model.Pagina" data-pages="@Model.Paginas" aria-label="@Model.Etiqueta">
+    <span class="gc-pager-status" role="status" aria-live="polite" aria-atomic="true">Página <strong>@Model.Pagina.ToString("N0")</strong> de @Model.Paginas.ToString("N0")</span>
+    <div class="gc-pager-controls">
+        <button type="button" class="gc-pager-button gc-pager-edge" data-page="1" disabled="@(Model.Pagina == 1)" aria-label="Primera página" title="Primera página">«</button>
+        <button type="button" class="gc-pager-button" data-page="@(Math.Max(1, Model.Pagina - 1))" disabled="@(Model.Pagina == 1)" aria-label="Página anterior" title="Página anterior">‹</button>
+        @foreach (var numero in Model.Numeros())
+        {
+            if (numero is int n)
+            {
+                <button type="button" class="gc-pager-button gc-pager-number" data-page="@n" aria-label="Página @n" aria-current="@(n == Model.Pagina ? "page" : null)">@n</button>
+            }
+            else
+            {
+                <span class="gc-pager-gap" aria-hidden="true">…</span>
+            }
+        }
+        <button type="button" class="gc-pager-button" data-page="@(Model.Pagina < Model.Paginas ? Model.Pagina + 1 : Model.Paginas)" disabled="@(Model.Pagina == Model.Paginas)" aria-label="Página siguiente" title="Página siguiente">›</button>
+        <button type="button" class="gc-pager-button gc-pager-edge" data-page="@Model.Paginas" disabled="@(Model.Pagina == Model.Paginas)" aria-label="Última página" title="Última página">»</button>
+    </div>
+    @if (Model.Paginas > 1)
+    {
+        <div class="gc-pager-jump">
+            <label>Ir a página <input class="gc-pager-input" data-gc-page-input type="number" inputmode="numeric" min="1" max="@Model.Paginas" step="1" value="@Model.Pagina" required autocomplete="off" /></label>
+            <button type="button" class="gc-pager-button" data-gc-page-go>Ir</button>
+        </div>
+    }
+</nav>

@@ -1,0 +1,61 @@
+{
+  "filename":"GECO_Analisis_Adopcion_Filtros_2026-10-14.pdf",
+  "title":"GECO Análisis de adopción del estilo de filtros",
+  "subtitle":"Evaluación técnica y propuesta de implementación gradual · 14 de octubre de 2026",
+  "pages":[
+    {
+      "title":"Adopción del estilo de filtros",
+      "blocks":[
+        {"type":"h2","text":"Conclusión y alcance"},
+        {"type":"p","text":"La viabilidad de extender la presentación de Libro IVA a otros módulos de gc.sitio es alta. Ya comparten Bootstrap, controles compactos y clases Golden. La recomendación es adoptar el estilo de forma gradual y opt-in, sin reemplazar inicialmente _filtroBase ni sus scripts globales."},
+        {"type":"p","text":"No corresponde asignar un porcentaje de éxito sin una prueba piloto. La similitud visual está respaldada por el código; la seguridad funcional exige comprobar cada flujo. Esta tarea es un análisis: no se han modificado filtros, JavaScript compartido, SP ni pantallas de otros módulos."},
+        {"type":"h2","text":"Evidencia relevada"},
+        {"type":"table","widths":[0.35,0.65],"rows":[["Hallazgo","Implicación"],["38 vistas de Areas invocan _filtroBase","Hay un punto común importante, pero no son necesariamente 38 módulos independientes ni todas las pantallas del sistema."],["_filtroBase ramifica por ModeloFilter","Productos, cuentas, presupuestos, órdenes, etiquetas y otros tienen controles y reglas diferentes. No es una plantilla uniforme intercambiable."],["Libro IVA usa una parcial propia","Reutiliza filter-golden, input-group-sm y el lenguaje visual común, pero controla paneles localmente mediante hidden y estado JavaScript."],["ABM y consultas usan collapse y eventos propios","Existen handlers click, mousedown, shown.bs.collapse y hidden.bs.collapse. Copiar los eventos de IVA puede duplicar transiciones o impedir cancelaciones."],["También hay filtros independientes","Libros contables, Pedido de Cliente, consultas financieras y stock necesitan evaluación propia, aunque varios ya usan Golden."]]},
+        {"type":"h2","text":"Qué se puede normalizar primero"},
+        {"type":"p","text":"Jerarquía del filtro, separación entre cuerpo y acciones, espacios, alineación de etiquetas, altura coherente de controles, ancho uniforme de Inicializar y Ver, foco visible y reflujo en pantalla angosta. Conservar colores semánticos de advertencia, error y éxito. La identidad Golden se mantiene para GECO; otros proyectos deben usar sus propios tokens."},
+        {"type":"meta","text":"Análisis de código en D:\\Sis25\\git\\GeConnect\\src. No equivale a una regresión visual y funcional ejecutada en las 38 vistas. La validación en navegador citada corresponde a Libro IVA."}
+      ]
+    },
+    {
+      "title":"1 Compatibilidad por familia",
+      "blocks":[
+        {"type":"table","widths":[0.26,0.36,0.38],"rows":[["Familia y muestra","Compatibilidad visual","Cuidado funcional"],["ABM Producto","Alta. Reutiliza _filtroBase y estilos Golden.","Detalle cancela selección y reactiva la grilla. No sustituirlo por limpiar toda la consulta como en IVA."],["ABM Proveedor y Cliente","Alta. Misma parcial y campos relacionales.","Autocompletado, valores ocultos, listas seleccionadas y abmcommons deben conservar sus IDs y eventos."],["Plan de Cuentas","Alta con adaptación local.","pcMod atiende mousedown antes de collapse, limpia detalles y conserva el contexto del árbol. Revisar también su navegación específica."],["Cotización y Promo Combo","Alta en presentación; riesgo funcional medio/alto.","Tienen cancelación, selección bloqueada, estados y edición. No tocar handlers ni trasladar acciones fuera de sus condiciones."],["Consulta de órdenes de compra","Alta para aspecto.","Sincroniza paneles con eventos de collapse y utiliza gestor documental. No reemplazar su exportación o permisos por los de IVA."],["Diario y Mayor","Media. Filtro contable propio con card-golden.","Ejercicio, fechas, temporales, cuenta y modales son reglas de negocio distintas al período mensual de IVA."],["Pedido de Cliente y otros filtros propios","Media; evaluar cada parcial.","Preservar relación entre autocompletar, hidden y lista; revisar reglas de habilitación antes de reorganizar el DOM."]]},
+        {"type":"h2","text":"Separar estilo de comportamiento"},
+        {"type":"p","text":"La barra superior de IVA y la posición de Exportar son una buena referencia, pero solo deben trasladarse a módulos que tengan una acción equivalente. Cambiar botones, cancelar una operación, invalidar resultados al editar filtros o bloquear una grilla son decisiones funcionales, no cambios cosméticos."},
+        {"type":"p","text":"No convertir autocompletados de clientes/proveedores en selects por el hecho de que IVA use listas. No imponer a otros módulos el rango de seis años, un mes cerrado, 500 filas ni el tratamiento de CUIT. El patrón visual es reutilizable; las reglas pertenecen a cada módulo."}
+      ]
+    },
+    {
+      "title":"2 Diseño propuesto y riesgos",
+      "blocks":[
+        {"type":"h2","text":"Capa visual opt-in"},
+        {"type":"p","text":"Proponer una clase envolvente nueva, por ejemplo gc-filter-modern, y un archivo gc-filter.css en css/components. Sus selectores deben depender de esa clase. Activarlo solamente en el módulo piloto y cargarlo después de los estilos actuales. No modificar de entrada las reglas globales de filter-golden, .form-control, .btn o .collapse."},
+        {"type":"p","text":"Reutilizar la estructura body/footer ya existente. Declarar tokens para bordes, espaciado, foco, tamaño de etiquetas y botones; mapearlos a Golden. Para el primer piloto no se necesita un nuevo JavaScript compartido. Una segunda etapa podría extraer pequeñas parciales de acciones y grupos únicamente después de comprobar que varios módulos comparten el mismo contrato."},
+        {"type":"table","widths":[0.33,0.67],"rows":[["Riesgo concreto","Medida propuesta"],["Alcance global de _filtroBase","Aplicar una clase opt-in desde la vista anfitriona. No reestructurar todas sus ramas en una única entrega."],["CSS con selectores amplios","site.css incluye .filter-golden-header h5,h4; el segundo selector alcanza h4 globales. No ampliar ese patrón. Tratar su corrección como cambio separado con regresión propia."],["Estilos inline en campos","Existen fondos y pesos fuertes inline. Revisar por campo qué expresa edición o disponibilidad. Evitar un !important global que borre la semántica."],["Doble orquestación de paneles","No combinar hidden, Bootstrap collapse y handlers nuevos para el mismo estado. Mantener el mecanismo de cada módulo en la fase visual."],["Pérdida de valores de filtro","No renombrar name/id/data-*; conservar campos hidden, arrays y controles deshabilitados. Comparar las solicitudes antes/después."],["Autocompletados recortados","filter-golden usa overflow:hidden. Al reorganizar contenedores, comprobar el desplegable y su z-index; no cambiar globalmente overflow sin revisar el resto."],["Botones duplicados o inaccesibles","Mantener un único handler y un único control por acción. Probar teclado, permisos y la cancelación desde edición."]]},
+        {"type":"meta","text":"Los nombres propuestos son una arquitectura posible, no archivos implementados en esta tarea. Se elegirá la menor abstracción útil después del piloto."}
+      ]
+    },
+    {
+      "title":"3 Plan de adopción y aceptación",
+      "blocks":[
+        {"type":"steps","items":["Acordar un piloto acotado. Recomendación: presentación del filtro de ABM Producto, por ser referencia conocida del usuario, sin cambiar su detalle, grilla ni edición.","Registrar estado inicial: controles, labels, IDs, solicitudes de búsqueda, filtros aplicados y secuencia Filtro/Detalle/Inicializar. Capturar escritorio y móvil.","Agregar únicamente la capa visual opt-in. Uniformar alineación, espaciado y botones. Preservar orden lógico de tabulación y comportamiento de campos dependientes.","Ejecutar regresión de filtro y del ciclo de selección del ABM. Si el layout exige romper un selector o cambiar cancelación, separar esa parte y pedir aprobación.","Con el piloto aprobado, incorporar Proveedor y Cliente; después Plan de Cuentas. Mantener cotización, promos y flujos de operaciones para una etapa con pruebas específicas.","Evaluar filtros propios por familias, empezando por consultas de solo lectura. Extraer componentes compartidos únicamente donde haya repetición demostrada.","Registrar cambios y capturas por módulo. Si falla la regresión, retirar la clase y el asset opt-in del módulo; no revertir cambios ajenos ni modificar SP para acomodar la vista."]},
+        {"type":"h2","text":"Criterios para aprobar cada módulo"},
+        {"type":"list","items":["Mismos filtros enviados, permisos y resultados con el mismo conjunto de datos. ID seleccionado y valores ocultos preservados.","Inicializar, Ver, Filtro y Detalle mantienen su semántica previa, incluyendo edición/cancelación donde corresponda.","Autocompletados y listas se ven completos, no pierden opciones y siguen funcionando con teclado.","Botones alineados y de tamaño uniforme; estados activo, deshabilitado, seleccionado y foco distinguibles.","Pruebas en 1440 y 390 px, con texto largo y varios filtros activos; sin desbordamiento horizontal de la página.","Sin eventos duplicados, nuevas dependencias innecesarias ni consultas adicionales provocadas por CSS.","Compilación y pruebas del módulo, y control de una pantalla no migrada para detectar efectos globales."]},
+        {"type":"h2","text":"Decisión recomendada"},
+        {"type":"p","text":"Avanzar módulo por módulo con alcance visual, manteniendo los contratos actuales. No autorizar aún una migración global de _filtroBase ni una normalización funcional automática. La skill del paginador es independiente y puede adoptarse en una entrega separada para no mezclar dos fuentes de cambio."}
+      ]
+    },
+    {
+      "title":"4 Inventario y trazabilidad del análisis",
+      "blocks":[
+        {"type":"p","text":"Búsqueda estática de invocaciones de _filtroBase en archivos .cshtml bajo gc.sitio/Areas: 38 vistas. Inventario al 14/10/2026; puede cambiar con nuevas incorporaciones. No incluye referencias dinámicas que no contengan ese nombre literal."},
+        {"type":"table","widths":[0.17,0.83],"rows":[["Área","Vistas consumidoras identificadas"],["ABMs · 13","AbmBanco, ABMZona, ABMVendedor, AbmProducto, ABMPlanCuenta, ABMRepartidor, AbmProveedor/Index y ReasignacionDeFamilia, AbmSector/Index y ReasignacionDeRubro, AbmMedioDePago, AbmCuentaDirecta, AbmCliente."],["Compras · 11","ValorizacionDeComprobante, OrdenDeCompra, AnulacionDeComprobante, RelacionarComprobanteSinRP, NDeCYPI/PedidosInternos y NecesidadesDeCompra, OrdenDePagoDirecta, ComprobanteDeCompra, OrdenDePagoAProveedor, OrdenDePagoConsulta, OrdenDeCompraConsulta."],["Productos · 9","CargaPrecios, ProveedorModi, PromoCombo, PrecioLista, OfertaReport, Presupuesto, Etiqueta, ModifPrecio, Impositivo."],["Otros · 5","Consultas/ConsCuenta; Usuarios/Menues y CGUsuarios; Mstk/ConsInfoProducto e InventarioCarga."]]},
+        {"type":"h2","text":"Fuentes de implementación inspeccionadas"},
+        {"type":"p","text":"Views/Shared/_filtroBase.cshtml y wwwroot/css/site.css. Vistas Index de AbmProducto, AbmProveedor, ABMPlanCuenta, Presupuesto, PromoCombo y OrdenDeCompraConsulta. Filtros propios de Libros/Shared/_filtroLibro y Distribuidora/PedidoDeCliente/_filtros. Todos los prefijos anteriores pertenecen a gc.sitio."},
+        {"type":"p","text":"JavaScript: wwwroot/js/app/areas/abms/{abmproducto,abmcommons}.js; areas/plancuenta/pcMod.js; areas/precios/{presup,combo}.js; areas/ordendecompra/consultaoc.js. La referencia de destino es Areas/Libros/Views/IvaVentasDetalle junto a wwwroot/css/modules/iva-ventas-detalle.css y su JS local."},
+        {"type":"h2","text":"Límite del relevamiento"},
+        {"type":"p","text":"La inspección seleccionó familias representativas y sus dependencias. No se certificaron todos los estados de todos los módulos en el navegador. La siguiente decisión pendiente es aprobar el piloto y su alcance; no falta una autorización de DBA para una mejora de presentación que conserve contratos."}
+      ]
+    }
+  ]
+}

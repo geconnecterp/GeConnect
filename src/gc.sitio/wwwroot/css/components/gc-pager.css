@@ -1,0 +1,59 @@
+/* Opt-in: sin selectores globales ni dependencia del paginador de los ABM. */
+.gc-pager {
+    --pager-gold: var(--bs-golden-primary, #d4af37);
+    --pager-ink: #363128;
+    --pager-border: #c4af70;
+    --pager-soft: #fff8e3;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    flex-shrink: 0;
+    gap: .5rem .75rem;
+    padding-top: .6rem;
+    margin-top: .6rem;
+    border-top: 1px solid var(--pager-border);
+    color: var(--pager-ink);
+    font-size: .8125rem;
+    font-variant-numeric: tabular-nums;
+    min-width: 0;
+    container-type: inline-size;
+}
+.gc-pager .gc-pager-status { white-space: nowrap; }
+.gc-pager .gc-pager-controls,
+.gc-pager .gc-pager-jump,
+.gc-pager .gc-pager-jump label { display: flex; align-items: center; gap: .25rem; margin: 0; }
+.gc-pager .gc-pager-controls { flex-wrap: wrap; justify-content: center; }
+.gc-pager .gc-pager-button,
+.gc-pager .gc-pager-input {
+    box-sizing: border-box;
+    height: 34px;
+    min-width: 34px;
+    padding: .25rem .5rem;
+    border: 1px solid var(--pager-border);
+    border-radius: .35rem;
+    background: #fff;
+    color: var(--pager-ink);
+    font: inherit;
+    line-height: 1;
+    text-align: center;
+    box-shadow: none;
+}
+.gc-pager .gc-pager-button { display: inline-flex; align-items: center; justify-content: center; cursor: pointer; }
+.gc-pager .gc-pager-button:hover:not(:disabled) { background: var(--pager-soft); border-color: #926e0b; }
+.gc-pager .gc-pager-button[aria-current="page"] { background: var(--pager-gold); color: #25231e; border-color: #926e0b; font-weight: 700; }
+.gc-pager .gc-pager-button:disabled,
+.gc-pager .gc-pager-input:disabled { background: #f3f1ea; color: #777166; border-color: #d9d7cf; cursor: default; }
+.gc-pager .gc-pager-gap { padding: 0 .15rem; color: #777166; }
+.gc-pager .gc-pager-input { width: 5rem; line-height: normal; }
+.gc-pager .gc-pager-input[aria-invalid="true"] { border-color: #b42318; }
+.gc-pager .gc-pager-button:focus-visible,
+.gc-pager .gc-pager-input:focus-visible { outline: 2px solid #926e0b; outline-offset: 2px; }
+@container (max-width: 640px) {
+    .gc-pager .gc-pager-controls { flex-basis: 100%; order: 3; }
+    .gc-pager .gc-pager-edge { display: none; } /* Los números 1 y última siguen presentes. */
+}
+@media (max-width: 575.98px) {
+    .gc-pager { justify-content: center; }
+    .gc-pager .gc-pager-button, .gc-pager .gc-pager-input { height: 38px; min-width: 34px; }
+}
