@@ -1,0 +1,30 @@
+@using gc.infraestructura.Dtos.Libros
+@model IvaVentasFiltro
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@section styles {
+    <link rel="stylesheet" href="~/css/components/gc-pager.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/modules/iva-ventas-detalle.css" asp-append-version="true" />
+}
+<section id="iva-ventas" class="container-fluid iva-ventas" data-consulta="@Url.Action("Consultar")" data-excel="@Url.Action("ExportarExcel")">
+    <nav class="iva-navigation mb-2" aria-label="Paneles del Libro IVA">
+        <button id="btnFiltro" type="button" class="btn btn-primary btn-sm" aria-label="Mostrar u ocultar filtros" title="Mostrar u ocultar filtros" aria-controls="divFiltro" aria-expanded="true" disabled="@(ViewBag.Error != null)"><i class="bx bx-filter" aria-hidden="true"></i></button>
+        <button id="btnDetalle" type="button" class="btn btn-primary btn-sm" aria-label="Cerrar consulta y conservar filtros" title="Cerrar consulta y conservar filtros" aria-controls="divDetalle" aria-expanded="false" disabled><i class="bx bx-caret-down" aria-hidden="true"></i></button>
+        <button type="button" id="iva-exportar" class="btn btn-primary btn-sm" aria-label="Exportar Excel" aria-describedby="iva-ayuda-exportar" title="Exportar todos los registros de la consulta a Excel" disabled><i class="bx bx-download" aria-hidden="true"></i> Exportar Excel</button>
+        <span id="iva-ayuda-exportar" class="visually-hidden">Requiere una consulta con registros. Exporta todos los resultados, no solo la página visible.</span>
+    </nav>
+    <partial name="_Filtro" model="Model" />
+    <div id="iva-mensaje" role="status" aria-live="polite" class="iva-message"></div>
+    <div id="divDetalle" class="iva-detail" hidden>
+        <div id="iva-resultado"></div>
+        <div id="iva-cargando" class="iva-loading" role="status" aria-live="polite" aria-atomic="true" hidden>
+            <span class="spinner-border" aria-hidden="true"></span>
+            <span id="iva-cargando-texto"></span>
+        </div>
+    </div>
+</section>
+@section scripts {
+    <script src="~/js/components/gc-pager.js" asp-append-version="true"></script>
+    <script src="~/js/app/libros/iva-ventas-detalle.js" asp-append-version="true"></script>
+}

@@ -40,6 +40,8 @@ namespace gc.api.infra.Extensions
     {
         public static IServiceCollection AddServicios(this IServiceCollection services)
         {
+            services.AddScoped<gc.api.core.Contratos.Servicios.Libros.IIvaVentasDatos, gc.api.infra.Datos.Implementacion.IvaVentasDatos>();
+            services.AddScoped<gc.api.core.Servicios.Libros.IvaVentasServicio>();
             //services.AddTransient<IConfigServicio, ConfigServicio>();
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 
