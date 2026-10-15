@@ -11,6 +11,7 @@ using gc.infraestructura.Dtos.Almacen.AjusteDeStock.Request;
 using gc.infraestructura.Dtos.Almacen.DevolucionAProveedor;
 using gc.infraestructura.Dtos.Almacen.DevolucionAProveedor.Request;
 using gc.infraestructura.Dtos.Almacen.Info;
+using gc.infraestructura.Dtos.Almacen.RemitoExterno;
 using gc.infraestructura.Dtos.Almacen.Request;
 using gc.infraestructura.Dtos.Almacen.Response;
 using gc.infraestructura.Dtos.Almacen.Rpr;
@@ -142,7 +143,8 @@ namespace gc.sitio.core.Servicios.Implementacion
 		private const string CONFIRMAR_CARGA_PREVIA = "/Confirmar-Carga-Previa";
 
 		private const string CONFIRMAR_PLANILLA_ELAB_FRACC = "/confirmar-planilla-elaboracion-fraccion";
-
+		private const string OBTENER_PLANILLA_ELAB_FRACC = "/obtener-planilla-elaboracion-fraccion";
+		private const string OBTENER_PLANILLA_ELAB_FRACC_DETALLE = "/obtener-planilla-elaboracion-fraccion-detalle";
 
 		private readonly AppSettings _appSettings;
 
@@ -3274,6 +3276,79 @@ namespace gc.sitio.core.Servicios.Implementacion
 			{
 				_logger.LogError(ex, "Error al confirmar la planilla de elab. y fracción.");
 				return new() { Mensaje = "Algo no fue bien al intentar la confirmación de la planilla de elab. y fracción.. Verifique Log.", EsError = true };
+			}
+		}
+
+		public async Task<(List<PlanillaElabYFraccionListaDto>, MetadataGrid)> ObtenerPlanillaElabFraccionLista(PlanillaElabYFraccionListaRequest filters, string token)
+		{
+			try
+			{
+				ApiResponse<List<PlanillaElabYFraccionListaDto>>? apiResponse;
+				HelperAPI helper = new();
+
+				HttpClient client = helper.InicializaCliente(filters, token, out StringContent contentData);
+				HttpResponseMessage response;
+
+				var link = $"{_appSettings.RutaBase}{RutaAPI}{OBTENER_PLANILLA_ELAB_FRACC}";
+
+				response = await client.PostAsync(link, contentData);
+
+				if (response.StatusCode == HttpStatusCode.OK)
+				{
+					string stringData = await response.Content.ReadAsStringAsync();
+					if (string.IsNullOrEmpty(stringData))
+					{
+						throw new NegocioException("No se recepcionó una respuesta válida. Intente de nuevo más tarde.");
+					}
+					apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<PlanillaElabYFraccionListaDto>>>(stringData);
+
+					return (apiResponse.Data, apiResponse.Meta);
+				}
+				else
+				{
+					string stringData = await response.Content.ReadAsStringAsync();
+					_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+
+					throw new NegocioException("Algo no fue bien y el proceso no se completó. Intente de nuevo más tarde. Si el problema persiste informe al Administrador del sistema.");
+				}
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError($"{this.GetType().Name}-{MethodBase.GetCurrentMethod()?.Name} - {ex}");
+
+				throw new Exception("Algo no fue bien al intentar cargar la planilla de elaboracion y fracción.");
+			}
+		}
+
+		public async Task<List<PlanillaElabYFraccionDto>> ObtenerPlanillaDeElabYFraccion(string ep_compte, string token)
+		{
+			ApiResponse<List<PlanillaElabYFraccionDto>> apiResponse;
+
+			HelperAPI helper = new();
+
+			HttpClient client = helper.InicializaCliente(token);
+			HttpResponseMessage response;
+
+			var link = $"{_appSettings.RutaBase}{RutaAPI}{OBTENER_PLANILLA_ELAB_FRACC_DETALLE}?ep_compte={ep_compte}";
+
+			response = await client.GetAsync(link);
+
+			if (response.StatusCode == HttpStatusCode.OK)
+			{
+				string stringData = await response.Content.ReadAsStringAsync();
+				if (string.IsNullOrEmpty(stringData))
+				{
+					_logger.LogWarning($"La API no devolvió dato alguno. Parametros de busqueda remCompte:{ep_compte}");
+					return new();
+				}
+				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<PlanillaElabYFraccionDto>>>(stringData) ?? throw new NegocioException("Hubo un problema al deserializar los datos");
+				return apiResponse.Data;
+			}
+			else
+			{
+				string stringData = await response.Content.ReadAsStringAsync();
+				_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+				return new();
 			}
 		}
 	}

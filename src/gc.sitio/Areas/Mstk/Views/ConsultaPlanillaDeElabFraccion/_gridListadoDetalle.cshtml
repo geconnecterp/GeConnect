@@ -1,0 +1,128 @@
+﻿@using gc.infraestructura.Dtos.Mstk
+@using gc.infraestructura.Helpers
+@model PlanillaDetalleModel
+@{
+	var alt = true;
+	string clase = string.Empty;
+	var prodElab = new List<PlanillaElabYFraccionDto>();
+	var prodMP = new List<PlanillaElabYFraccionDto>();
+	if (Model!=null && Model.Grilla != null && Model.Grilla.ListaDatos != null)
+	{
+		prodElab = Model.Grilla.ListaDatos.Where(x => x.epd_tipo == "E").ToList();
+		prodMP = Model.Grilla.ListaDatos.Where(x => x.epd_tipo == "S").ToList();
+	}
+}
+<style>
+</style>
+<div class="row mb-1">
+	<div class="col-12">
+		<strong>Planilla N°:</strong> @Model.Leyenda
+	</div>
+</div>
+<div class="row col-12">
+	<div class="col-6">
+		<div class="grid-golden">
+			<div class="grid-golden-header">
+				<div class="row align-items-md-center">
+					<div class="col-md-10 col-sm-6 d-flex align-items-center">
+						<h5 class="mb-0 flex-grow-1">
+							<i class="bx bx-package me-2"></i>
+							<strong>Productos Elaborados o Fraccionados</strong>
+						</h5>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="grid-golden-body">
+			<div class="table-responsive table-wrapper-700">
+				<table class="table table-sm table-hover mb-0 table-golden" id="tbDetalleElab">
+					<thead class="sticky-top table-golden-header-compact">
+						<tr class="header">
+							<th class="text-center">Id</th>
+							<th class="text-center">Descripción</th>
+							<th class="text-center">Ingreso</th>
+						</tr>
+					</thead>
+					<tbody>
+						@if (prodElab == null || !prodElab.Any())
+						{
+							<tr class="fila-vacia">
+								<td colspan="3" class="text-center text-muted py-2">
+									<i class="bx bx-info-circle me-1"></i>
+									No hay items para mostrar.
+								</td>
+							</tr>
+						}
+						else
+						{
+							foreach (var item in prodElab)
+							{
+								if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+								<tr class="@clase row-planilla-elab"
+									data-as-compte="@item.ep_compte"
+									data-p-id="@item.p_id">
+									<td class="text-center">@item.p_id</td>
+									<td class="text-start">@item.p_desc</td>
+									<td class="text-end">@GridHelper.FormatearDato(item.epd_cantidad, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
+								</tr>
+							}
+						}
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+	<div class="col-6">
+		<div class="grid-golden">
+			<div class="grid-golden-header">
+				<div class="row align-items-md-center">
+					<div class="col-md-10 col-sm-6 d-flex align-items-center">
+						<h5 class="mb-0 flex-grow-1">
+							<i class="bx bx-package me-2"></i>
+							<strong>Productos Materia Prima</strong>
+						</h5>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="grid-golden-body">
+			<div class="table-responsive table-wrapper-700">
+				<table class="table table-sm table-hover mb-0 table-golden" id="tbDetalleMP">
+					<thead class="sticky-top table-golden-header-compact">
+						<tr class="header">
+							<th class="text-center">Id</th>
+							<th class="text-center">Descripción</th>
+							<th class="text-center">Ingreso</th>
+						</tr>
+					</thead>
+					<tbody>
+						@if (prodMP == null || !prodMP.Any())
+						{
+							<tr class="fila-vacia">
+								<td colspan="3" class="text-center text-muted py-2">
+									<i class="bx bx-info-circle me-1"></i>
+									No hay items para mostrar.
+								</td>
+							</tr>
+						}
+						else
+						{
+							foreach (var item in prodMP)
+							{
+								if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+								<tr class="@clase row-planilla-elab"
+									data-as-compte="@item.ep_compte"
+									data-p-id="@item.p_id">
+									<td class="text-center">@item.p_id</td>
+									<td class="text-start">@item.p_desc</td>
+									<td class="text-end">@GridHelper.FormatearDato(item.epd_cantidad, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
+								</tr>
+							}
+						}
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+</div>
+

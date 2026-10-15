@@ -6,6 +6,7 @@ using gc.infraestructura.Dtos.Almacen.AjusteDeStock.Request;
 using gc.infraestructura.Dtos.Almacen.DevolucionAProveedor;
 using gc.infraestructura.Dtos.Almacen.DevolucionAProveedor.Request;
 using gc.infraestructura.Dtos.Almacen.Info;
+using gc.infraestructura.Dtos.Almacen.RemitoExterno;
 using gc.infraestructura.Dtos.Almacen.Request;
 using gc.infraestructura.Dtos.Almacen.Response;
 using gc.infraestructura.Dtos.Almacen.Rpr;
@@ -16,6 +17,7 @@ using gc.infraestructura.Dtos.Box;
 using gc.infraestructura.Dtos.CuentaComercial;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.Dtos.General;
+using gc.infraestructura.Dtos.Mstk;
 using gc.infraestructura.Dtos.Mstk.Request;
 using gc.infraestructura.Dtos.Productos;
 using gc.infraestructura.EntidadesComunes.Options;
@@ -126,5 +128,7 @@ namespace gc.sitio.core.Servicios.Contratos
 		Task<(List<DevolucionProveedoresListaDto>, MetadataGrid)> DevolucionAProveedoresLista(CargarDevolucionesRequest filters, string token);
 		Task<List<BoxInfoExtendedDto>> InformacionDeBoxesLista(InformacionDeBoxesListaRequest request, string token);
 		RespuestaGenerica<RespuestaDto> ConfirmarPlanillaElaboracionYFraccion(ConfirmarPlanillaDeElabYFraccRequest request, string token);
+		Task<(List<PlanillaElabYFraccionListaDto>, MetadataGrid)> ObtenerPlanillaElabFraccionLista(PlanillaElabYFraccionListaRequest filters, string token);
+		Task<List<PlanillaElabYFraccionDto>> ObtenerPlanillaDeElabYFraccion(string ep_compte, string token);
 	}
 }

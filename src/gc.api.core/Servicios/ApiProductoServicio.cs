@@ -14,6 +14,7 @@ using gc.infraestructura.Dtos.Almacen.AjusteDeStock.Request;
 using gc.infraestructura.Dtos.Almacen.DevolucionAProveedor;
 using gc.infraestructura.Dtos.Almacen.DevolucionAProveedor.Request;
 using gc.infraestructura.Dtos.Almacen.Info;
+using gc.infraestructura.Dtos.Almacen.RemitoExterno;
 using gc.infraestructura.Dtos.Almacen.Request;
 using gc.infraestructura.Dtos.Almacen.Response;
 using gc.infraestructura.Dtos.Almacen.Rpr;
@@ -2047,6 +2048,35 @@ namespace gc.api.core.Servicios
 			var rem = _repository.EjecutarLstSpExt<PlanillaElabYFraccionDto>(sp, ps, true);
 
 			return rem;
+		}
+
+		public List<PlanillaElabYFraccionListaDto> ObtenerPlanillaElabFraccionLista(PlanillaElabYFraccionListaRequest req)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_PEF_LISTA;
+			var ps = new List<SqlParameter>();
+			if (req.FechaDesde != default && req.FechaHasta != default)
+			{
+				ps.Add(new SqlParameter("@fecha_d", req.FechaDesde));
+				ps.Add(new SqlParameter("@fecha_h", req.FechaHasta));
+			}
+
+			if (string.IsNullOrEmpty(req.adm_list))
+			{
+				ps.Add(new SqlParameter("@adm", false));
+			}
+			else
+			{
+				ps.Add(new SqlParameter("@adm", true));
+				ps.Add(new SqlParameter("@adm_list", req.adm_list));
+			}
+
+			ps.Add(new SqlParameter("@registros", req.Registros));
+			ps.Add(new SqlParameter("@pagina", req.Pagina));
+			ps.Add(new SqlParameter("@ordenar", "as_compte"));
+
+			var ordenes = _repository.EjecutarLstSpExt<PlanillaElabYFraccionListaDto>(sp, ps, true);
+
+			return ordenes;
 		}
 	}
 }

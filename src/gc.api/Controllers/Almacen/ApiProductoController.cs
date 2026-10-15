@@ -23,6 +23,7 @@ namespace gc.api.Controllers.Almacen
     using gc.infraestructura.Dtos.CuentaComercial;
     using gc.infraestructura.Dtos.Gen;
     using gc.infraestructura.Dtos.General;
+	using gc.infraestructura.Dtos.Mstk;
 	using gc.infraestructura.Dtos.Mstk.Request;
 	using gc.infraestructura.Dtos.Productos;
     using gc.infraestructura.Dtos.Productos.Impositivo;
@@ -1793,6 +1794,46 @@ namespace gc.api.Controllers.Almacen
 			return Ok(response);
 		}
 
+		[HttpPost("obtener-planilla-elaboracion-fraccion")]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<List<PlanillaElabYFraccionListaDto>>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		public ActionResult<PlanillaElabYFraccionListaDto> ObtenerPlanillaElabFraccionLista(PlanillaElabYFraccionListaRequest request)
+		{
+			const string msgError = "Error en la invocación de la API - Búsqueda de Planilla de Elaboración y Fracción";
+			try
+			{
+				if (request == null)
+					return BadRequest("No se recepcionó el filtro de la búsqueda de PI.");
+
+				var resultados = _productosSv.ObtenerPlanillaElabFraccionLista(request);
+
+				var response = new ApiResponse<List<PlanillaElabYFraccionListaDto>>(resultados)
+				{
+					Meta = BuildMetadataPlanilla(resultados, request)
+				};
+
+				return Ok(response);
+			}
+			catch (Exception ex)
+			{
+				_logger?.LogError(ex, msgError);
+				return StatusCode(StatusCodes.Status500InternalServerError, new { error = true, msg = msgError });
+			}
+		}
+
+		[HttpGet("obtener-planilla-elaboracion-fraccion-detalle")]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<List<PlanillaElabYFraccionDto>>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		public IActionResult InformacionDeBoxesLista(string ep_compte)
+		{
+			if (string.IsNullOrEmpty(ep_compte)) return BadRequest("No se recepcionaron los datos");
+
+			List<PlanillaElabYFraccionDto> resp = _productosSv.ObtenerPlanillaDeElabYFraccion(ep_compte);
+
+			var response = new ApiResponse<List<PlanillaElabYFraccionDto>>(resp);
+			return Ok(response);
+		}
+
 		private static PedidoInternoRequest MapToRequest(QueryFilters filtro)
 		{
 			return new PedidoInternoRequest
@@ -1887,6 +1928,42 @@ namespace gc.api.Controllers.Almacen
 		}
 
 		private static MetadataGrid? BuildMetadataAjuste(List<AjusteDeStockListaDto>? lista, CargarAjusteDeStockListaRequest filtro)
+		{
+			if (lista == null || lista.Count == 0)
+			{
+				return new MetadataGrid
+				{
+					TotalCount = 0,
+					PageSize = filtro.Registros ?? 0,
+					CurrentPage = filtro.Pagina ?? 0,
+					TotalPages = 0,
+					HasNextPage = false,
+					HasPreviousPage = false,
+					NextPageUrl = null,
+					PreviousPageUrl = null
+				};
+			}
+
+			var reg = lista[0];
+			var pageSize = filtro.Registros ?? 0;
+			var currentPage = filtro.Pagina ?? 0;
+			var totalCount = reg.Total_registros;
+			var totalPages = reg.Total_paginas;
+
+			return new MetadataGrid
+			{
+				TotalCount = totalCount,
+				PageSize = pageSize,
+				CurrentPage = currentPage,
+				TotalPages = totalPages,
+				HasNextPage = currentPage < totalPages,
+				HasPreviousPage = currentPage > 1,
+				NextPageUrl = null,
+				PreviousPageUrl = null
+			};
+		}
+
+		private static MetadataGrid? BuildMetadataPlanilla(List<PlanillaElabYFraccionListaDto>? lista, PlanillaElabYFraccionListaRequest filtro)
 		{
 			if (lista == null || lista.Count == 0)
 			{
