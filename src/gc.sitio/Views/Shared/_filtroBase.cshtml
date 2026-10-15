@@ -3,7 +3,7 @@
     var titulo = Model.TituloLeyend;
 }
 
-<div class="filter-golden @(Model.Modelo.Equals(ModeloFilter.ETIQUETA) ? "etiqueta-filter-responsive" : "")">
+<div class="filter-golden gc-filter gc-filter-base @(Model.Modelo.Equals(ModeloFilter.ETIQUETA) ? "etiqueta-filter-responsive" : "")">
     <div class="filter-golden-body">
         @if(Model.Modelo.Equals(ModeloFilter.CUENTA_DIRECTA))
         {
@@ -946,8 +946,8 @@
     </div>
     <div class="filter-golden-footer">
         <div class="row m-3">
-            <div class="d-flex justify-content-around">
-                <button type="button" id="btnCancel" style="width:150px;" class="btn btn-lg btn-danger"><i class="bx bx-sm bx-x-circle"></i> Inicializa</button>
+            <div class="d-flex justify-content-around gc-filter-actions">
+                <button type="button" id="btnCancel" style="width:150px;" class="btn btn-lg btn-danger"><i class="bx bx-sm bx-x-circle"></i> Inicializar</button>
                 @if (Model.Modelo != ModeloFilter.CONSULTAS)
                 {
                     <button type="button" id="btnBuscar" style="width:150px;" class="btn btn-lg btn-success"><i class="bx bx-sm bx-search"></i> Ver</button>

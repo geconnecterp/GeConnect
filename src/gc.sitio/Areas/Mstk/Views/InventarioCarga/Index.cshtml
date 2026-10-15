@@ -8,10 +8,19 @@
     <link rel="stylesheet" href="~/css/simplePagination.css" />
 }
 <style>
-    
+    /* El filtro debe aprovechar ventanas angostas sin comprimir fechas y leyendas. */
+    #divFiltro {
+        width: 100%;
+        max-width: 60rem;
+    }
+
+    #divFiltro .row > div:has(#chkDesdeHasta) {
+        flex: 1 1 14rem;
+        max-width: 100%;
+    }
 </style>
 <partial name="_botonera" model="filtro" />
-<div class="collapse w-50 m-auto" id="divFiltro">
+<div class="collapse m-auto" id="divFiltro">
     <partial name="_filtroBase" model="filtro" />
     @Html.Hidden("pagEstado", false)
 </div>
@@ -54,5 +63,5 @@
         var confirmarModificarConteoEnInventarioURL = "@Url.Action("ConfirmarModificarConteoEnInventario", "inventariocarga", new { area = "mstk" })";
     </script>
 
-    <script src="~/js/app/areas/mstk/inventariocarga/invcarga.js"></script>
+    <script src="~/js/app/areas/mstk/inventariocarga/invcarga.js" asp-append-version="true"></script>
 }

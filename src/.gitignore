@@ -404,8 +404,6 @@ FodyWeavers.xsd
 ../etc/
 .codex-build/
 
-# Salidas aisladas de las pruebas de cuenta de Caja
-/.artifacts/cuenta-build/
-/.artifacts/cuenta-buildruntimes/
-/.artifacts/cuenta-tests/
-/.artifacts/reportes-publico-publish/
+# Salidas locales de compilación, verificaciones y pruebas de todos los módulos.
+# Las fuentes y plantillas de pruebas se conservan en sus proyectos/Tests.
+/.artifacts/

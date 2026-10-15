@@ -1741,7 +1741,74 @@ async function imprimirArchivoSeleccionado() {
         return;
     }
 
-    printWindow.document.write('<div style="font-family:Arial;padding:24px">Generando documentos para imprimir...</div>');
+    // Presentación autónoma: sin recursos externos ni cambios en el circuito de impresión.
+    // Paleta de login-geconet.css/home-geconet.css; esta ventana no hereda sus estilos.
+    printWindow.document.write(`<!doctype html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Preparando impresión | GECO</title>
+    <style>
+        :root {
+            color-scheme: light;
+            --wait-gold: #d4a80d;
+            --wait-gold-strong: #9f7600;
+            --wait-ink: #292822;
+            --wait-muted: #626159;
+            --wait-border: #d9d7cf;
+            --wait-background: #f7f6f1;
+            --wait-surface: #fff;
+        }
+        * { box-sizing: border-box; }
+        body {
+            margin: 0; min-height: 100vh; min-height: 100dvh;
+            display: grid; place-items: center; padding: 24px;
+            background: var(--wait-background); color: var(--wait-ink);
+            font-family: "Segoe UI", "Public Sans", Arial, sans-serif;
+            line-height: 1.6;
+        }
+        .print-wait {
+            width: 100%; max-width: 520px; padding: 40px 36px 28px;
+            background: var(--wait-surface); border: 1px solid var(--wait-border);
+            border-top: 4px solid var(--wait-gold); border-radius: 16px;
+            box-shadow: 0 12px 40px rgba(54, 49, 40, .08); text-align: center;
+        }
+        .print-wait-brand {
+            margin: 0 0 28px; font-size: 12px; font-weight: 700;
+            letter-spacing: .12em; color: var(--wait-muted);
+        }
+        .print-wait-spinner {
+            display: block; width: 48px; height: 48px; margin: 0 auto 24px;
+            border: 4px solid #f2e8c2; border-top-color: var(--wait-gold-strong);
+            border-radius: 50%; animation: print-wait-spin .9s linear infinite;
+        }
+        h1 { margin: 0 0 12px; font-size: clamp(22px, 4vw, 28px); line-height: 1.25; }
+        .print-wait-description { margin: 0; font-size: 16px; color: var(--wait-muted); }
+        .print-wait-note {
+            margin: 28px 0 0; padding-top: 18px; border-top: 1px solid var(--wait-border);
+            font-size: 13px; color: var(--wait-muted);
+        }
+        @keyframes print-wait-spin { to { transform: rotate(360deg); } }
+        @media (prefers-reduced-motion: reduce) { .print-wait-spinner { animation: none; } }
+        @media (max-width: 480px) {
+            body { padding: 16px; }
+            .print-wait { padding: 28px 20px 24px; }
+        }
+    </style>
+</head>
+<body>
+    <main class="print-wait" aria-labelledby="print-wait-title">
+        <p class="print-wait-brand">GECO · GESTOR DE IMPRESIÓN</p>
+        <div role="status" aria-live="polite" aria-atomic="true">
+            <span class="print-wait-spinner" aria-hidden="true"></span>
+            <h1 id="print-wait-title">Preparando tu impresión</h1>
+            <p class="print-wait-description">Estamos generando los documentos.<br>El PDF aparecerá aquí cuando esté listo.</p>
+        </div>
+        <p class="print-wait-note">Esta operación puede demorar unos momentos.<br>Por favor, mantené esta ventana abierta.</p>
+    </main>
+</body>
+</html>`);
     $('#btnArchImprimir').prop('disabled', true);
     AbrirWaiting(`Generando ${solicitudes.length} documento(s) para imprimir...`);
 

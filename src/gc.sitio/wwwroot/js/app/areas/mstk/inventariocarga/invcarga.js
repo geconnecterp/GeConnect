@@ -39,8 +39,9 @@ function InicializarVista() {
 
 	$("#chkDesdeHasta").on("change", actualizarDesdeHasta);
 
-	$("#chkDesdeHasta").prop("checked", true);
-	actualizarDesdeHasta();
+	// Inicializar el filtro no cancela ni modifica el inventario del detalle.
+	$("#btnCancel").off("click.inventarioFiltros")
+		.on("click.inventarioFiltros", RestablecerFiltrosInventario);
 
 	$("#btnBuscar").on("click", function () {
 		if (validarFechas()) {
@@ -62,7 +63,14 @@ function InicializarVista() {
 		}
 	});
 
+	RestablecerFiltrosInventario();
+}
+
+function RestablecerFiltrosInventario() {
 	InicializarFechasEnFiltros();
+	$("#chkDesdeHasta").prop("checked", true);
+	errorMostrado = false;
+	actualizarDesdeHasta();
 }
 
 function actualizarDesdeHasta() {
