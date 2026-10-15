@@ -33,7 +33,7 @@
 				{
 					if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
 					<tr class="@clase row-planilla"
-						data-as-compte="@item.ep_compte"
+						data-ep-compte="@item.ep_compte"
 						ondblclick="SeleccionarPlanilla(this,'tbPlanilla')">
 						<td class="text-center">@item.ep_compte</td>
 						<td class="text-center">@item.ep_fecha.ToString("dd/MM/yy")</td>

@@ -1,4 +1,4 @@
-﻿let peCompteSeleccionado = "";
+﻿let epCompteSeleccionado = "";
 
 $(function () {
 	$("#pagEstado").on("change", function () {
@@ -19,10 +19,12 @@ $(function () {
 		if ($("#divFiltros").hasClass("show")) {
 			$("#divFiltros").collapse("hide");
 			$("#divDetalle").collapse("show");
+			$("#btnImprimir").show();
 		}
 		else {
 			$("#divFiltros").collapse("show");
 			$("#divDetalle").collapse("hide");
+			$("#btnImprimir").hide();
 		}
 	});
 
@@ -82,7 +84,7 @@ function CargarTablaTabPlanilla(pag = 1) {
 	var data = $.extend({}, data1, data2);
 
 	PostGenHtml(data, cargarPlanillaElabURL, function (obj) {
-		$("#divAjustes").html(obj);
+		$("#divPlanilla").html(obj);
 		PostGen({}, buscarMetadataURL, function (obj) {
 			if (obj.error === true) {
 				AbrirMensaje("ATENCIÓN", obj.msg, function () {
@@ -103,12 +105,12 @@ function CargarTablaTabPlanilla(pag = 1) {
 		InicializarEventosTabPlanilla();
 		// 🔥 Seleccionar automáticamente la primera fila y cargar el detalle
 		setTimeout(() => {
-			const $primera = $("#tbPlanilla tbody tr.row-ajuste").first();
+			const $primera = $("#tbPlanilla tbody tr.row-planilla").first();
 			if ($primera.length) {
 				ProcesarSeleccionFilaEnTabPlanilla($primera); // marca visualmente
 				SeleccionarPlanilla($primera[0], "tbPlanilla");  // carga el detalle
 			}
-		}, 50);
+		}, 500);
 		CerrarWaiting();
 		return true
 	});
@@ -118,14 +120,14 @@ function SeleccionarPlanilla(x, grid) {
 	var $row = $(x);
 
 	// Obtener valores desde los atributos data-*
-	var pe_compte = $row.data("pe-compte");
+	var ep_compte = $row.data("ep-compte");
 	AbrirWaiting("Cargando datos de la planilla...");
-	consultarDetalle(pe_compte);
-	peCompteSeleccionado = pe_compte;
+	consultarDetalle(ep_compte);
+	epCompteSeleccionado = ep_compte;
 }
 
-function consultarDetalle(pe_compte) {
-	PostGenHtml({ pe_compte }, obtenerDetallePlanillaURL, function (obj) {
+function consultarDetalle(ep_compte) {
+	PostGenHtml({ ep_compte }, obtenerDetallePlanillaURL, function (obj) {
 		$("#divDetallePlanilla").html(obj);
 		InicializarEventosTabDetallePlanilla();
 		CerrarWaiting();
@@ -191,7 +193,7 @@ const TabToTableMapPlanillas = {
 
 function EvaluarBotonImprimir(tabId) {
 	console.log("Evaluando botón imprimir para tab:", tabId);
-	const tablaSelector = TabToTableMapAjustes[tabId];
+	const tablaSelector = TabToTableMapPlanillas[tabId];
 	if (!tablaSelector) {
 		console.log("tablaSelector:", tablaSelector);
 		$("#btnImprimir").hide();
@@ -267,6 +269,24 @@ function MostrarFiltrosAplicados() {
 	$target.html(html);
 }
 
+function renderGroup(label, items) {
+	if (!items || items.length === 0) return `<span class="badge bg-secondary">${label}: TODOS </span>`;
+	if (items.length === 1) return `<span class="badge bg-secondary">${label}: ${items[0]}</span>`;
+	const listItems = items.map(i => `<li class="dropdown-item text-wrap">${i}</li>`).join('');
+	return `
+			<div class="btn-group">
+				<button type="button"
+						class="badge-dropdown-filtros dropdown-toggle"
+						data-bs-toggle="dropdown"
+						aria-expanded="false"
+						data-bs-boundary="viewport">
+					${label}: ${items.length} seleccionados
+				</button>
+				<ul class="dropdown-menu p-0" style="min-width:200px;">
+					${listItems}</ul>
+				</div>`;
+}
+
 function ValidarFechasFiltro() {
 
 	let fDesde = $("#Desde").val();
@@ -303,14 +323,14 @@ function ValidarFechasFiltro() {
 }
 
 function controlaImprimirPlanilla() {
-	if (peCompteSeleccionado == "") {
+	if (epCompteSeleccionado == "") {
 		AbrirMensaje("ATENCIÓN", "Debe seleccionar una Planilla.", function () {
 			$("#msjModal").modal("hide");
 			return true;
 		}, false, ["Aceptar"], "error!", null);
 	}
 	else {
-		ImprimirPlanilla_Generada(peCompteSeleccionado);
+		ImprimirPlanilla_Generada(epCompteSeleccionado);
 	}
 }
 
@@ -319,10 +339,10 @@ function ReseteoDeReportes() {
 	ReporteResetArre();
 }
 
-function ImprimirPlanilla_Generada(peCompteSeleccionado) {
+function ImprimirPlanilla_Generada(epCompteSeleccionado) {
 	ReseteoDeReportes();
 	setTimeout(() => {
-		let data = { pe_compte: id };
+		let data = { pe_compte: epCompteSeleccionado };
 		cargarReporteEnArre(103, data, "PLANILLA DE ELABORACIÓN Y FRACCIÓN", "", "");
 		invocacionGestorDoc({});
 	}, 500);
@@ -375,4 +395,19 @@ function HandlerCheckBox() {
 			$("#SucursalesList").empty();
 		}
 	});
+}
+
+function cargaPaginacion() {
+	$("#divPaginacion").pagination({
+		items: totalRegs,
+		itemsOnPage: pagRegs,
+		cssStyle: "dark-theme",
+		currentPage: pagina,
+		onPageClick: function (num) {
+			CargarTablaTabPlanilla(num);
+		}
+	});
+	$("#pagEstado").val(false);
+	$("#divFiltros").collapse("hide")
+	return true;
 }

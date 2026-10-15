@@ -59,6 +59,11 @@ namespace gc.sitio.Areas.Mstk.Controllers.ConsultaPlanillaDeElabFraccion
 				var titulo = "REPORTE DE PLANILLA DE ELABORACIÓN Y FRACCIÓN";
 				ViewData["Titulo"] = titulo;
 
+				#region Gestor Impresion - Inicializacion de variables
+				DocumentManager = _docMSv.InicializaObjeto(titulo, _modulo);
+				ArchivosCargadosModulo = _docMSv.GeneraArbolArchivos(_modulo);
+				#endregion
+
 				CargarDatosIniciales(model);
 
 				return View(model);
