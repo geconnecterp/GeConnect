@@ -1,0 +1,33 @@
+@using gc.infraestructura.Dtos.Libros
+@model IvaVentasResumenLibro
+<section class="ivr-panel" data-count="@Model.Cantidad">
+    <header class="ivr-heading"><h2>Resumen por sucursales</h2><span>Período @Model.Filtro.PeriodoTexto · Importes en pesos · @Model.Grupos.Count(g => !g.EsTotal) sucursales</span></header>
+    @if (Model.Cantidad == 0) { <p class="ivr-empty">No se recibieron filas para este período.</p> }
+    else
+    {
+        @if (Model.TodoCero) { <p class="alert alert-info">El SP devolvió conceptos con todos los importes en cero. Esto no confirma por sí solo ausencia de comprobantes.</p> }
+        <div class="ivr-scroll" tabindex="0" role="region" aria-label="Resumen completo por sucursales">
+            <table class="ivr-table">
+                <caption class="visually-hidden">Libro IVA Ventas - Resumen @Model.Filtro.PeriodoTexto</caption>
+                <thead><tr>@foreach (var titulo in IvaVentasResumenLibro.Columnas) { <th scope="col">@titulo</th> }</tr></thead>
+                @foreach (var grupo in Model.Grupos)
+                {
+                    <tbody class="@(grupo.EsTotal ? "ivr-total-libro" : "")">
+                        <tr class="ivr-group"><th colspan="7" scope="rowgroup">@(grupo.EsTotal ? "Total Libro" : $"Sucursal {grupo.Nombre} ({grupo.Id})")</th></tr>
+                        @foreach (var fila in grupo.Filas)
+                        {
+                            <tr class="@(fila.tipo_ope == "C" ? "ivr-credito" : "")">
+                                <th scope="row">@fila.Concepto</th>
+                                @foreach (var importe in fila.Importes) { <td>@IvaVentasResumenLibro.Numero(importe)</td> }
+                            </tr>
+                        }
+                        <tr class="ivr-subtotal"><th scope="row">@(grupo.EsTotal ? "Total Libro" : "Total sucursal")</th>
+                            @foreach (var total in grupo.Totales) { <td>@IvaVentasResumenLibro.Numero(total)</td> }
+                        </tr>
+                    </tbody>
+                }
+            </table>
+        </div>
+        <footer class="ivr-help">La impresión y el Excel incluyen todas las sucursales y Total Libro. Se vuelven a consultar los datos al emitir.</footer>
+    }
+</section>

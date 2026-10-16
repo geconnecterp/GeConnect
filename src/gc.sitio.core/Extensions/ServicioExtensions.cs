@@ -28,6 +28,9 @@ namespace gc.sitio.core.Extensions
         public static IServiceCollection AddServicios(this IServiceCollection services)
         {
             services.AddScoped<gc.sitio.core.Servicios.Implementacion.Libros.IvaVentasCliente>();
+            services.AddScoped<IvaVentasResumenCliente>();
+            services.AddScoped<IvaVentasCierreCliente>();
+            services.PostConfigure<gc.infraestructura.EntidadesComunes.Options.DocsManager>(IvaVentasResumenDocumentos.Configurar);
             services.AddSingleton<ILoggerHelper, LoggerHelper>();
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             services.AddScoped<IAdministracionServicio, AdministracionServicio>();

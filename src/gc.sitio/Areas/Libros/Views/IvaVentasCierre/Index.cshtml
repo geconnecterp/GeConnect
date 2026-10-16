@@ -1,0 +1,41 @@
+@{ Layout = "~/Views/Shared/_Layout.cshtml"; }
+@section styles {
+    <link rel="stylesheet" href="~/css/modules/iva-ventas-cierre.css" asp-append-version="true" />
+}
+<section id="iva-cierre" class="container-fluid" data-estado="@Url.Action("Estado")" data-cerrar="@Url.Action("Cerrar")" data-descarga="@Url.Action("Rg3685")" data-disponible="@(ViewBag.Error == null ? "true" : "false")">
+    <form id="ivc-token" hidden>@Html.AntiForgeryToken()</form>
+    <nav class="ivc-toolbar" aria-label="Acciones del cierre IVA Ventas">
+        <button id="ivc-actualizar" type="button" class="btn btn-primary btn-sm" disabled><i class="bx bx-refresh" aria-hidden="true"></i> Actualizar</button>
+        <a href="@Url.Action("Index", "Home", new { area = "" })" class="btn btn-outline-secondary btn-sm"><i class="bx bx-exit" aria-hidden="true"></i> Salir</a>
+        <div class="ivc-main-actions">
+            <button id="ivc-rg" type="button" class="btn btn-primary btn-sm" disabled><i class="bx bx-download" aria-hidden="true"></i> Descargar RG 3685</button>
+            <button id="ivc-cerrar" type="button" class="btn btn-warning btn-sm" disabled><i class="bx bx-lock-alt" aria-hidden="true"></i> Cerrar IVA</button>
+        </div>
+    </nav>
+    @if (ViewBag.Error != null) { <div class="alert alert-warning" role="alert">@ViewBag.Error</div> }
+    <div id="ivc-mensaje" role="status" aria-live="polite"></div>
+    <div id="ivc-contenido">
+        <div id="ivc-resultado"></div>
+        <div id="ivc-esperando" role="status" aria-live="polite" hidden>
+            <span class="spinner-border" aria-hidden="true"></span><span id="ivc-espera-texto"></span>
+        </div>
+    </div>
+    <p class="ivc-download-help">RG 3685 descarga un ZIP con los archivos de cabecera y detalle del período seleccionado.</p>
+    <div id="ivc-confirmacion" class="modal fade" tabindex="-1" aria-labelledby="ivc-confirmacion-titulo" aria-describedby="ivc-confirmacion-texto" data-bs-backdrop="static" data-bs-keyboard="false">
+        <div class="modal-dialog modal-dialog-centered"><div class="modal-content">
+            <div class="modal-header"><h2 id="ivc-confirmacion-titulo" class="modal-title fs-5"><i class="bx bx-error-circle" aria-hidden="true"></i> Confirmar cierre de IVA Ventas</h2></div>
+            <div class="modal-body">
+                <p id="ivc-confirmacion-texto">Vas a registrar el cierre del libro correspondiente al período <strong id="ivc-periodo-confirmar"></strong>.</p>
+                <p>Verificá que la revisión de sus comprobantes e importes esté finalizada antes de continuar.</p>
+                <p class="ivc-confirm-note">Al completar el cierre se actualizará el historial y quedará disponible el próximo período.</p>
+            </div>
+            <div class="modal-footer">
+                <button id="ivc-cancelar" type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Volver</button>
+                <button id="ivc-confirmar" type="button" class="btn btn-warning"><i class="bx bx-lock-alt" aria-hidden="true"></i> Confirmar cierre</button>
+            </div>
+        </div></div>
+    </div>
+</section>
+@section scripts {
+    <script src="~/js/app/libros/iva-ventas-cierre.js" asp-append-version="true"></script>
+}

@@ -8,6 +8,19 @@
 }
 
 /* Acceso global al inicio en la barra principal */
+/* En notebooks, el menú completo puede necesitar más de una línea.
+   Conserva el breakpoint y el comportamiento de los desplegables existentes. */
+@media (min-width: 992px) {
+    .navbar > .container-fluid > #navbarSupportedContent {
+        min-width: 0;
+    }
+
+    #navbarSupportedContent > .navbar-nav {
+        min-width: 0;
+        flex-wrap: wrap;
+    }
+}
+
 .navbar .navbar-home-link {
     display: inline-flex;
     min-height: 36px;
