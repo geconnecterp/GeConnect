@@ -8,6 +8,26 @@ public static class IvaVentasCierreArchivos
 {
     // Convención provisional solicitada para revisión del tester, no certificación de formato fiscal.
     public static string NombreZip(string periodo) => $"IVA_Ventas_3685_{IvaVentasCierrePeriodo.Texto(periodo)}.zip";
+    public static string NombreDuplicados(string periodo) => $"IVA_Ventas_Duplicados_{IvaVentasCierrePeriodo.Texto(periodo)}.txt";
+    public static async Task EscribirDuplicados(Stream destino, IAsyncEnumerable<string?> lineas, CancellationToken ct)
+    {
+        ct.ThrowIfCancellationRequested();
+        await using var writer = new StreamWriter(destino, new UTF8Encoding(false, true), 65536, leaveOpen: true) { NewLine = "\r\n" };
+        var hayRegistros = false;
+        await foreach (var linea in lineas.WithCancellation(ct))
+        {
+            ct.ThrowIfCancellationRequested();
+            if (string.IsNullOrEmpty(linea))
+                throw new IvaVentasCierreArchivoException("Duplicados Electrónicos devolvió un registro nulo o vacío. Solicite al DBA revisar el período y las sumatorias del SP. No se entregó un archivo parcial.");
+            if (linea.Contains('\r') || linea.Contains('\n'))
+                throw new IvaVentasCierreArchivoException("Duplicados Electrónicos devolvió un salto de línea dentro de un registro. Solicite revisar el origen de datos. No se entregó un archivo parcial.");
+            // La aplicación no reconstruye los registros ni modifica el orden recibido del SP.
+            await writer.WriteLineAsync(linea.AsMemory(), ct);
+            hayRegistros = true;
+        }
+        if (!hayRegistros)
+            throw new IvaVentasCierreArchivoException("Duplicados Electrónicos no devolvió registros. No se generó un TXT vacío; solicite revisar el período en el SP.");
+    }
     public static async Task EscribirZip(Stream destino, string periodo, Func<char, IAsyncEnumerable<string?>> lineas, CancellationToken ct)
     {
         IvaVentasCierrePeriodo.Validar(periodo);

@@ -52,4 +52,11 @@ public class IvaVentasCierreServicio(IIvaVentasCierreDatos datos, IApiUsuarioSer
         await IvaVentasCierreArchivos.EscribirZip(destino, pedido.Periodo,
             tipo => datos.LineasRg3685(pedido.Periodo, tipo, ct), ct);
     }
+    public async Task GenerarDuplicados(IvaVentasCierrePedido pedido, ClaimsPrincipal usuario, string perfil, string menu, Stream destino, CancellationToken ct)
+    {
+        Autorizar(usuario, perfil, menu); pedido.Validar();
+        if (!await datos.ExisteCierre(pedido.Periodo, ct))
+            throw new IvaVentasCierreConflictoException("Seleccione un período cerrado del historial antes de descargar Duplicados Electrónicos.");
+        await IvaVentasCierreArchivos.EscribirDuplicados(destino, datos.LineasDuplicados(pedido.Periodo, ct), ct);
+    }
 }

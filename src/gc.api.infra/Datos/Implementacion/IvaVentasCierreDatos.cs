@@ -121,4 +121,17 @@ public class IvaVentasCierreDatos(GeConnectContext context) : IIvaVentasCierreDa
         if (dr.FieldCount != 1) throw new InvalidOperationException("RG 3685 debe devolver una sola columna de texto.");
         while (await dr.ReadAsync(ct)) yield return dr.IsDBNull(0) ? null : dr.GetString(0);
     }
+    public async IAsyncEnumerable<string?> LineasDuplicados(string periodo, [EnumeratorCancellation] CancellationToken ct)
+    {
+        var parametros = ParametrosPeriodo(periodo);
+        await using var cn = Conexion(); await cn.OpenAsync(ct);
+        await using var cmd = Sp("dbo.SPGECO_IVA_V_Duplicados", cn);
+        cmd.Parameters.AddRange(parametros);
+        await using var dr = await cmd.ExecuteReaderAsync(CommandBehavior.SequentialAccess, ct);
+        if (dr.FieldCount != 1 || dr.GetFieldType(0) != typeof(string))
+            throw new IvaVentasCierreArchivoException("Duplicados Electrónicos debe devolver una sola columna de texto. Solicite revisar el contrato del SP.");
+        while (await dr.ReadAsync(ct)) yield return dr.IsDBNull(0) ? null : dr.GetString(0);
+        if (await dr.NextResultAsync(ct))
+            throw new IvaVentasCierreArchivoException("Duplicados Electrónicos devolvió más de un resultado. Solicite revisar el contrato del SP; no se entregó un archivo parcial.");
+    }
 }

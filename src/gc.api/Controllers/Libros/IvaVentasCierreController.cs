@@ -27,7 +27,10 @@ public class IvaVentasCierreController(IvaVentasCierreServicio servicio, ILogger
     }
     private static readonly SemaphoreSlim Descargas = new(2, 2);
     [HttpPost("rg3685")]
-    public async Task<IActionResult> Rg3685(IvaVentasCierrePedido pedido, CancellationToken ct)
+    public Task<IActionResult> Rg3685(IvaVentasCierrePedido pedido, CancellationToken ct) => Descargar(pedido, false, ct);
+    [HttpPost("duplicados")]
+    public Task<IActionResult> Duplicados(IvaVentasCierrePedido pedido, CancellationToken ct) => Descargar(pedido, true, ct);
+    private async Task<IActionResult> Descargar(IvaVentasCierrePedido pedido, bool duplicados, CancellationToken ct)
     {
         FileStream? archivo = null; var adquirido = false;
         try
@@ -35,14 +38,16 @@ public class IvaVentasCierreController(IvaVentasCierreServicio servicio, ILogger
             if (!servicio.TieneAcceso(User, Perfil, Menu)) return Forbid();
             pedido.Validar();
             adquirido = await Descargas.WaitAsync(0, ct);
-            if (!adquirido) return StatusCode(429, new { mensaje = "Hay otras descargas RG 3685 en preparación. Intente nuevamente en unos momentos." });
+            if (!adquirido) return StatusCode(429, new { mensaje = "Hay otras descargas de Cierre IVA Ventas en preparación. Intente nuevamente en unos momentos." });
             // Preparar todo antes de enviar; archivo temporal borrado al finalizar o ante error.
-            archivo = new FileStream(Path.Combine(Path.GetTempPath(), "geco-iva-" + Guid.NewGuid().ToString("N") + ".zip"),
+            archivo = new FileStream(Path.Combine(Path.GetTempPath(), "geco-iva-" + Guid.NewGuid().ToString("N") + (duplicados ? ".txt" : ".zip")),
                 FileMode.CreateNew, FileAccess.ReadWrite, FileShare.Read, 65536, FileOptions.Asynchronous | FileOptions.DeleteOnClose);
-            await servicio.GenerarRg3685(pedido, User, Perfil, Menu, archivo, ct);
+            if (duplicados) await servicio.GenerarDuplicados(pedido, User, Perfil, Menu, archivo, ct);
+            else await servicio.GenerarRg3685(pedido, User, Perfil, Menu, archivo, ct);
             archivo.Position = 0;
             Response.Headers["X-Content-Type-Options"] = "nosniff";
-            var resultado = File(archivo, "application/zip", IvaVentasCierreArchivos.NombreZip(pedido.Periodo));
+            var resultado = File(archivo, duplicados ? "text/plain; charset=utf-8" : "application/zip",
+                duplicados ? IvaVentasCierreArchivos.NombreDuplicados(pedido.Periodo) : IvaVentasCierreArchivos.NombreZip(pedido.Periodo));
             archivo = null; // FileStreamResult adquiere y libera la propiedad del archivo.
             return resultado;
         }
@@ -54,6 +59,7 @@ public class IvaVentasCierreController(IvaVentasCierreServicio servicio, ILogger
         if (ex is UnauthorizedAccessException) return StatusCode(403, new { mensaje = ex.Message });
         if (ex is ArgumentException) return BadRequest(new { mensaje = ex.Message });
         if (ex is IvaVentasCierreConflictoException) return Conflict(new { mensaje = ex.Message });
+        if (ex is IvaVentasCierreArchivoException) return UnprocessableEntity(new { mensaje = ex.Message });
         logger.LogError("IVA cierre fallido. Operación {Operacion}; tipo {Tipo}; referencia {Ref}", cierre ? "cerrar" : "consultar/exportar", ex.GetType().Name, HttpContext.TraceIdentifier);
         return StatusCode(503, new { mensaje = cierre
             ? "No se pudo confirmar el resultado del cierre. Actualice el historial antes de volver a intentarlo. El cierre no se reintentó automáticamente."

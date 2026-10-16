@@ -5,6 +5,7 @@
     const byId = id => document.getElementById(id);
     const result = byId('ivc-resultado'), content = byId('ivc-contenido'), message = byId('ivc-mensaje');
     const refresh = byId('ivc-actualizar'), close = byId('ivc-cerrar'), download = byId('ivc-rg');
+    const duplicates = byId('ivc-duplicados');
     const modalEl = byId('ivc-confirmacion'), confirm = byId('ivc-confirmar');
     const available = root.dataset.disponible === 'true';
     let busy = false, confirming = false, next = '', canClose = false, selected = null, expected = '', framePending = false;
@@ -14,7 +15,7 @@
     function sync() {
         refresh.disabled = !available || busy || confirming;
         close.disabled = !available || busy || confirming || !canClose || !next;
-        download.disabled = !available || busy || confirming || !selected;
+        download.disabled = duplicates.disabled = !available || busy || confirming || !selected;
         close.innerHTML = '<i class="bx bx-lock-alt" aria-hidden="true"></i> ' + (next ? 'Cerrar IVA ' + periodText(next) : 'Cerrar IVA');
         confirm.disabled = busy;
         byId('ivc-cancelar').disabled = busy;
@@ -36,7 +37,7 @@
         if (busy || confirming || !row) return;
         selected = { key: row.dataset.clave, period: row.dataset.periodo };
         rows().forEach(r => { const active = r === row; r.classList.toggle('is-selected', active); r.querySelector('button').setAttribute('aria-pressed', String(active)); });
-        byId('ivc-seleccion').textContent = 'Período seleccionado para RG 3685: ' + periodText(selected.period);
+        byId('ivc-seleccion').textContent = 'Período seleccionado para descargas: ' + periodText(selected.period);
         sync();
     }
     function data(period) {
@@ -69,7 +70,7 @@
         if (row) {
             selected = { key: row.dataset.clave, period: row.dataset.periodo };
             row.classList.add('is-selected'); row.querySelector('button').setAttribute('aria-pressed', 'true');
-            byId('ivc-seleccion').textContent = 'Período seleccionado para RG 3685: ' + periodText(selected.period);
+            byId('ivc-seleccion').textContent = 'Período seleccionado para descargas: ' + periodText(selected.period);
         }
     }
     async function reload() {
@@ -100,17 +101,21 @@
             tone = 'warning';
         } finally { busy = false; confirming = false; expected = ''; sync(); notify(info, tone); }
     }
-    async function exportRg() {
+    async function exportFile(duplicados) {
         if (busy || confirming || !available || !selected) return;
         const period = selected.period;
-        setBusy('Generando cabecera y detalle RG 3685 del período ' + periodText(period) + '. La descarga comenzará cuando ambos archivos estén listos.'); notify('');
+        setBusy(duplicados
+            ? 'Generando Duplicados Electrónicos del período ' + periodText(period) + '. Esta operación puede demorar; la descarga comenzará cuando el TXT esté completo.'
+            : 'Generando cabecera y detalle RG 3685 del período ' + periodText(period) + '. La descarga comenzará cuando ambos archivos estén listos.'); notify('');
         try {
-            const response = await request(root.dataset.descarga, data(period));
-            if (!(response.headers.get('Content-Type') || '').includes('application/zip')) throw new Error('No se recibió un archivo ZIP válido.');
+            const response = await request(duplicados ? root.dataset.duplicados : root.dataset.descarga, data(period));
+            const mime = (response.headers.get('Content-Type') || '').split(';')[0].trim().toLowerCase();
+            if (mime !== (duplicados ? 'text/plain' : 'application/zip'))
+                throw new Error(duplicados ? 'No se recibió un TXT válido de Duplicados Electrónicos.' : 'No se recibió un archivo ZIP válido.');
             const blob = await response.blob(), url = URL.createObjectURL(blob), a = document.createElement('a');
-            a.href = url; a.download = 'IVA_Ventas_3685_' + periodText(period) + '.zip'; document.body.appendChild(a); a.click(); a.remove();
+            a.href = url; a.download = 'IVA_Ventas_' + (duplicados ? 'Duplicados_' : '3685_') + periodText(period) + (duplicados ? '.txt' : '.zip'); document.body.appendChild(a); a.click(); a.remove();
             setTimeout(() => URL.revokeObjectURL(url), 60000);
-            notify('Descarga preparada: cabecera y detalle del período ' + periodText(period) + '.', 'success');
+            notify('Descarga preparada: ' + (duplicados ? 'Duplicados Electrónicos' : 'cabecera y detalle') + ' del período ' + periodText(period) + '.', 'success');
         } catch (e) { notify(e instanceof TypeError ? 'No se pudo completar la descarga. Verificá la conexión e intentá nuevamente.' : e.message, 'warning'); }
         finally { busy = false; sync(); }
     }
@@ -121,7 +126,9 @@
         const row = list[Math.max(0, Math.min(list.length - 1, current + (e.key === 'ArrowDown' ? 1 : -1)))];
         e.preventDefault(); select(row); row?.querySelector('button').focus();
     });
-    refresh.addEventListener('click', reload); download.addEventListener('click', exportRg);
+    refresh.addEventListener('click', reload);
+    download.addEventListener('click', () => exportFile(false));
+    duplicates.addEventListener('click', () => exportFile(true));
     close.addEventListener('click', () => {
         if (busy || confirming || !canClose || !next) return;
         expected = next; confirming = true;

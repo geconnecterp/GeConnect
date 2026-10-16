@@ -41,6 +41,8 @@ Check(!svc.TieneAcceso(new ClaimsPrincipal(), "P1", "M"), "Anónimo denegado");
 Check(!svc.TieneAcceso(User(), "P2", "M") && proxy.Calls == 0, "Perfil no perteneciente al token denegado antes de consultar menú");
 await Reject<UnauthorizedAccessException>(() => svc.Cerrar(new() { Periodo = "202511" }, User(), "P1", "M", default), "Sin imp_lv_cierr no se cierra");
 Check(datos.CloseCalls == 0, "Permiso rechazado no llega al SP");
+await Reject<UnauthorizedAccessException>(() => svc.GenerarDuplicados(new() { Periodo = "202511" }, User(), "P1", "M", new MemoryStream(), default), "Duplicados exige el permiso real antes de consultar datos");
+Check(datos.DuplicadosCalls == 0, "Sin permiso no se invoca el SP de Duplicados");
 proxy.Allow = true;
 Check(svc.TieneAcceso(User(), "P1", "M"), "Identificador real del menú imp_lv_cierr habilita el módulo");
 proxy.MenuItemId = "imp_lv_cierre";
@@ -83,12 +85,35 @@ using (var zip = new ZipArchive(vacio, ZipArchiveMode.Read)) Check(zip.Entries.C
 var cts = new CancellationTokenSource(); cts.Cancel();
 await Reject<OperationCanceledException>(() => IvaVentasCierreArchivos.EscribirZip(new MemoryStream(), "202511", _ => DatosFake.Values(["0000"]), cts.Token), "Cancelación impide emitir el paquete completo");
 Check(IvaVentasCliente.Url("https://api.example/gcservicios", "api/iva-ventas-cierre/rg3685").AbsoluteUri == "https://api.example/gcservicios/api/iva-ventas-cierre/rg3685", "URL preserva subaplicación IIS");
+
+Check(IvaVentasCierreArchivos.NombreDuplicados("202511") == "IVA_Ventas_Duplicados_2025-11.txt", "Duplicados tiene nombre TXT con período, sin ZIP");
+await using var duplicados = new MemoryStream();
+await svc.GenerarDuplicados(new() { Periodo = "202511" }, User("0001"), "P1", "M", duplicados, default);
+var textoDuplicados = duplicados.ToArray();
+Check(datos.DuplicadosCalls == 1 && datos.DuplicadosPeriodo == "202511", "Una llamada al SP de Duplicados con el período histórico seleccionado");
+Check(new UTF8Encoding(false, true).GetString(textoDuplicados) == "10001 CAFÉ ÑANDÚ  00000000123  \r\n200000001                                                                     00000000123\r\n", "TXT conserva orden, ceros, acentos, espacios finales y CRLF sin recalcular el total");
+Check(!textoDuplicados.Take(3).SequenceEqual(new byte[]{0xef,0xbb,0xbf}) && duplicados.CanWrite, "Duplicados sin BOM y sin cerrar el stream de respuesta");
+Check(datos.CloseCalls == 3 && datos.Writes == 1, "Descargar Duplicados no invoca otro cierre ni modifica registros");
+await Reject<IvaVentasCierreConflictoException>(() => svc.GenerarDuplicados(new() { Periodo = "202601" }, User(), "P1", "M", new MemoryStream(), default), "Duplicados rechaza un período sin cierre registrado");
+await Reject<UnauthorizedAccessException>(() => svc.GenerarDuplicados(new() { Periodo = "202511" }, User(forced:true), "P1", "M", new MemoryStream(), default), "Duplicados rechaza sesión con cambio obligatorio de contraseña");
+await Reject<ArgumentException>(() => svc.GenerarDuplicados(new() { Periodo = "202513" }, User(), "P1", "M", new MemoryStream(), default), "Duplicados rechaza mes inválido antes de ejecutar el SP");
+Check(datos.DuplicadosCalls == 1, "Los pedidos rechazados no vuelven a ejecutar Duplicados");
+foreach (var invalido in new string?[] { null, "", "registro\npartido", "registro\rpartido" })
+    await Reject<IvaVentasCierreArchivoException>(() => IvaVentasCierreArchivos.EscribirDuplicados(new MemoryStream(), DatosFake.Values([invalido]), default), "Duplicados detecta registro inválido sin ocultarlo ni repararlo");
+await Reject<IvaVentasCierreArchivoException>(() => IvaVentasCierreArchivos.EscribirDuplicados(new MemoryStream(), DatosFake.Values([]), default), "Duplicados no entrega TXT vacío sin registros del SP");
+await Reject<OperationCanceledException>(() => IvaVentasCierreArchivos.EscribirDuplicados(new MemoryStream(), DatosFake.Values(["1"]), cts.Token), "Duplicados respeta cancelación antes de escribir");
+await Reject<IOException>(() => IvaVentasCierreArchivos.EscribirDuplicados(new MemoryStream(), DatosFake.FallaAlFinal(), default), "Un fallo SQL tardío no se convierte en TXT completo");
+await using var masivo = new MemoryStream();
+await IvaVentasCierreArchivos.EscribirDuplicados(masivo, DatosFake.Masivo(), default);
+Check(masivo.Length == 10_001 * 10L, "Duplicados escribe más de 5000 registros completos, sin paginar ni limitar el archivo");
+Check(IvaVentasCliente.Url("https://api.example/gcservicios", "api/iva-ventas-cierre/duplicados").AbsoluteUri == "https://api.example/gcservicios/api/iva-ventas-cierre/duplicados", "Duplicados preserva PathBase de la API en IIS");
 Console.WriteLine($"PASS: {passed} verificaciones sintéticas; ningún cierre real ni conexión SQL.");
 
 public class DatosFake : IIvaVentasCierreDatos
 {
     public string Next = "202511", Actor = "", Adm = "";
     public int CloseCalls, Writes; public bool NonZero;
+    public int DuplicadosCalls; public string DuplicadosPeriodo = "";
     public List<char> Types = [];
     public Task<IvaVentasCierreEstado> Consultar(CancellationToken ct) => Task.FromResult(new IvaVentasCierreEstado { ProximoPeriodo = Next });
     public Task<IvaVentasCierreRespuesta> Cerrar(string p, string usuario, string adm, CancellationToken ct)
@@ -100,7 +125,10 @@ public class DatosFake : IIvaVentasCierreDatos
     }
     public Task<bool> ExisteCierre(string p, CancellationToken ct) => Task.FromResult(p == "202511");
     public IAsyncEnumerable<string?> LineasRg3685(string p, char tipo, CancellationToken ct) { Types.Add(tipo); return Values(["0001 CAFÉ ÑANDÚ  0000000000123  ", "0002  "]); }
+    public IAsyncEnumerable<string?> LineasDuplicados(string p, CancellationToken ct) { DuplicadosCalls++; DuplicadosPeriodo = p; return Values(["10001 CAFÉ ÑANDÚ  00000000123  ", "200000001                                                                     00000000123"]); }
     public static async IAsyncEnumerable<string?> Values(string?[] lines) { await Task.CompletedTask; foreach (var line in lines) yield return line; }
+    public static async IAsyncEnumerable<string?> FallaAlFinal() { await Task.CompletedTask; yield return "1000"; throw new IOException("Fallo simulado de lectura SQL."); }
+    public static async IAsyncEnumerable<string?> Masivo() { await Task.CompletedTask; for (var i = 0; i < 10_001; i++) yield return "10000000"; }
 }
 public class UsuarioProxy : DispatchProxy
 {

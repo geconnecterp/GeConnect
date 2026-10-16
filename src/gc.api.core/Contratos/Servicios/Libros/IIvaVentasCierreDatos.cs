@@ -8,4 +8,5 @@ public interface IIvaVentasCierreDatos
     Task<IvaVentasCierreRespuesta> Cerrar(string periodoEsperado, string usuario, string sucursal, CancellationToken ct);
     Task<bool> ExisteCierre(string periodo, CancellationToken ct);
     IAsyncEnumerable<string?> LineasRg3685(string periodo, char tipo, CancellationToken ct);
+    IAsyncEnumerable<string?> LineasDuplicados(string periodo, CancellationToken ct);
 }

@@ -28,17 +28,23 @@ public class IvaVentasCierreCliente(IOptions<AppSettings> settings)
         return JsonConvert.DeserializeObject<IvaVentasCierreRespuesta>(await response.Content.ReadAsStringAsync(ct), Json)
             ?? throw new InvalidOperationException("No se recibió el resultado del cierre.");
     }
-    public async Task<FileStream> Rg3685(IvaVentasCierrePedido pedido, string token, string perfil, string menu, CancellationToken ct)
+    public Task<FileStream> Rg3685(IvaVentasCierrePedido pedido, string token, string perfil, string menu, CancellationToken ct) => Descargar("rg3685", pedido, token, perfil, menu, ct);
+    public Task<FileStream> Duplicados(IvaVentasCierrePedido pedido, string token, string perfil, string menu, CancellationToken ct) => Descargar("duplicados", pedido, token, perfil, menu, ct);
+    private async Task<FileStream> Descargar(string accion, IvaVentasCierrePedido pedido, string token, string perfil, string menu, CancellationToken ct)
     {
-        using var response = await Enviar("rg3685", pedido, token, perfil, menu, ct);
-        if (response.Content.Headers.ContentType?.MediaType != "application/zip") throw new InvalidOperationException("No se recibió un ZIP válido.");
-        var file = new FileStream(Path.Combine(Path.GetTempPath(), "geco-iva-sitio-" + Guid.NewGuid().ToString("N") + ".zip"),
+        var texto = accion == "duplicados";
+        using var response = await Enviar(accion, pedido, token, perfil, menu, ct);
+        if (response.Content.Headers.ContentType?.MediaType != (texto ? "text/plain" : "application/zip"))
+            throw new InvalidOperationException(texto ? "No se recibió un TXT válido de Duplicados Electrónicos." : "No se recibió un ZIP válido.");
+        var file = new FileStream(Path.Combine(Path.GetTempPath(), "geco-iva-sitio-" + Guid.NewGuid().ToString("N") + (texto ? ".txt" : ".zip")),
             FileMode.CreateNew, FileAccess.ReadWrite, FileShare.Read, 65536, FileOptions.Asynchronous | FileOptions.DeleteOnClose);
         try
         {
             await response.Content.CopyToAsync(file, ct);
             file.Position = 0;
-            if (file.Length < 4 || file.ReadByte() != 0x50 || file.ReadByte() != 0x4b)
+            if (texto && file.Length == 0)
+                throw new InvalidOperationException("Duplicados Electrónicos devolvió un archivo vacío.");
+            if (!texto && (file.Length < 4 || file.ReadByte() != 0x50 || file.ReadByte() != 0x4b))
                 throw new InvalidOperationException("La descarga no contiene un ZIP válido.");
             file.Position = 0;
             return file;
@@ -59,7 +65,7 @@ public class IvaVentasCierreCliente(IOptions<AppSettings> settings)
             accion == "cerrar" ? "No se pudo confirmar el resultado del cierre. Actualice el historial antes de volver a intentarlo." : "No se pudo completar la consulta o descarga.";
         try
         {
-            if (status is 400 or 403 or 409 or 429 or 503 or 504 && response.Content.Headers.ContentType?.MediaType == "application/json")
+            if (status is 400 or 403 or 409 or 422 or 429 or 503 or 504 && response.Content.Headers.ContentType?.MediaType == "application/json")
             {
                 var json = JObject.Parse(await response.Content.ReadAsStringAsync(ct));
                 if (json["mensaje"]?.Type == JTokenType.String) mensaje = json["mensaje"]!.Value<string>()!;
@@ -67,7 +73,7 @@ public class IvaVentasCierreCliente(IOptions<AppSettings> settings)
         }
         catch (JsonException) { }
         finally { response.Dispose(); }
-        throw new IvaVentasCierreHttpException(status is 401 or 403 or 400 or 409 or 429 or 503 or 504 ? status : 503, mensaje);
+        throw new IvaVentasCierreHttpException(status is 401 or 403 or 400 or 409 or 422 or 429 or 503 or 504 ? status : 503, mensaje);
     }
 }
 

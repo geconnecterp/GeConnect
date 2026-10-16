@@ -2,13 +2,14 @@
 @section styles {
     <link rel="stylesheet" href="~/css/modules/iva-ventas-cierre.css" asp-append-version="true" />
 }
-<section id="iva-cierre" class="container-fluid" data-estado="@Url.Action("Estado")" data-cerrar="@Url.Action("Cerrar")" data-descarga="@Url.Action("Rg3685")" data-disponible="@(ViewBag.Error == null ? "true" : "false")">
+<section id="iva-cierre" class="container-fluid" data-estado="@Url.Action("Estado")" data-cerrar="@Url.Action("Cerrar")" data-descarga="@Url.Action("Rg3685")" data-duplicados="@Url.Action("Duplicados")" data-disponible="@(ViewBag.Error == null ? "true" : "false")">
     <form id="ivc-token" hidden>@Html.AntiForgeryToken()</form>
     <nav class="ivc-toolbar" aria-label="Acciones del cierre IVA Ventas">
         <button id="ivc-actualizar" type="button" class="btn btn-primary btn-sm" disabled><i class="bx bx-refresh" aria-hidden="true"></i> Actualizar</button>
         <a href="@Url.Action("Index", "Home", new { area = "" })" class="btn btn-outline-secondary btn-sm"><i class="bx bx-exit" aria-hidden="true"></i> Salir</a>
         <div class="ivc-main-actions">
             <button id="ivc-rg" type="button" class="btn btn-primary btn-sm" disabled><i class="bx bx-download" aria-hidden="true"></i> Descargar RG 3685</button>
+            <button id="ivc-duplicados" type="button" class="btn btn-primary btn-sm" disabled><i class="bx bx-file" aria-hidden="true"></i> Duplicados Electrónicos</button>
             <button id="ivc-cerrar" type="button" class="btn btn-warning btn-sm" disabled><i class="bx bx-lock-alt" aria-hidden="true"></i> Cerrar IVA</button>
         </div>
     </nav>
@@ -20,7 +21,7 @@
             <span class="spinner-border" aria-hidden="true"></span><span id="ivc-espera-texto"></span>
         </div>
     </div>
-    <p class="ivc-download-help">RG 3685 descarga un ZIP con los archivos de cabecera y detalle del período seleccionado.</p>
+    <p class="ivc-download-help">Del período seleccionado: RG 3685 descarga un ZIP con cabecera y detalle; Duplicados Electrónicos descarga un único TXT.</p>
     <div id="ivc-confirmacion" class="modal fade" tabindex="-1" aria-labelledby="ivc-confirmacion-titulo" aria-describedby="ivc-confirmacion-texto" data-bs-backdrop="static" data-bs-keyboard="false">
         <div class="modal-dialog modal-dialog-centered"><div class="modal-content">
             <div class="modal-header"><h2 id="ivc-confirmacion-titulo" class="modal-title fs-5"><i class="bx bx-error-circle" aria-hidden="true"></i> Confirmar cierre de IVA Ventas</h2></div>

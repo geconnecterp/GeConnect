@@ -46,16 +46,22 @@ public class IvaVentasCierreController(IOptions<AppSettings> options, IHttpConte
         catch (Exception ex) when (ex is not OperationCanceledException || !ct.IsCancellationRequested) { return Error(ex, true); }
     }
     [HttpPost]
-    public async Task<IActionResult> Rg3685(IvaVentasCierrePedido pedido, CancellationToken ct)
+    public Task<IActionResult> Rg3685(IvaVentasCierrePedido pedido, CancellationToken ct) => Descargar(pedido, false, ct);
+    [HttpPost]
+    public Task<IActionResult> Duplicados(IvaVentasCierrePedido pedido, CancellationToken ct) => Descargar(pedido, true, ct);
+    private async Task<IActionResult> Descargar(IvaVentasCierrePedido pedido, bool duplicados, CancellationToken ct)
     {
         if (!VerificarAutenticacion(out _)) return Unauthorized(new { mensaje = "La sesión venció. Ingrese nuevamente." });
         if (!ModelState.IsValid) return BadRequest(new { mensaje = "Seleccione un período cerrado válido." });
         try
         {
             pedido.Validar();
-            var file = await cliente.Rg3685(pedido, TokenCookie, Perfil(), options.Value.MenuId, ct);
+            var file = duplicados
+                ? await cliente.Duplicados(pedido, TokenCookie, Perfil(), options.Value.MenuId, ct)
+                : await cliente.Rg3685(pedido, TokenCookie, Perfil(), options.Value.MenuId, ct);
             Response.Headers["X-Content-Type-Options"] = "nosniff";
-            return File(file, "application/zip", $"IVA_Ventas_3685_{IvaVentasCierrePeriodo.Texto(pedido.Periodo)}.zip");
+            return File(file, duplicados ? "text/plain; charset=utf-8" : "application/zip",
+                $"IVA_Ventas_{(duplicados ? "Duplicados" : "3685")}_{IvaVentasCierrePeriodo.Texto(pedido.Periodo)}.{(duplicados ? "txt" : "zip")}");
         }
         catch (Exception ex) when (ex is not OperationCanceledException || !ct.IsCancellationRequested) { return Error(ex, false); }
     }

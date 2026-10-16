@@ -65,3 +65,5 @@ public class IvaVentasCierreRespuesta
 }
 
 public class IvaVentasCierreConflictoException(string mensaje) : InvalidOperationException(mensaje);
+
+public class IvaVentasCierreArchivoException(string mensaje) : InvalidOperationException(mensaje);
