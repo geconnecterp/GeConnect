@@ -1,0 +1,45 @@
+#iva-cierre{--ivc-gold:#926e0b;--ivc-line:#e6d8ab;--ivc-soft:#fff7df;--ivc-ink:#292822;min-width:0;padding-top:.75rem;color:var(--ivc-ink)}
+#iva-cierre [hidden]{display:none!important}
+#iva-cierre .ivc-toolbar,#iva-cierre .ivc-main-actions{display:flex;align-items:center;flex-wrap:wrap;gap:.5rem}
+#iva-cierre .ivc-toolbar{margin-bottom:.75rem}
+#iva-cierre .ivc-main-actions{margin-left:auto}
+#iva-cierre .ivc-toolbar .btn{min-height:36px;display:inline-flex;align-items:center;justify-content:center;gap:.4rem}
+#iva-cierre .ivc-toolbar .btn-warning,#iva-cierre .modal-footer .btn-warning{background:#efc847;border-color:#d4a80d;color:#292822;font-weight:600}
+#iva-cierre #ivc-mensaje:empty{display:none}
+#iva-cierre #ivc-mensaje{margin:.5rem 0;padding:.6rem .8rem}
+#iva-cierre #ivc-contenido{position:relative;height:calc(100dvh - 250px);min-height:290px;min-width:0}
+#iva-cierre #ivc-resultado{height:100%;min-width:0}
+#iva-cierre .ivc-panel{height:100%;display:flex;flex-direction:column;min-width:0;min-height:0;border:1px solid var(--ivc-line);background:#fff;border-radius:.65rem;padding:.75rem}
+#iva-cierre .ivc-heading{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.5rem 1rem;margin-bottom:.65rem}
+#iva-cierre .ivc-heading h2{font-size:1rem;font-weight:700;margin:0}
+#iva-cierre .ivc-heading p{font-size:.8rem;color:#626159;margin:.2rem 0 0}
+#iva-cierre .ivc-next{font-size:.84rem;padding:.4rem .65rem;border:1px solid var(--ivc-line);border-radius:.4rem;background:var(--ivc-soft)}
+#iva-cierre .ivc-scroll{flex:1 1 auto;min-height:0;min-width:0;max-width:100%;overflow:auto;overscroll-behavior:contain;border:1px solid #e7e2d4}
+#iva-cierre .ivc-table{border-collapse:separate;border-spacing:0;width:max-content;min-width:100%;font-size:.84rem}
+#iva-cierre .ivc-table th,#iva-cierre .ivc-table td{padding:.5rem .7rem;border-bottom:1px solid #e9e6dd}
+#iva-cierre .ivc-table thead th{position:sticky;top:0;z-index:3;background:var(--ivc-gold);color:#fff;text-align:right;min-width:150px;max-width:200px;line-height:1.35}
+#iva-cierre .ivc-table thead th:first-child{left:0;z-index:4;min-width:112px;text-align:left}
+#iva-cierre .ivc-table tbody th{position:sticky;left:0;z-index:1;background:#fff;text-align:left;white-space:nowrap}
+#iva-cierre .ivc-table tbody td{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+#iva-cierre .ivc-table tbody td:nth-last-child(2){font-weight:700}
+#iva-cierre .ivc-table .ivc-date{font-size:.8rem;min-width:160px;color:#626159}
+#iva-cierre .ivc-table tbody tr:nth-child(even)>*{background:#fffcf4}
+#iva-cierre .ivc-table tbody tr:hover>*{background:#fff7df;cursor:pointer}
+#iva-cierre .ivc-table tbody tr.is-selected>*{background:#fff0b5;border-bottom-color:#d4a80d}
+#iva-cierre .ivc-table tbody tr.is-selected th{box-shadow:inset 4px 0 #926e0b}
+#iva-cierre .ivc-select{border:0;background:transparent;color:inherit;font:inherit;font-weight:600;padding:.2rem 0;cursor:pointer}
+#iva-cierre .ivc-negative{color:#a12525}
+#iva-cierre .ivc-selection,#iva-cierre .ivc-download-help,#iva-cierre .ivc-central-note{font-size:.8rem;color:#626159;margin:.6rem 0 0}
+#iva-cierre .ivc-central-note{background:#fff7df;padding:.5rem .65rem;margin:0 0 .65rem;border-radius:.3rem}
+#iva-cierre .ivc-empty{padding:2rem 1rem;text-align:center;color:#626159}
+#iva-cierre #ivc-esperando{position:absolute;inset:0;z-index:5;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:1rem;text-align:center;padding:1.5rem;border:1px solid var(--ivc-line);border-radius:.65rem;background:rgba(255,252,243,.97)}
+#iva-cierre #ivc-esperando .spinner-border{color:var(--ivc-gold)}
+#iva-cierre #ivc-espera-texto{max-width:38rem}
+#iva-cierre .modal-content{border:1px solid var(--ivc-line);border-top:4px solid #d4a80d;border-radius:.7rem}
+#iva-cierre .modal-header{background:#fff7df;color:#4a3a12}
+#iva-cierre .modal-body{font-size:.93rem}
+#iva-cierre .modal-footer .btn{min-width:128px}
+#iva-cierre .ivc-confirm-note{padding:.65rem;border-radius:.4rem;background:#f7f6f1;font-size:.85rem;color:#626159;margin-bottom:0}
+#iva-cierre :focus-visible{outline:2px solid var(--ivc-gold);outline-offset:3px}
+@media(max-width:760px){#iva-cierre .ivc-main-actions{margin-left:0}#iva-cierre .ivc-toolbar{align-items:stretch}#iva-cierre .ivc-heading{align-items:flex-start}}
+@media(prefers-reduced-motion:reduce){#iva-cierre .spinner-border{animation:none}}

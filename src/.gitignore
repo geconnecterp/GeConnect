@@ -407,3 +407,6 @@ FodyWeavers.xsd
 # Salidas locales de compilación, verificaciones y pruebas de todos los módulos.
 # Las fuentes y plantillas de pruebas se conservan en sus proyectos/Tests.
 /.artifacts/
+
+# Documentación interna privada: conservar localmente, no publicar en Git.
+/Documentacion/
