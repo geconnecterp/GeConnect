@@ -14,6 +14,14 @@ var sucId_selected = null;
 var diaId_selected = null;
 var clienteIdSelected = null;
 var clienteDescSelected = null;
+var debeSeleccionarNuevoItem = false;
+var rend_item_editado = null;
+var debeSeleccionarItemEditado = false;
+var debeRestaurarSeleccionArqueo = false;
+
+var seleccionCierre = null;
+var seleccionRend = null;
+var seleccionDetalle = null;
 
 $(function () {
 	if ($("#divDetalle").is(":visible")) {
@@ -78,8 +86,24 @@ function CargarGrillaVtasPVCtlCierres() {
 		CerrarWaiting();
 		$("#divDetalle").html(html);
 		InicializaEventosGrillaVtasPVCtlCierres();
+
+		if (debeRestaurarSeleccionArqueo && seleccionCierre) {
+			RestaurarSeleccionCierres();
+		}
 	});
 }
+
+function RestaurarSeleccionCierres() {
+	const $fila = $("#tbVtasPVCtlCierres tbody tr").filter(function () {
+		return $(this).data("caja-nro-proceso") == seleccionCierre.nro_proceso &&
+			$(this).data("caja-nro-cierre") == seleccionCierre.nro_cierre;
+	});
+
+	if ($fila.length > 0) {
+		ProcesarSeleccionFilaCierres($fila);
+	}
+}
+
 
 function validarCamposSeleccionados() {
 	let sucSeleccionada = $("#listaSucursales").val();
@@ -204,7 +228,9 @@ function InicializaEventosGrillaVtasPVCtlCierres() {
 	$("#btnGuardarValores").prop("disabled", true);
 
 	// 🔥 Seleccionar automáticamente la primera fila válida
-	SeleccionarPrimeraFilaCierres();
+	if (!debeRestaurarSeleccionArqueo) {
+		SeleccionarPrimeraFilaCierres();
+	}
 }
 
 function EvaluarConfirmacionContable() {
@@ -343,8 +369,24 @@ function CargarGrillaVtasPVCtlRend() {
 			$("#divVtasPVCtlRend").html(html);
 			InicializaEventosGrillaVtasPVCtlRend();
 			// Seleccionar automáticamente la primera fila si existe
-			SeleccionarPrimeraFilaRend();
+			if (debeRestaurarSeleccionArqueo && seleccionRend) {
+				RestaurarSeleccionRend();
+			}
+			else { 
+				SeleccionarPrimeraFilaRend();
+			}
 		});
+	}
+}
+
+function RestaurarSeleccionRend() {
+	const $fila = $("#tbVtasPVCtlRend tbody tr").filter(function () {
+		return $(this).data("caja-nro-rend") == seleccionRend.nro_rend &&
+			$(this).data("tcf-id") == seleccionRend.tcf_id;
+	});
+
+	if ($fila.length > 0) {
+		ProcesarSeleccionFila($fila);
 	}
 }
 
@@ -389,7 +431,7 @@ function InicializaEventosGrillaVtasPVCtlRend() {
 		if ($(e.target).is("button, a, .btn, i")) return;
 
 		const $nuevaFila = $(this);
-
+		debeRestaurarSeleccionArqueo = false; //TODO: Ver que funcione bien este seteo
 		// Si ya había una fila seleccionada y se intenta cambiar
 		if (fila_seleccionada_actual && fila_seleccionada_actual[0] !== $nuevaFila[0]) {
 
@@ -424,6 +466,34 @@ function InicializaEventosGrillaVtasPVCtlRend() {
 	$("#btnAgregarArqueo").prop("disabled", !cierre_pendientes_bool);
 }
 
+function GuardarSeleccionAlConfirmarArqueo() {
+	// Guardar selección actual de las tres tablas
+	seleccionCierre = fila_cierre_seleccionada_actual
+		? {
+			nro_proceso: fila_cierre_seleccionada_actual.data("caja-nro-proceso"),
+			nro_cierre: fila_cierre_seleccionada_actual.data("caja-nro-cierre")
+		}
+		: null;
+	console.log("seleccionCierre", seleccionCierre);
+	seleccionRend = fila_seleccionada_actual
+		? {
+			nro_rend: fila_seleccionada_actual.data("caja-nro-rend"),
+			tcf_id: fila_seleccionada_actual.data("tcf-id")
+		}
+		: null;
+	console.log("seleccionRend", seleccionRend);
+	const $filaDet = $("#tbVtasPVCtlRendDetalle tbody tr.selected-row");
+	seleccionDetalle = $filaDet.length > 0
+		? {
+			rend_item: $filaDet.data("rend-item")
+		}
+		: null;
+	console.log("seleccionDetalle", seleccionDetalle);
+	// Activar restauración
+	debeRestaurarSeleccionArqueo = true;
+
+}
+
 function EvaluarConfirmarCtlArqueo() {
 	AbrirMensaje("ATENCIÓN", `¿Esta seguro que desea Confirmar el Arqueo?`, function (e) {
 		$("#msjModal").modal("hide");
@@ -449,23 +519,29 @@ function ConfirmarCtlArqueo() {
 		caja_nro_rend: caja_nro_rend_selected,
 		tcf_id: tcf_id_selected
 	};
+	GuardarSeleccionAlConfirmarArqueo();
 	AbrirWaiting("Confirmando arqueo...");
-	PostGen(data, confirmarCtlArqueoUrl, function (obj) {
+	setTimeout(() => {
 		CerrarWaiting();
-		if (obj.error === true || obj.warn === true) {
-			AbrirMensaje("ATENCIÓN", obj.msg, function () {
-				$("#msjModal").modal("hide");
-				return true;
-			}, false, ["Aceptar"], "error!", null);
-		}
-		else {
-			AbrirMensaje("ATENCIÓN", "Se ha confirmado el Arqueo de forma exitosa.", function () {
-				$("#msjModal").modal("hide");
-				CargarGrillaVtasPVCtlCierres();
-				return true;
-			}, false, ["Aceptar"], "succ!", null);
-		}
-	});
+		CargarGrillaVtasPVCtlCierres();
+	}, 2000);
+	//TODO: Descomentar luego de probar
+	//PostGen(data, confirmarCtlArqueoUrl, function (obj) {
+	//	CerrarWaiting();
+	//	if (obj.error === true || obj.warn === true) {
+	//		AbrirMensaje("ATENCIÓN", obj.msg, function () {
+	//			$("#msjModal").modal("hide");
+	//			return true;
+	//		}, false, ["Aceptar"], "error!", null);
+	//	}
+	//	else {
+	//		AbrirMensaje("ATENCIÓN", "Se ha confirmado el Arqueo de forma exitosa.", function () {
+	//			$("#msjModal").modal("hide");
+	//			CargarGrillaVtasPVCtlCierres();
+	//			return true;
+	//		}, false, ["Aceptar"], "succ!", null);
+	//	}
+	//});
 }
 
 function EvaluarAnularCtlArqueo() {
@@ -608,6 +684,10 @@ function ProcesarSeleccionFila($fila) {
 	// Cargar detalle
 	if (caja_nro_rend_selected) {
 		CargarGrillaVtasPVCtlRendDetalle();
+		// 👇 Solo recargar detalle si NO estamos en modo restauración de arqueo
+		//if (!debeRestaurarSeleccionArqueo) {
+		//	CargarGrillaVtasPVCtlRendDetalle();
+		//}
 	}
 }
 
@@ -647,9 +727,88 @@ function CargarGrillaVtasPVCtlRendDetalle() {
 			CerrarWaiting();
 			$("#divVtasPVCtlRendDetalle").html(html);
 			InicializaEventosGrillaVtasPVCtlRendDetalle();
+
+			if (debeSeleccionarNuevoItem === true) {
+				SeleccionarFilaNuevaRendDetalle();
+				debeSeleccionarNuevoItem = false;
+			}
+			else if (debeSeleccionarItemEditado === true) {
+				SeleccionarFilaEditadaRendDetalle();
+				debeSeleccionarItemEditado = false;
+			}
+			else if (debeRestaurarSeleccionArqueo && seleccionDetalle) {
+				RestaurarSeleccionDetalle();
+				debeRestaurarSeleccionArqueo = false; 
+			}
 		});
 	}
 }
+
+function RestaurarSeleccionDetalle() {
+	const $fila = $("#tbVtasPVCtlRendDetalle tbody tr").filter(function () {
+		return $(this).data("rend-item") == seleccionDetalle.rend_item;
+	});
+
+	if ($fila.length > 0) {
+		ProcesarSeleccionFilaRendDetalle($fila);
+	}
+}
+
+function SeleccionarFilaNuevaRendDetalle() {
+
+	const $filas = $("#tbVtasPVCtlRendDetalle tbody tr[data-rend-item]");
+
+	if ($filas.length === 0) return;
+
+	let maxRendItem = null;
+	let $filaMax = null;
+
+	$filas.each(function () {
+		const valor = parseInt($(this).data("rend-item"), 10);
+
+		if (!isNaN(valor)) {
+			if (maxRendItem === null || valor > maxRendItem) {
+				maxRendItem = valor;
+				$filaMax = $(this);
+			}
+		}
+	});
+
+	if ($filaMax) {
+		// Marcar visualmente
+		$("#tbVtasPVCtlRendDetalle tbody tr").removeClass("selected-row");
+		$filaMax.addClass("selected-row");
+
+		// Disparar botón de edición si existe
+		const $btn = $filaMax.find(".btnEditarValor");
+		if ($btn.length > 0) {
+			$btn.trigger("click");
+		}
+
+		// Opcional: hacer scroll hacia la fila
+		$filaMax[0].scrollIntoView({ behavior: "smooth", block: "center" });
+	}
+}
+
+function SeleccionarFilaEditadaRendDetalle() {
+
+	if (rend_item_editado == null) return;
+
+	const $fila = $("#tbVtasPVCtlRendDetalle tbody tr[data-rend-item='" + rend_item_editado + "']");
+
+	if ($fila.length > 0) {
+
+		$("#tbVtasPVCtlRendDetalle tbody tr").removeClass("selected-row");
+		$fila.addClass("selected-row");
+
+		// Scroll opcional
+		$fila[0].scrollIntoView({ behavior: "smooth", block: "center" });
+	}
+
+	// Limpiar referencia
+	rend_item_editado = null;
+}
+
 
 function HabilitarBotonGuardarValores() {
 	if (existe_edicion)
@@ -679,10 +838,18 @@ function InicializaEventosGrillaVtasPVCtlRendDetalle() {
 	$(document).off("click", "#btnGuardarValores");
 
 	$(document).on("click", "#btnGuardarValores", function (e) {
+		const $filaSeleccionada = $("#tbVtasPVCtlRendDetalle tbody tr.selected-row");
+
+		if ($filaSeleccionada.length > 0) {
+			rend_item_editado = parseInt($filaSeleccionada.data("rend-item")) || null;
+			debeSeleccionarItemEditado = true;
+		}
+
 		GuardarCtlDetalle();
 	});
 
 	$(document).on("click", "#btnAgregarValor", function (e) {
+		debeSeleccionarNuevoItem = true;
 		CargaCtlNuevoItemDetalle();
 	});
 
@@ -1068,6 +1235,9 @@ function GuardarDetalleDeValor(tcf_id) {
 	const ins_detalle = $modal.data("ins-detalle");
 	const rend_item = $modal.data("rend-item");
 
+	debeSeleccionarItemEditado = true;
+	rend_item_editado = rend_item;
+
 	var dataToSend = {
 		caja_nro_proceso: caja_nro_proceso_selected,
 		caja_nro_cierre: caja_nro_cierre_selected,
@@ -1090,55 +1260,16 @@ function GuardarDetalleDeValor(tcf_id) {
 			}, false, ["Aceptar"], "error!", null);
 		}
 		else {
-			//// Actualizar concepto_valor en la grilla
-			//const selectorFila = `tr.row-pedido[data-ins-id="${ins_id}"][data-rend-item="${rend_item}"]`;
-			//const $fila = $(selectorFila);
-
-			//if ($fila.length > 0) {
-			//	//1 Actualizar concepto_valor en la fila
-			//	$fila.find("td.col-valores").text(obj.concepto);
-			//}
-			//// 2) Actualizar importe editable
-			//const $inputImporte = $fila.find("td.editable-importe .input-importe");
-
-			//if ($inputImporte.length > 0) {
-
-			//	// Valor decimal real que viene del modal
-			//	const nuevoImporte = data.Importe;
-
-			//	// Formatear como lo muestra la grilla (ej: 1.234,56)
-			//	const importeFormateado = FormatearPrecio(nuevoImporte);
-
-			//	// Remover máscara ANTES de setear el valor
-			//	$inputImporte.inputmask("remove");
-
-			//	// Setear el valor formateado
-			//	$inputImporte.val(importeFormateado);
-
-			//	// Actualizar data-original
-			//	$inputImporte.data("original", nuevoImporte.toString());
-
-			//	// Volver a aplicar la máscara correctamente
-			//	//getMaskForMoneyType($inputImporte.selector);
-			//	getMaskForMoneyType($inputImporte);
-
-			//	// 🔥 3) ACTUALIZAR DIFERENCIA
-			//	const textoArqueo = $fila.find("td.col-num").eq(1).text().trim();
-			//	const importeArqueo = parseFloat($fila.find("td.col-num").eq(1).data("arqueo")) || 0;
-			//	//FormatearPrecio
-			//	//const arqueo = convertirImporteADecimal(textoArqueo);
-				
-			//	const arqueo = toDecimalSafe(textoArqueo);
-			//	const diferencia = nuevoImporte - importeArqueo;
-
-			//	const $celdaDif = $fila.find("td.col-num").eq(2);
-			//	$celdaDif.text(FormatearPrecio(diferencia));
-			//}
 			AbrirWaiting("Actualizando datos en tabla...");
 			PostGenHtml({}, obtenerDetalleDeRendDeCierreSeleccionadoDefaultUrl, function (html) {
 				CerrarWaiting();
 				$("#divVtasPVCtlRendDetalle").html(html);
 				InicializaEventosGrillaVtasPVCtlRendDetalle();
+
+				if (debeSeleccionarItemEditado === true) {
+					SeleccionarFilaEditadaRendDetalle();
+					debeSeleccionarItemEditado = false;
+				}
 			});
 			existe_edicion = true;
 			$("#modalEdicionDeValores").modal("hide");
