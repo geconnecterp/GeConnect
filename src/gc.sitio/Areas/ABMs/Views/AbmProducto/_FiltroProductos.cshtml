@@ -1,0 +1,77 @@
+@model QueryFilters
+@* Adaptación visual local de _filtroBase. Conservar IDs y nombres: son el contrato
+   con SiteGen, busquedas y abmproducto. No agregar una segunda lógica de filtros. *@
+<section class="filter-golden gc-filter" aria-labelledby="productos-filtro-titulo">
+    <div class="filter-golden-body">
+        <header class="gc-filter-heading">
+            <h2 id="productos-filtro-titulo"><i class="bx bx-filter-alt" aria-hidden="true"></i> Filtros de productos</h2>
+            <p>Activá los criterios que necesites y presioná Ver.</p>
+        </header>
+        <div class="gc-filter-grid">
+            <div class="gc-filter-field">
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" name="EstadoActivo" id="chkDescr" />
+                    <label class="form-check-label" for="chkDescr" id="lbChkDescr">Descripción</label>
+                </div>
+                <div class="input-group input-group-sm">
+                    <label class="input-group-text" for="Buscar" id="lbDescr">Descripción</label>
+                    <input type="text" class="form-control inputEditable" asp-for="Buscar" placeholder="Ingresar descripción a buscar" disabled />
+                </div>
+            </div>
+            <div class="gc-filter-field">
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" name="EstadoActivo" id="chkDesdeHasta" />
+                    <label class="form-check-label" for="chkDesdeHasta" id="lbChkDesdeHasta">Código de producto</label>
+                </div>
+                <div class="gc-filter-range">
+                    <div class="input-group input-group-sm">
+                        <label class="input-group-text" for="Id" id="lbIdDesde">Desde</label>
+                        <input type="text" class="form-control inputEditable" asp-for="Id" placeholder="Ingresar Id a buscar" disabled />
+                    </div>
+                    <div class="input-group input-group-sm">
+                        <label class="input-group-text" for="Id2" id="lbIdHasta">Hasta</label>
+                        <input type="text" class="form-control inputEditable" asp-for="Id2" placeholder="Opcional" disabled />
+                    </div>
+                </div>
+            </div>
+            <div class="gc-filter-field gc-filter-selection">
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" name="EstadoActivo" id="chkRel01" />
+                    <label class="form-check-label" for="chkRel01" id="lbRel01">Proveedor</label>
+                </div>
+                <div id="divLs01">
+                    <div class="input-group input-group-sm">
+                        <label class="input-group-text" for="Rel01">Nombre</label>
+                        <input type="text" class="form-control inputEditable" name="Rel01" id="Rel01" placeholder="Buscar proveedor" disabled />
+                        @Html.Hidden("Rel01Item")
+                    </div>
+                </div>
+                <label class="gc-filter-list-label" for="Rel01List">Proveedores seleccionados</label>
+                @Html.ListBox("Rel01List", null, new { @class = "form-control", @disabled = "disabled", aria_describedby = "productos-proveedores-ayuda" })
+                <small id="productos-proveedores-ayuda" class="gc-filter-help">Seleccioná una sugerencia para agregarla. Doble clic en la lista para quitarla.</small>
+            </div>
+            <div class="gc-filter-field gc-filter-selection">
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" name="EstadoActivo" id="chkRel02" />
+                    <label class="form-check-label" for="chkRel02" id="lbRel02">Rubro</label>
+                </div>
+                <div id="divLs02">
+                    <div class="input-group input-group-sm">
+                        <label class="input-group-text" for="Rel02" id="lbNombreRel03">Rubro</label>
+                        @Html.DropDownList("Rel02", null, "Seleccionar...", new { @class = "form-control", @disabled = "disabled" })
+                        @Html.Hidden("Rel02Item")
+                    </div>
+                </div>
+                <label class="gc-filter-list-label" for="Rel02List">Rubros seleccionados</label>
+                @Html.ListBox("Rel02List", null, new { @class = "form-control", @disabled = "disabled", aria_describedby = "productos-rubros-ayuda" })
+                <small id="productos-rubros-ayuda" class="gc-filter-help">Seleccioná un rubro para agregarlo. Doble clic en la lista para quitarlo.</small>
+            </div>
+        </div>
+    </div>
+    <footer class="filter-golden-footer">
+        <div class="gc-filter-actions">
+            <button type="button" id="btnCancel" class="btn btn-danger"><i class="bx bx-x-circle" aria-hidden="true"></i> Inicializar</button>
+            <button type="button" id="btnBuscar" class="btn btn-success"><i class="bx bx-search" aria-hidden="true"></i> Ver</button>
+        </div>
+    </footer>
+</section>

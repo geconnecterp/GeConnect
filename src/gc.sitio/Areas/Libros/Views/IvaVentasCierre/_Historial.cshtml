@@ -1,0 +1,33 @@
+@model IvaVentasCierreEstado
+@{ var titulos = new[] { "No gravado", "Exento", "Gravado", "IVA", "Imp. internos", "Percep. provinciales (IB)", "Percep. nacionales", "Percep. municipales", "Total" }; }
+<section class="ivc-panel" data-proximo="@Model.ProximoPeriodo" data-puede-cerrar="@(Model.PuedeCerrar ? "true" : "false")">
+    <header class="ivc-heading">
+        <div><h2>Historial de libros cerrados</h2><p>@Model.Libros.Count registros · Más recientes primero · Importes en pesos</p></div>
+        <span class="ivc-next">Próximo cierre: <strong>@IvaVentasCierrePeriodo.Texto(Model.ProximoPeriodo)</strong></span>
+    </header>
+    @if (!Model.PuedeCerrar) { <p class="ivc-central-note"><i class="bx bx-info-circle" aria-hidden="true"></i> El cierre se habilita al ingresar desde la sucursal Central (0000). Podés consultar el historial y descargar sus archivos.</p> }
+    @if (Model.Libros.Count == 0)
+    {
+        <p class="ivc-empty">Todavía no hay cierres registrados. El próximo cierre corresponde al período indicado arriba.</p>
+    }
+    else
+    {
+        <div class="ivc-scroll" role="region" tabindex="0" aria-label="Historial de cierres con importes completos">
+            <table class="ivc-table">
+                <caption class="visually-hidden">Últimos libros IVA Ventas cerrados. Seleccioná un período para descargar RG 3685 o Duplicados Electrónicos.</caption>
+                <thead><tr><th scope="col">Período</th>@foreach (var titulo in titulos) { <th scope="col">@titulo</th> }<th scope="col">Fecha de cierre</th></tr></thead>
+                <tbody>
+                    @foreach (var fila in Model.Libros)
+                    {
+                        <tr data-clave="@(fila.tipo_registro + ":" + fila.periodo)" data-periodo="@fila.periodo">
+                            <th scope="row"><button type="button" class="ivc-select" aria-pressed="false" aria-label="Seleccionar período @IvaVentasCierrePeriodo.Texto(fila.periodo)">@IvaVentasCierrePeriodo.Texto(fila.periodo)</button></th>
+                            @foreach (var importe in fila.Importes) { <td class="@(importe < 0 ? "ivc-negative" : "")">@IvaVentasCierreFila.Numero(importe)</td> }
+                            <td class="ivc-date">@fila.fecha_cierre.ToString("dd/MM/yyyy HH:mm")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+    <footer id="ivc-seleccion" class="ivc-selection" aria-live="polite">Seleccioná un período cerrado de la grilla para descargar sus archivos.</footer>
+</section>

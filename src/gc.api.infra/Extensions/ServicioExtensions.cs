@@ -42,6 +42,10 @@ namespace gc.api.infra.Extensions
         {
             services.AddScoped<gc.api.core.Contratos.Servicios.Libros.IIvaVentasDatos, gc.api.infra.Datos.Implementacion.IvaVentasDatos>();
             services.AddScoped<gc.api.core.Servicios.Libros.IvaVentasServicio>();
+            services.AddScoped<gc.api.core.Contratos.Servicios.Libros.IIvaVentasResumenDatos, gc.api.infra.Datos.Implementacion.IvaVentasResumenDatos>();
+            services.AddScoped<gc.api.core.Servicios.Libros.IvaVentasResumenServicio>();
+            services.AddScoped<IIvaVentasCierreDatos, IvaVentasCierreDatos>();
+            services.AddScoped<IvaVentasCierreServicio>();
             //services.AddTransient<IConfigServicio, ConfigServicio>();
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 
