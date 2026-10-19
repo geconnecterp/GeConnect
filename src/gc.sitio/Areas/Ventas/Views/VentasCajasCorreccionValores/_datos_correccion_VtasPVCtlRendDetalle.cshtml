@@ -49,14 +49,6 @@
 				height: 24px !important;
 			}
 
-				/* Span normalizado */
-				/* #tbVtasPVCtlRendDetalle td span {
-					display: inline-block;
-					height: 26px;
-					line-height: 24px;
-					padding: 2px;
-				} */
-
 			/* Input editable */
 			#tbVtasPVCtlRendDetalle .input-importe {
 				height: 24px !important;
@@ -96,10 +88,6 @@
 				width: 8%;
 				max-width: 8%;
 				white-space: nowrap;
-				/* padding-left: 2px;
-				padding-right: 2px;
-				padding-top: 2px;
-				padding-bottom: 2px; */
 			}
 
 			#tbVtasPVCtlRendDetalle .btnEditarValor {
@@ -119,6 +107,27 @@
 			#tbVtasPVCtlRendDetalle th.col-num.diferencia {
 				padding-right: 10px !important;
 			}
+
+	.fuente-negrita {
+		font-weight: bold !important;
+	}
+	/* Diferencia positiva → azul */
+	#tbVtasPVCtlRendDetalle td.dif-positiva span {
+		color: #007bff !important; /* azul bootstrap */
+		font-weight: bold !important;
+	}
+
+	/* Diferencia negativa → rojo */
+	#tbVtasPVCtlRendDetalle td.dif-negativa span {
+		color: #dc3545 !important; /* rojo bootstrap */
+		font-weight: bold !important;
+	}
+
+	/* Diferencia cero → negro */
+	#tbVtasPVCtlRendDetalle td.dif-cero span {
+		color: #000 !important;
+		font-weight: bold !important;
+	}
 </style>
 
 <div class="table-responsive table-wrapper-500">
@@ -183,7 +192,8 @@
 							<span>@GridHelper.FormatearPrecio(item.rend_importe_arq ?? 0, TipoPrecio.Venta)</span>
 						</td>
 
-						<td class="col-num diferencia text-end"
+						<td class="col-num diferencia text-end fuente-negrita 
+									@(dif > 0 ? "dif-positiva" : (dif < 0 ? "dif-negativa" : "dif-cero"))"
 							data-diferencia="@((dif ?? 0).ToString(CultureInfo.InvariantCulture))">
 							<span>@GridHelper.FormatearPrecio(dif ?? 0, TipoPrecio.Venta)</span>
 						</td>

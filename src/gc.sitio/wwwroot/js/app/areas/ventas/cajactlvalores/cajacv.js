@@ -521,27 +521,27 @@ function ConfirmarCtlArqueo() {
 	};
 	GuardarSeleccionAlConfirmarArqueo();
 	AbrirWaiting("Confirmando arqueo...");
-	setTimeout(() => {
-		CerrarWaiting();
-		CargarGrillaVtasPVCtlCierres();
-	}, 2000);
-	//TODO: Descomentar luego de probar
-	//PostGen(data, confirmarCtlArqueoUrl, function (obj) {
+	//setTimeout(() => {
 	//	CerrarWaiting();
-	//	if (obj.error === true || obj.warn === true) {
-	//		AbrirMensaje("ATENCIÓN", obj.msg, function () {
-	//			$("#msjModal").modal("hide");
-	//			return true;
-	//		}, false, ["Aceptar"], "error!", null);
-	//	}
-	//	else {
-	//		AbrirMensaje("ATENCIÓN", "Se ha confirmado el Arqueo de forma exitosa.", function () {
-	//			$("#msjModal").modal("hide");
-	//			CargarGrillaVtasPVCtlCierres();
-	//			return true;
-	//		}, false, ["Aceptar"], "succ!", null);
-	//	}
-	//});
+	//	CargarGrillaVtasPVCtlCierres();
+	//}, 2000);
+	//TODO: Descomentar o comentar para probar logica
+	PostGen(data, confirmarCtlArqueoUrl, function (obj) {
+		CerrarWaiting();
+		if (obj.error === true || obj.warn === true) {
+			AbrirMensaje("ATENCIÓN", obj.msg, function () {
+				$("#msjModal").modal("hide");
+				return true;
+			}, false, ["Aceptar"], "error!", null);
+		}
+		else {
+			AbrirMensaje("ATENCIÓN", "Se ha confirmado el Arqueo de forma exitosa.", function () {
+				$("#msjModal").modal("hide");
+				CargarGrillaVtasPVCtlCierres();
+				return true;
+			}, false, ["Aceptar"], "succ!", null);
+		}
+	});
 }
 
 function EvaluarAnularCtlArqueo() {
