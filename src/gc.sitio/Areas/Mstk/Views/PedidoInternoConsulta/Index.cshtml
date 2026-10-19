@@ -5,16 +5,17 @@
 @section styles {
 	<link rel="stylesheet" href="~/css/simplePagination.css" />
 	<link rel="stylesheet" href="~/lib/jstree/themes/default/style.min.css" />
+	<link rel="stylesheet" href="~/css/modules/pedido-interno-consulta.css" asp-append-version="true" />
 }
-<div class="container mt-2 w-75">
+<div class="container mt-2 pedido-interno-consulta">
 	<div class="row mb-2">
-		<div class="col-md-6">
-			<div class="d-flex justify-content-sm-around">
-				<button id="btnFiltro" class="btn btn-primary btn-sm mt-1 me-1" type="button" data-bs-toggle="collapse" data-bs-target="#divFiltro" aria-expanded="true" aria-controls="divFiltro">
+		<div class="col-12">
+			<div class="d-flex flex-wrap align-items-center gap-2 pi-filter-toolbar">
+				<button id="btnFiltro" class="btn btn-primary btn-sm mt-1 me-1" type="button" data-bs-toggle="collapse" data-bs-target="#divFiltro" aria-expanded="true" aria-controls="divFiltro" title="Mostrar u ocultar filtros" aria-label="Mostrar u ocultar filtros">
 					<i class="bx bx-filter bx-xs"></i>
 				</button>
 
-				<button class="btn btn-primary btn-sm mt-1 me-1" type="button" id="btnDetalle" data-bs-toggle="collapse" data-bs-target="#divDetalle" aria-expanded="true" aria-controls="divDetalle" hidden>
+				<button class="btn btn-primary btn-sm mt-1 me-1" type="button" id="btnDetalle" data-bs-toggle="collapse" data-bs-target="#divDetalle" aria-expanded="true" aria-controls="divDetalle" title="Detalle" aria-label="Detalle" hidden>
 					<i class="bx bx-caret-down"></i>
 				</button>
 
