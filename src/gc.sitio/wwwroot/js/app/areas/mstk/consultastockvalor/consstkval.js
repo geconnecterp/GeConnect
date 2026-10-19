@@ -5,12 +5,17 @@
 	});
 
 	InicializarCamposEnFiltros(false);
-
+	$(document).off("click", "#btnImprimir");
 	$(document).on("click", "#btnImprimir", ControlaImprimirSelected);
+	$(document).off("click", "#btnCancel");
 	$(document).on("click", "#btnCancel", ControlaCancelar);
+	$(document).off("change", "#listaSucursales");
 	$(document).on("change", "#listaSucursales", ControlalistaSucursalesSelected);
+	$(document).off("change", "#listaDepositos");
 	$(document).on("change", "#listaDepositos", ControlalistaDepositosSelected);
+	$(document).off("change", "#listaRubros");
 	$(document).on("change", "#listaRubros", ControlalistaRubroSelected);
+	$(document).off("change", "#listaFamilia");
 	$(document).on("change", "#listaFamilia", ControlalistaFamiliaSelected);
 
 	$("#SucursalesList").on("dblclick", 'option', function () { $(this).remove(); })

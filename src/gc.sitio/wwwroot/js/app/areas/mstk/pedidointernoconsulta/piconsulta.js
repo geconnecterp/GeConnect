@@ -11,7 +11,11 @@ $(function () {
 	InicializarCamposEnFiltros(false);
 
 	$("#FechaDesde, #FechaHasta").on("blur", ValidarFechasClick);
+	$(document).off("click", "#btnCancel");
+	$(document).on("click", "#btnCancel", ControlaCancelar);
+	$(document).off("change", "#listaSucursales");
 	$(document).on("change", "#listaSucursales", ControlalistaSucursalesSelected);
+	$(document).off("change", "#listaEstados");
 	$(document).on("change", "#listaEstados", ControlalistaEstadosSelected);
 
 	$("#SucursalesList").on("dblclick", 'option', function () { $(this).remove(); })
@@ -30,19 +34,21 @@ $(function () {
 		}
 	});
 
-	$("#btnFiltro").on("click", function () {
-		if ($("#divFiltros").hasClass("show")) {
-			$("#divFiltros").collapse("hide");
+	$("#divFiltro").on("shown.bs.collapse hidden.bs.collapse", function () {
+		const abierto = $(this).hasClass("show");
+
+		if (abierto) {
+			$("#divDetalle").collapse("hide");
+		} else {
 			$("#divDetalle").collapse("show");
 		}
-		else {
-			$("#divFiltros").collapse("show");
-			$("#divDetalle").collapse("hide");
-		}
 	});
-
 	funcCallBack = BuscarPedidosInternos;
 });
+
+function ControlaCancelar() {
+	InicializarCamposEnFiltros(true);
+}
 
 function ControlalistaSucursalesSelected() {
 	var item = $("#listaSucursales").val();
@@ -71,7 +77,7 @@ function BuscarPedidosInternos(pag = 1) {
 
 		PostGenHtml({}, urlInitView, function (html) {
 			$("#divDetalle").html(html).collapse("show");
-			$("#divFiltros").collapse("hide");
+			$("#divFiltro").collapse("hide");
 			// Actualizar filtros aplicados después de renderizar la pantalla principal
 			try { MostrarFiltrosAplicados(); } catch (e) { console.warn('MostrarFiltrosAplicados no disponible:', e); }
 			CerrarWaiting();
@@ -618,6 +624,16 @@ function cargaPaginacion() {
 function InicializarCamposEnFiltros(vieneDeCancelar) {
 	if (!vieneDeCancelar) {
 	}
+	// Setear fechas por defecto
+	const hoy = new Date();
+	const hace30dias = new Date();
+	hace30dias.setDate(hoy.getDate() - 30);
+
+	// Formato YYYY-MM-DD para inputs type="date"
+	const formato = d => d.toISOString().split("T")[0];
+
+	$("#FechaDesde").val(formato(hace30dias));
+	$("#FechaHasta").val(formato(hoy));
 
 	$("#chkDesdeHasta").prop('checked', true);
 	$("#chkDesdeHasta").trigger("change");
@@ -636,14 +652,16 @@ function InicializarCamposEnFiltros(vieneDeCancelar) {
 	$("#listaSucursales").val("");
 	$("#listaEstados").val("");
 
-	$("#divFiltros").collapse("show");
+	$("#listaSucursales").prop('disabled', true);
+	$("#listaEstados").prop('disabled', true);
+	$("#SucursalesList").prop('disabled', true);
+	$("#EstadosList").prop('disabled', true);
+
+	$("#divFiltro").collapse("show");
 	$("#divDetalle").collapse("hide");
 
 	$("#SucursalesList").empty();
 	$("#EstadosList").empty();
-
-	$("#listaSucursales").val("");
-	$("#listaEstados").val("");
 
 	if (!vieneDeCancelar) {
 		HandlerCheckBox();

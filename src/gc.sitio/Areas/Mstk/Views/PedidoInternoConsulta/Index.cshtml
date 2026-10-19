@@ -15,7 +15,7 @@
 					<i class="bx bx-filter bx-xs"></i>
 				</button>
 
-				<button class="btn btn-primary btn-sm mt-1 me-1" type="button" id="btnDetalle" data-bs-toggle="collapse" data-bs-target="#divDetalle" aria-expanded="true" aria-controls="divDetalle" title="Detalle" aria-label="Detalle" hidden>
+				<button class="btn btn-primary btn-sm mt-1 me-1" type="button" id="btnDetalle" data-bs-toggle="collapse" data-bs-target="#divDetalle" aria-expanded="true" aria-controls="divDetalle" title="Detalle" aria-label="Detalle">
 					<i class="bx bx-caret-down"></i>
 				</button>
 
@@ -25,11 +25,11 @@
 			</div>
 		</div>
 	</div>
-	<div class="collapse" id="divFiltros">
-		<div class="row justify-content-center">
+	<div class="collapse" id="divFiltro">
+		@* <div class="row justify-content-center"> *@
 			<partial name="_filtros" model="Model" />
 			@Html.Hidden("pagEstado", false);
-		</div>
+		@* </div> *@
 	</div>
 	<div class="collapse" id="divDetalle"></div>
 </div>
