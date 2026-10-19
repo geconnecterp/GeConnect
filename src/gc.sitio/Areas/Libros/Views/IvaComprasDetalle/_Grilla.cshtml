@@ -1,0 +1,38 @@
+@using gc.infraestructura.Dtos.Libros
+@using System.Globalization
+@model IvaComprasPagina
+@{
+    var cultura = CultureInfo.GetCultureInfo("es-AR");
+    var columnas = IvaComprasColumnas.Todas.Select(c => (c.Titulo, Propiedad: typeof(IvaComprasDetalleDto).GetProperty(c.Campo)!)).ToArray();
+    var inicio = Model.Total == 0 ? 0 : ((long)Model.Pagina - 1) * Model.Registros + 1;
+    var fin = inicio == 0 ? 0 : inicio + Model.Filas.Count - 1;
+}
+<section class="iva-panel iva-datos" data-page="@Model.Pagina" data-total="@Model.Total">
+    <header class="iva-grid-heading">
+        <div class="iva-grid-context"><h2>Detalle de comprobantes</h2><p class="iva-aplicados">@ViewBag.Filtros</p></div>
+        <span class="iva-count">@inicio.ToString("N0", cultura)–@fin.ToString("N0", cultura) de @Model.Total.ToString("N0", cultura) registros</span>
+    </header>
+    @if (Model.Filas.Count == 0) { <p class="iva-empty">No se encontraron comprobantes con estos filtros.</p> }
+    else
+    {
+        <div class="iva-table-wrap" tabindex="0" role="region" aria-label="Comprobantes. Desplace horizontalmente para ver todos los conceptos.">
+            <table class="iva-table"><thead><tr>
+                @foreach (var col in columnas) { <th scope="col">@col.Titulo</th> }
+            </tr></thead><tbody>
+                @foreach (var fila in Model.Filas)
+                {
+                    <tr>
+                    @foreach (var col in columnas)
+                    {
+                        var valor = col.Propiedad.GetValue(fila);
+                        var esImporte = col.Propiedad.PropertyType == typeof(decimal?);
+                        var texto = valor switch { decimal n => n.ToString("N2", cultura), DateTime d => d.ToString("dd/MM/yyyy"), null => "—", _ => valor.ToString() };
+                        <td class="@(esImporte ? "iva-importe" : "iva-texto")" title="@texto">@texto</td>
+                    }
+                    </tr>
+                }
+            </tbody></table>
+        </div>
+        <partial name="~/Views/Shared/Components/_PaginadorNumerado.cshtml" model='new gc.sitio.Models.Components.PaginadorNumerado(Model.Pagina, Model.Paginas, "Páginas de comprobantes")' />
+    }
+</section>

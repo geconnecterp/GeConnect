@@ -1,0 +1,16 @@
+/* Complemento local de gc-filter: solo presentación, sin controlar estados. */
+.pedido-interno-consulta { min-width: 0; }
+.pedido-interno-consulta .pi-filter-toolbar > .btn {
+    min-width: 40px;
+    min-height: 36px;
+    margin: 0 !important;
+}
+.pedido-interno-consulta .pi-filter-dates { grid-column: 1 / -1; }
+.pedido-interno-consulta .pi-filter-dates .gc-filter-range { max-width: 40rem; }
+.pedido-interno-consulta .pi-filter .form-control { font-weight: 500; }
+.pedido-interno-consulta .pi-filter input[type="date"] { min-width: 0; }
+.pedido-interno-consulta .pi-filter .gc-filter-actions > .btn {
+    height: 40px;
+    padding: .5rem .75rem;
+}
+.pedido-interno-consulta .pi-filter .gc-filter-actions .bx { font-size: 1.15rem !important; }
