@@ -29,6 +29,8 @@ namespace gc.api.report.Controllers
         [HttpPost("generate")]
         public async Task<IActionResult> GenerateReport([FromBody] ReporteSolicitudDto request)
         {
+            if ((int)request.Reporte == gc.api.core.Servicios.Reportes.IvaComprasResumenReporte.Id)
+                return await GenerarResumenComprasIva(request, "P");
             if ((int)request.Reporte == gc.api.core.Servicios.Reportes.IvaVentasResumenReporte.Id)
                 return await GenerarResumenIva(request, "P");
             _logger.LogInformation("Generating report with ID: {ReportId}", request.Reporte);
@@ -56,6 +58,8 @@ namespace gc.api.report.Controllers
         [HttpPost("GenFileFormat")]
         public async Task<IActionResult> GeneraReporteFormato([FromBody] ReporteSolicitudDto request)
         {
+            if ((int)request.Reporte == gc.api.core.Servicios.Reportes.IvaComprasResumenReporte.Id)
+                return await GenerarResumenComprasIva(request, request.Formato);
             if ((int)request.Reporte == gc.api.core.Servicios.Reportes.IvaVentasResumenReporte.Id)
                 return await GenerarResumenIva(request, request.Formato);
             _logger.LogInformation("Generating report with ID: {ReportId}", request.Reporte);
@@ -97,6 +101,39 @@ namespace gc.api.report.Controllers
         // Adaptador exclusivo del nuevo reporte: conserva el contrato del gestor y
         // autoriza también llamadas directas a la API. Los reportes anteriores no cambian.
         private static readonly SemaphoreSlim ResumenesIva = new(2, 2);
+        private async Task<IActionResult> GenerarResumenComprasIva(ReporteSolicitudDto request, string? formato)
+        {
+            if (User.Identity?.IsAuthenticated != true) return Unauthorized();
+            var adquirido = false;
+            try
+            {
+                var servicio = HttpContext.RequestServices.GetRequiredService<gc.api.core.Servicios.Libros.IvaComprasResumenServicio>();
+                var p = request.Parametros ?? new();
+                if (!servicio.TieneAcceso(User, p.GetValueOrDefault("Perfil", ""), p.GetValueOrDefault("Menu", ""))) return Forbid();
+                if (formato != "P") return BadRequest(new { mensaje = "Utilice Imprimir para PDF y Exportar Excel desde el módulo. TXT no disponible." });
+                if (!int.TryParse(p.GetValueOrDefault("Periodo"), out var anio) || !int.TryParse(p.GetValueOrDefault("Mes"), out var mes))
+                    return BadRequest(new { mensaje = "Seleccione año y mes válidos." });
+                var filtro = new gc.infraestructura.Dtos.Libros.IvaComprasResumenFiltro { Periodo = anio, Mes = mes };
+                filtro.Validar();
+                adquirido = await ResumenesIva.WaitAsync(0, HttpContext.RequestAborted);
+                if (!adquirido) return StatusCode(429, new { mensaje = "Hay otros reportes en curso. Intente nuevamente." });
+                var libro = await servicio.Consultar(filtro, HttpContext.RequestAborted);
+                var pdf = gc.api.core.Servicios.Reportes.IvaComprasResumenReporte.Pdf(libro, _empresaGeco,
+                    Path.Combine(_env.ContentRootPath, "img", _empresaGeco.Logo), HttpContext.RequestAborted);
+                Response.Headers.CacheControl = "no-store, private";
+                Response.Headers["X-Content-Type-Options"] = "nosniff";
+                return Ok(new ApiResponse<RespuestaReportDto>(new RespuestaReportDto { Base64 = Convert.ToBase64String(pdf), resultado = 0,
+                    resultado_msj = $"Libro_IVA_Compras_Resumen_{filtro.PeriodoTexto}.pdf" }));
+            }
+            catch (ArgumentException ex) { return BadRequest(new { mensaje = ex.Message }); }
+            catch (OperationCanceledException) when (HttpContext.RequestAborted.IsCancellationRequested) { throw; }
+            catch (Exception ex)
+            {
+                _logger.LogError("PDF IVA compras resumen fallido. Tipo {Tipo}; referencia {Ref}", ex.GetType().Name, HttpContext.TraceIdentifier);
+                return StatusCode(503, new { mensaje = "No se pudo generar el resumen completo. No se entregó un PDF parcial." });
+            }
+            finally { if (adquirido) ResumenesIva.Release(); }
+        }
         private async Task<IActionResult> GenerarResumenIva(ReporteSolicitudDto request, string? formato)
         {
             if (User.Identity?.IsAuthenticated != true) return Unauthorized();
