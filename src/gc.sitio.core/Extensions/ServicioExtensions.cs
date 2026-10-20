@@ -30,7 +30,10 @@ namespace gc.sitio.core.Extensions
             services.AddScoped<gc.sitio.core.Servicios.Implementacion.Libros.IvaVentasCliente>();
             services.AddScoped<gc.sitio.core.Servicios.Implementacion.Libros.IvaComprasCliente>();
             services.AddScoped<IvaVentasResumenCliente>();
+            services.AddScoped<IvaComprasResumenCliente>();
+            services.PostConfigure<gc.infraestructura.EntidadesComunes.Options.DocsManager>(IvaComprasResumenDocumentos.Configurar);
             services.AddScoped<IvaVentasCierreCliente>();
+            services.AddScoped<IvaComprasCierreCliente>();
             services.PostConfigure<gc.infraestructura.EntidadesComunes.Options.DocsManager>(IvaVentasResumenDocumentos.Configurar);
             services.AddSingleton<ILoggerHelper, LoggerHelper>();
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();

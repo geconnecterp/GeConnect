@@ -110,5 +110,6 @@ namespace gc.infraestructura.Enumeraciones
 		R102_Remito_No_Fiscal = 102,
 		R103_Planilla_Elaboracion_Y_Fraccion = 103,
         R104_LibroIvaVentasResumen = 104,
+        R105_LibroIvaComprasResumen = 105,
 	}
 }

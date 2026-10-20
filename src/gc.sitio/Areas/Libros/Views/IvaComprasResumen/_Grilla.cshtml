@@ -1,0 +1,41 @@
+@using gc.infraestructura.Dtos.Libros
+@model IvaComprasResumenLibro
+<section class="ivr-panel" data-count="@Model.Cantidad">
+    <header class="ivr-heading"><h2>Resumen contable e impositivo</h2><span>Período @Model.Filtro.PeriodoTexto · Importes en pesos</span>
+        @if (Model.TodoCero) { <span>Conceptos en cero; esto no confirma ausencia de comprobantes.</span> }
+    </header>
+    <div class="icr-cuadros">
+    @foreach (var bloque in Model.Bloques)
+    {
+        <section class="icr-cuadro icr-control" aria-label="Control @bloque.Nombre">
+            <h3>Control contable · @bloque.Nombre</h3>
+            <table><colgroup><col class="icr-concepto" /><col class="icr-numero" /><col class="icr-numero" /></colgroup>
+                <thead><tr><th scope="col">Concepto</th><th scope="col">Contabilidad</th><th scope="col">Libro IVA</th></tr></thead>
+                <tbody>
+                @foreach (var fila in bloque.Control)
+                {
+                    <tr><th scope="row">@fila.Concepto</th><td>@IvaComprasResumenLibro.Numero(fila.importe)</td><td>@IvaComprasResumenLibro.Numero(fila.importe_iva)</td></tr>
+                }
+                @if (bloque.Control.Count == 0) { <tr><td colspan="3" class="icr-vacio">El SP no devolvió filas de control.</td></tr> }
+                </tbody>
+                <tfoot><tr><th scope="row">Total</th><td>@IvaComprasResumenLibro.Numero(bloque.TotalContabilidad)</td><td>@IvaComprasResumenLibro.Numero(bloque.TotalLibro)</td></tr></tfoot>
+            </table>
+            @if (bloque.Diferencia != 0) { <p class="icr-diferencia">Dif.: <strong>@IvaComprasResumenLibro.Numero(bloque.Diferencia)</strong><span>Contabilidad − Libro IVA</span></p> }
+        </section>
+        <section class="icr-cuadro icr-resumen" aria-label="Resumen @bloque.Nombre">
+            <h3>Resumen impositivo · @bloque.Nombre</h3>
+            <table><colgroup><col /><col class="icr-importe" /></colgroup>
+                <thead><tr><th scope="col">Concepto</th><th scope="col">Importe</th></tr></thead>
+                <tbody>
+                @foreach (var fila in bloque.Resumen)
+                {
+                    <tr><th scope="row">@fila.tipo_desc</th><td>@IvaComprasResumenLibro.Numero(fila.importe)</td></tr>
+                }
+                @if (bloque.Resumen.Count == 0) { <tr><td colspan="2" class="icr-vacio">El SP no devolvió conceptos.</td></tr> }
+                </tbody>
+                <tfoot><tr><th scope="row">Total</th><td>@IvaComprasResumenLibro.Numero(bloque.TotalResumen)</td></tr></tfoot>
+            </table>
+        </section>
+    }
+    </div>
+</section>

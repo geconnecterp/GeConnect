@@ -1,0 +1,40 @@
+@model IvaComprasCierreEstado
+@{ var titulos = new[] { "No gravado", "Exento", "Gravado", "IVA", "Imp. internos", "Percep. provinciales (IB)", "Percep. nacionales", "Percep. municipales", "Otros no gravados", "Monotributistas", "Total" }; }
+<section class="icc-panel" data-proximo="@Model.ProximoPeriodo" data-puede-cerrar="@(Model.PuedeCerrar ? "true" : "false")">
+    <header class="icc-heading">
+        <div><h2>Historial de libros IVA Compras cerrados</h2><p>@Model.Libros.Count registros devueltos · Hasta 72 registros más recientes · Importes en pesos</p></div>
+        <span class="icc-next">Próximo cierre: <strong>@IvaComprasCierrePeriodo.Texto(Model.ProximoPeriodo)</strong></span>
+    </header>
+    @if (!Model.PuedeCerrar) { <p class="icc-central-note"><i class="bx bx-info-circle" aria-hidden="true"></i> El cierre se habilita al ingresar desde la sucursal Central (0000). Podés consultar el historial y descargar sus archivos.</p> }
+    @if (Model.Libros.Count == 0)
+    {
+        <p class="icc-empty">Todavía no hay cierres registrados. El próximo cierre corresponde al período informado por el servidor.</p>
+    }
+    else
+    {
+        <div class="icc-scroll" role="region" tabindex="0" aria-label="Historial de cierres con importes completos; desplazamiento horizontal para ver todas las columnas">
+            <table class="icc-table">
+                <caption class="visually-hidden">Hasta 72 registros de IVA Compras cerrados. Seleccioná una fila para descargar RG 3685 de su período.</caption>
+                <thead><tr><th scope="col">Período / tipo</th>@foreach (var titulo in titulos) { <th scope="col">@titulo</th> }<th scope="col">Comprobantes</th><th scope="col">CUIT</th></tr></thead>
+                <tbody>
+                    @foreach (var fila in Model.Libros)
+                    {
+                        var importes = fila.Importes;
+                        <tr data-clave="@(fila.tipo_registro + ":" + fila.periodo)" data-periodo="@fila.periodo" data-tipo="@fila.tipo_registro">
+                            <th scope="row"><button type="button" class="icc-select" aria-pressed="false" aria-label="Seleccionar período @IvaComprasCierrePeriodo.Texto(fila.periodo), tipo @fila.tipo_registro">@IvaComprasCierrePeriodo.Texto(fila.periodo)<span class="icc-type">Tipo @fila.tipo_registro</span></button></th>
+                            @for (var i = 0; i < importes.Length; i++)
+                            {
+                                var importe = importes[i];
+                                <td class="@(importe < 0 ? "icc-negative " : "")@(i == importes.Length - 1 ? "icc-total" : "")">@IvaComprasCierreFila.Numero(importe)</td>
+                            }
+                            <td>@(fila.cant_registros?.ToString("N0", System.Globalization.CultureInfo.GetCultureInfo("es-AR")) ?? "—")</td>
+                            <td>@(string.IsNullOrWhiteSpace(fila.cuit) ? "—" : fila.cuit)</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+    <footer id="icc-seleccion" class="icc-selection" aria-live="polite">Seleccioná un registro cerrado para descargar RG 3685 de su período.</footer>
+</section>
+
