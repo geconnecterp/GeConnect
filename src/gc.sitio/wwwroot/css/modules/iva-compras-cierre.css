@@ -1,0 +1,47 @@
+#iva-compras-cierre{--icc-gold:#926e0b;--icc-line:#e6d8ab;--icc-soft:#fff7df;--icc-ink:#292822;min-width:0;padding-top:.75rem;color:var(--icc-ink)}
+#iva-compras-cierre [hidden]{display:none!important}
+#iva-compras-cierre .icc-toolbar,#iva-compras-cierre .icc-main-actions{display:flex;align-items:center;flex-wrap:wrap;gap:.5rem}
+#iva-compras-cierre .icc-toolbar{margin-bottom:.75rem}
+#iva-compras-cierre .icc-main-actions{margin-left:auto}
+#iva-compras-cierre .icc-toolbar .btn{min-height:36px;display:inline-flex;align-items:center;justify-content:center;gap:.4rem}
+#iva-compras-cierre .icc-toolbar .btn-warning,#iva-compras-cierre .modal-footer .btn-warning{background:#efc847;border-color:#d4a80d;color:#292822;font-weight:600}
+#iva-compras-cierre #icc-mensaje:empty{display:none}
+#iva-compras-cierre #icc-mensaje{margin:.5rem 0;padding:.6rem .8rem}
+#iva-compras-cierre #icc-contenido{position:relative;height:calc(100dvh - 250px);min-height:290px;min-width:0}
+#iva-compras-cierre #icc-resultado{height:100%;min-width:0}
+#iva-compras-cierre .icc-panel{height:100%;display:flex;flex-direction:column;min-width:0;min-height:0;border:1px solid var(--icc-line);background:#fff;border-radius:.65rem;padding:.75rem}
+#iva-compras-cierre .icc-heading{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.5rem 1rem;margin-bottom:.65rem}
+#iva-compras-cierre .icc-heading h2{font-size:1rem;font-weight:700;margin:0}
+#iva-compras-cierre .icc-heading p{font-size:.8rem;color:#626159;margin:.2rem 0 0}
+#iva-compras-cierre .icc-next{font-size:.84rem;padding:.4rem .65rem;border:1px solid var(--icc-line);border-radius:.4rem;background:var(--icc-soft)}
+#iva-compras-cierre .icc-scroll{flex:1 1 auto;min-height:0;min-width:0;max-width:100%;overflow:auto;overscroll-behavior:contain;border:1px solid #e7e2d4}
+#iva-compras-cierre .icc-table{border-collapse:separate;border-spacing:0;width:max-content;min-width:100%;font-size:.84rem}
+#iva-compras-cierre .icc-table th,#iva-compras-cierre .icc-table td{padding:.5rem .7rem;border-bottom:1px solid #e9e6dd}
+#iva-compras-cierre .icc-table thead th{position:sticky;top:0;z-index:3;background:var(--icc-gold);color:#fff;text-align:right;min-width:185px;line-height:1.35}
+#iva-compras-cierre .icc-table thead th:first-child{left:0;z-index:4;min-width:112px;text-align:left}
+#iva-compras-cierre .icc-table tbody th{position:sticky;left:0;z-index:1;background:#fff;text-align:left;white-space:nowrap}
+#iva-compras-cierre .icc-table tbody td{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+#iva-compras-cierre .icc-table .icc-total{font-weight:700}
+#iva-compras-cierre .icc-table .icc-date{font-size:.8rem;min-width:160px;color:#626159}
+#iva-compras-cierre .icc-table tbody tr:nth-child(even)>*{background:#fffcf4}
+#iva-compras-cierre .icc-table tbody tr:hover>*{background:#fff7df;cursor:pointer}
+#iva-compras-cierre .icc-table tbody tr.is-selected>*{background:#fff0b5;border-bottom-color:#d4a80d}
+#iva-compras-cierre .icc-table tbody tr.is-selected th{box-shadow:inset 4px 0 #926e0b}
+#iva-compras-cierre .icc-select{border:0;background:transparent;color:inherit;font:inherit;font-weight:600;padding:.2rem 0;cursor:pointer}
+#iva-compras-cierre .icc-type{display:block;font-size:.75rem;font-weight:400;color:#626159}
+#iva-compras-cierre .icc-negative{color:#a12525}
+#iva-compras-cierre .icc-selection,#iva-compras-cierre .icc-download-help,#iva-compras-cierre .icc-central-note{font-size:.8rem;color:#626159;margin:.6rem 0 0}
+#iva-compras-cierre .icc-central-note{background:#fff7df;padding:.5rem .65rem;margin:0 0 .65rem;border-radius:.3rem}
+#iva-compras-cierre .icc-empty{padding:2rem 1rem;text-align:center;color:#626159}
+#iva-compras-cierre #icc-esperando{position:absolute;inset:0;z-index:5;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:1rem;text-align:center;padding:1.5rem;border:1px solid var(--icc-line);border-radius:.65rem;background:rgba(255,252,243,.97)}
+#iva-compras-cierre #icc-esperando .spinner-border{color:var(--icc-gold)}
+#iva-compras-cierre #icc-espera-texto{max-width:38rem}
+#iva-compras-cierre .modal-content{border:1px solid var(--icc-line);border-top:4px solid #d4a80d;border-radius:.7rem}
+#iva-compras-cierre .modal-header{background:#fff7df;color:#4a3a12}
+#iva-compras-cierre .modal-body{font-size:.93rem}
+#iva-compras-cierre .modal-footer .btn{min-width:128px}
+#iva-compras-cierre .icc-confirm-note{padding:.65rem;border-radius:.4rem;background:#f7f6f1;font-size:.85rem;color:#626159;margin-bottom:0}
+#iva-compras-cierre :focus-visible{outline:2px solid var(--icc-gold);outline-offset:3px}
+@media(max-width:760px){#iva-compras-cierre .icc-main-actions{margin-left:0}#iva-compras-cierre .icc-toolbar{align-items:stretch}#iva-compras-cierre .icc-heading{align-items:flex-start}}
+@media(prefers-reduced-motion:reduce){#iva-compras-cierre .spinner-border{animation:none}}
+

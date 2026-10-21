@@ -1,0 +1,46 @@
+/* Sólo esta pantalla compacta la reserva del pie; conserva el contenido y las fuentes. */
+body:has(#iva-compras-resumen){margin-bottom:24px}
+body:has(#iva-compras-resumen)>footer.footer{line-height:20px}
+#iva-compras-resumen{min-width:0;padding-top:0;--icr-gold:var(--bs-golden-secondary,#926e0b);--icr-border:#e4d9b7;color:#363128}
+#iva-compras-resumen [hidden]{display:none!important}
+#iva-compras-resumen fieldset{min-width:0;margin:0;padding:0}
+#iva-compras-resumen .ivr-navigation{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem;margin-bottom:.4rem}
+#iva-compras-resumen .ivr-navigation .btn{height:34px;display:inline-flex;align-items:center;justify-content:center;gap:.35rem}
+#iva-compras-resumen #ivr-imprimir{margin-left:auto}
+#iva-compras-resumen .ivr-actions{display:flex;justify-content:space-around;flex-wrap:wrap;gap:1rem}
+#iva-compras-resumen .ivr-actions .btn{width:150px;display:inline-flex;align-items:center;justify-content:center;gap:.5rem}
+#iva-compras-resumen .ivr-help{font-size:.8rem;color:#686356;margin:.5rem 0 0}
+#iva-compras-resumen #ivr-mensaje:empty{display:none}
+#iva-compras-resumen #ivr-mensaje{margin:.3rem 0;padding:.3rem .6rem;font-size:.8rem}
+#iva-compras-resumen #divDetalle{position:relative;min-width:0}
+#iva-compras-resumen .ivr-panel{min-width:0;background:#fff}
+#iva-compras-resumen .ivr-heading{display:flex;align-items:baseline;gap:.4rem 1rem;flex-wrap:wrap;padding:0 0 2px}
+#iva-compras-resumen .ivr-heading h2{font-size:.9rem;font-weight:700;margin:0}
+#iva-compras-resumen .ivr-heading span{font-size:.75rem;color:#686356}
+#iva-compras-resumen .icr-cuadros{display:grid;grid-template-columns:minmax(0,3fr) minmax(0,2fr);gap:6px 12px;align-items:start}
+#iva-compras-resumen .icr-cuadro{min-width:0;border:1px solid var(--icr-border);border-radius:5px;background:#fff}
+#iva-compras-resumen .icr-cuadro h3{font-size:12px;line-height:16px;margin:0;padding:3px 8px;background:#f8ecc4;color:#49380f;font-weight:700;border-radius:4px 4px 0 0}
+#iva-compras-resumen table{border-collapse:collapse;table-layout:fixed;width:100%;font-size:11.5px;line-height:14px}
+#iva-compras-resumen th,#iva-compras-resumen td{padding:1px 7px;border-bottom:1px solid #eee8d9;vertical-align:middle}
+#iva-compras-resumen th{text-align:left;overflow-wrap:anywhere}
+#iva-compras-resumen td,#iva-compras-resumen thead th:not(:first-child){text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+#iva-compras-resumen .icr-numero{width:28%}
+#iva-compras-resumen .icr-importe{width:45%}
+#iva-compras-resumen thead th{background:var(--icr-gold);color:white;font-weight:600;padding-top:2px;padding-bottom:2px}
+#iva-compras-resumen tbody th{font-weight:400}
+#iva-compras-resumen tbody tr:nth-child(even)>*{background:#fffcf4}
+#iva-compras-resumen tfoot>*{background:#f8ecc4;font-weight:700}
+#iva-compras-resumen tfoot th,#iva-compras-resumen tfoot td{padding-top:3px;padding-bottom:3px}
+#iva-compras-resumen .icr-diferencia{display:flex;align-items:baseline;flex-wrap:wrap;gap:6px;margin:0;padding:4px 7px;color:#8a311c;background:#fff3e4;font-size:12px;line-height:15px}
+#iva-compras-resumen .icr-diferencia span{margin-left:auto;font-size:10px;color:#694d37}
+#iva-compras-resumen .icr-vacio{text-align:left;white-space:normal;color:#686356}
+#iva-compras-resumen #ivr-cargando{position:absolute;inset:0;min-height:240px;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:1rem;padding:1.5rem;background:rgba(255,252,243,.97);border:1px solid var(--icr-border);border-radius:.6rem;z-index:5;text-align:center}
+#iva-compras-resumen #ivr-cargando .spinner-border{color:var(--icr-gold)}
+#iva-compras-resumen #ivr-espera{max-width:36rem}
+#iva-compras-resumen :focus-visible{outline:2px solid var(--icr-gold);outline-offset:2px}
+/* El aviso de exportación comparte la cabecera, sin añadir otra franja sobre los cuadros. */
+@media(min-width:1101px){#iva-compras-resumen:has(#ivr-filtros[hidden]) #ivr-mensaje.alert-info{position:relative;z-index:1;float:right;max-width:50%;margin:0;padding:0 .4rem;line-height:20px}}
+@media(min-width:1500px){#iva-compras-resumen table{font-size:12px;line-height:15px}}
+@media(max-width:1100px){#iva-compras-resumen .icr-cuadros{grid-template-columns:minmax(0,1fr)}#iva-compras-resumen .icr-numero{width:27%}}
+@media(max-width:600px){#iva-compras-resumen #ivr-imprimir{margin-left:0}#iva-compras-resumen .icr-numero{width:32%}#iva-compras-resumen th,#iva-compras-resumen td{padding-left:3px;padding-right:3px}}
+@media(prefers-reduced-motion:reduce){#iva-compras-resumen .spinner-border{animation:none}}

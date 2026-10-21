@@ -1,0 +1,64 @@
+@using gc.sitio.core.Servicios.Implementacion.Libros
+@using gc.infraestructura.Dtos.Libros
+@model IvaComprasResumenFiltro
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var meses = new[] { "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre" };
+}
+@section styles {
+    <link rel="stylesheet" href="~/lib/jstree/themes/default/style.min.css" />
+    <link rel="stylesheet" href="~/css/modules/iva-compras-resumen.css" asp-append-version="true" />
+}
+<section id="iva-compras-resumen" class="container-fluid" data-reporte="@IvaComprasResumenDocumentos.Reporte" data-consulta="@Url.Action("Consultar")" data-excel="@Url.Action("ExportarExcel")" data-perfil="@ViewBag.Perfil" data-menu="@ViewBag.Menu">
+    <nav class="ivr-navigation" aria-label="Paneles y salidas del resumen">
+        <button id="btnFiltro" type="button" class="btn btn-primary btn-sm" title="Mostrar u ocultar filtros" aria-label="Mostrar u ocultar filtros" aria-controls="divFiltro" aria-expanded="true"><i class="bx bx-filter" aria-hidden="true"></i></button>
+        <button id="btnDetalle" type="button" class="btn btn-primary btn-sm" title="Cerrar consulta y conservar filtros" aria-label="Cerrar consulta y conservar filtros" aria-controls="divDetalle" aria-expanded="false" disabled><i class="bx bx-caret-down" aria-hidden="true"></i></button>
+        <button id="ivr-imprimir" type="button" class="btn btn-primary btn-sm" disabled><i class="bx bx-printer" aria-hidden="true"></i> Imprimir</button>
+        <button id="ivr-excel" type="button" class="btn btn-primary btn-sm" disabled><i class="bx bx-download" aria-hidden="true"></i> Exportar Excel completo</button>
+    </nav>
+    @if (ViewBag.Error != null) { <div class="alert alert-warning" role="alert">@ViewBag.Error</div> }
+    <form id="ivr-filtros">
+        @Html.AntiForgeryToken()
+        <fieldset disabled="@(ViewBag.Error != null)" class="filter-golden">
+            <legend class="visually-hidden">Período del resumen de IVA Compras</legend>
+            <div id="divFiltro" class="filter-golden-body">
+                <div class="row g-3">
+                    <div class="col-sm-5 col-lg-3"><div class="input-group input-group-sm">
+                        <label for="ivr-periodo" class="input-group-text">Año</label>
+                        <select id="ivr-periodo" name="Periodo" class="form-select" required>
+                            @for (var anio = Model.Periodo; anio >= Model.Periodo - 5; anio--) { <option value="@anio" selected="@(anio == Model.Periodo)">@anio</option> }
+                        </select>
+                    </div></div>
+                    <div class="col-sm-7 col-lg-4"><div class="input-group input-group-sm">
+                        <label for="ivr-mes" class="input-group-text">Mes</label>
+                        <select id="ivr-mes" name="Mes" class="form-select" required>
+                            @for (var mes = 1; mes <= 12; mes++) { <option value="@mes" selected="@(mes == Model.Mes)">@meses[mes - 1]</option> }
+                        </select>
+                    </div></div>
+                </div>
+                <p class="ivr-help">Control contable y resumen impositivo de Bienes de intercambio y Servicios / Otros. Importes en pesos.</p>
+            </div>
+            <div class="filter-golden-footer ivr-actions">
+                <button id="btnCancel" type="reset" class="btn btn-lg btn-danger"><i class="bx bx-x-circle" aria-hidden="true"></i> Inicializar</button>
+                <button id="btnBuscar" type="submit" class="btn btn-lg btn-success"><i class="bx bx-search" aria-hidden="true"></i> Ver</button>
+            </div>
+        </fieldset>
+    </form>
+    <div id="ivr-mensaje" role="status" aria-live="polite"></div>
+    <div id="divDetalle" hidden>
+        <div id="ivr-resultado"></div>
+        <div id="ivr-cargando" role="status" aria-live="polite" hidden><span class="spinner-border" aria-hidden="true"></span><span id="ivr-espera"></span></div>
+    </div>
+</section>
+<div id="modalGestorDocumental"></div>
+@section scripts {
+    <script>
+        var OrquestadorDeModulosUrl = '@Url.Action("OrquestadorDeModulos", "GestorImpresion", new { area = "ControlComun" })';
+        var presentarArchivosUrl = '@Url.Action("PresentarArchivos", "GestorImpresion", new { area = "ControlComun" })';
+        var repoApiUrl = '@Url.Action("ObtenerPdfDesdeAPI", "GestorImpresion", new { area = "ControlComun" })';
+        window.gestorModuloPagina = 'IVA_COMPRAS_RESUMEN';
+    </script>
+    <script src="~/lib/jstree/jstree.min.js"></script>
+    <script src="~/js/app/areas/docmngr/docmanager.js" asp-append-version="true"></script>
+    <script src="~/js/app/libros/iva-compras-resumen.js" asp-append-version="true"></script>
+}
