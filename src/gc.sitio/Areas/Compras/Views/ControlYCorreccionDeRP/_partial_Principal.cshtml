@@ -1,0 +1,103 @@
+﻿@using gc.sitio.Areas.Compras.Models.ControlYCorreccionDeRP
+@model InitDetalleDeRecepcionModel
+@{
+}
+<style>
+    .btn-cambiar-comp,
+    .btn-confirmar-control,
+    .btn-cancelar-control {
+        width: 175px;
+        min-width: 175px;
+        /* height: 32px; */
+        font-weight: 600;
+        color: white !important;
+        /* border-width: 2px;
+        box-shadow: inset 0 1px 0 rgba(255,255,255,.35), 0 1px 2px rgba(0,0,0,.20); */
+    }
+
+    /* Azul 
+    .btn-cambiar-comp {
+        background-color: #2f80ed;
+        border-color: #1c5db6;
+    }
+        
+        .btn-cambiar-comp:hover {
+            background-color: #256ed2;
+        }
+            */
+    /* Verde 
+    .btn-confirmar-control {
+        background-color: #12b347;
+        border-color: #0c7f31;
+    }
+
+        .btn-confirmar-control:hover {
+            background-color: #0f9b3d;
+        }
+            */
+    /* Rojo oscuro 
+    .btn-cancelar-control {
+        background-color: #9e0000;
+        border-color: #6f0000;
+    }
+
+        .btn-cancelar-control:hover {
+            background-color: #850000;
+        }
+
+        .btn-cambiar-comp i,
+        .btn-confirmar-control i,
+        .btn-cancelar-control i {
+            margin-right: 6px;
+            font-size: 15px;
+        }
+            */
+</style>
+<div class="row">
+
+    <div class="col-6">
+
+        <div>
+            Proveedor: <strong>@Model.Proveedor</strong>
+        </div>
+
+        <div>
+            Recepción: <strong>@Model.Recepcion</strong>
+        </div>
+
+    </div>
+
+    <div class="col-6">
+
+        <div class="d-flex justify-content-end gap-2">
+
+            <button id="btnCambiarTipoComp"
+                    type="button"
+                    class="btn btn-sm btn-info btn-cambiar-comp">
+                <i class="bx bx-link-alt"></i>
+                Cambiar Tipo Comp.
+            </button>
+
+            <button id="btnConfirmarControl"
+                    type="button"
+                    class="btn btn-sm btn-success btn-confirmar-control">
+                <i class="bx bx-check-circle"></i>
+                Confirmar Control
+            </button>
+
+            <button id="btnCancelarControl"
+                    type="button"
+                    class="btn btn-sm btn-danger btn-cancelar-control">
+                <i class="bx bx-x-circle"></i>
+                Cancelar
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+<div class="row">
+    @await Html.PartialAsync("_tbDetalle", Model)
+</div>

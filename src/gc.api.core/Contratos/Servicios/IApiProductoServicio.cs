@@ -148,5 +148,7 @@ namespace gc.api.core.Contratos.Servicios
 		RespuestaDto ConfirmarPlanillaElaboracionYFraccion(ConfirmarPlanillaDeElabYFraccRequest request);
 		List<PlanillaElabYFraccionDto> ObtenerPlanillaDeElabYFraccion(string ep_compte);
 		List<PlanillaElabYFraccionListaDto> ObtenerPlanillaElabFraccionLista(PlanillaElabYFraccionListaRequest req);
+		List<RprCtlPendienteDto> ObtenerRprCtlPendiente(string cta_id);
+		List<RprCtlItemDetalleDto> ObtenerRprCtlDetalle(string rp_compte);
 	}
 }

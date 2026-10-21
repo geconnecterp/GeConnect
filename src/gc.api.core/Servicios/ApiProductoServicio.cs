@@ -2078,5 +2078,29 @@ namespace gc.api.core.Servicios
 
 			return ordenes;
 		}
+
+		public List<RprCtlPendienteDto> ObtenerRprCtlPendiente(string cta_id)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_RPR_CTL_PENDIENTES;
+			var ps = new List<SqlParameter>
+			{
+				new("@cta_id", cta_id),
+			};
+			var rem = _repository.EjecutarLstSpExt<RprCtlPendienteDto>(sp, ps, true);
+
+			return rem;
+		}
+
+		public List<RprCtlItemDetalleDto> ObtenerRprCtlDetalle(string rp_compte)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_RPR_CTL_D;
+			var ps = new List<SqlParameter>
+			{
+				new("@rp_compte", rp_compte),
+			};
+			var rem = _repository.EjecutarLstSpExt<RprCtlItemDetalleDto>(sp, ps, true);
+
+			return rem;
+		}
 	}
 }

@@ -352,6 +352,8 @@ namespace gc.api.core.Constantes
 			public const string SP_RPR_UL_D = "SPGECO_UL_d";
 			public const string SP_INFO_UL_REPO = "SPGECO_UL_repo";
 			public const string SP_INFO_UL_Imprime = "SPGECO_UL_Imprime";
+			public const string SP_RPR_CTL_PENDIENTES = "SPGECO_RPR_CTL_Pendientes";
+			public const string SP_RPR_CTL_D = "SPGECO_RPR_CTL_D";
 
 			public const string SP_CUENTA_BUSQUEDA = "dbo.spgeco_c_busqueda_lista";
 			public const string SP_CUENTA_DATO = "SPGECO_C_Contacto_Datos";

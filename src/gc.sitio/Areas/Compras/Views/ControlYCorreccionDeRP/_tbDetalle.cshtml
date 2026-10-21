@@ -1,0 +1,466 @@
+﻿@model InitDetalleDeRecepcionModel
+
+@using System.Globalization
+@using gc.sitio.Areas.Compras.Models.ControlYCorreccionDeRP
+@using static gc.infraestructura.Helpers.GridHelper
+
+@{
+	var alternarFila = true;
+	var cultura = CultureInfo.InvariantCulture;
+}
+
+<style>
+	#tbControlRecepcion {
+		table-layout: auto;
+		width: 100%;
+		margin-bottom: 0;
+	}
+
+		#tbControlRecepcion th,
+		#tbControlRecepcion td {
+			padding: 2px 4px !important;
+			vertical-align: middle;
+			font-size: 12px;
+			line-height: 1.15;
+		}
+
+		#tbControlRecepcion thead th {
+			white-space: nowrap;
+			vertical-align: middle;
+		}
+
+		#tbControlRecepcion .encabezado-modulo {
+			text-align: center;
+			font-weight: 600;
+			border-bottom-width: 2px;
+			height: 28px;
+		}
+
+		#tbControlRecepcion .modulo-producto {
+		}
+
+		#tbControlRecepcion .modulo-factura {
+		}
+
+		#tbControlRecepcion .modulo-recepcion {
+		}
+
+		#tbControlRecepcion .modulo-control {
+		}
+
+		#tbControlRecepcion .modulo-opciones {
+		}
+
+		#tbControlRecepcion .inicio-modulo {
+			border-left-width: 2px !important;
+		}
+
+		#tbControlRecepcion .col-id {
+			width: 55px;
+		}
+
+		#tbControlRecepcion .col-descripcion {
+			width: 352px;
+		}
+
+		#tbControlRecepcion .col-unidad-presentacion {
+			width: 40px;
+		}
+
+		#tbControlRecepcion .col-bultos {
+			width: 75px;
+		}
+
+		#tbControlRecepcion .col-unidad-suelta {
+			width: 85px;
+		}
+
+		#tbControlRecepcion .col-cantidad {
+			width: 95px;
+		}
+
+		#tbControlRecepcion .col-control {
+			width: 105px;
+		}
+
+		#tbControlRecepcion .col-opciones {
+			width: 30px;
+			min-width: 30px;
+			max-width: 30px;
+		}
+
+		#tbControlRecepcion .celda-descripcion {
+			max-width: 260px;
+			overflow: hidden;
+			text-overflow: ellipsis;
+			white-space: nowrap;
+		}
+
+		#tbControlRecepcion .celda-numerica {
+			text-align: right;
+			white-space: nowrap;
+		}
+
+		#tbControlRecepcion .input-container {
+			position: relative;
+			width: 100%;
+		}
+
+		#tbControlRecepcion .input-control-recepcion {
+			width: 100%;
+			height: 24px !important;
+			min-height: 24px !important;
+			padding: 1px 5px !important;
+			border-radius: 2px;
+			text-align: right;
+			font-size: 12px;
+			line-height: 1;
+		}
+
+			#tbControlRecepcion .input-control-recepcion.campo-modificado {
+				border-color: #f0ad4e;
+				background-color: #fff8e5;
+			}
+
+			#tbControlRecepcion .input-control-recepcion.input-invalido {
+				border-color: #dc3545;
+				background-color: #fff1f2;
+			}
+
+		#tbControlRecepcion .cantidad-calculada,
+		#tbControlRecepcion .diferencia-calculada {
+			display: block;
+			min-height: 20px;
+			padding-top: 3px;
+			text-align: right;
+		}
+
+		#tbControlRecepcion .diferencia-positiva {
+			color: #198754;
+			font-weight: 600;
+		}
+
+		#tbControlRecepcion .diferencia-negativa {
+			color: #dc3545;
+			font-weight: 600;
+		}
+
+		#tbControlRecepcion .diferencia-cero {
+			color: inherit;
+			font-weight: normal;
+		}
+
+		#tbControlRecepcion .fila-eliminada {
+			display: none;
+		}
+
+		#tbControlRecepcion .btn-opcion-tabla {
+			width: 26px;
+			height: 24px;
+			padding: 0 !important;
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+		}
+
+		#tbControlRecepcion .celda-opciones {
+			padding: 1px !important;
+			text-align: center;
+		}
+
+		#tbControlRecepcion tbody tr.alt > td {
+			background-color: rgba(0, 0, 0, 0.025);
+		}
+
+		#tbControlRecepcion tbody tr:hover > td {
+			background-color: rgba(13, 110, 253, 0.06);
+		}
+
+		#tbControlRecepcion input[readonly],
+		#tbControlRecepcion input:disabled {
+			background-color: #eceff1;
+			cursor: not-allowed;
+		}
+</style>
+<div class="grid-golden" style="padding-left: 0px; padding-right: 0px;">
+	<div class="grid-golden-header">
+		<div class="row align-items-md-center">
+			<div class="col-md-10 col-sm-6 d-flex align-items-center">
+				<h5 class="mb-0 flex-grow-1">
+					<i class="bx bx-package me-2"></i>
+					<strong>Detalle de Productos</strong>
+				</h5>
+			</div>
+		</div>
+	</div>
+	<div class="grid-golden-body">
+		<div class="table-responsive table-wrapper-600-full-width" id="containerControlRecepcion">
+			<table class="table table-bordered table-hover table-golden" id="tbControlRecepcion">
+				<thead>
+					<tr class="header">
+						<th colspan="3"
+							class="encabezado-modulo modulo-producto">
+							Producto
+						</th>
+
+						<th colspan="3"
+							class="encabezado-modulo modulo-factura inicio-modulo">
+							Datos Factura
+						</th>
+
+						<th colspan="3"
+							class="encabezado-modulo modulo-recepcion inicio-modulo">
+							Datos de Recepción
+						</th>
+
+						<th colspan="2"
+							class="encabezado-modulo modulo-control inicio-modulo">
+							Control
+						</th>
+
+						<th colspan="1"
+							class="encabezado-modulo modulo-opciones inicio-modulo">
+							@* Opciones *@
+						</th>
+					</tr>
+
+					<tr class="header">
+						@* Producto *@
+						<th scope="col" class="text-center modulo-producto col-id">
+							ID
+						</th>
+
+						<th scope="col" class="text-center modulo-producto col-descripcion">
+							Descripción
+						</th>
+
+						<th scope="col" class="text-center modulo-producto col-unidad-presentacion text-end"
+							title="Unidad de presentación">
+							U. Pres
+						</th>
+
+						@* Factura *@
+						<th scope="col" class="text-center modulo-factura inicio-modulo col-bultos text-end">
+							Bultos
+						</th>
+
+						<th scope="col" class="text-center modulo-factura col-unidad-suelta text-end"
+							title="Unidad suelta">
+							US
+						</th>
+
+						<th scope="col" class="text-center modulo-factura col-cantidad text-end">
+							Cantidad
+						</th>
+
+						@* Recepción *@
+						<th scope="col" class="text-center modulo-recepcion inicio-modulo col-bultos text-end">
+							Bultos
+						</th>
+
+						<th scope="col" class="text-center modulo-recepcion col-unidad-suelta text-end"
+							title="Unidad suelta">
+							US
+						</th>
+
+						<th scope="col" class="text-center modulo-recepcion col-cantidad text-end">
+							Cantidad
+						</th>
+
+						@* Control *@
+						<th scope="col" class="text-center modulo-control inicio-modulo col-control text-end">
+							Cantidad Original
+						</th>
+
+						<th scope="col" class="text-center modulo-control col-control text-end">
+							Diferencia
+						</th>
+
+						@* Opciones *@
+						<th scope="col"
+							class="modulo-opciones inicio-modulo col-opciones text-center">
+
+							<button type="button"
+									id="btnAgregarControlRecepcion"
+									class="btn btn-success btn-sm btn-opcion-tabla"
+									title="Agregar producto"
+									aria-label="Agregar producto">
+								<i class="bx bx-plus"></i>
+							</button>
+						</th>
+					</tr>
+				</thead>
+
+				<tbody>
+					@if (Model != null && Model.GrillaDetalle != null && Model.GrillaDetalle.ListaDatos != null && Model.GrillaDetalle.ListaDatos.Count > 0)
+					{
+						foreach (var item in Model.GrillaDetalle.ListaDatos)
+						{
+							var claseAlternada = alternarFila ? "alt" : string.Empty;
+							alternarFila = !alternarFila;
+
+							var permiteEditarBultos = item.up_tipo == "N";
+							var decimalesUnidadSuelta = item.PermiteDecimales ? 2 : 0;
+							var decimalesCantidad = item.PermiteDecimales ? 2 : 0;
+
+							var diferencia = item.rpd_cantidad_ori - item.rpd_cantidad;
+
+							var diferenciaClase =
+							diferencia > 0
+							? "diferencia-positiva"
+							: diferencia < 0
+							? "diferencia-negativa"
+							: "diferencia-cero";
+
+							<tr class="@claseAlternada fila-control-recepcion"
+								data-p-id="@item.p_id"
+								data-rpd-item="@item.rpd_item"
+								data-permite-decimales="@item.PermiteDecimales.ToString().ToLowerInvariant()"
+								data-up-tipo="@item.up_tipo"
+								data-eliminado="false">
+
+								@* 0: Producto / ID *@
+								<td class="text-center"
+									title="@item.p_id">
+									@Model.GrillaDetalle.FormatearDato(item.p_id, FormatDato.Ninguno)
+								</td>
+
+								@* 1: Producto / Descripción *@
+								<td class="@Model.GrillaDetalle.ObtenerClase(item.p_desc) celda-descripcion"
+									title="@item.p_desc">
+									@Model.GrillaDetalle.FormatearDato(item.p_desc, FormatDato.Ninguno)
+								</td>
+
+								@* 2: Producto / Unidad de presentación *@
+								<td class="@Model.GrillaDetalle.ObtenerClase(item.rpd_unidad_pres) celda-numerica">
+									@item.rpd_unidad_pres
+								</td>
+
+								@* 3: Factura / Bultos *@
+								<td class="@Model.GrillaDetalle.ObtenerClase(item.rpd_bulto_compte) inicio-modulo">
+									<div class="input-container">
+										<input type="text"
+											   class="form-control form-control-sm input-control-recepcion js-control-cantidad"
+											   value="@item.rpd_bulto_compte"
+											   data-field="rpd_bulto_compte"
+											   data-tipo="entero"
+											   data-original-value="@item.rpd_bulto_compte"
+											   inputmode="numeric"
+											   autocomplete="off"
+											   @(permiteEditarBultos ? null : "disabled") />
+									</div>
+								</td>
+
+								@* 4: Factura / Unidad suelta *@
+								<td class="@Model.GrillaDetalle.ObtenerClase(item.rpd_unidad_suelta_compte)">
+									<div class="input-container">
+										<input type="text"
+											   class="form-control form-control-sm input-control-recepcion js-control-cantidad"
+											   value="@item.rpd_unidad_suelta_compte.ToString(
+																																																	  			$"F{decimalesUnidadSuelta}",
+																																																  			cultura)"
+									   data-field="rpd_unidad_suelta_compte"
+									   data-tipo="decimal"
+									   data-decimales="@decimalesUnidadSuelta"
+									   data-original-value="@item.rpd_unidad_suelta_compte.ToString(cultura)"
+									   inputmode="decimal"
+									   autocomplete="off" />
+							</div>
+						</td>
+
+								@* 5: Factura / Cantidad calculada *@
+								<td class="@Model.GrillaDetalle.ObtenerClase(item.rpd_cantidad_compte) celda-numerica">
+									@* @GridHelper.FormatearDato(item.rpd_cantidad_compte, GridHelper.FormatDato.Monto, item.PermiteDecimales) *@
+									<span class="cantidad-calculada"
+										  data-field="rpd_cantidad_compte"
+										  data-value="@item.rpd_cantidad_compte.ToString(cultura)">
+										@item.rpd_cantidad_compte.ToString(
+																$"F{decimalesCantidad}",
+																cultura)
+							</span>
+						</td>
+
+						@* 6: Recepción / Bultos *@
+						<td class="@Model.GrillaDetalle.ObtenerClase(item.rpd_bulto_recibidos) inicio-modulo">
+							<div class="input-container">
+								<input type="text"
+									   class="form-control form-control-sm input-control-recepcion js-control-cantidad"
+									   value="@item.rpd_bulto_recibidos"
+									   data-field="rpd_bulto_recibidos"
+									   data-tipo="entero"
+									   data-original-value="@item.rpd_bulto_recibidos"
+									   inputmode="numeric"
+									   autocomplete="off"
+									   @(permiteEditarBultos ? null : "disabled") />
+							</div>
+						</td>
+
+						@* 7: Recepción / Unidad suelta *@
+						<td class="@Model.GrillaDetalle.ObtenerClase(item.rpd_unidad_suelta)">
+							<div class="input-container">
+								<input type="text"
+									   class="form-control form-control-sm input-control-recepcion js-control-cantidad"
+									   value="@item.rpd_unidad_suelta.ToString(
+																																							  			$"F{decimalesUnidadSuelta}",
+																																						  			cultura)"
+									   data-field="rpd_unidad_suelta"
+									   data-tipo="decimal"
+									   data-decimales="@decimalesUnidadSuelta"
+									   data-original-value="@item.rpd_unidad_suelta.ToString(cultura)"
+									   inputmode="decimal"
+									   autocomplete="off" />
+							</div>
+						</td>
+
+								@* 8: Recepción / Cantidad calculada *@
+								<td class="@Model.GrillaDetalle.ObtenerClase(item.rpd_cantidad) celda-numerica">
+									@* @GridHelper.FormatearDato(item.rpd_cantidad, GridHelper.FormatDato.Monto, item.PermiteDecimales) *@
+									<span class="cantidad-calculada"
+										  data-field="rpd_cantidad"
+										  data-value="@item.rpd_cantidad.ToString(cultura)">
+										@item.rpd_cantidad.ToString(
+																$"F{decimalesCantidad}",
+																cultura)
+							</span>
+						</td>
+
+						@* 9: Control / Cantidad original *@
+						<td class="@Model.GrillaDetalle.ObtenerClase(item.rpd_cantidad_ori) inicio-modulo celda-numerica">
+							<span data-field="rpd_cantidad_ori"
+								  data-value="@item.rpd_cantidad_ori.ToString(cultura)">
+								@item.rpd_cantidad_ori.ToString(
+																$"F{decimalesCantidad}",
+																cultura)
+							</span>
+						</td>
+
+						@* 10: Control / Diferencia *@
+						<td class="celda-numerica @diferenciaClase">
+							@* @GridHelper.FormatearDato(diferencia, GridHelper.FormatDato.Monto, item.PermiteDecimales) *@
+							<span class="diferencia-calculada @diferenciaClase"
+								  data-field="diferencia"
+								  data-value="@diferencia.ToString(cultura)">
+								@diferencia.ToString(
+																$"F{decimalesCantidad}",
+																cultura)
+							</span>
+						</td>
+
+						@* 11: Opciones *@
+						<td class="inicio-modulo celda-opciones">
+							<button type="button"
+									class="btn btn-danger btn-sm btn-opcion-tabla btn-eliminar-control-recepcion"
+									title="Eliminar producto"
+									aria-label="Eliminar producto">
+								<i class="bx bx-trash"></i>
+							</button>
+						</td>
+					</tr>
+										}
+					}
+				</tbody>
+			</table>
+		</div>
+	</div>
+</div>
+

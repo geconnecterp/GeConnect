@@ -1834,6 +1834,31 @@ namespace gc.api.Controllers.Almacen
 			return Ok(response);
 		}
 
+		[HttpGet("obtener-rpr-ctl-pendiente")]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<List<RprCtlPendienteDto>>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		public IActionResult ObtenerRprCtlPendiente(string cta_id)
+		{
+			if (string.IsNullOrEmpty(cta_id)) return BadRequest("No se recepcionaron los datos");
+
+			List<RprCtlPendienteDto> resp = _productosSv.ObtenerRprCtlPendiente(cta_id);
+
+			var response = new ApiResponse<List<RprCtlPendienteDto>>(resp);
+			return Ok(response);
+		}
+
+		[HttpGet("obtener-rpr-ctl-detalle")]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<List<RprCtlItemDetalleDto>>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		public IActionResult ObtenerRprCtlDetalle(string rp_compte)
+		{
+			if (string.IsNullOrEmpty(rp_compte)) return BadRequest("No se recepcionaron los datos");
+			List<RprCtlItemDetalleDto> resp = _productosSv.ObtenerRprCtlDetalle(rp_compte);
+
+			var response = new ApiResponse<List<RprCtlItemDetalleDto>>(resp);
+			return Ok(response);
+		}
+
 		private static PedidoInternoRequest MapToRequest(QueryFilters filtro)
 		{
 			return new PedidoInternoRequest

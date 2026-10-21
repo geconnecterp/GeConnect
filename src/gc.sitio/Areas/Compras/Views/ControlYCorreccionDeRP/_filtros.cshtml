@@ -1,0 +1,66 @@
+﻿@model InitModel
+@{
+}
+<style>
+	.hidden {
+		display: none !important;
+	}
+
+</style>
+<div class="filter-golden">
+	<div class="filter-golden-body">
+		<div class="row">
+			<div class="col-12">
+				<div class="row">
+					<div class="col-md-12 col-sm-12">
+						<div class="input-group input-group-sm">
+							<div class="form-check form-check-inline form-switch mb-2">
+								<input class="form-check-input" type="checkbox" name="Proveedores" id="chkRel01" />
+								<label class="form-check-label" for="chkRel01" id="lbRel01"></label>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="row">
+					<div class="col-md-12 col-sm-12">
+						<div class="input-group  input-group-sm">
+							<span class="input-group-text">Nombre</span>
+							<input type="text" class="form-control inputEditable" name="Rel01" id="Rel01" />
+							@Html.Hidden("Rel01Item")
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-12">
+				<div class="row">
+					<div class="col-sm-12">
+						<div class="input-group input-group-sm">
+							<div class="form-check form-check-inline form-switch mb-2">
+								<input class="form-check-input" type="checkbox" name="Recepciones" id="chkRecepciones" />
+								<label class="form-check-label" for="chkRecepciones" id="lbRecepciones"></label>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="row">
+					<div class="col-12" id="divListaRecepciones">
+						<div class="input-group input-group-sm">
+							<span class="input-group-text">Nombre</span>
+							@Html.DropDownListFor(m => m.RecepcionSeleccionada, Model.ListaRecepciones, "Seleccionar", new { @id = "listaRecepciones", @class = "form-control inputEditable activable" })
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="filter-golden-footer">
+			<div class="row m-3">
+				<div class="d-flex justify-content-around">
+					<button type="button" id="btnCancel" style="width:150px;" class="btn btn-lg btn-danger"><i class="bx bx-sm bx-x-circle"></i> Inicializa</button>
+					<button type="button" id="btnBuscar" style="width:150px;" class="btn btn-lg btn-success"><i class="bx bx-sm bx-search"></i> Ver</button>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>

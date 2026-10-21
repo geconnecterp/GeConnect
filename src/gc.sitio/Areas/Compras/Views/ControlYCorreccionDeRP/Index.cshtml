@@ -1,0 +1,48 @@
+﻿@model InitModel
+@{
+	Layout = "~/views/shared/_Layout.cshtml";
+}
+@section styles {
+	<link rel="stylesheet" href="~/css/simplePagination.css" />
+	<link rel="stylesheet" href="~/lib/jstree/themes/default/style.min.css" />
+}
+<div class="container mt-2">
+	<div class="row mb-2 w-50 mx-auto">
+		<div class="col-12">
+			<div class="d-flex flex-wrap align-items-center gap-2 pi-filter-toolbar">
+				<button id="btnFiltro" class="btn btn-primary btn-sm mt-1 me-1" type="button" data-bs-toggle="collapse" data-bs-target="#divFiltro" aria-expanded="true" aria-controls="divFiltro" title="Mostrar u ocultar filtros" aria-label="Mostrar u ocultar filtros">
+					<i class="bx bx-filter bx-xs"></i>
+				</button>
+
+				<button class="btn btn-primary btn-sm mt-1 me-1" type="button" id="btnDetalle" data-bs-toggle="collapse" data-bs-target="#divDetalle" aria-expanded="true" aria-controls="divDetalle" title="Detalle" aria-label="Detalle">
+					<i class="bx bx-caret-down"></i>
+				</button>
+
+				<button class="btn btn-light btn-sm mt-1 me-1" type="button" id="btnImprimir" title="Imprimir">
+					<i class="bx bx-printer"></i> Imprimir
+				</button>
+			</div>
+		</div>
+	</div>
+	<div class="collapse w-50 mx-auto" id="divFiltro">
+		@* <div class="row justify-content-center"> *@
+		<partial name="_filtros" model="Model" />
+		@Html.Hidden("pagEstado", false)
+		@* </div> *@
+	</div>
+	<div class="collapse" id="divDetalle"></div>
+</div>
+
+@section scripts {
+	<script type="text/javascript">
+		let autoComRel01Url = "@Url.Action("BuscarProvs", "controlycorreccionderp", new { area = "Compras" })";
+		let cargarRecepcionesDelProveedorUrl = "@Url.Action("CargarRecepcionesDelProveedor", "controlycorreccionderp", new { area = "Compras" })";
+		let obtenerDetalleDeRecepcionURL = "@Url.Action("ObtenerDetalleDeRecepcion", "controlycorreccionderp", new { area = "Compras" })";
+	</script>
+
+	<script src="~/lib/jstree/jstree.min.js"></script>
+	<script src="~/js/app/areas/docmngr/docmanager.js" asp-append-version="true"></script>
+	<script src="~/js/plugins/jquery.simplePagination.js"></script>
+
+	<script src="~/js/app/areas/compras/controlycorreccionderp/ctrlycorreccionderp.js" type="text/javascript"></script>
+}

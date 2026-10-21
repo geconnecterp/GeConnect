@@ -78,6 +78,8 @@ namespace gc.sitio.core.Servicios.Implementacion
 		private const string RPRxULOBTENER = "/RPRxUL";
 		private const string RPRxULDETALLEOBTENER = "/RPRxULDetalle";
 		private const string PRODUCTOS_POR_FAMILIA = "/GetProductosPorFamilia";
+		private const string RPR_CTL_PENDIENTES = "/obtener-rpr-ctl-pendiente";
+		private const string RPR_CTL_D = "/obtener-rpr-ctl-detalle";
 
 		//almacena Box 
 		private const string RutaApiAlmacen = "/api/apialmacen";
@@ -3342,6 +3344,70 @@ namespace gc.sitio.core.Servicios.Implementacion
 					return new();
 				}
 				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<PlanillaElabYFraccionDto>>>(stringData) ?? throw new NegocioException("Hubo un problema al deserializar los datos");
+				return apiResponse.Data;
+			}
+			else
+			{
+				string stringData = await response.Content.ReadAsStringAsync();
+				_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+				return new();
+			}
+		}
+
+		public async Task<List<RprCtlPendienteDto>> ObtenerRprCtlPendiente(string cta_id, string token)
+		{
+			ApiResponse<List<RprCtlPendienteDto>> apiResponse;
+
+			HelperAPI helper = new();
+
+			HttpClient client = helper.InicializaCliente(token);
+			HttpResponseMessage response;
+
+			var link = $"{_appSettings.RutaBase}{RutaAPI}{RPR_CTL_PENDIENTES}?cta_id={cta_id}";
+
+			response = await client.GetAsync(link);
+
+			if (response.StatusCode == HttpStatusCode.OK)
+			{
+				string stringData = await response.Content.ReadAsStringAsync();
+				if (string.IsNullOrEmpty(stringData))
+				{
+					_logger.LogWarning($"La API no devolvió dato alguno. Parametros de busqueda remCompte:{cta_id}");
+					return new();
+				}
+				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<RprCtlPendienteDto>>>(stringData) ?? throw new NegocioException("Hubo un problema al deserializar los datos");
+				return apiResponse.Data;
+			}
+			else
+			{
+				string stringData = await response.Content.ReadAsStringAsync();
+				_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+				return new();
+			}
+		}
+
+		public async Task<List<RprCtlItemDetalleDto>> ObtenerRprCtlDetalle(string rp_compte, string token)
+		{
+			ApiResponse<List<RprCtlItemDetalleDto>> apiResponse;
+
+			HelperAPI helper = new();
+
+			HttpClient client = helper.InicializaCliente(token);
+			HttpResponseMessage response;
+
+			var link = $"{_appSettings.RutaBase}{RutaAPI}{RPR_CTL_D}?rp_compte={rp_compte}";
+
+			response = await client.GetAsync(link);
+
+			if (response.StatusCode == HttpStatusCode.OK)
+			{
+				string stringData = await response.Content.ReadAsStringAsync();
+				if (string.IsNullOrEmpty(stringData))
+				{
+					_logger.LogWarning($"La API no devolvió dato alguno. Parametros de busqueda remCompte:{rp_compte}");
+					return new();
+				}
+				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<RprCtlItemDetalleDto>>>(stringData) ?? throw new NegocioException("Hubo un problema al deserializar los datos");
 				return apiResponse.Data;
 			}
 			else
