@@ -1,0 +1,47 @@
+@using gc.infraestructura.Dtos.Libros
+@model CertificadosRetencionFiltro
+@{ Layout = "~/Views/Shared/_Layout.cshtml"; }
+@section styles {
+    <link rel="stylesheet" href="~/css/components/gc-pager.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/modules/certificados-retencion-emitidos.css" asp-append-version="true" />
+}
+<section id="retenciones-emitidas" class="container-fluid retenciones" data-consulta="@Url.Action("Consultar")" data-ddjj="@Url.Action("Ddjj")" data-disponible="@(ViewBag.Error == null ? "true" : "false")">
+    <nav class="ret-toolbar" aria-label="Acciones de certificados de retención">
+        <button id="btnFiltro" class="btn btn-primary btn-sm" type="button" aria-controls="divFiltro" aria-expanded="true" aria-label="Mostrar u ocultar filtros" title="Mostrar u ocultar filtros" disabled="@(ViewBag.Error != null)"><i class="bx bx-filter" aria-hidden="true"></i></button>
+        <button id="btnDetalle" class="btn btn-primary btn-sm" type="button" aria-controls="divDetalle" aria-expanded="false" aria-label="Cerrar consulta y conservar filtros" title="Cerrar consulta y conservar filtros" disabled><i class="bx bx-caret-down" aria-hidden="true"></i></button>
+        <span class="ret-toolbar-end">
+            <button class="btn btn-primary btn-sm" type="button" disabled title="Pendiente de definir el alcance de impresión"><i class="bx bx-printer" aria-hidden="true"></i> Imprimir</button>
+            <button id="ret-ddjj" class="btn btn-primary btn-sm" type="button" disabled title="Descargar DDJJ del mes completo: IB e IV en Excel; GA en TXT sin encabezado"><i class="bx bx-download" aria-hidden="true"></i> DDJJ mensual</button>
+        </span>
+    </nav>
+    <partial name="_Filtro" model="Model" />
+    <div id="ret-mensaje" role="status" aria-live="polite"></div>
+    <p class="ret-help">DDJJ: mes completo, sin aplicar fechas ni CUIT de la consulta. IB e IV: Excel. GA: TXT sin encabezado. Impresión pendiente de definición.</p>
+    <dialog id="ret-ddjj-dialogo" class="ret-ddjj-dialogo" aria-labelledby="ret-ddjj-titulo" aria-describedby="ret-ddjj-alcance">
+        <h2 id="ret-ddjj-titulo">Descargar declaración jurada</h2>
+        <p id="ret-ddjj-periodo"></p>
+        <p id="ret-ddjj-alcance">Se descargarán todos los registros del mes. Los filtros de fecha y CUIT de la consulta y la página visible no se aplican a esta descarga. No se emiten ni anulan certificados.</p>
+        <div class="ret-ddjj-acciones"><button id="ret-ddjj-cancelar" type="button" class="btn btn-outline-secondary">Cancelar</button><button id="ret-ddjj-confirmar" type="button" class="btn btn-primary">Descargar mes completo</button></div>
+    </dialog>
+    <div id="divDetalle" class="ret-detail" hidden>
+        <section id="ret-panel" class="ret-panel" aria-busy="false">
+            <header class="ret-heading"><h2>Certificados emitidos</h2><p id="ret-contexto"></p><span id="ret-cantidad"></span></header>
+            <div class="ret-table-wrap" role="region" aria-label="Certificados e importes completos; desplazamiento horizontal para ver todas las columnas" tabindex="0">
+                <table class="ret-table"><caption class="visually-hidden">Certificados de la consulta aplicada, sin excluir estados</caption><thead id="ret-columnas"></thead><tbody id="ret-filas"></tbody></table>
+            </div>
+            <p id="ret-vacio" class="ret-empty" hidden>No se encontraron certificados con estos filtros.</p>
+            <div class="ret-totales" aria-label="Totales de todos los registros consultados">
+                <span>Base imponible: <strong id="ret-base"></strong></span>
+                <span>Retención: <strong id="ret-total"></strong></span>
+                <span id="ret-lh-bloque" hidden>Retención LH: <strong id="ret-lh"></strong></span>
+                <small>Totales de la consulta completa, no de la página. Estados tal como los devuelve el SP.</small>
+            </div>
+            <div id="ret-paginador"></div>
+        </section>
+        <div id="ret-cargando" class="ret-loading" role="status" aria-live="polite" hidden><span class="spinner-border" aria-hidden="true"></span><span id="ret-espera-texto">Consultando certificados. Esta operación puede demorar; por favor, espere.</span></div>
+    </div>
+</section>
+@section scripts {
+    <script src="~/js/components/gc-pager.js" asp-append-version="true"></script>
+    <script src="~/js/app/libros/certificados-retencion-emitidos.js" asp-append-version="true"></script>
+}

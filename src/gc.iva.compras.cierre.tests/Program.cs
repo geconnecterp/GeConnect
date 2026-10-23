@@ -155,7 +155,7 @@ Check(error?.StatusCode == 503 && !JsonConvert.SerializeObject(error.Value).Cont
 Check(antes.SequenceEqual(Directory.GetFiles(Path.GetTempPath(), "geco-iva-compras-*.zip").Order()), "Error de D limpia el temporal");
 Check(typeof(ApiController).GetCustomAttributes().Any(a => a is Microsoft.AspNetCore.Authorization.AuthorizeAttribute), "API exige autenticación");
 Check(typeof(gc.sitio.Areas.Libros.Controllers.IvaComprasCierreController).GetCustomAttributes().Any(a => a is AutoValidateAntiforgeryTokenAttribute), "Sitio exige antiforgery en POST");
-Check(!typeof(ApiController).GetMethods().Any(m => m.Name.Contains("Duplicados")), "Sin endpoint Duplicados en esta etapa");
+Check(!typeof(ApiController).GetMethods().Any(m => m.Name.Contains("Duplicados")), "Sin endpoint Duplicados: no requerido en Compras");
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllersWithViews().AddApplicationPart(typeof(gc.sitio.Areas.Libros.Controllers.IvaComprasCierreController).Assembly);

@@ -40,14 +40,14 @@ public class IvaVentasCierreController(IvaVentasCierreServicio servicio, ILogger
             adquirido = await Descargas.WaitAsync(0, ct);
             if (!adquirido) return StatusCode(429, new { mensaje = "Hay otras descargas de Cierre IVA Ventas en preparación. Intente nuevamente en unos momentos." });
             // Preparar todo antes de enviar; archivo temporal borrado al finalizar o ante error.
-            archivo = new FileStream(Path.Combine(Path.GetTempPath(), "geco-iva-" + Guid.NewGuid().ToString("N") + (duplicados ? ".txt" : ".zip")),
+            archivo = new FileStream(Path.Combine(Path.GetTempPath(), "geco-iva-" + Guid.NewGuid().ToString("N") + ".zip"),
                 FileMode.CreateNew, FileAccess.ReadWrite, FileShare.Read, 65536, FileOptions.Asynchronous | FileOptions.DeleteOnClose);
             if (duplicados) await servicio.GenerarDuplicados(pedido, User, Perfil, Menu, archivo, ct);
             else await servicio.GenerarRg3685(pedido, User, Perfil, Menu, archivo, ct);
             archivo.Position = 0;
             Response.Headers["X-Content-Type-Options"] = "nosniff";
-            var resultado = File(archivo, duplicados ? "text/plain; charset=utf-8" : "application/zip",
-                duplicados ? IvaVentasCierreArchivos.NombreDuplicados(pedido.Periodo) : IvaVentasCierreArchivos.NombreZip(pedido.Periodo));
+            var resultado = File(archivo, "application/zip",
+                duplicados ? IvaVentasCierreArchivos.NombreZipDuplicados(pedido.Periodo) : IvaVentasCierreArchivos.NombreZip(pedido.Periodo));
             archivo = null; // FileStreamResult adquiere y libera la propiedad del archivo.
             return resultado;
         }

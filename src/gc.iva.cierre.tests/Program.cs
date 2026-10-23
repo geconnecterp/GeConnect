@@ -86,10 +86,19 @@ var cts = new CancellationTokenSource(); cts.Cancel();
 await Reject<OperationCanceledException>(() => IvaVentasCierreArchivos.EscribirZip(new MemoryStream(), "202511", _ => DatosFake.Values(["0000"]), cts.Token), "Cancelación impide emitir el paquete completo");
 Check(IvaVentasCliente.Url("https://api.example/gcservicios", "api/iva-ventas-cierre/rg3685").AbsoluteUri == "https://api.example/gcservicios/api/iva-ventas-cierre/rg3685", "URL preserva subaplicación IIS");
 
-Check(IvaVentasCierreArchivos.NombreDuplicados("202511") == "IVA_Ventas_Duplicados_2025-11.txt", "Duplicados tiene nombre TXT con período, sin ZIP");
+Check(IvaVentasCierreArchivos.NombreDuplicados("202511") == "IVA_Ventas_Duplicados_2025-11.txt", "TXT interno de Duplicados conserva el nombre con período");
+Check(IvaVentasCierreArchivos.NombreZipDuplicados("202511") == "IVA_Ventas_Duplicados_2025-11.zip", "Descarga de Duplicados tiene nombre ZIP con período");
 await using var duplicados = new MemoryStream();
 await svc.GenerarDuplicados(new() { Periodo = "202511" }, User("0001"), "P1", "M", duplicados, default);
-var textoDuplicados = duplicados.ToArray();
+duplicados.Position = 0;
+byte[] textoDuplicados;
+using (var zip = new ZipArchive(duplicados, ZipArchiveMode.Read, leaveOpen:true))
+{
+    Check(zip.Entries.Count == 1 && zip.Entries[0].FullName == IvaVentasCierreArchivos.NombreDuplicados("202511"), "ZIP Duplicados contiene únicamente el TXT del período solicitado");
+    using var contenido = new MemoryStream();
+    using (var stream = zip.Entries[0].Open()) await stream.CopyToAsync(contenido);
+    textoDuplicados = contenido.ToArray();
+}
 Check(datos.DuplicadosCalls == 1 && datos.DuplicadosPeriodo == "202511", "Una llamada al SP de Duplicados con el período histórico seleccionado");
 Check(new UTF8Encoding(false, true).GetString(textoDuplicados) == "10001 CAFÉ ÑANDÚ  00000000123  \r\n200000001                                                                     00000000123\r\n", "TXT conserva orden, ceros, acentos, espacios finales y CRLF sin recalcular el total");
 Check(!textoDuplicados.Take(3).SequenceEqual(new byte[]{0xef,0xbb,0xbf}) && duplicados.CanWrite, "Duplicados sin BOM y sin cerrar el stream de respuesta");
@@ -106,6 +115,22 @@ await Reject<IOException>(() => IvaVentasCierreArchivos.EscribirDuplicados(new M
 await using var masivo = new MemoryStream();
 await IvaVentasCierreArchivos.EscribirDuplicados(masivo, DatosFake.Masivo(), default);
 Check(masivo.Length == 10_001 * 10L, "Duplicados escribe más de 5000 registros completos, sin paginar ni limitar el archivo");
+await using var masivoZip = new MemoryStream();
+await IvaVentasCierreArchivos.EscribirZipDuplicados(masivoZip, "202511", DatosFake.Masivo(), default);
+Check(masivoZip.CanWrite, "ZIP Duplicados deja abierto el stream de respuesta");
+masivoZip.Position = 0;
+using (var zip = new ZipArchive(masivoZip, ZipArchiveMode.Read, leaveOpen:true))
+{
+    using var contenido = new MemoryStream();
+    using (var stream = zip.Entries.Single().Open()) await stream.CopyToAsync(contenido);
+    Check(contenido.ToArray().SequenceEqual(masivo.ToArray()), "Comprimir no altera ningún byte del TXT completo de más de 5000 registros");
+}
+foreach (var invalido in new string?[] { null, "", "registro\npartido", "registro\rpartido" })
+    await Reject<IvaVentasCierreArchivoException>(() => IvaVentasCierreArchivos.EscribirZipDuplicados(new MemoryStream(), "202511", DatosFake.Values([invalido]), default), "ZIP Duplicados propaga registros inválidos para impedir entrega parcial");
+await Reject<IvaVentasCierreArchivoException>(() => IvaVentasCierreArchivos.EscribirZipDuplicados(new MemoryStream(), "202511", DatosFake.Values([]), default), "ZIP Duplicados no oculta un SP sin registros");
+await Reject<OperationCanceledException>(() => IvaVentasCierreArchivos.EscribirZipDuplicados(new MemoryStream(), "202511", DatosFake.Values(["1"]), cts.Token), "ZIP Duplicados respeta cancelación");
+await Reject<IOException>(() => IvaVentasCierreArchivos.EscribirZipDuplicados(new MemoryStream(), "202511", DatosFake.FallaAlFinal(), default), "ZIP Duplicados propaga fallo SQL tardío sin entregar descarga parcial");
+await Reject<ArgumentException>(() => IvaVentasCierreArchivos.EscribirZipDuplicados(new MemoryStream(), "202513", DatosFake.Values(["1"]), default), "ZIP Duplicados valida período antes de crear la entrada");
 Check(IvaVentasCliente.Url("https://api.example/gcservicios", "api/iva-ventas-cierre/duplicados").AbsoluteUri == "https://api.example/gcservicios/api/iva-ventas-cierre/duplicados", "Duplicados preserva PathBase de la API en IIS");
 Console.WriteLine($"PASS: {passed} verificaciones sintéticas; ningún cierre real ni conexión SQL.");
 

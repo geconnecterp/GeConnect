@@ -1,0 +1,46 @@
+@using gc.infraestructura.Dtos.Libros
+@model CertificadosPercepcionFiltro
+@{ Layout = "~/Views/Shared/_Layout.cshtml"; }
+@section styles {
+    <link rel="stylesheet" href="~/css/components/gc-pager.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/modules/certificados-percepcion-emitidos.css" asp-append-version="true" />
+}
+<section id="percepciones-emitidas" class="container-fluid percepciones" data-consulta="@Url.Action("Consultar")" data-ddjj="@Url.Action("Ddjj")" data-disponible="@(ViewBag.Error == null ? "true" : "false")">
+    <nav class="per-toolbar" aria-label="Acciones de certificados de percepción">
+        <button id="btnFiltro" class="btn btn-primary btn-sm" type="button" aria-controls="divFiltro" aria-expanded="true" aria-label="Mostrar u ocultar filtros" title="Mostrar u ocultar filtros" disabled="@(ViewBag.Error != null)"><i class="bx bx-filter" aria-hidden="true"></i></button>
+        <button id="btnDetalle" class="btn btn-primary btn-sm" type="button" aria-controls="divDetalle" aria-expanded="false" aria-label="Cerrar consulta y conservar filtros" title="Cerrar consulta y conservar filtros" disabled><i class="bx bx-caret-down" aria-hidden="true"></i></button>
+        <span class="per-toolbar-end">
+            <button id="per-ddjj" class="btn btn-primary btn-sm" type="button" disabled title="Descargar DDJJ de percepciones del mes completo en Excel"><i class="bx bx-download" aria-hidden="true"></i> DDJJ mensual</button>
+        </span>
+    </nav>
+    <partial name="_Filtro" model="Model" />
+    <div id="per-mensaje" role="status" aria-live="polite"></div>
+    <p class="per-help">DDJJ: Excel del mes completo, sin aplicar fechas ni CUIT de la consulta. Consulta y descarga de solo lectura; no emiten ni modifican comprobantes.</p>
+    <dialog id="per-ddjj-dialogo" class="per-ddjj-dialogo" aria-labelledby="per-ddjj-titulo" aria-describedby="per-ddjj-alcance">
+        <h2 id="per-ddjj-titulo">Descargar declaración jurada</h2>
+        <p id="per-ddjj-periodo"></p>
+        <p id="per-ddjj-alcance">Se descargarán todos los registros del mes del Libro IVA en Excel. Los filtros de fecha y CUIT de la consulta y la página visible no se aplican a esta descarga. No se emiten ni modifican comprobantes.</p>
+        <div class="per-ddjj-acciones"><button id="per-ddjj-cancelar" type="button" class="btn btn-outline-secondary">Cancelar</button><button id="per-ddjj-confirmar" type="button" class="btn btn-primary">Descargar mes completo</button></div>
+    </dialog>
+    <div id="divDetalle" class="per-detail" hidden>
+        <section id="per-panel" class="per-panel" aria-busy="false">
+            <header class="per-heading"><h2>Percepciones emitidas</h2><p id="per-contexto"></p><span id="per-cantidad"></span></header>
+            <div class="per-table-wrap" role="region" aria-label="Percepciones e importes completos; desplazamiento horizontal para ver todas las columnas" tabindex="0">
+                <table class="per-table"><caption class="visually-hidden">Filas de percepción del SP, conservando orden y multiplicidad</caption><thead id="per-columnas"></thead><tbody id="per-filas"></tbody></table>
+            </div>
+            <p id="per-vacio" class="per-empty" hidden>No se encontraron percepciones con estos filtros.</p>
+            <div class="per-totales" aria-label="Totales de todas las filas consultadas">
+                <span>Base imponible: <strong id="per-base"></strong></span>
+                <span>Percepción: <strong id="per-total"></strong></span>
+                <span id="per-lh-bloque" hidden>Percepción LH: <strong id="per-lh"></strong></span>
+                <small>Totales de toda la consulta, no de la página. LH se informa por separado.</small>
+            </div>
+            <div id="per-paginador"></div>
+        </section>
+        <div id="per-cargando" class="per-loading" role="status" aria-live="polite" hidden><span class="spinner-border" aria-hidden="true"></span><span id="per-espera-texto">Consultando percepciones. Esta operación puede demorar; por favor, espere.</span></div>
+    </div>
+</section>
+@section scripts {
+    <script src="~/js/components/gc-pager.js" asp-append-version="true"></script>
+    <script src="~/js/app/libros/certificados-percepcion-emitidos.js" asp-append-version="true"></script>
+}
