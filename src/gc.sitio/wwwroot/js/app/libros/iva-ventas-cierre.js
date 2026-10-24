@@ -105,15 +105,15 @@
         if (busy || confirming || !available || !selected) return;
         const period = selected.period;
         setBusy(duplicados
-            ? 'Generando Duplicados Electrónicos del período ' + periodText(period) + '. Esta operación puede demorar; la descarga comenzará cuando el TXT esté completo.'
+            ? 'Generando Duplicados Electrónicos del período ' + periodText(period) + '. Esta operación puede demorar; la descarga comenzará cuando el ZIP con el TXT esté completo.'
             : 'Generando cabecera y detalle RG 3685 del período ' + periodText(period) + '. La descarga comenzará cuando ambos archivos estén listos.'); notify('');
         try {
             const response = await request(duplicados ? root.dataset.duplicados : root.dataset.descarga, data(period));
             const mime = (response.headers.get('Content-Type') || '').split(';')[0].trim().toLowerCase();
-            if (mime !== (duplicados ? 'text/plain' : 'application/zip'))
-                throw new Error(duplicados ? 'No se recibió un TXT válido de Duplicados Electrónicos.' : 'No se recibió un archivo ZIP válido.');
+            if (mime !== 'application/zip')
+                throw new Error('No se recibió un archivo ZIP válido.');
             const blob = await response.blob(), url = URL.createObjectURL(blob), a = document.createElement('a');
-            a.href = url; a.download = 'IVA_Ventas_' + (duplicados ? 'Duplicados_' : '3685_') + periodText(period) + (duplicados ? '.txt' : '.zip'); document.body.appendChild(a); a.click(); a.remove();
+            a.href = url; a.download = 'IVA_Ventas_' + (duplicados ? 'Duplicados_' : '3685_') + periodText(period) + '.zip'; document.body.appendChild(a); a.click(); a.remove();
             setTimeout(() => URL.revokeObjectURL(url), 60000);
             notify('Descarga preparada: ' + (duplicados ? 'Duplicados Electrónicos' : 'cabecera y detalle') + ' del período ' + periodText(period) + '.', 'success');
         } catch (e) { notify(e instanceof TypeError ? 'No se pudo completar la descarga. Verificá la conexión e intentá nuevamente.' : e.message, 'warning'); }

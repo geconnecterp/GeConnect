@@ -1,0 +1,38 @@
+/* Opt-in: no modifica _filtroBase ni estilos de otros módulos. */
+.retenciones{min-width:0;padding-top:.75rem;--ret-border:#e8d79c}
+.retenciones [hidden]{display:none!important}.retenciones fieldset{min-width:0}
+.retenciones .ret-toolbar{display:flex;align-items:center;flex-wrap:wrap;gap:.5rem;margin-bottom:.75rem}
+.retenciones .ret-toolbar-end{display:flex;gap:.5rem;margin-left:auto;flex-wrap:wrap}
+.retenciones .ret-toolbar .btn{height:34px;display:inline-flex;align-items:center;gap:.35rem}
+.retenciones .filter-golden{padding:0;margin:0}
+.retenciones .input-group>.form-control,.retenciones .input-group>.form-select{min-width:0}
+.retenciones .input-group-text{display:flex;white-space:nowrap}
+.retenciones .form-check-label{font-size:.875rem}
+.retenciones .ret-help,.retenciones small{font-size:.78rem;color:#626c7b;margin:.5rem 0}
+.retenciones .ret-actions{display:flex;align-items:center;justify-content:space-around;gap:1rem;flex-wrap:wrap;padding-top:1rem;padding-bottom:1rem}
+.retenciones .ret-actions>.btn{width:150px;display:inline-flex;align-items:center;justify-content:center;gap:.35rem}
+.retenciones #ret-mensaje:empty{display:none}.retenciones #ret-mensaje{margin:.5rem 0}
+.retenciones .ret-detail{position:relative;min-height:280px;min-width:0}
+.retenciones .ret-panel{height:100%;display:flex;flex-direction:column;min-height:0;min-width:0;background:#fff;border:1px solid var(--ret-border);border-radius:.6rem;padding:.65rem .8rem}
+.retenciones .ret-heading{display:flex;align-items:baseline;flex-wrap:wrap;gap:.3rem .75rem;padding-bottom:.6rem;flex-shrink:0}
+.retenciones h2{font-size:1rem;font-weight:700;margin:0}.retenciones #ret-contexto{font-size:.78rem;flex:1;min-width:180px;overflow-wrap:anywhere;margin:0}
+.retenciones #ret-cantidad{font-size:.78rem;font-variant-numeric:tabular-nums}
+.retenciones .ret-table-wrap{overflow:auto;min-height:0;max-width:100%;flex:1 1 auto;border:1px solid #e6deca;border-radius:.3rem;overscroll-behavior:contain}
+.retenciones .ret-table{border-collapse:separate;border-spacing:0;font-size:.8rem;width:max-content;min-width:100%}
+.retenciones th{position:sticky;top:0;z-index:1;background:#926e0b;color:#fff;white-space:nowrap;text-align:left;padding:.6rem .7rem}
+.retenciones td{padding:.45rem .7rem;border-bottom:1px solid #e9e7e0;white-space:nowrap}
+.retenciones .ret-number{text-align:right;min-width:140px;font-variant-numeric:tabular-nums}
+.retenciones td:nth-child(4),.retenciones td:nth-last-child(2),.retenciones td:last-child{white-space:normal;min-width:220px;max-width:340px;overflow-wrap:anywhere}
+.retenciones tbody tr:nth-child(even){background:#fffcf3}.retenciones tbody tr:hover{background:#fff0be}
+.retenciones .ret-totales{display:flex;align-items:baseline;gap:.5rem 1.5rem;flex-wrap:wrap;padding-top:.6rem;font-size:.85rem;flex-shrink:0;font-variant-numeric:tabular-nums}
+.retenciones .ret-totales strong{white-space:nowrap}.retenciones .ret-totales small{flex-basis:100%;margin:0}
+.retenciones .ret-empty{text-align:center;padding:2rem 1rem}
+.retenciones .ret-loading{position:absolute;inset:0;display:flex;flex-direction:column;gap:1rem;justify-content:center;align-items:center;text-align:center;background:rgba(255,252,243,.96);z-index:3;border:1px solid var(--ret-border);border-radius:.6rem;padding:1.5rem}
+.retenciones .ret-loading .spinner-border{color:#926e0b}
+.retenciones :focus-visible{outline:2px solid #926e0b;outline-offset:2px}
+.retenciones .ret-ddjj-dialogo{max-width:min(580px,calc(100vw - 2rem));border:1px solid #cba540;border-top:5px solid #b48814;border-radius:.75rem;background:#fffdf6;color:#322b1a;padding:1.5rem;box-shadow:0 20px 60px #33260940}
+.retenciones .ret-ddjj-dialogo::backdrop{background:rgba(34,29,18,.5)}
+.retenciones .ret-ddjj-dialogo h2{font-size:1.15rem;margin-bottom:1rem}.retenciones .ret-ddjj-dialogo p{line-height:1.6}
+.retenciones #ret-ddjj-periodo{font-weight:600;color:#795a0c}.retenciones .ret-ddjj-acciones{display:flex;justify-content:flex-end;gap:.75rem;flex-wrap:wrap;margin-top:1.25rem}
+@media(prefers-reduced-motion:reduce){.retenciones .spinner-border{animation:none}}
+@media(max-width:575.98px){.retenciones .ret-panel{padding:.5rem}.retenciones .ret-actions{justify-content:center}}

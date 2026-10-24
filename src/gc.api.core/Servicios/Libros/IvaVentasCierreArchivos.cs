@@ -9,6 +9,16 @@ public static class IvaVentasCierreArchivos
     // Convención provisional solicitada para revisión del tester, no certificación de formato fiscal.
     public static string NombreZip(string periodo) => $"IVA_Ventas_3685_{IvaVentasCierrePeriodo.Texto(periodo)}.zip";
     public static string NombreDuplicados(string periodo) => $"IVA_Ventas_Duplicados_{IvaVentasCierrePeriodo.Texto(periodo)}.txt";
+    public static string NombreZipDuplicados(string periodo) => $"IVA_Ventas_Duplicados_{IvaVentasCierrePeriodo.Texto(periodo)}.zip";
+    public static async Task EscribirZipDuplicados(Stream destino, string periodo, IAsyncEnumerable<string?> lineas, CancellationToken ct)
+    {
+        IvaVentasCierrePeriodo.Validar(periodo);
+        ct.ThrowIfCancellationRequested();
+        using var zip = new ZipArchive(destino, ZipArchiveMode.Create, leaveOpen: true);
+        var entry = zip.CreateEntry(NombreDuplicados(periodo), CompressionLevel.Fastest);
+        await using var stream = entry.Open();
+        await EscribirDuplicados(stream, lineas, ct);
+    }
     public static async Task EscribirDuplicados(Stream destino, IAsyncEnumerable<string?> lineas, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();

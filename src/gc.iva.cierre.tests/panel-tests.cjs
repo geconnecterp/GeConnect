@@ -63,11 +63,13 @@ const selectFirst=()=>els['ivc-resultado'].fire('click',{target:els['ivc-resulta
     assert.equal(calls.at(-1).opt.body.get('__RequestVerificationToken'),'test');
     assert.equal(els['ivc-esperando'].hidden,false); assert.equal(els['ivc-duplicados'].disabled,true); assert.equal(els['ivc-rg'].disabled,true); assert.equal(els['ivc-cerrar'].disabled,true);
     assert.equal(els['ivc-espera-texto'].textContent.includes('Duplicados Electrónicos'),true);
-    await reply({},'text/plain; charset=utf-8'); assert.equal(downloads,2); assert.equal(downloadedNames[1],'IVA_Ventas_Duplicados_2025-11.txt');
+    assert.equal(els['ivc-espera-texto'].textContent.includes('ZIP con el TXT'),true);
+    await reply({},'application/zip'); assert.equal(downloads,2); assert.equal(downloadedNames[1],'IVA_Ventas_Duplicados_2025-11.zip');
     assert.equal(els['ivc-duplicados'].disabled,false); assert.equal(els['ivc-cerrar'].innerHTML.includes('2025-12'),true);
     els['ivc-duplicados'].fire('click'); await reply({mensaje:'Duplicados devolvió un registro nulo.'},'application/json',422);
     assert.equal(downloads,2); assert.equal(els['ivc-mensaje'].textContent,'Duplicados devolvió un registro nulo.'); assert.equal(els['ivc-duplicados'].disabled,false);
     els['ivc-duplicados'].fire('click'); await reply({},'text/html'); assert.equal(downloads,2); assert.equal(els['ivc-mensaje'].className,'alert alert-warning');
+    els['ivc-duplicados'].fire('click'); await reply({},'text/plain; charset=utf-8'); assert.equal(downloads,2); assert.equal(els['ivc-mensaje'].textContent,'No se recibió un archivo ZIP válido.');
     els['ivc-cerrar'].fire('click'); els['ivc-confirmar'].fire('click');
     await reply({mensaje:'El período cambió.'},'application/json',409);
     assert.equal(els['ivc-cerrar'].disabled,true); assert.equal(els['ivc-rg'].disabled,true); assert.equal(pending.length,0); // sin reintento
@@ -82,5 +84,5 @@ const selectFirst=()=>els['ivc-resultado'].fire('click',{target:els['ivc-resulta
     els['ivc-actualizar'].fire('click'); await reply(state()); els['ivc-cerrar'].fire('click'); els['ivc-confirmar'].fire('click');
     pending.shift().reject(new TypeError('network')); await tick();
     assert.equal(pending.length,0); assert.equal(els['ivc-cerrar'].disabled,true); assert.equal(els['ivc-mensaje'].textContent.includes('comprobar el estado'),true);
-    console.log('PASS: selección, próximo período independiente, cancelar, doble confirmación, ZIP y TXT Duplicados, bloqueo simultáneo, MIME, error 422, sucursal, vacío y desconexión sin reintentos.');
+    console.log('PASS: selección, próximo período independiente, cancelar, doble confirmación, ZIP RG y ZIP Duplicados, bloqueo simultáneo, MIME (rechaza TXT sin comprimir), error 422, sucursal, vacío y desconexión sin reintentos.');
 })().catch(e=>{console.error(e);process.exitCode=1;});

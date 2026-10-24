@@ -1,0 +1,50 @@
+@using gc.infraestructura.Dtos.Libros
+@model CertificadosPercepcionFiltro
+@{
+    var impuestos = (List<PercepcionImpuesto>)ViewBag.Impuestos;
+    var meses = new[] { "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre" };
+}
+@if (ViewBag.Error != null) { <div class="alert alert-warning" role="alert">@ViewBag.Error</div> }
+<form id="per-filtros">
+    @Html.AntiForgeryToken()
+    <fieldset id="per-campos" class="filter-golden" disabled="@(ViewBag.Error != null)">
+        <legend class="visually-hidden">Período y filtros de certificados de percepción</legend>
+        <div id="divFiltro">
+            <div class="filter-golden-body">
+                <div class="row g-3">
+                    <div class="col-lg-5"><div class="input-group input-group-sm"><label class="input-group-text" for="per-impuesto">Impuesto</label>
+                        <select id="per-impuesto" name="Impuesto" class="form-select" required>
+                            @foreach (var i in impuestos) { <option value="@i.Id" selected="@(i.Id == Model.Impuesto)">@i.Texto (@i.Id)</option> }
+                        </select>
+                    </div></div>
+                    <div class="col-lg-2 col-sm-6"><div class="input-group input-group-sm"><label class="input-group-text" for="per-periodo">Año</label><select id="per-periodo" name="Periodo" class="form-select" required>
+                        @for (var anio = Model.Periodo; anio >= Model.Periodo - 5; anio--) { <option value="@anio" selected="@(anio == Model.Periodo)">@anio</option> }
+                    </select></div></div>
+                    <div class="col-lg-3 col-sm-6"><div class="input-group input-group-sm"><label class="input-group-text" for="per-mes">Mes</label><select id="per-mes" name="Mes" class="form-select" required>
+                        @for (var mes = 1; mes <= 12; mes++) { <option value="@mes" selected="@(mes == Model.Mes)">@meses[mes - 1]</option> }
+                    </select></div></div>
+                    <div class="col-lg-2"><div class="input-group input-group-sm"><label class="input-group-text" for="per-tamanio">Filas</label><select id="per-tamanio" class="form-select"><option value="50">50</option><option value="100" selected>100</option><option value="250">250</option><option value="500">500</option></select></div></div>
+                </div>
+                <p class="per-help mt-3">Año y mes corresponden al Libro IVA. El rango opcional filtra la fecha del comprobante dentro del período elegido.</p>
+                <div class="row g-3">
+                    <div class="col-md-8">
+                        <div class="form-check form-switch mb-2"><input id="per-por-fecha" name="Fechas" value="true" type="checkbox" class="form-check-input" /><label for="per-por-fecha" class="form-check-label">Rango de fechas</label></div>
+                        <fieldset id="per-fechas" disabled><div class="row g-2">
+                            <div class="col-sm-6"><div class="input-group input-group-sm"><label for="per-desde" class="input-group-text">Desde</label><input id="per-desde" name="Desde" type="date" class="form-control" required /></div></div>
+                            <div class="col-sm-6"><div class="input-group input-group-sm"><label for="per-hasta" class="input-group-text">Hasta</label><input id="per-hasta" name="Hasta" type="date" class="form-control" required /></div></div>
+                        </div></fieldset>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-check form-switch mb-2"><input id="per-por-cuit" name="PorCuit" value="true" type="checkbox" class="form-check-input" /><label for="per-por-cuit" class="form-check-label">CUIT</label></div>
+                        <fieldset id="per-cuit-campos" disabled><div class="input-group input-group-sm"><label for="per-cuit" class="input-group-text">Texto o patrón</label><input id="per-cuit" name="Cuit" type="text" maxlength="15" autocomplete="off" class="form-control" required /></div></fieldset>
+                        <small>Sin validar formato ni dígito verificador. % permite coincidencias parciales.</small>
+                    </div>
+                </div>
+            </div>
+            <div class="filter-golden-footer per-actions">
+                <button type="reset" class="btn btn-lg btn-danger"><i class="bx bx-sm bx-x-circle" aria-hidden="true"></i> Inicializar</button>
+                <button type="submit" class="btn btn-lg btn-success"><i class="bx bx-sm bx-search" aria-hidden="true"></i> Ver</button>
+            </div>
+        </div>
+    </fieldset>
+</form>

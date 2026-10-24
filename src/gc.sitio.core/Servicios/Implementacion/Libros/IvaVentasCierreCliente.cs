@@ -32,19 +32,16 @@ public class IvaVentasCierreCliente(IOptions<AppSettings> settings)
     public Task<FileStream> Duplicados(IvaVentasCierrePedido pedido, string token, string perfil, string menu, CancellationToken ct) => Descargar("duplicados", pedido, token, perfil, menu, ct);
     private async Task<FileStream> Descargar(string accion, IvaVentasCierrePedido pedido, string token, string perfil, string menu, CancellationToken ct)
     {
-        var texto = accion == "duplicados";
         using var response = await Enviar(accion, pedido, token, perfil, menu, ct);
-        if (response.Content.Headers.ContentType?.MediaType != (texto ? "text/plain" : "application/zip"))
-            throw new InvalidOperationException(texto ? "No se recibió un TXT válido de Duplicados Electrónicos." : "No se recibió un ZIP válido.");
-        var file = new FileStream(Path.Combine(Path.GetTempPath(), "geco-iva-sitio-" + Guid.NewGuid().ToString("N") + (texto ? ".txt" : ".zip")),
+        if (response.Content.Headers.ContentType?.MediaType != "application/zip")
+            throw new InvalidOperationException("No se recibió un ZIP válido.");
+        var file = new FileStream(Path.Combine(Path.GetTempPath(), "geco-iva-sitio-" + Guid.NewGuid().ToString("N") + ".zip"),
             FileMode.CreateNew, FileAccess.ReadWrite, FileShare.Read, 65536, FileOptions.Asynchronous | FileOptions.DeleteOnClose);
         try
         {
             await response.Content.CopyToAsync(file, ct);
             file.Position = 0;
-            if (texto && file.Length == 0)
-                throw new InvalidOperationException("Duplicados Electrónicos devolvió un archivo vacío.");
-            if (!texto && (file.Length < 4 || file.ReadByte() != 0x50 || file.ReadByte() != 0x4b))
+            if (file.Length < 4 || file.ReadByte() != 0x50 || file.ReadByte() != 0x4b)
                 throw new InvalidOperationException("La descarga no contiene un ZIP válido.");
             file.Position = 0;
             return file;

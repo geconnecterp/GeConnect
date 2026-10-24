@@ -60,8 +60,8 @@ public class IvaVentasCierreController(IOptions<AppSettings> options, IHttpConte
                 ? await cliente.Duplicados(pedido, TokenCookie, Perfil(), options.Value.MenuId, ct)
                 : await cliente.Rg3685(pedido, TokenCookie, Perfil(), options.Value.MenuId, ct);
             Response.Headers["X-Content-Type-Options"] = "nosniff";
-            return File(file, duplicados ? "text/plain; charset=utf-8" : "application/zip",
-                $"IVA_Ventas_{(duplicados ? "Duplicados" : "3685")}_{IvaVentasCierrePeriodo.Texto(pedido.Periodo)}.{(duplicados ? "txt" : "zip")}");
+            return File(file, "application/zip",
+                $"IVA_Ventas_{(duplicados ? "Duplicados" : "3685")}_{IvaVentasCierrePeriodo.Texto(pedido.Periodo)}.zip");
         }
         catch (Exception ex) when (ex is not OperationCanceledException || !ct.IsCancellationRequested) { return Error(ex, false); }
     }

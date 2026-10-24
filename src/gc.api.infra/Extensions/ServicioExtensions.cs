@@ -52,6 +52,10 @@ namespace gc.api.infra.Extensions
             services.AddScoped<IvaVentasCierreServicio>();
             services.AddScoped<IIvaComprasCierreDatos, IvaComprasCierreDatos>();
             services.AddScoped<IvaComprasCierreServicio>();
+            services.AddScoped<ICertificadosRetencionDatos, CertificadosRetencionDatos>();
+            services.AddScoped<CertificadosRetencionServicio>();
+            services.AddScoped<ICertificadosPercepcionDatos, CertificadosPercepcionDatos>();
+            services.AddScoped<CertificadosPercepcionServicio>();
             //services.AddTransient<IConfigServicio, ConfigServicio>();
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 
