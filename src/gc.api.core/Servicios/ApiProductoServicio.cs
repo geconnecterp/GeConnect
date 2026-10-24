@@ -2102,5 +2102,21 @@ namespace gc.api.core.Servicios
 
 			return rem;
 		}
+
+		public RespuestaDto ConfirmarRprCtl(ConfirmarRprCtlRequest request)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_RPR_CTL_CONFIRMAR;
+
+			var ps = new List<SqlParameter>()
+			{
+				new("@json_p", request.json_p),
+				new("@rp_compte", request.rp_compte),
+				new("@adm_id", request.adm_id),
+				new("@usu_id", request.usu_id),
+			};
+
+			var resp = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
+			return resp.First();
+		}
 	}
 }

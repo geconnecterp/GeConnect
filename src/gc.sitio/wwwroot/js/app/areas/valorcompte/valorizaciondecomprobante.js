@@ -943,7 +943,7 @@ function SetearCostoDesdeOc() {
 			}
 			return true;
 
-		}, true, ["Aceptar", "Cancelar"], "question!", null);
+		}, true, ["SI", "NO"], "question!", null);
 	}
 }
 
@@ -1170,7 +1170,7 @@ function CancelarDesdeDetalleRpr() {
 		}
 		return true;
 
-	}, true, ["Aceptar", "Cancelar"], "question!", null);
+	}, true, ["SI", "NO"], "question!", null);
 }
 
 function AceptarDesdeDetalleRpr() {
@@ -1194,7 +1194,7 @@ function AceptarDesdeDetalleRpr() {
 			}
 			return true;
 
-		}, true, ["Aceptar", "Cancelar"], "question!", null);
+		}, true, ["SI", "NO"], "question!", null);
 	} else {
 		// The nav-item is not disabled, validamos si existe error en el calculo de costos
 		PostGen(data, VerificarErrorEnCalculoDeCostosUrl, function (obj) {

@@ -132,5 +132,6 @@ namespace gc.sitio.core.Servicios.Contratos
 		Task<List<PlanillaElabYFraccionDto>> ObtenerPlanillaDeElabYFraccion(string ep_compte, string token);
 		Task<List<RprCtlPendienteDto>> ObtenerRprCtlPendiente(string cta_id, string token);
 		Task<List<RprCtlItemDetalleDto>> ObtenerRprCtlDetalle(string rp_compte, string token);
+		RespuestaGenerica<RespuestaDto> ConfirmarRprCtl(ConfirmarRprCtlRequest request, string token);
 	}
 }

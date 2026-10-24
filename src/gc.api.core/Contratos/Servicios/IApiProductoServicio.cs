@@ -150,5 +150,6 @@ namespace gc.api.core.Contratos.Servicios
 		List<PlanillaElabYFraccionListaDto> ObtenerPlanillaElabFraccionLista(PlanillaElabYFraccionListaRequest req);
 		List<RprCtlPendienteDto> ObtenerRprCtlPendiente(string cta_id);
 		List<RprCtlItemDetalleDto> ObtenerRprCtlDetalle(string rp_compte);
+		RespuestaDto ConfirmarRprCtl(ConfirmarRprCtlRequest request);
 	}
 }

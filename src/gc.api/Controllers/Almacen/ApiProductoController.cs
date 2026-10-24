@@ -1859,6 +1859,19 @@ namespace gc.api.Controllers.Almacen
 			return Ok(response);
 		}
 
+		[HttpPost("confirmar-rpr-ctl")]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<RespuestaDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		public ActionResult<RespuestaDto> ConfirmarRprCtl(ConfirmarRprCtlRequest req)
+		{
+			if (req == null)
+				return BadRequest("No se recepcionaron los valores para la confirmación del RPR CTL");
+
+			var resultado = _productosSv.ConfirmarRprCtl(req);
+			var response = new ApiResponse<RespuestaDto>(resultado);
+			return Ok(response);
+		}
+
 		private static PedidoInternoRequest MapToRequest(QueryFilters filtro)
 		{
 			return new PedidoInternoRequest
