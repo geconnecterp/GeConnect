@@ -1,0 +1,77 @@
+﻿@model ListaValorizacionesModel
+@using static gc.infraestructura.Helpers.GridHelper
+@{
+	var alt = true;
+	string clase = string.Empty;
+}
+<style>
+	#containerListaValorizacion {
+		max-height: 700px;
+		overflow-y: auto;
+	}
+
+	#tbListaValorizacion thead th {
+		position: sticky;
+		top: 0;
+		z-index: 10;
+		/* Estilo Golden */
+		background: linear-gradient(to bottom, #b8860b, #daa520);
+		color: #fff;
+		/* Opcional: mantener bordes */
+		border-color: #a67c00;
+	}
+
+</style>
+<div class="grid-golden" style="padding-left: 0px; padding-right: 0px;">
+	<div class="grid-golden-header">
+		<div class="row align-items-md-center">
+			<div class="col-md-10 col-sm-6 d-flex align-items-center">
+				<h5 class="mb-0 flex-grow-1">
+					<i class="bx bx-package me-2"></i>
+					<strong>Valorizaciones</strong>
+				</h5>
+			</div>
+		</div>
+	</div>
+	<div class="grid-golden-body">
+		<div class="table-responsive table-wrapper-700-full-width" id="containerListaValorizacion">
+			<table class="table table-bordered table-hover table-golden" id="tbListaValorizacion">
+				<thead>
+					<tr class="header">
+						<th style="width:70%;" class="align-center">Comprobante</th>
+						<th style="width:5%;" class="align-center">Fecha</th>
+					</tr>
+				</thead>
+				<tbody>
+					@if (Model != null && Model.Grilla != null && Model.Grilla.ListaDatos != null && Model.Grilla.ListaDatos.Count > 0)
+					{
+						@foreach (var item in Model.Grilla.ListaDatos)
+						{
+							if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+							<tr class=""
+								data-cta-id="@item.cta_id"
+								data-tco-id="@item.tco_id"
+								data-cm-compte="@item.cm_compte"
+								data-dia-movi="@item.dia_movi"
+								data-comprobante="@item.comprobante"
+								onclick="selectListaValorizacion(this)"
+								ondblclick="dblClickListaValorizacion(this)">
+								<td class="@Model.Grilla.ObtenerClase(item.comprobante)">@Model.Grilla.FormatearDato(item.comprobante, FormatDato.Ninguno)</td>
+								<td class="@Model.Grilla.ObtenerClase(item.cm_fecha)">@GridHelper.FormatearDato(item.cm_fecha, FormatDato.Fecha, true)</td>
+							</tr>
+						}
+					}
+					else
+					{
+						<tr class="fila-vacia">
+							<td colspan="2" class="text-center text-muted py-2">
+								<i class="bx bx-info-circle me-1"></i>
+								No hay items para mostrar.
+							</td>
+						</tr>
+					}
+				</tbody>
+			</table>
+		</div>
+	</div>
+</div>

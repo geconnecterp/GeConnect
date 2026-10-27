@@ -50,6 +50,7 @@ namespace gc.infraestructura.Dtos.Almacen.ComprobanteDeCompra
 		public string valorizacion_class_dp { get; set; } = string.Empty;
 		public string valorizacion_value_dc { get; set; } = string.Empty;
 		public string valorizacion_value_dp { get; set; } = string.Empty;
+		public bool PermiteDecimales => up_tipo == 'P';
 
 		public static decimal CalcularPCosto(decimal p_plista, decimal p_d1, decimal p_d2, decimal p_d3, decimal p_d4, decimal p_dpa, string p_boni, decimal flete = 0)
 		{

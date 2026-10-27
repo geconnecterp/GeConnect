@@ -671,5 +671,32 @@ namespace gc.api.core.Servicios
 			var listaTemp = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
 			return listaTemp;
 		}
+
+		public List<ConsultaValorizacionesRegistradasDto> ObtenerValorizacionesRegistradas(ObtenerValorizacionesRegistradasRequest request)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_COMPTE_VAL_LISTA;
+			var ps = new List<SqlParameter>()
+			{
+				new("@cta_id",request.cta_id),
+				new("@desde",request.desde),
+				new("@hasta",request.hasta),
+			};
+			var listaTemp = _repository.EjecutarLstSpExt<ConsultaValorizacionesRegistradasDto>(sp, ps, true);
+			return listaTemp;
+		}
+
+		public List<ComptesDeValorizacionDto> ObtenerComptesDeValorizacion(ObtenerComptesDeValorizacionRequest request)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_COMPTE_VAL;
+			var ps = new List<SqlParameter>()
+			{
+				new("@cta_id",request.cta_id),
+				new("@tco_id",request.tco_id),
+				new("@dia_movi",request.dia_movi),
+				new("@cm_compte",request.cm_compte),
+			};
+			var listaTemp = _repository.EjecutarLstSpExt<ComptesDeValorizacionDto>(sp, ps, true);
+			return listaTemp;
+		}
 	}
 }

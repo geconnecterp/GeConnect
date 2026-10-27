@@ -47,5 +47,7 @@ namespace gc.sitio.core.Servicios.Contratos
 		RespuestaGenerica<RespuestaDto> ConfirmaCompteJbi(ConfirmarJustificacionRequest request, string token);
         List<CompteValorizaRprDto> ObtenerComprobantesValorizaRpr(CompteValorizaRprDtosRequest request, string token);
         RespuestaGenerica<RespuestaDto> CompteValorizarAgregarProducto(CompteValorizarAgregarProductoRequest request, string token);
+        List<ConsultaValorizacionesRegistradasDto> ObtenerValorizacionesRegistradas(ObtenerValorizacionesRegistradasRequest request, string token);
+        List<ComptesDeValorizacionDto> ObtenerComptesDeValorizacion(ObtenerComptesDeValorizacionRequest request, string token);
 	}
 }

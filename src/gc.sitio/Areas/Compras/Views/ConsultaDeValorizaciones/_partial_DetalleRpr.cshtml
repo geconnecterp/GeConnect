@@ -1,0 +1,185 @@
+﻿@model ListaDetalleRprModel
+@using static gc.infraestructura.Helpers.GridHelper
+@{
+	var alt = true;
+	string clase = string.Empty;
+}
+<style>
+	.opciones {
+		display: flex;
+		gap: 100px;
+	}
+
+	.input-numeric {
+		height: 25px !important;
+		max-height: 25px !important;
+	}
+
+	.celda {
+		padding-left: 0.5px !important;
+		padding-right: 5px !important;
+	}
+
+	.celda-ocd-plista {
+		width: 5% !important;
+		max-width: 5% !important;
+	}
+
+	.celda-p-desc {
+		width: 300px;
+		max-width: 300px;
+	}
+
+	.celda-v {
+		width: 1% !important;
+		max-width: 1% !important;
+		font-size: small !important;
+	}
+</style>
+<div class="grid-golden" style="padding-left: 0px; padding-right: 0px;">
+	<div class="grid-golden-header">
+		<div class="row align-items-md-center">
+			<div class="col-md-10 col-sm-6 d-flex align-items-center">
+				<h5 class="mb-0 flex-grow-1">
+					<i class="bx bx-package me-2"></i>
+					Detalle <strong>@Model.leyenda</strong>
+				</h5>
+			</div>
+		</div>
+	</div>
+	<div class="grid-golden-body">
+		<div class="table-responsive table-wrapper-700-full-width" id="containerListaDetalleRpr">
+			<table class="table table-bordered table-hover table-golden" id="tbListaDetalleRpr">
+				<thead>
+					<tr class="header">
+						<th colspan="2" class="align-center"></th>
+						<th colspan="9" class="align-center">Precio OC y Cantidad RP</th>
+						<th colspan="10" class="align-center" style="background: cornflowerblue;">Factura</th>
+						<th colspan="2" class="align-center" title="Valorización">Valoriz.</th>
+					</tr>
+					<tr class="header">
+						<th class="align-center">ID</th>
+						<th class="align-center">Descripcion</th>
+						<th class="align-center">P. Lista</th>@*Precio OC y Cantidad RP*@
+						<th class="align-center">D1</th>
+						<th class="align-center">D2</th>
+						<th class="align-center">D3</th>
+						<th class="align-center">D4</th>
+						<th class="align-center">Dpa</th>
+						<th class="align-center">Boni.</th>
+						<th class="align-center" style="width: 80px;">Costo</th>
+						<th class="align-center">Recibido</th>
+						<th class="align-center" style="background: cornflowerblue;">P. Lista</th>@*Factura*@
+						<th class="align-center" style="background: cornflowerblue;">D1</th>
+						<th class="align-center" style="background: cornflowerblue;">D2</th>
+						<th class="align-center" style="background: cornflowerblue;">D3</th>
+						<th class="align-center" style="background: cornflowerblue;">D4</th>
+						<th class="align-center" style="background: cornflowerblue;">Dpa</th>
+						<th class="align-center" style="background: cornflowerblue;">Boni.</th>
+						<th class="align-center" style="background: cornflowerblue;width: 80px;">Costo</th>
+						<th class="align-center" style="background: cornflowerblue;">AP</th>
+						<th class="align-center" style="background: cornflowerblue;">Cant. Fact.</th>
+						<th class="align-center celda-v">DC</th>@*Factura*@
+						<th class="align-center celda-v">DP</th>
+					</tr>
+				</thead>
+				<tbody>
+					@if (Model != null && Model.Grilla != null && Model.Grilla.ListaDatos != null)
+					{
+						@foreach (var item in Model.Grilla.ListaDatos)
+						{
+							if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+							var nombre = item.p_id + "_";
+							var nombre_check = nombre + "checkbox";
+							var nombre_check_nc_genera = nombre + "nc_genera";
+							<tr class="@clase" data-p-id="@item.p_id" onclick="selectListaDetalleRpr(this)">
+								@*1*@ <td class="text-center celda" style="padding-left: 0.5px; padding-right: 0.5px; text-align-last: center;">@Model.Grilla.FormatearDato(item.p_id, FormatDato.Ninguno)</td>
+								@*2*@ <td class="text-start celda celda-p-desc" title="@item.p_desc">@Model.Grilla.FormatearDato(item.p_desc, FormatDato.Ninguno)</td>
+								@*3*@ <td class="text-end celda celda-ocd-plista">@GridHelper.FormatearDato(item.ocd_plista, FormatDato.Monto, true)</td>
+								@*4*@ <td class="text-end celda">@GridHelper.FormatearDato(item.ocd_dto1, FormatDato.Monto, true)</td>
+								@*5*@ <td class="text-end celda">@GridHelper.FormatearDato(item.ocd_dto2, FormatDato.Monto, true)</td>
+								@*6*@ <td class="text-end celda">@GridHelper.FormatearDato(item.ocd_dto3, FormatDato.Monto, true)</td>
+								@*7*@ <td class="text-end celda">@GridHelper.FormatearDato(item.ocd_dto4, FormatDato.Monto, true)</td>
+								@*8*@ <td class="text-end celda">@GridHelper.FormatearDato(item.ocd_dto_pa, FormatDato.Monto, true)</td>
+								@*9*@ 
+								@{
+									bool ocdBoni = item.ocd_boni?.Trim().Equals("0") ?? false;
+									string bonificacionMostrada = ocdBoni ? "" : Model.Grilla.FormatearDato(item.ocd_boni, FormatDato.Ninguno);
+								}
+								<td class="@Model.Grilla.ObtenerClase('c')">@GridHelper.FormatearDato(bonificacionMostrada, FormatDato.Ninguno, false)</td>
+								@*10*@ <td class="text-end celda">@GridHelper.FormatearPrecio(item.ocd_pcosto, TipoPrecio.Costo)</td>
+								@*11*@ <td class="text-end celda">@Model.Grilla.FormatearDato(item.rpd_cantidad, FormatDato.Monto)</td>
+								@*12*@ <td class="text-end celda">@GridHelper.FormatearDato(item.rpd_plista, FormatDato.Monto, true)</td>
+								@*13*@ <td class="text-end celda">@GridHelper.FormatearDato(item.rpd_dto1, FormatDato.Monto, true)</td>
+								@*14*@ <td class="text-end celda">@GridHelper.FormatearDato(item.rpd_dto2, FormatDato.Monto, true)</td>
+								@*15*@ <td class="text-end celda">@GridHelper.FormatearDato(item.rpd_dto3, FormatDato.Monto, true)</td>
+								@*16*@ <td class="text-end celda">@GridHelper.FormatearDato(item.rpd_dto4, FormatDato.Monto, true)</td>
+								@*17*@ <td class="text-end celda">@GridHelper.FormatearDato(item.rpd_dto_pa, FormatDato.Monto, true)</td>
+								@*18*@
+								@{
+									bool rpdBoni = item.rpd_boni?.Trim().Equals("0") ?? false;
+									string bonificacionMostradaRpd = rpdBoni ? "" : Model.Grilla.FormatearDato(item.rpd_boni, FormatDato.Ninguno);
+								}
+								<td class="@Model.Grilla.ObtenerClase('c')">@GridHelper.FormatearDato(bonificacionMostradaRpd, FormatDato.Ninguno, false)</td>
+								@*19*@ <td class="text-end celda">@GridHelper.FormatearPrecio(item.rpd_pcosto, TipoPrecio.Costo)</td>
+								@*20*@ 
+								@if (item.nc_genera_bool)
+								{
+									<td style="padding: 0; text-align-last: center;"><input type="checkbox" class="chkNcGenera" name=@nombre_check_nc_genera id="chkNcGenera" checked disabled /></td>
+								}
+								else
+								{
+									<td style="padding: 0; text-align-last: center;"><input type="checkbox" class="chkNcGenera" name=@nombre_check_nc_genera id="chkNcGenera" disabled /></td>
+								}
+								@*21*@ <td class="text-end celda">@GridHelper.FormatearDato(item.rpd_cantidad_compte, GridHelper.FormatDato.Monto, item.PermiteDecimales)</td>
+								@*22*@
+								@if (!item.valorizacion_mostrar_dc)
+								{
+									<td></td>
+								}
+								else
+								{
+									<td class="celda-v"><span class="@item.valorizacion_class_dc">@item.valorizacion_value_dc</span></td>
+								}
+								@*23*@
+								@if (!item.valorizacion_mostrar_dp)
+								{
+									<td></td>
+								}
+								else
+								{
+									<td class="celda-v"><span class="@item.valorizacion_class_dp">@item.valorizacion_value_dp</span></td>
+								}
+							</tr>
+						}
+					}
+
+				</tbody>
+			</table>
+		</div>
+	</div>
+</div>
+</div>
+<script>
+	$(function() {
+			// Forzar el ancho de la columna de descripción
+			const setDescriptionColumnWidth = function() {
+				// Seleccionar todas las celdas de descripción y sus encabezados
+				$("#tbListaDetalleRpr th:nth-child(3), #tbListaProductoOC td:nth-child(3)").each(function() {
+					$(this).css({
+						'max-width': '150px',
+						'width': '150px',
+						'white-space': 'nowrap',
+						'overflow': 'hidden',
+						'text-overflow': 'ellipsis'
+					});
+				});
+			};
+
+			// Ejecutar inmediatamente
+			setDescriptionColumnWidth();
+
+			// Volver a aplicar después de cualquier redibujado de la tabla
+			$(window).on('resize', setDescriptionColumnWidth);
+		});
+</script>

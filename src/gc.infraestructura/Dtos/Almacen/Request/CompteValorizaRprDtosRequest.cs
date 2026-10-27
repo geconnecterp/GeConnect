@@ -9,6 +9,7 @@ namespace gc.infraestructura.Dtos.Almacen.Request
 		public string tco_id { get; set; } = string.Empty;
 		public string cm_compte { get; set; } = string.Empty;
 		public string dia_movi { get; set; } = string.Empty;
+		public string leyenda { get; set; } = string.Empty;
 	}
 
 	public class CompteValorizaRequest : CompteValorizaRprDtosRequest

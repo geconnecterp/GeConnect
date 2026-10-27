@@ -49,5 +49,7 @@ namespace gc.api.core.Contratos.Servicios
         List<RespuestaDto> ConfirmaCompteJbi(ConfirmarJustificacionRequest request);
         List<CompteValorizaRprDto> ObtenerComprobantesValorizaRpr(CompteValorizaRprDtosRequest request);
         List<RespuestaDto> CompteValorizarAgregarProducto(CompteValorizarAgregarProductoRequest request);
+        List<ConsultaValorizacionesRegistradasDto> ObtenerValorizacionesRegistradas(ObtenerValorizacionesRegistradasRequest request);
+        List<ComptesDeValorizacionDto> ObtenerComptesDeValorizacion(ObtenerComptesDeValorizacionRequest request);
 	}
 }

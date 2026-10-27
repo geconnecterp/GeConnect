@@ -144,19 +144,6 @@ $(function () {
             
     });
 
-    //$(document).on("change", ".js-control-cantidad", function () {
-
-    //    let $input = $(this);
-    //    let $fila = $input.closest("tr");
-
-    //    let dto = {
-    //        p_id: $fila.data("p-id"),
-    //        campo: $input.data("field"),
-    //        valor: parseFloat(normalizarNumero($input.val()))
-    //    };
-
-    //    actualizarDetalleRecepcion(dto);
-    //});
     /*
      * Función pública para enviar el contenido actualizado al backend.
      *

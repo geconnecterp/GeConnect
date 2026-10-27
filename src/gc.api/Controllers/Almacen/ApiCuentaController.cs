@@ -666,5 +666,35 @@ namespace gc.api.Controllers.Almacen
 
 			return Ok(response);
 		}
+
+		[HttpPost]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<ConsultaValorizacionesRegistradasDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult ObtenerValorizacionesRegistradas(ObtenerValorizacionesRegistradasRequest request)
+		{
+			ApiResponse<List<ConsultaValorizacionesRegistradasDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
+			var res = _cuentasSv.ObtenerValorizacionesRegistradas(request);
+
+			response = new ApiResponse<List<ConsultaValorizacionesRegistradasDto>>(res);
+
+			return Ok(response);
+		}
+
+		[HttpPost]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<ComptesDeValorizacionDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult ObtenerComptesDeValorizacion(ObtenerComptesDeValorizacionRequest request)
+		{
+			ApiResponse<List<ComptesDeValorizacionDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
+			var res = _cuentasSv.ObtenerComptesDeValorizacion(request);
+
+			response = new ApiResponse<List<ComptesDeValorizacionDto>>(res);
+
+			return Ok(response);
+		}
 	}
 }
