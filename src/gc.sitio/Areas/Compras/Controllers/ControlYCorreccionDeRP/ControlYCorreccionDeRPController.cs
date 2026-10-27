@@ -201,6 +201,36 @@ namespace gc.sitio.Areas.Compras.Controllers.ControlYCorreccionDeRP
 		}
 
 		[HttpPost]
+		public JsonResult CambiarTcoEnRpr(CambiarTcoEnRprRequest request)
+		{
+			string msg = "";
+			try
+			{
+				if (!VerificarAutenticacion(out IActionResult redirectResult))
+					return Json(redirectResult);
+				if (request == null)
+					return Json(new { error = true, msg = "No se recibieron los datos para cambiar el TCO en la RPR." });
+
+				request.adm_id = AdministracionId;
+				request.usu_id = UserName;
+				PrintProperties(request);
+				var respuesta = _prdSrv.CambiarTcoEnRpr(request, TokenCookie);
+				return AnalizarRespuesta(respuesta, "La acción se ejecutó correctamente.");
+			}
+			catch (NegocioException ex)
+			{
+				return Json(new { error = false, warn = true, msg = ex.Message });
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, $"{this.GetType().Name}-{MethodBase.GetCurrentMethod()?.Name} Error al intentar cambiar el TCO en la RPR");
+				msg = $"Hubo algún inconveniente al intentar cambiar el TCO en la RPR.";
+			}
+
+			return Json(new { error = true, msg });
+		}
+
+		[HttpPost]
 		public IActionResult ActualizarValorEnDetalle([FromBody] ActualizarDetalleRecepcionDto dto)
 		{
 			string msg = "";

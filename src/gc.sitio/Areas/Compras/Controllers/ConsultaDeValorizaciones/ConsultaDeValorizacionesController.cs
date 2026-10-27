@@ -105,7 +105,11 @@ namespace gc.sitio.Areas.Compras.Controllers.ConsultaDeValorizaciones
 				{
 					return RedirectToAction("Login", "Token", new { area = "seguridad" });
 				}
-
+				if (request.cta_id == "" && request.cm_compte == "")
+				{
+					model.Grilla = ObtenerGridCoreSmart<ComptesDeValorizacionDto>(new List<ComptesDeValorizacionDto>());
+					return PartialView("_partial_ListaComptesDeValorizacion", model);
+				}
 				var valorizaciones = _cuentaServicio.ObtenerComptesDeValorizacion(request, TokenCookie);
 				model.Grilla = ObtenerGridCoreSmart<ComptesDeValorizacionDto>(valorizaciones);
 				return PartialView("_partial_ListaComptesDeValorizacion", model);
@@ -134,6 +138,12 @@ namespace gc.sitio.Areas.Compras.Controllers.ConsultaDeValorizaciones
 					return RedirectToAction("Login", "Token", new { area = "seguridad" });
 				}
 
+				if (request.cta_id == "" && request.cm_compte == "")
+				{
+					model.leyenda = "Sin datos";
+					model.Grilla = ObtenerGridCoreSmart<CompteValorizaDetalleRprListaDto>(new List<CompteValorizaDetalleRprListaDto>());
+					return PartialView("_partial_DetalleRpr", model);
+				}
 				var responseRpr = _cuentaServicio.ObtenerComprobantesDetalleRpr(request, TokenCookie);
 				RecalcularCostos(responseRpr); //Por pedido de CR pide recalcular los costos por las dudas vengan con errores desde la DB (?)
 				CalcularValorizacionDC_DP(responseRpr);

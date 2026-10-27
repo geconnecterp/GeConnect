@@ -70,6 +70,9 @@ function inicializarTabValorizaciones(cta_id, cta_desc, desde, hasta) {
 		if ($fila.length > 0) {
 			ProcesarSeleccionFilaEnTBListaValorizacion($fila);
 		}
+		else {
+			InicializarTablasDeDetalleSinDatos();
+		}
 		return true
 	});
 }
@@ -146,6 +149,11 @@ function InicializarHandlerTBListaDetalleRpr() {
 		const $nuevaFila = $(this);
 		ProcesarSeleccionFilaEnTBListaDetalleRpr($nuevaFila);
 	});
+}
+
+function InicializarTablasDeDetalleSinDatos() {
+	BuscarComprobantesDeValorizacion("", "", "", "");
+	BuscarDetalleRpr("", "", "", "", "");
 }
 
 function ProcesarSeleccionFilaEnTBListaDetalleRpr($fila) {

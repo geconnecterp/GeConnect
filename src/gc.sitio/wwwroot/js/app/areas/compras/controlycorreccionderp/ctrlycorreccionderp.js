@@ -86,7 +86,21 @@ $(function () {
                     );
                 }
             }
-        );
+    );
+    $(document).off("click.controlRecepcion", "#tbControlRecepcion tbody tr.fila-control-recepcion")
+                .on("click.controlRecepcion", "#tbControlRecepcion tbody tr.fila-control-recepcion", function (e) {
+
+                    // Ignorar clicks sobre inputs y botones
+                    if ($(e.target).closest("input, button, .btn-opcion-tabla").length) {
+                        return;
+                    }
+
+                    $("#tbControlRecepcion tbody tr")
+                        .removeClass("selected-row");
+
+                    $(this)
+                        .addClass("selected-row");
+                });
 	$(document).off("input.controlRecepcion", "#tbControlRecepcion .js-control-cantidad")
 				.on("input.controlRecepcion", "#tbControlRecepcion .js-control-cantidad",
 					function () {
@@ -106,16 +120,30 @@ $(function () {
 	);
 	$(document).off("focus.controlRecepcion", "#tbControlRecepcion .js-control-cantidad")
 				.on("focus.controlRecepcion", "#tbControlRecepcion .js-control-cantidad",
-					function () {
-						this.select();
-					}
+                    function () {
+
+                        $("#tbControlRecepcion tbody tr")
+                            .removeClass("selected-row");
+
+                        $(this)
+                            .closest("tr")
+                            .addClass("selected-row");
+
+                        this.select();
+                    }
     );
     $(document).off("click.controlRecepcion", "#btnConfirmarControl")
                 .on("click.controlRecepcion", "#btnConfirmarControl", function () {
 
             console.log("click.controlRecepcion #btnConfirmarControl");
             confirmarControlRpr();
-    });
+                });
+    $(document).off("click.controlRecepcion", "#btnCambiarTipoComp")
+        .on("click.controlRecepcion", "#btnCambiarTipoComp", function () {
+
+            console.log("click.controlRecepcion #btnCambiarTipoComp");
+            cambiarTcoEnRpr();
+        });
     $(document).off("click.controlRecepcion", "#btnCancelarControl")
                 .on("click.controlRecepcion", "#btnCancelarControl", function () {
 
@@ -191,6 +219,16 @@ $(function () {
             recalcularFilaControlRecepcion($(this));
         });
         aplicarMascarasControlRecepcion();
+        $(selectorTablaControl + " .campo-modificado").each(function () {
+
+            const $contenedor = $(this).closest(".input-container");
+
+            if ($contenedor.find(".indicador-cambio").length === 0) {
+                $contenedor.append(
+                    '<div class="indicador-cambio"></div>'
+                );
+            }
+        });
         alternarFilasVisiblesControlRecepcion();
         deshabilitarConfirmarControlRecepcion();
     };
@@ -236,6 +274,58 @@ function handlerconfirmarControlRpr() {
                     'Se ha confirmado el Control de Recepcion de Proveedor.',
                     function () {
                         $('#msjModal').modal('hide');
+                        //Imprimir Remito
+                        //ImprimirPlanilla(obj.id);
+                        //console.log("Planilla de Elaboración y Fracción Generada: ", obj.id);
+                        //ResetearPantalla();
+                    },
+                    false,
+                    ['Aceptar'],
+                    'success!',
+                    null
+                );
+            }, 200);
+        }
+    });
+}
+
+function cambiarTcoEnRpr() {
+    AbrirMensaje("ATENCIÓN", "¿Desea Cambiar el Tipo de Comprobante en la RPR?", function (e) {
+        $("#msjModal").modal("hide");
+        switch (e) {
+            case "SI":
+                handlerCambiarTcoEnRpr();
+                break;
+            case "NO":
+                break;
+            default: //NO
+                break;
+        }
+        return true;
+
+    }, true, ["SI", "NO"], "question!", null);
+}
+
+function handlerCambiarTcoEnRpr() {
+    AbrirWaiting("Guardando cambios....")
+    let rp_compte = rpSeleccionada.rp_compte;
+    PostGen({ rp_compte }, cambiarTcoEnRprUrl, function (obj) {
+        CerrarWaiting();
+        if (obj.error === true || obj.warn === true) {
+            console.error('❌ Response:', obj.msg);
+            AbrirMensaje("ATENCIÓN", 'Error al intentar cambiar el tipo de comprobante en la RPR: ' + (obj.msg || 'Error desconocido'), function () {
+                $("#msjModal").modal("hide");
+                return true;
+            }, false, ["Aceptar"], "error!", null);
+        }
+        else {
+            setTimeout(() => {
+                AbrirMensaje(
+                    'CONFIRMACIÓN EXITOSA',
+                    'Se ha cambiado el tipo de comprobante en la RPR.',
+                    function () {
+                        $('#msjModal').modal('hide');
+                        BuscarRecepcionesDelProveedor();
                         //Imprimir Remito
                         //ImprimirPlanilla(obj.id);
                         //console.log("Planilla de Elaboración y Fracción Generada: ", obj.id);
@@ -467,9 +557,22 @@ function marcarCampoModificadoControlRecepcion(input) {
 
     $input.toggleClass("campo-modificado", fueModificado);
 
+    const $contenedor = $input.closest(".input-container");
+
     if (fueModificado) {
+
+        if ($contenedor.find(".indicador-cambio").length === 0) {
+            $contenedor.append(
+                '<div class="indicador-cambio"></div>'
+            );
+        }
+
         deshabilitarAgregarControlRecepcion();
         habilitarConfirmarControlRecepcion();
+    }
+    else {
+
+        $contenedor.find(".indicador-cambio").remove();
     }
 }
 

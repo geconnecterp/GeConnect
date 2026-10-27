@@ -81,6 +81,7 @@ namespace gc.sitio.core.Servicios.Implementacion
 		private const string RPR_CTL_PENDIENTES = "/obtener-rpr-ctl-pendiente";
 		private const string RPR_CTL_D = "/obtener-rpr-ctl-detalle";
 		private const string RPR_CTL_CONFIRMAR = "/confirmar-rpr-ctl";
+		private const string RPR_CTL_CAMBIAR_TCO = "/cambiar-tco-en-rpr";
 
 		//almacena Box 
 		private const string RutaApiAlmacen = "/api/apialmacen";
@@ -3456,6 +3457,46 @@ namespace gc.sitio.core.Servicios.Implementacion
 			{
 				_logger.LogError(ex, "Error al confirmar la RPR CTL.");
 				return new() { Mensaje = "Algo no fue bien al intentar confirmar la RPR CTL. Verifique Log.", EsError = true };
+			}
+		}
+
+		public RespuestaGenerica<RespuestaDto> CambiarTcoEnRpr(CambiarTcoEnRprRequest request, string token)
+		{
+			try
+			{
+				ApiResponse<RespuestaDto> apiResponse;
+
+				HelperAPI helper = new HelperAPI();
+
+				HttpClient client = helper.InicializaCliente(request, token, out StringContent contentData);
+				HttpResponseMessage response;
+
+				var link = $"{_appSettings.RutaBase}{RutaAPI}{RPR_CTL_CAMBIAR_TCO}";
+
+				response = client.PostAsync(link, contentData).Result;
+
+				if (response.StatusCode == HttpStatusCode.OK)
+				{
+					string stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+					if (string.IsNullOrEmpty(stringData))
+					{
+						_logger.LogWarning($"La API devolvió error.");
+						return new();
+					}
+					apiResponse = JsonConvert.DeserializeObject<ApiResponse<RespuestaDto>>(stringData) ?? throw new Exception("Error al deserializar la respuesta de la API.");
+					return new RespuestaGenerica<RespuestaDto>() { Entidad = apiResponse.Data };
+				}
+				else
+				{
+					string stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+					_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+					return new();
+				}
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, "Error al cambiar el TCO en la RPR CTL.");
+				return new() { Mensaje = "Algo no fue bien al intentar cambiar el TCO en la RPR CTL. Verifique Log.", EsError = true };
 			}
 		}
 	}

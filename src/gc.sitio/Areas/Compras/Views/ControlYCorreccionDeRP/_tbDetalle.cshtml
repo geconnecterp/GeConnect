@@ -101,7 +101,7 @@
 			white-space: nowrap;
 		}
 
-		#tbControlRecepcion .input-container {
+		/* #tbControlRecepcion .input-container {
 			position: relative;
 			width: 100%;
 		}
@@ -125,7 +125,62 @@
 			#tbControlRecepcion .input-control-recepcion.input-invalido {
 				border-color: #dc3545;
 				background-color: #fff1f2;
+			} */
+
+		/* ============================================
+	   MISMA ESTÉTICA QUE tbListaDetalleRpr
+	   ============================================ */
+
+		#tbControlRecepcion .input-container {
+			position: relative;
+			width: 100%;
+			padding: 0 !important;
+			margin: 0 !important;
+			display: flex;
+			justify-content: flex-end;
+			align-items: center;
+		}
+
+		/* Inputs editables */
+		#tbControlRecepcion input.form-control,
+		#tbControlRecepcion input.form-control-sm {
+			width: 100% !important;
+			box-sizing: border-box !important;
+			min-height: 0 !important;
+			height: 20px !important;
+			line-height: 20px !important;
+			padding: 0 5px !important;
+			margin: 0 !important;
+			font-size: 0.65rem !important;
+			text-align: right;
+			border-radius: 0.2rem;
+			transition: background-color 0.2s ease;
+		}
+
+			/* Focus igual que valorización */
+			#tbControlRecepcion input.form-control:focus,
+			#tbControlRecepcion input.form-control-sm:focus {
+				outline: none;
+				box-shadow: 0 0 0 2px rgba(76, 141, 255, 0.5);
+				background-color: #fff;
 			}
+
+		/* Campo modificado */
+		#tbControlRecepcion .campo-modificado {
+			background-color: #d4f1f9 !important;
+			border-color: #a8e1f5 !important;
+		}
+
+		#tbControlRecepcion .indicador-cambio {
+			position: absolute;
+			top: 0;
+			right: 0;
+			width: 0;
+			height: 0;
+			border-style: solid;
+			border-width: 0 6px 6px 0;
+			border-color: transparent #4bacc6 transparent transparent;
+		}
 
 		#tbControlRecepcion .cantidad-calculada,
 		#tbControlRecepcion .diferencia-calculada {
@@ -168,19 +223,66 @@
 			text-align: center;
 		}
 
-		#tbControlRecepcion tbody tr.alt > td {
+		#tbControlRecepcion tbody tr.alt:not(.selected-row) > td {
 			background-color: rgba(0, 0, 0, 0.025);
 		}
 
-		#tbControlRecepcion tbody tr:hover > td {
+/* 		#tbControlRecepcion tbody tr:hover > td {
 			background-color: rgba(13, 110, 253, 0.06);
-		}
+		} */
 
 		#tbControlRecepcion input[readonly],
 		#tbControlRecepcion input:disabled {
 			background-color: #eceff1;
 			cursor: not-allowed;
 		}
+
+		#tbControlRecepcion tbody tr {
+			height: 24px !important;
+		}
+
+	/* Estilo para campos editables en modo activo - se agrega al final del archivo */
+	.input-container .form-control:not([readonly]) {
+		background-color: #ffffff !important;
+		border-color: #eddfb5 !important;
+	}
+
+	/* ============================================
+	   HEADER STICKY (2 FILAS)
+	   ============================================ */
+
+	#containerControlRecepcion {
+		max-height: 700px; /* ajustá a gusto */
+		overflow-y: auto;
+	}
+
+	/* Primera fila */
+	#tbControlRecepcion thead tr:first-child th {
+		position: sticky;
+		top: 0;
+		z-index: 20;
+	}
+
+	/* Segunda fila */
+	#tbControlRecepcion thead tr:nth-child(2) th {
+		position: sticky;
+		top: 28px; /* altura de la primera fila */
+		z-index: 19;
+	}
+
+	/* Mantener color de fondo al hacer scroll */
+	#tbControlRecepcion thead th {
+		background: linear-gradient(to bottom, #b8860b, #daa520);
+		color: #fff;
+		/* Opcional: mantener bordes */
+		border-color: #a67c00;
+	}
+
+	/* Las columnas de Factura deben conservar el azul */
+	#tbControlRecepcion thead tr:first-child th.modulo-factura,
+	#tbControlRecepcion thead tr:nth-child(2) th.modulo-factura {
+		background: cornflowerblue !important;
+	}
 </style>
 <div class="grid-golden" style="padding-left: 0px; padding-right: 0px;">
 	<div class="grid-golden-header">
@@ -201,7 +303,7 @@
 						<th colspan="3" class="encabezado-modulo modulo-producto">
 							Producto
 						</th>
-						<th colspan="3" class="encabezado-modulo modulo-factura inicio-modulo">
+						<th colspan="3" class="encabezado-modulo modulo-factura inicio-modulo" style="background: cornflowerblue;">
 							Datos Factura
 						</th>
 						<th colspan="3" class="encabezado-modulo modulo-recepcion inicio-modulo">
@@ -225,13 +327,13 @@
 							U. Pres
 						</th>
 						@* Factura *@
-						<th scope="col" class="text-center modulo-factura inicio-modulo col-bultos text-end">
+						<th scope="col" class="text-center modulo-factura inicio-modulo col-bultos text-end" style="background: cornflowerblue;">
 							Bultos
 						</th>
-						<th scope="col" class="text-center modulo-factura col-unidad-suelta text-end" title="Unidad suelta">
+						<th scope="col" class="text-center modulo-factura col-unidad-suelta text-end" style="background: cornflowerblue;" title="Unidad suelta">
 							US
 						</th>
-						<th scope="col" class="text-center modulo-factura col-cantidad text-end">
+						<th scope="col" class="text-center modulo-factura col-cantidad text-end" style="background: cornflowerblue;">
 							Cantidad
 						</th>
 						@* Recepción *@

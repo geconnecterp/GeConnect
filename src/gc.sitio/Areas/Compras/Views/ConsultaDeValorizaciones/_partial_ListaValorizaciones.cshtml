@@ -48,7 +48,7 @@
 						@foreach (var item in Model.Grilla.ListaDatos)
 						{
 							if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
-							<tr class=""
+							<tr class="@clase"
 								data-cta-id="@item.cta_id"
 								data-tco-id="@item.tco_id"
 								data-cm-compte="@item.cm_compte"

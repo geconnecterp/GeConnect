@@ -355,6 +355,7 @@ namespace gc.api.core.Constantes
 			public const string SP_RPR_CTL_PENDIENTES = "SPGECO_RPR_CTL_Pendientes";
 			public const string SP_RPR_CTL_D = "SPGECO_RPR_CTL_D";
 			public const string SP_RPR_CTL_CONFIRMAR = "SPGECO_RPR_CTL_Confirmar";
+			public const string SP_RPR_CTL_CAMBIAR_TCO = "SPGECO_RPR_CTL_Cambiar_tco";
 
 			public const string SP_CUENTA_BUSQUEDA = "dbo.spgeco_c_busqueda_lista";
 			public const string SP_CUENTA_DATO = "SPGECO_C_Contacto_Datos";

@@ -1872,6 +1872,20 @@ namespace gc.api.Controllers.Almacen
 			return Ok(response);
 		}
 
+
+		[HttpPost("cambiar-tco-en-rpr")]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<RespuestaDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		public ActionResult<RespuestaDto> CambiarTcoEnRpr(CambiarTcoEnRprRequest req)
+		{
+			if (req == null)
+				return BadRequest("No se recepcionaron los valores para cambiar el TCO en el RPR");
+
+			var resultado = _productosSv.CambiarTcoEnRpr(req);
+			var response = new ApiResponse<RespuestaDto>(resultado);
+			return Ok(response);
+		}
+
 		private static PedidoInternoRequest MapToRequest(QueryFilters filtro)
 		{
 			return new PedidoInternoRequest

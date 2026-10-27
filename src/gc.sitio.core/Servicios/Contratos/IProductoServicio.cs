@@ -133,5 +133,6 @@ namespace gc.sitio.core.Servicios.Contratos
 		Task<List<RprCtlPendienteDto>> ObtenerRprCtlPendiente(string cta_id, string token);
 		Task<List<RprCtlItemDetalleDto>> ObtenerRprCtlDetalle(string rp_compte, string token);
 		RespuestaGenerica<RespuestaDto> ConfirmarRprCtl(ConfirmarRprCtlRequest request, string token);
+		RespuestaGenerica<RespuestaDto> CambiarTcoEnRpr(CambiarTcoEnRprRequest request, string token);
 	}
 }
