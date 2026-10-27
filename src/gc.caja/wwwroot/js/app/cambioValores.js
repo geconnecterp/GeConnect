@@ -224,6 +224,7 @@ function informarClienteNoValidoCambioValores(cliente) {
 }
 
 function reiniciarCambioValoresParaNuevoCliente() {
+    if (valoresCambioValores.some(v => v.clover) || window.CloverPago?.bloqueado()) { mostrarMensajeCambioValores('Pago pendiente', 'Complete o recupere el pago Clover antes de cambiar de cliente.', 'warn!'); return; }
     clienteSeleccionadoCambioValores = null;
     mediosCambioValores = [];
     instrumentosCambioValores = [];
@@ -269,6 +270,7 @@ function abrirModalCambioValores(cliente) {
     limpiarCargaValorCambioValores();
     $('#modalCambioValores').modal('show');
     cargarMediosPagoCambioValores();
+
 }
 
 function cargarMediosPagoCambioValores() {
@@ -319,6 +321,14 @@ function renderizarMediosCambioValores() {
 }
 
 function cargarInstrumentosCambioValores(tcfId) {
+    const medio = obtenerMedioSeleccionadoCambioValores();
+    if (esMedioClover(null, medio)) {
+        instrumentosCambioValores = [];
+        $('#cmbInstrumentoCambioValores').html('<option value="">Instrumento informado por Clover</option>').prop('disabled', true);
+        actualizarFormularioInstrumentoCambioValores();
+        return;
+    }
+    $('#cmbInstrumentoCambioValores').prop('disabled', false);
     instrumentosCambioValores = [];
     $('#cmbInstrumentoCambioValores').html('<option value="">Seleccione...</option>');
     actualizarFormularioInstrumentoCambioValores();
@@ -377,8 +387,9 @@ function actualizarFormularioInstrumentoCambioValores() {
     $('#grpFechaCambioValores').toggleClass('d-none', usaModalDetalle || !tieneVto);
     if (!tieneVto) setFechaValorActualCambioValores();
 
-    $('#txtImporteCambioValores').prop('disabled', usaModalDetalle);
-    if (usaModalDetalle) $('#txtImporteCambioValores').val('');
+    const montoEnDetalle = usaModalDetalle && !esMedioClover(instrumento, medio);
+    $('#txtImporteCambioValores').prop('disabled', montoEnDetalle);
+    if (montoEnDetalle) $('#txtImporteCambioValores').val('');
 }
 
 function configurarDatoCambioValores(numero, etiqueta) {
@@ -395,7 +406,7 @@ function agregarValorCambioValores() {
         mostrarMensajeCambioValores('Atencion', 'Debe seleccionar un medio habilitado.', 'warn!');
         return;
     }
-    if (!instrumento) {
+    if (!instrumento && !esMedioClover(null, medio)) {
         mostrarMensajeCambioValores('Atencion', 'Debe seleccionar un instrumento.', 'warn!');
         return;
     }
@@ -403,6 +414,12 @@ function agregarValorCambioValores() {
     const tipoMedio = obtenerTipoMedioCambioValores(medio);
     if (tipoMedio === 'CH') {
         abrirModalChequeCambioValores(medio, instrumento);
+        return;
+    }
+    if (esMedioClover(instrumento, medio)) {
+        if (!window.CloverPago) { mostrarMensajeCambioValores('Atención', 'Recargue la página para abrir Clover.', 'warn!'); return; }
+        window.CloverPago.abrir({ instrumento: { ...instrumento, ins_id: instrumento?.ins_id === 'DEF' ? '' : instrumento?.ins_id || '', tcf_id: medio.tcf_id, ins_desc: medio.tcf_desc || 'POS Clover' }, medio, obtenerValores: construirValoresBackendCambioValores, alAprobar: async r => { if (aplicarCloverCambioValores(r)) setTimeout(confirmarOperacionCambioValores, 350); return true; }, coTipo: $('#chkIngresoValor').is(':checked') ? 'IV' : 'CV',
+            saldo: Math.max(0, normalizarMontoCambioValores($('#txtImporteCambioValores').val())) });
         return;
     }
     if (tipoMedio === 'BA' || esMedioCobroElectronico({ ...medio, ins_desc: instrumento.ins_desc })) {
@@ -628,7 +645,7 @@ function renderizarValoresCambioValores() {
                 <td>${escaparHtmlCambioValores(detalle || '-')}</td>
                 <td class="text-center">${escaparHtmlCambioValores(formatearFechaCambioValores(valor.rb_fecha_valor))}</td>
                 <td class="text-end fw-bold text-success">$ ${formatearMontoCambioValores(valor.rb_importe)}</td>
-                <td class="text-center"><button type="button" class="btn btn-danger btn-sm btn-eliminar-cambio-valores" data-index="${index}" title="Eliminar valor"><i class="bx bx-trash"></i></button></td>
+                <td class="text-center">${valor.clover ? '<span class="badge bg-success"><i class="bx bx-lock-alt"></i> Aprobado</span>' : `<button type="button" class="btn btn-danger btn-sm btn-eliminar-cambio-valores" data-index="${index}" title="Eliminar valor"><i class="bx bx-trash"></i></button>`}</td>
             </tr>`);
     });
 
@@ -637,6 +654,7 @@ function renderizarValoresCambioValores() {
 
 function eliminarValorCambioValores(index) {
     if (!Number.isInteger(index) || index < 0 || index >= valoresCambioValores.length) return;
+    if (valoresCambioValores[index].clover) { mostrarMensajeCambioValores('Pago aprobado', 'Un pago Clover aprobado no se puede eliminar.', 'warn!'); return; }
     valoresCambioValores.splice(index, 1);
     renderizarValoresCambioValores();
 }
@@ -712,6 +730,7 @@ function confirmarOperacionCambioValores() {
                 return;
             }
 
+            valoresCambioValores = []; $('#chkIngresoValor').prop('disabled', false);
             $('#modalCambioValoresConfirmacion').modal('hide');
             mostrarMensajeCambioValores('Operacion Confirmada', response.mensaje || 'La operacion fue confirmada correctamente.', 'succ!', function () {
                 reiniciarCambioValoresParaNuevoCliente();
@@ -925,3 +944,26 @@ function mostrarMensajeCambioValores(titulo, mensaje, tipo, callback) {
 
 
 
+
+function aplicarCloverCambioValores(r) {
+    const v = r.valorCanonico;
+    if (!v?.ins_id || !(Number(v.rb_importe) > 0)) throw new Error('No se recibió el valor del pago Clover.');
+    if (valoresCambioValores.some(a => v.id_externo ? a.id_externo === v.id_externo : r.intentoId && a.cloverIntento === r.intentoId)) return false;
+    valoresCambioValores.push({ ...v, cloverIntento: r.intentoId, clover: true, tcf_id: 'T1', tcf_desc: 'Clover', ins_desc: r.datosSP?.ins_id || 'Tarjeta / QR', observacion: `ID ${v.rb_dato1_valor} · Recargo ${Number(v.rb_rec)} % · $ ${formatearMontoCambioValores(v.rb_aux)}` });
+    $('#chkIngresoValor').prop('disabled', true);
+    renderizarValoresCambioValores();
+    return true;
+}
+window.addEventListener('beforeunload', function (e) {
+    if (valoresCambioValores.some(v => v.clover) || window.CloverPago?.bloqueado()) { e.preventDefault(); e.returnValue = ''; }
+});
+
+$(document).on('hide.bs.modal.cloverProtegido', '#modalCambioValores', function (e) {
+    if (valoresCambioValores.some(v => v.clover) || window.CloverPago?.bloqueado()) { e.preventDefault(); mostrarMensajeCambioValores('Pago pendiente', 'Complete la registración de Clover antes de salir.', 'warn!'); }
+});
+document.addEventListener('click', function (e) {
+    if (!(valoresCambioValores.some(v => v.clover) || window.CloverPago?.bloqueado())) return;
+    const enlace = e.target.closest('a[href]'), href = enlace?.getAttribute('href');
+    if (!href || href.startsWith('#') || href.startsWith('javascript:')) return;
+    e.preventDefault(); e.stopImmediatePropagation(); mostrarMensajeCambioValores('Pago pendiente', 'Complete o recupere la registración Clover antes de salir.', 'warn!');
+}, true);

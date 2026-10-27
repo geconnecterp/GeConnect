@@ -164,12 +164,12 @@
         public string rb_estado { get; set; } = "N";
 
         /// <summary>
-        /// Recargo asociado al valor (por cuotas, etc.)
+        /// Clover: porcentaje de recargo/descuento de la opción de cuotas.
         /// </summary>
         public decimal rb_rec { get; set; } = 0;
 
         /// <summary>
-        /// ✅ NUEVO: Campo auxiliar (generalmente 0)
+        /// Clover: importe monetario del ajuste, ya incluido en rb_importe; otros medios usan su contrato.
         /// </summary>
         public decimal rb_aux { get; set; } = 0;
 

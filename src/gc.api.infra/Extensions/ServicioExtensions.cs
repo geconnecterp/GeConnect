@@ -33,6 +33,7 @@ using gc.infraestructura.Core.Interfaces;
 using gc.infraestructura.Core.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace gc.api.infra.Extensions
 {
@@ -187,7 +188,8 @@ namespace gc.api.infra.Extensions
             services.AddScoped(typeof(IExceptionManager), typeof(ExceptionManager));
             services.AddScoped(typeof(ILoggerHelper), typeof(LoggerHelper));
 
-            //CAJA
+            // Servicio común a los hosts API. Clover no depende de un diario del POS.
+            services.TryAddScoped<CloverServicio>();
             services.AddScoped<IApiCajaServicio, ApiCajaServicio>();
             services.AddScoped<IApiProductoFactServicio, ApiProductoFactServicio>();
             services.AddScoped<IApiPagoFactServicio, ApiPagoFactServicio>();

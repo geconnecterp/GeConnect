@@ -1,4 +1,4 @@
-﻿using gc.api.core.Contratos.Servicios.LineaCaja;
+using gc.api.core.Contratos.Servicios.LineaCaja;
 using gc.api.core.Servicios.LineaCaja;
 using gc.infraestructura.Core.Responses;
 using gc.infraestructura.Dtos.Cajas.Request;
@@ -17,14 +17,24 @@ namespace gc.api.Controllers.Caja
     [ApiController]
     public class ApiPagoFacturaController : ControllerBase
     {
+        private readonly CloverServicio _clover;
         private readonly ILogger<ApiPagoFacturaController> _logger;
         private readonly IApiPagoFactServicio _apiPagoFactServicio;
 
-        public ApiPagoFacturaController(ILogger<ApiPagoFacturaController> logger, IApiPagoFactServicio servicio)
+        public ApiPagoFacturaController(ILogger<ApiPagoFacturaController> logger, IApiPagoFactServicio servicio, CloverServicio clover)
         {
             _logger = logger;
+            _clover = clover;
             _apiPagoFactServicio = servicio;
         }
+        [HttpPost("CloverOpciones")]
+        public IActionResult CloverOpciones([FromBody] gc.infraestructura.Dtos.Cajas.CloverPeticionDto req) =>
+            Ok(new ApiResponse<List<gc.infraestructura.Dtos.Cajas.CloverOpcionDto>>(_clover.Opciones(req.contexto, req.pago.ins_id)));
+
+        [HttpPost("CloverProcesar")]
+        public IActionResult CloverProcesar([FromBody] gc.infraestructura.Dtos.Cajas.CloverPeticionDto req) =>
+            Ok(new ApiResponse<RespuestaDto>(_clover.Procesar(req)));
+
         /*
           List<ValoresPendientesResDto> ObtenerValoresPendientes(ValoresPendientesReqDto req);
         List<ValoresNCResDto> ObtenerValoresNC(ValoresNCReqDto req);

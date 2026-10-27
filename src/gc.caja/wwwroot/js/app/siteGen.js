@@ -1813,7 +1813,14 @@ function ocultarTecladoVirtual() {
 
 // Los valores de estos medios ya representan cobros realizados antes de Finalizar.
 // Compartido por pagos de ventas/cobranzas y Cambio e Ingreso de Valores.
+function esMedioClover(instrumento, medio) {
+    const tipo = String(medio?.tcf_id || instrumento?.tcf_id || '').trim().toUpperCase();
+    const codigo = String(instrumento?.ins_id || '').trim().toUpperCase();
+    return tipo === 'T1' || !tipo && ['G0', 'G00'].includes(codigo);
+}
+
 function esMedioCobroElectronico(valor) {
+    if (valor?.clover || valor?.id_externo && valor?.tcf_id === "T1") return true;
     if (!valor) return false;
     const tipo = String(valor.tcf_id || '').trim().toUpperCase();
     if (['TC', 'TD', 'MP'].includes(tipo)) return true;

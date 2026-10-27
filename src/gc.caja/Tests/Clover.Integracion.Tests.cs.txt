@@ -1,0 +1,102 @@
+using gc.api.core.Servicios.LineaCaja;
+using gc.api.core.Interfaces.Datos;
+using gc.infraestructura.Core.Interfaces;
+using gc.infraestructura.Dtos.Cajas;
+using gc.infraestructura.Dtos.Cajas.Request;
+using gc.infraestructura.Dtos.Cajas.Response;
+using gc.infraestructura.Dtos.Gen;
+using Microsoft.Data.SqlClient;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using System.Diagnostics;
+using System.Reflection;
+
+// Pruebas de la decisión CLV-20: el SP decide, no hay estado POS/diario requerido.
+var raiz = Path.Combine(Path.GetTempPath(), "geco-clover-pruebas-" + Guid.NewGuid()); Directory.CreateDirectory(raiz);
+int casos=0;
+void Ok(bool c,string n){if(!c)throw new Exception(n);casos++;Console.WriteLine("OK "+n);}
+void Error(Action f,string n){try{f();}catch(InvalidOperationException){Ok(true,n);return;}throw new Exception("No rechazó: "+n);}
+CloverPeticionDto Nuevo(string co="CR")=>new(){contexto=new(){adm_id="0000",caja_id="0001",caja_nro_proceso="00-06569",caja_nro_cierre=1,cta_id="C0001",usu_id="PRUEBA",co_tipo=co,operacion_id=Guid.NewGuid().ToString(),huella=new string('A',64)},pago=new(){ins_id="G00",co_tipo=co,monto_base=100,recargo=12,monto_total=112,cuotas_reales=5,pos_plan=12,intento_id=Guid.NewGuid().ToString()}};
+Json_Valor Valor(RespuestaDto r)=>JsonConvert.DeserializeObject<List<Json_Valor>>(r.resultado_id)!.Single();
+try {
+ foreach(var co in new[]{"CR","CF","CC","CV","IV"}) {
+  var s=new SqlSimulado();var p=Nuevo(co);var r=s.Procesar(p);var v=Valor(r);
+  Ok(r.resultado==0 && r.resultado_msj=="Resultado simulado",co+" devuelve RespuestaDto tradicional");
+  Ok(v.rb_importe==112 && v.rb_rec==12 && v.rb_aux==12,co+" importe bruto y recargo por fila");
+  Ok(v.ins_id=="V01" && v.id_externo=="POS0001" && v.rb_dato2_valor=="000012" && v.rb_dato3_valor=="001234" && v.rb_opcion_cuota=="12",co+" conserva instrumento y datos entregados por SP");
+  Ok(s.Parametros!["@monto"].Equals(112m) && s.Parametros["@cuota"].Equals((short)12),co+" envía total y pos_plan");
+  Ok(s.Parametros["@cashback"] is decimal cashback && cashback==0m,co+" envía cashback decimal cero, no NULL");
+  p.pago.intento_id=Guid.NewGuid().ToString();p.pago.valores=[v];var segundo=Valor(s.Procesar(p));
+  Ok(segundo.id_externo=="POS0002" && s.Cobros==2,co+" admite pagos independientes sucesivos");
+ }
+ {
+  var s=new SqlSimulado();var p=Nuevo();p.pago.paymentid="ab1234";var v=Valor(s.Procesar(p));
+  Ok(v.id_externo=="AB1234" && v.rb_cupon_manual=="S" && s.Parametros!["@paymentid"].Equals("AB1234"),"Manual llama el mismo SP con ID sin relleno");
+ }
+ foreach(var id in new[]{"ABC","AB","AB-1","A B1",new string('A',31)}) {var s=new SqlSimulado();var p=Nuevo();p.pago.paymentid=id;Error(()=>s.Procesar(p),"ID inválido: "+id);Ok(s.Cobros==0,"No se cobra ID inválido");}
+ foreach(var campo in new[]{"total","recargo","plan","cuotas","precision"}) {
+  var s=new SqlSimulado();var p=Nuevo();switch(campo){case "total":p.pago.monto_total=113;break;case "recargo":p.pago.recargo=13;break;case "plan":p.pago.pos_plan=99;break;case "cuotas":p.pago.cuotas_reales=12;break;case "precision":p.pago.monto_base=100.001m;break;}
+  Error(()=>s.Procesar(p),"Importe/cuotas inválidos: "+campo);Ok(s.Cobros==0,"Sin SP para petición inválida");
+ }
+ {var s=new SqlSimulado();var p=Nuevo("CD");Error(()=>s.Procesar(p),"CD impide recargo");p.pago.cuotas_reales=1;p.pago.pos_plan=1;p.pago.recargo=0;p.pago.monto_total=100;Ok(s.Procesar(p).resultado==0,"CD admite cuota sin recargo");}
+ {var s=new SqlSimulado{Defecto="rechazo"};var r=s.Procesar(Nuevo());Ok(r.resultado==2 && r.resultado_id=="" && r.resultado_msj=="Resultado simulado","Código y mensaje de rechazo del SP no se reinterpretan");}
+ // La red de SP es responsable de validar su respuesta bancaria. No imponer estado/plan/cliente local.
+ foreach(var dato in new[]{"importe","plan","cliente","sin-lote","cashback"}) {var s=new SqlSimulado{Defecto=dato};Ok(s.Procesar(Nuevo()).resultado==0,"Respeta éxito del SP sin validación adicional de POS: "+dato);}
+ {var s=new SqlSimulado{Defecto="exception"};try{s.Procesar(Nuevo());throw new Exception("Sin excepción esperada");}catch(IOException){}Ok(s.Cobros==1,"Fallo de transporte no reintenta cobro");}
+ {var s=new SqlSimulado{Defecto="vacio"};Error(()=>s.Procesar(Nuevo()),"Respuesta vacía no equivale a éxito");}
+ {var s=new SqlSimulado{Codigo="G0"};var p=Nuevo();p.pago.ins_id="G0";Ok(s.Opciones(p.contexto,"").All(o=>o.ins_id=="G0") && s.Procesar(p).resultado==0,"G0/G00 salen del catálogo");}
+ {var s=new SqlSimulado{SinInstrumentos=true};Ok(s.Opciones(Nuevo().contexto,"").Count==0,"Sin catálogo no hay cuotas");Error(()=>s.Procesar(Nuevo()),"No cobra instrumento no habilitado");}
+ {
+  // Diario real de una ejecución anterior, deliberadamente incompatible; no se borra ni se consulta.
+  var registro=new CloverRegistro(raiz);var original=Nuevo().contexto;
+  registro.Guardar(new CloverDiario{contexto=original,estado_registro="INCIERTO",intentos=[new CloverIntento{estado="INCIERTO"}]});
+  var archivos=Directory.GetFiles(raiz,"*",SearchOption.AllDirectories).ToDictionary(f=>f,File.ReadAllText);
+  var p=Nuevo();p.contexto.cta_id="C4580";p.contexto.caja_nro_proceso="OTRO-CIERRE";
+  Ok(new SqlSimulado().Procesar(p).resultado==0,"Diario previo de otro cliente/cierre no bloquea");
+  Ok(archivos.All(a=>File.ReadAllText(a.Key)==a.Value),"Archivos históricos preservados íntegros");
+ }
+ {
+  var s=new SqlSimulado{OpcionesCatalogo=[new(){ins_id="G00",cuota=3,pos_plan=3,pos_desc="Tres pagos",recargo_porcentaje=19.17m}]};var p=Nuevo();
+  p.pago.monto_base=9954.12m;p.pago.recargo=1908.20m;p.pago.monto_total=11862.32m;p.pago.pos_plan=3;p.pago.cuotas_reales=3;
+  var v=Valor(s.Procesar(p));Ok(v.rb_importe==11862.32m && v.rb_rec==19.17m && v.rb_aux==1908.20m,"Contrato DBA: rb_rec porcentaje, rb_aux importe, rb_importe bruto");
+  Ok(s.Parametros!["@monto"].Equals(11862.32m) && s.Parametros.Count==10,"Clover_Pay mantiene firma y recibe total con recargo");
+  p.pago.monto_base=0.01m;p.pago.recargo=0m;p.pago.monto_total=0.01m;p.pago.intento_id=Guid.NewGuid().ToString();
+  var chico=Valor(s.Procesar(p));Ok(chico.rb_rec==19.17m && chico.rb_aux==0m,"Porcentaje viene del catálogo y no se infiere de un recargo redondeado a cero");
+ }
+ {
+  var s=new SqlSimulado();var p=Nuevo();p.pago.monto_base=50;p.pago.recargo=-2.5m;p.pago.monto_total=47.5m;p.pago.pos_plan=8;p.pago.cuotas_reales=1;
+  var v=Valor(s.Procesar(p));Ok(v.rb_rec==-5m && v.rb_aux==-2.5m && v.rb_importe==47.5m,"Descuento conserva porcentaje y monto distintos");
+  var normalizar=typeof(CloverServicio).Assembly.GetType("gc.api.core.Servicios.LineaCaja.CajaConfirmacionJson")!.GetMethod("Normalizar",BindingFlags.Static|BindingFlags.Public)!;
+  var normalizado=(string)normalizar.Invoke(null,[JsonConvert.SerializeObject(new[]{v})])!;var json=JArray.Parse(normalizado)[0];
+  Ok(json["rb_rec"]!.Value<decimal>()==-5m && json["rb_aux"]!.Value<decimal>()==-2.5m,"OPENJSON recibe ambos ajustes con signo sin convertir descuento en recargo");
+ }
+ Console.WriteLine($"PASS: {casos} verificaciones de contrato y pagos independientes sin estado POS. SQL/POS simulados.");
+}finally{var d=Path.GetFullPath(raiz);if(d.StartsWith(Path.GetFullPath(Path.GetTempPath()),StringComparison.OrdinalIgnoreCase)&&Path.GetFileName(d).StartsWith("geco-clover-pruebas-"))Directory.Delete(d,true);}
+
+public class ProxyNulo : DispatchProxy { protected override object? Invoke(MethodInfo? m,object?[]? a)=>null; }
+public class LogPrueba : ILoggerHelper { public Exception Log(Exception e)=>e;public void Log(TraceEventType t,string m){} }
+public class SqlSimulado : CloverServicio
+{
+    public SqlSimulado() : base(new UowPrueba(),new LogPrueba()) {}
+    public int Cobros;public string Defecto="";public bool InsTruncado; public string Codigo="G00"; public bool SinInstrumentos; public List<CloverOpcionDto>? OpcionesCatalogo; public Dictionary<string,object>? Parametros;
+    protected override List<T> Ejecutar<T>(string sp,List<SqlParameter> ps) {
+        object r;
+        if(sp.Equals("SPGECO_CAJA_Valores_MP",StringComparison.OrdinalIgnoreCase))r=new List<ValoresMPResDto>{new(){tcf_id="T1"}};
+        else if(sp.Equals("SPGECO_CAJA_Valores_Ins",StringComparison.OrdinalIgnoreCase))r=SinInstrumentos ? new List<ValoresInsResDto>() : new List<ValoresInsResDto>{new(){ins_id=Codigo,tcf_id="T1"}};
+        else if(sp=="SPGECO_CAJA_Valores_Ins_Opciones")r=(OpcionesCatalogo ?? new List<CloverOpcionDto>{new(){ins_id=InsTruncado?"OTR":Codigo,cuota=1,pos_plan=1,pos_desc="Una cuota",recargo_porcentaje=0},new(){ins_id=Codigo,cuota=5,pos_plan=12,pos_desc="Cinco cuotas",recargo_porcentaje=12},new(){ins_id=Codigo,cuota=1,pos_plan=8,pos_desc="Descuento",recargo_porcentaje=-5}}).Where(o=>!InsTruncado).ToList();
+        else if(sp=="SPGECO_CAJA_Clover_Pay") {
+            Cobros++;Parametros=ps.ToDictionary(p=>p.ParameterName,p=>p.Value);
+            if(Defecto=="exception")throw new IOException("Timeout POS simulado");
+            if(Defecto=="vacio")return [];
+            var id=(string)Parametros["@paymentid"];
+            r=new List<CloverRespuestaSpDto>{new(){respuesta=(short)(Defecto=="rechazo"?2:0),respuesta_msj="Resultado simulado",cta_id=Defecto=="cliente"?"OTRO":(string)Parametros["@cta_id"],ins_id="V01",tcf_id="T1",rb_dato1_valor=Defecto=="sin-id"?"":id.Length>0?id:"POS"+Cobros.ToString("0000"),rb_dato2_valor=Defecto=="sin-lote"?"":"000012",rb_dato3_valor="001234",rb_fecha_valor=new DateTime(2026,10,23,15,0,0),rb_opcion_cuota=(short)(Defecto=="plan"?99:(short)Parametros["@cuota"]),rb_importe=(decimal)Parametros["@monto"],pos_importe=(decimal)Parametros["@monto"]+(Defecto=="importe"?1:0),pos_cashback=Defecto=="cashback"?1:0}};
+        } else throw new Exception("SP inesperado: "+sp);
+        return (List<T>)r;
+    }
+}
+
+public class UowPrueba : IUnitOfWork {
+ public IRepository<T> GetRepository<T>() where T : gc.api.core.Entidades.EntidadBase => null!;
+ public int SaveChanges(bool process=true)=>0;public Task<int> SaveChangesAsync(bool process=true)=>Task.FromResult(0);
+ public long Complete()=>0;public void InicializarTransaccion(){}public void Commit(){}public void Rollback(){}
+}

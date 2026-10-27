@@ -1,4 +1,4 @@
-﻿using gc.api.core.Constantes;
+using gc.api.core.Constantes;
 using gc.api.core.Contratos.Servicios.LineaCaja;
 using gc.api.core.Interfaces.Datos;
 using gc.infraestructura.Core.Interfaces;
@@ -15,10 +15,7 @@ namespace gc.api.core.Servicios.LineaCaja
 {
     public class ApiPagoFactServicio : CajaBaseServicio, IApiPagoFactServicio
     {
-        public ApiPagoFactServicio(IUnitOfWork uow,ILoggerHelper logger) : base(uow,logger)
-        {
-
-        }
+        public ApiPagoFactServicio(IUnitOfWork uow,ILoggerHelper logger) : base(uow,logger) { }
 
         public List<ValoresInsResDto> ObtenerValoresIns(ValoresInsReqDto req)
         {

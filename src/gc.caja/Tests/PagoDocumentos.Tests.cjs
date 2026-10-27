@@ -7,13 +7,13 @@ function extract(name) {
     const start = source.search(new RegExp('^function ' + name + '\\(', 'm'));
     assert(start >= 0, name);
     const end = /^}\r?$/m.exec(source.slice(start));
-    return fs.readFileSync(path.join(__dirname, '../wwwroot/js/app/siteGen.js'), 'utf8').match(/^function esMedioCobroElectronico\([^]*?^}/m)[0] + '\n' + source.slice(start, start + end.index + 1);
+    return fs.readFileSync(path.join(__dirname, '../wwwroot/js/app/siteGen.js'), 'utf8').match(/^function esMedioClover\([^]*?^}/m)[0] + '\n' + fs.readFileSync(path.join(__dirname, '../wwwroot/js/app/siteGen.js'), 'utf8').match(/^function esMedioCobroElectronico\([^]*?^}/m)[0] + '\n' + source.slice(start, start + end.index + 1);
 }
 const names = ['evaluarReglasPago','validarValorAntesDeAgregar','fechaMaximaCredito','obtenerVueltoEfectivoCentavos','desdeCentavosNC','normalizarTexto', 'normalizarTextoUpper', 'esInstrumentoDocumento', 'fechaLocalDocumento',
     'fechaDocumentoValida', 'formatearVencimientoDocumento', 'importeDocumentoCentavos', 'validarDatosDocumento',
     'construirDatosDocumento', 'construirJsonValores', 'saldoPendienteDocumentoCentavos',
     'abrirModalDetalleDocumento', 'guardarDetalleDocumento', 'procesarInstrumentos', 'agregarValorDirecto',
-    'abrirModalDetalleSegunTipo', 'validarDiferenciaParaFinalizar', 'volverACalculoFactura',
+    'abrirModalDetalleSegunTipo', 'validarDiferenciaParaFinalizar', 'volverACalculoFactura', 'hayCloverPendiente',
     'clonarObjetoNC', 'consumirBorradorPago', 'descartarBorradorPago', 'obtenerIdentidadClientePago'];
 const elements = new Map();
 let appended, updates, hidden;
@@ -46,6 +46,7 @@ const ctx = { $, Date: ClockDate,
     obtenerTotalCreditosNCCentavos: () => 3000,
     cerrarTecladoPago(){}, vincularEnterTecladoPago(){}, agregarFilaValor: v => appended.push(v),
     actualizarTotalesPago: () => updates++, actualizarTotalInstrumento(){}, mostrarMensajeError: e => { throw Error(e); } };
+ctx.confirmacionPagoConfirmada = false;
 vm.createContext(ctx);
 vm.runInContext(names.map(extract).join('\n'), ctx);
 let passed = 0;

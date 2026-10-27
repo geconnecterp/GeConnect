@@ -2,8 +2,8 @@
 // Regresiones del motor compartido: funciones reales con un adaptador DOM aislado.
 const fs=require('node:fs'),path=require('node:path'),vm=require('node:vm'),assert=require('node:assert/strict');
 const source=fs.readFileSync(path.join(__dirname,'../wwwroot/js/app/pagoFactura.js'),'utf8');
-function extract(name){const a=source.search(new RegExp('^function '+name+'\\(','m'));assert(a>=0,name);const end=/^}\r?$/m.exec(source.slice(a));assert(end,name+' cierre');return fs.readFileSync(path.join(__dirname, '../wwwroot/js/app/siteGen.js'), 'utf8').match(/^function esMedioCobroElectronico\([^]*?^}/m)[0] + '\n' + source.slice(a,a+end.index+1);}
-const names=['evaluarReglasPago','validarValorAntesDeAgregar','fechaMaximaCredito','fechaLocalDocumento','fechaDocumentoValida','validarDiferenciaParaFinalizar','obtenerVueltoEfectivoCentavos','esInstrumentoDocumento','descartarBorradorPago','consumirBorradorPago','registrarEventosInicioOperacionPago','normalizarTexto','normalizarTextoUpper','convertirNumeroNC','aCentavosMonto','desdeCentavosNC','obtenerTotalNetoCentavos','obtenerTotalOtrosValoresCentavos','obtenerCreditosNCImputados','obtenerTotalCreditosNCCentavos','obtenerCantidadCreditosNCImputados','actualizarBadgeCantidadPagos','consultaNCBloqueaPago','validarSeleccionNCParaFinalizar','actualizarTotalesPago','limpiarTablaFormasPago','eliminarValor','formatearImporteJsonNC','construirJsonUnionesNC','crearEstadoNCVacio','obtenerDescripcionCreditoNC','obtenerObservacionCreditoNC','asegurarFilaSinFormasPago','renderizarCreditosNCEnGrillaPago','clonarObjetoNC','obtenerCreditosBorradorNC','crearBorradorNC','obtenerTotalNcDesdeLista','validarBorradorNC','guardarDetalleCtaCte','actualizarSeleccionadosNC','puedeEditarCreditoNC','guardarImputacionesNC','cambiarImputacionIndividualNC','hayCreditosNCDisponibles','hayCreditosOpcionalesNC','sincronizarDisponibilidadNCConMediosPago','reiniciarImputacionesNC','marcarCreditoNCSeleccionado','aplicarImputacionInicialNC','restaurarSeleccionNC','obtenerMaximoImputableCreditoNC','obtenerTotalNcExceptoCredito','volverACalculoFactura','obtenerIdentidadClientePago','elevarModalCreditoNC','abrirModalTipoMedioPagoDespuesDeNC'];
+function extract(name){const a=source.search(new RegExp('^function '+name+'\\(','m'));assert(a>=0,name);const end=/^}\r?$/m.exec(source.slice(a));assert(end,name+' cierre');return fs.readFileSync(path.join(__dirname, '../wwwroot/js/app/siteGen.js'), 'utf8').match(/^function esMedioClover\([^]*?^}/m)[0] + '\n' + fs.readFileSync(path.join(__dirname, '../wwwroot/js/app/siteGen.js'), 'utf8').match(/^function esMedioCobroElectronico\([^]*?^}/m)[0] + '\n' + source.slice(a,a+end.index+1);}
+const names=['evaluarReglasPago','validarValorAntesDeAgregar','fechaMaximaCredito','fechaLocalDocumento','fechaDocumentoValida','validarDiferenciaParaFinalizar','obtenerVueltoEfectivoCentavos','esInstrumentoDocumento','descartarBorradorPago','consumirBorradorPago','registrarEventosInicioOperacionPago','normalizarTexto','normalizarTextoUpper','convertirNumeroNC','aCentavosMonto','desdeCentavosNC','obtenerTotalNetoCentavos','obtenerTotalOtrosValoresCentavos','obtenerCreditosNCImputados','obtenerTotalCreditosNCCentavos','obtenerCantidadCreditosNCImputados','actualizarBadgeCantidadPagos','consultaNCBloqueaPago','validarSeleccionNCParaFinalizar','actualizarTotalesPago','limpiarTablaFormasPago','eliminarValor','formatearImporteJsonNC','construirJsonUnionesNC','crearEstadoNCVacio','obtenerDescripcionCreditoNC','obtenerObservacionCreditoNC','asegurarFilaSinFormasPago','renderizarCreditosNCEnGrillaPago','clonarObjetoNC','obtenerCreditosBorradorNC','crearBorradorNC','obtenerTotalNcDesdeLista','validarBorradorNC','guardarDetalleCtaCte','actualizarSeleccionadosNC','puedeEditarCreditoNC','guardarImputacionesNC','cambiarImputacionIndividualNC','hayCreditosNCDisponibles','hayCreditosOpcionalesNC','sincronizarDisponibilidadNCConMediosPago','reiniciarImputacionesNC','marcarCreditoNCSeleccionado','aplicarImputacionInicialNC','restaurarSeleccionNC','obtenerMaximoImputableCreditoNC','obtenerTotalNcExceptoCredito','volverACalculoFactura','hayCloverPendiente','obtenerIdentidadClientePago','elevarModalCreditoNC','abrirModalTipoMedioPagoDespuesDeNC'];
 let rows=[],errors=[],modals=[],closed=[],styles={},selection=[];
 const elements=new Map(),handlers=new Map();
 function matches(row,selector){return selector.split(',').some(part=>{if(part.includes('fila-credito-nc'))return row.includes('class="fila-credito-nc"');if(part.includes('data-valor-id'))return row.includes(part.match(/data-valor-id="[^"]+"/)[0]);if(part.includes('fila-valor'))return row.includes('class="fila-valor"');if(part.includes('rowSinFormasPago'))return row.includes('id="rowSinFormasPago"');return false;});}
@@ -28,6 +28,7 @@ const ctx={document:'document',$ ,console:quiet,escapeHtml:String,formatearNumer
  ocultarVentanaPago:async sel=>{closed.push(sel);},
  calcularTotalCC:()=>{ctx.recalculosCC=(ctx.recalculosCC||0)+1;},
  RESULTADO_CONSULTA_NC:Object.fromEntries(['PENDIENTE','ERROR','CON_CREDITOS','SIN_CREDITOS','NO_APLICA'].map(s=>[s,s]))};
+ctx.confirmacionPagoConfirmada = false;
 vm.createContext(ctx);vm.runInContext(names.map(extract).join('\n'),ctx);
 function setup(amount=10000000,count=0,mandatory=false,total=227966.09){
  rows=[];errors=[];modals=[];closed=[];styles={};selection=[];elements.clear();ctx.pagoParaRetomar=null;$('#modalPago').addClass('show');
@@ -188,6 +189,21 @@ test('Un centavo faltante bloquea y un centavo de vuelto en efectivo habilita',(
  ctx.valoresPago[0].importe=100.01;ctx.actualizarTotalesPago();
  assert.equal(ctx.obtenerVueltoEfectivoCentavos(),1);assert.equal($('#btnFinalizarPago').prop('disabled'),false);
  assert(ctx.validarDiferenciaParaFinalizar().permitir);
+});
+test('Clover con recargo: resumen visible coincide con el caso reportado de 11862.32',()=>{
+ setup(0,0,false,9954.12);ctx.valoresPago=[{id:1,tcf_id:'T1',importe:11862.32,clover:{rb_importe:11862.32,rb_rec:19.17,rb_aux:1908.20,id_externo:'CLOVER-RECARGO-TEST'}}];
+ const original=JSON.stringify(ctx.valoresPago);ctx.actualizarTotalesPago();
+ assert.equal($('#totalRecargos').text(),'$ 1908.20');assert.equal($('#totalDescuentos').text(),'$ 0.00');assert.equal($('#totalValores').text(),'$ 11862.32');assert.equal($('#diferencia').text(),'$ 0.00');
+ assert.equal(ctx.obtenerTotalNetoCentavos(),1186232);assert.equal(JSON.stringify(ctx.valoresPago),original);assert.equal(ctx.conceptosPago.recargos,0);
+ ctx.actualizarTotalesPago();assert.equal($('#totalRecargos').text(),'$ 1908.20');assert.equal(ctx.obtenerTotalNetoCentavos(),1186232);
+});
+test('Dos Clover: recargo y descuento visibles se conservan separados sin duplicar el ajuste',()=>{
+ setup(0,0,false,100);ctx.valoresPago=[{id:1,tcf_id:'T1',importe:44.8,clover:{rb_rec:12,rb_aux:4.8}},{id:2,tcf_id:'T1',importe:57,clover:{rb_rec:-5,rb_aux:-3}}];ctx.actualizarTotalesPago();
+ assert.equal($('#totalRecargos').text(),'$ 4.80');assert.equal($('#totalDescuentos').text(),'$ 3.00');assert.equal($('#totalValores').text(),'$ 101.80');assert.equal(ctx.conceptosPago.diferencia,0);
+});
+test('Clover conserva los ajustes base y también actualiza resumen sin NC',()=>{
+ setup(0,0,false,100);ctx.conceptosPago.recargos=2;ctx.conceptosPago.descuentos=1;ctx.valoresPago=[{id:1,tcf_id:'T1',importe:106,clover:{rb_rec:5,rb_aux:5}}];ctx.actualizarTotalesPago();
+ assert.equal($('#totalRecargos').text(),'$ 7.00');assert.equal($('#totalDescuentos').text(),'$ 1.00');assert.equal(ctx.conceptosPago.diferencia,0);
 });
 console.log('TOTAL: '+passed+' escenarios aprobados. Sin transacciones ni servidor.');
 })().catch(e=>{console.error(e);process.exitCode=1;});

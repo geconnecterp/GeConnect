@@ -83,7 +83,7 @@ for(const [valor,directo] of medios.filter(([v,d])=>d)){
  let abierto=0;
  const ctx=vm.createContext({console:{log(){},warn(){},error(){}},
  esInstrumentoDocumento:()=>false,abrirModalDetalleTransferencia:()=>abierto++});
- vm.runInContext(extraer(comun,'esMedioCobroElectronico')+'\n'+extraer(pago,'abrirModalDetalleSegunTipo'),ctx);
+ vm.runInContext(extraer(comun,'esMedioClover')+'\n'+extraer(comun,'esMedioCobroElectronico')+'\n'+extraer(pago,'abrirModalDetalleSegunTipo'),ctx);
  ctx.abrirModalDetalleSegunTipo({ins_id:'VISA',ins_desc:valor.ins_desc||'VISA'},valor);assert.equal(abierto,1);casos++;
 }
 {

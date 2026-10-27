@@ -27,8 +27,10 @@ namespace gc.infraestructura.Dtos.Cajas
 
         public decimal rb_importe { get; set; }
 
+        // Clover: porcentaje de recargo/descuento de la opción vigente.
         public decimal rb_rec { get; set; }
 
+        // Clover: importe monetario de ese ajuste, ya incluido en rb_importe.
         public decimal rb_aux { get; set; }
 
         public string rb_estado { get; set; } = string.Empty;

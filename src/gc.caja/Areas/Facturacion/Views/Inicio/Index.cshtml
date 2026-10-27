@@ -89,6 +89,8 @@
 @await Html.PartialAsync("~/Views/Shared/_AutorizacionRemotaModal.cshtml")
 
 
+@await Html.PartialAsync("~/Areas/Facturacion/Views/Pago/_detalleClover.cshtml")
+
 @section Scripts {
     <script>
         window.listaPrecioActiva = { id: '', descripcion: '' };
@@ -193,6 +195,8 @@
     <script src="~/js/app/factPreFactura.js" asp-append-version="true"></script>
     <script src="~/js/app/factCotizacion.js" asp-append-version="true"></script>
     <script src="~/js/app/factFacturaEmitida.js" asp-append-version="true"></script>
+    <script src="~/js/app/cloverPago.js" asp-append-version="true"></script>
+    <script src="~/js/app/cloverPagoVista.js" asp-append-version="true"></script>
     <script src="~/js/app/pagoFactura.js" asp-append-version="true"></script>
 
 }
