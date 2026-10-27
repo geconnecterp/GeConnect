@@ -1,0 +1,50 @@
+<link rel="stylesheet" href="~/css/pages/pago-clover.css" asp-append-version="true" />
+<div class="modal fade clover-modal" id="modalDetalleClover" tabindex="-1" role="dialog"
+     aria-labelledby="modalDetalleCloverLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false"
+     data-opciones-url="@Url.Action("Opciones", "Clover", new { area = "Facturacion" })"
+     data-procesar-url="@Url.Action("Procesar", "Clover", new { area = "Facturacion" })">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content modal-golden">
+            <div class="modal-header bg-gradient-golden">
+                <h5 class="modal-title" id="modalDetalleCloverLabel"><i class="bx bx-credit-card me-2"></i>Pago Clover</h5>
+                <button type="button" class="btn-close" id="btnCerrarClover" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body">
+                <div class="clover-contexto"><span id="lblInstrumentoClover">Clover</span><span>Saldo pendiente: <strong id="lblSaldoClover">$ 0.00</strong></span></div>
+                <div id="avisoClover" class="alert alert-info py-2 small" role="status">Pagar POS solicita el cobro en el dispositivo. Recuperar por ID consulta un pago existente. Un pago aprobado debe registrarse en Caja.</div>
+                <form id="formDetalleClover" novalidate>
+                    @Html.AntiForgeryToken()
+                    <div class="row g-3">
+                        <div class="col-sm-6">
+                            <label for="txtMontoClover" class="form-label fw-bold">Monto a cancelar</label>
+                            <div class="input-group"><span class="input-group-text">$</span><input type="text" id="txtMontoClover" class="form-control text-end jsteclado jsdecimal" inputmode="decimal" autocomplete="off" required /></div>
+                        </div>
+                        <div class="col-sm-6">
+                            <label for="cmbCuotaClover" class="form-label fw-bold">Cuotas</label>
+                            <select id="cmbCuotaClover" class="form-select" required disabled><option value="">Cargando opciones…</option></select>
+                        </div>
+                        <div class="col-sm-6">
+                            <label for="txtRecargoClover" class="form-label fw-bold">Recargo / descuento</label>
+                            <input id="txtRecargoClover" class="form-control text-end bg-light" readonly value="$ 0.00" />
+                        </div>
+                        <div class="col-sm-6">
+                            <label for="txtTotalClover" class="form-label fw-bold">Total a cobrar</label>
+                            <input id="txtTotalClover" class="form-control text-end clover-total" readonly value="$ 0.00" />
+                        </div>
+                    </div>
+                    <div class="clover-pos mt-3">
+                        <div class="form-check form-switch mb-0"><input class="form-check-input" type="checkbox" role="switch" id="chkQrClover" /><label class="form-check-label" for="chkQrClover">Pagar con QR en el dispositivo</label></div>
+                        <button type="button" id="btnPagarClover" class="btn btn-golden" disabled><i class="bx bx-credit-card me-1"></i>Pagar POS</button>
+                    </div>
+                    <div class="clover-recuperacion mt-3">
+                        <label for="txtPaymentIdClover" class="form-label fw-bold">Recuperar pago pendiente</label>
+                        <div class="input-group"><input type="text" id="txtPaymentIdClover" class="form-control jsteclado" maxlength="30" autocomplete="off" autocapitalize="characters" spellcheck="false" aria-describedby="ayudaPaymentIdClover" placeholder="ID de pago del cupón" /><button type="button" id="btnManualClover" class="btn btn-outline-secondary" disabled>Cargar manual</button></div>
+                        <div class="form-text" id="ayudaPaymentIdClover">Utilice esta opción si el pago ya se realizó y quedó pendiente de registrar.</div>
+                    </div>
+                </form>
+                <div id="estadoClover" class="alert alert-light border mt-3 mb-0" role="status" aria-live="polite"></div>
+            </div>
+            <div class="modal-footer bg-light"><button type="button" id="btnVolverClover" class="btn btn-secondary"><i class="bx bx-left-arrow-alt me-1"></i>Volver</button></div>
+        </div>
+    </div>
+</div>

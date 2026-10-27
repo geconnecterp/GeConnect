@@ -1,4 +1,5 @@
 using gc.caja.Controllers;
+using gc.caja.core.Servicios.Implementacion.Cajas;
 using gc.caja.core.Servicios.Contratos.Cajas;
 using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Dtos.Cajas;
@@ -277,6 +278,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
                 }
 
                 var tipo = string.Equals(request?.Tipo, "IV", StringComparison.OrdinalIgnoreCase) ? "IV" : "CV";
+                var contextoClover = valores.Any(v => !string.IsNullOrWhiteSpace(v.id_externo)) ? ContextoClover(tipo) : null;
                 var valoresConfirmacion = PrepararValoresConfirmacion(valores, tipo);
                 var totalValoresIngresados = valores.Sum(x => Math.Abs(x.rb_importe));
                 var jsonValores = SerializarValoresConfirmacion(valoresConfirmacion);
@@ -294,6 +296,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
                 }
 
                 var requestConfirmacion = CrearRequestConfirmacion(ctaId, tipo, jsonValores);
+                requestConfirmacion.clover_operacion_id = contextoClover?.operacion_id ?? "";
 
                 _logger?.LogInformation(
                     "Cambio valores: validando PV. Cta={Cta}; Tipo={Tipo}; Registros={Registros}; Total={Total}; Usuario={Usuario}",
@@ -336,7 +339,8 @@ namespace gc.caja.Areas.Facturacion.Controllers
                     tipo,
                     requestConfirmacion.caea,
                     jsonValores,
-                    JsonConvert.SerializeObject(requestConfirmacion));
+                    string.IsNullOrWhiteSpace(requestConfirmacion.clover_operacion_id) ? JsonConvert.SerializeObject(requestConfirmacion)
+                    : "\n" + CloverJsonDiagnostico.Formatear(JsonConvert.SerializeObject(requestConfirmacion), token));
 
                 var resultado = await _checkoutServicio.FinalizarCompra(requestConfirmacion, token);
 
@@ -363,6 +367,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
                     });
                 }
 
+                if (contextoClover != null) LimpiarOperacionClover(contextoClover);
                 var comprobanteConfirmacion = ObtenerComprobanteConfirmacion(respuesta.resultado_id);
 
                 return Json(new

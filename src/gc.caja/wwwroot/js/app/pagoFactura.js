@@ -43,7 +43,7 @@ let confirmacionPagoEnCurso = false;
 let preparandoConfirmacionPago = false;
 let confirmacionPagoConfirmada = false;
 function advertirSalidaDurantePago(event) {
-    if (!confirmacionPagoEnCurso && !(typeof preparandoConfirmacionPago !== 'undefined' && preparandoConfirmacionPago)) return;
+    if (!confirmacionPagoEnCurso && !(typeof preparandoConfirmacionPago !== 'undefined' && preparandoConfirmacionPago) && !hayCloverPendiente()) return;
     event.preventDefault();
     event.returnValue = '';
 }
@@ -686,7 +686,7 @@ function obtenerTotalNetoCentavos() {
     const recargos = aCentavosMonto(conceptosPago.recargos);
     const descuentos = aCentavosMonto(conceptosPago.descuentos);
 
-    return Math.max(0, totalPagar + recargos - descuentos);
+    return Math.max(0, totalPagar + recargos - descuentos + valoresPago.reduce((s, v) => s + aCentavosMonto(v.clover?.rb_aux || 0), 0));
 }
 
 function obtenerTotalOtrosValoresCentavos() {
@@ -1987,7 +1987,7 @@ function inicializarNCAntesDeAbrirMediosPago(seleccionPrevia = null) {
                 return;
             }
 
-            cargarValoresMP().then(function (medios) {
+            cargarValoresMP().then(async function (medios) {
                 if (revision !== revisionPago) return;
                 sincronizarDisponibilidadNCConMediosPago(medios);
                 actualizarTotalesPago();
@@ -2537,6 +2537,7 @@ function renderizarOpcionesMP(valoresMP) {
  * Vuelve al modal de cálculo de factura
  */
 function volverACalculoFactura() {
+    if (hayCloverPendiente()) { mostrarMensajeError('Hay un pago Clover aprobado o en proceso. Complete su registración antes de volver o cambiar de cliente.'); return; }
     if (estadoNC.cargando) return;
     const coTipo = normalizarTextoUpper(window._coTipoActual);
     const destino = coTipo === 'CD' ? '#modalFacturasPendientes' :
@@ -2727,6 +2728,10 @@ function construirJsonValores() {
         console.log(`      ins_id: ${valorBackend.ins_id}`);
         console.log(`      rb_importe: ${valorBackend.rb_importe}`);
 
+        if (valor.clover || valor.valorRecuperado) {
+            jsonValores.push({ ...(valor.clover || valor.valorRecuperado), rb_nro_valor: valorBackend.rb_nro_valor });
+            return;
+        }
         // DOC tiene su propio contrato; no hereda estado/cuota/fecha del efectivo.
         if (esInstrumentoDocumento(valor)) {
             Object.assign(valorBackend, construirDatosDocumento(valor));
@@ -3731,6 +3736,8 @@ function enviarPayloadAlServidor(
             }
 
             confirmacionPagoConfirmada = true;
+            $('#alertaRegistroPago').addClass('d-none');
+            $('#detalleRegistroPago').text('');
             console.log('✅ Respuesta OK del servidor');
 
             // ❽ Detectar advertencia de PV (Punto de Venta)
@@ -4210,32 +4217,35 @@ function reiniciaPantallaAlVolver() {
  * @param {Object} response - Respuesta del servidor con error
  */
 function procesarErrorPago(response) {
-    console.error('═══════════════════════════════════════════════════');
-    console.error('❌ PROCESANDO ERROR DE PAGO');
-    console.error('═══════════════════════════════════════════════════');
-    console.error('Response:', response);
-
     const mensajeError = response?.mensaje || 'Ocurrió un error al procesar el pago';
+    const cobroAprobado = contieneCobroElectronico(valoresPago);
+    console.error('Error de registración de Caja:', response);
 
-    console.error(`   Mensaje: ${mensajeError}`);
+    // El rechazo de la emisión no revierte el cobro que ya aprobó el medio.
+    // No borrar pagos ni consultar estado POS; conservarlos para completar Caja.
+    $('#alertaRegistroPago').toggleClass('d-none', !cobroAprobado);
+    $('#detalleRegistroPago').text(cobroAprobado ? mensajeError : '');
+    const titulo = cobroAprobado ? 'No se pudo completar la operación de Caja' : 'Error al Procesar Pago';
+    const resumen = cobroAprobado
+        ? 'El cobro electrónico ya está aprobado. Falta confirmar la emisión o registración en Caja.'
+        : 'No se pudo procesar el pago';
 
     AbrirMensaje(
-        "Error al Procesar Pago",
+        titulo,
         `<div class="text-start">
             <p class="mb-3">
                 <i class='bx bx-error-circle text-danger fs-3'></i>
-                <strong class="text-danger">No se pudo procesar el pago</strong>
+                <strong class="text-danger">${resumen}</strong>
             </p>
-            <div class="alert alert-danger mb-0">
+            <div class="alert alert-danger mb-0 text-break">
                 ${escapeHtml(mensajeError)}
             </div>
+            ${cobroAprobado ? '<p class="mt-3 mb-0">Conserve los pagos ingresados y no vuelva a cobrar al cliente. Revise el error antes de completar la operación.</p>' : ''}
         </div>`,
-        function () {
-            $('#msjModal').modal('hide');
-        },
+        function () { $('#msjModal').modal('hide'); },
         false,
-        ["Aceptar"],
-        "error!",
+        ['Aceptar'],
+        'error!',
         null
     );
 }
@@ -4433,6 +4443,8 @@ function cargarConceptosPago(totales) {
     conceptosPago.totalAplicado = 0;
 
     conceptosPago.diferencia = totalPagar + recargos - descuentos;
+    $('#alertaRegistroPago').addClass('d-none');
+    $('#detalleRegistroPago').text('');
 
     $('#totalPagar').text(`$ ${formatearNumero(totalPagar, 2)}`);
     $('#totalRecargos').text(`$ ${formatearNumero(recargos, 2)}`);
@@ -5744,6 +5756,11 @@ function solicitarAutorizacionAdministradorNC() {
  * @returns {Promise<Array>} - Array de instrumentos
  */
 function cargarInstrumentos(tipoMedioPago) {
+    // T1 es el medio POS Clover. El instrumento y las cuotas se resuelven en su modal.
+    if (esMedioClover(null, tipoMedioPago)) {
+        abrirDetalleClover(null, tipoMedioPago);
+        return Promise.resolve([]);
+    }
     console.log('═══════════════════════════════════════════════════');
     console.log('📡 CARGAR INSTRUMENTOS v17.1');
     console.log(`   Tipo MP: ${tipoMedioPago.tcf_desc} (${tipoMedioPago.tcf_id})`);
@@ -6300,6 +6317,10 @@ function confirmarSeleccionInstrumento() {
 
     // ❷ Esperar cierre y abrir modal de detalle
     setTimeout(() => {
+        if (esMedioClover(window._instrumentoSeleccionado, window._tipoMedioPagoActual)) {
+            abrirDetalleClover(window._instrumentoSeleccionado, window._tipoMedioPagoActual);
+            return;
+        }
         if (esMedioCobroElectronico({ ...window._tipoMedioPagoActual, ins_desc: window._instrumentoSeleccionado.ins_desc })) {
             abrirModalDetalleTransferencia(window._instrumentoSeleccionado, window._tipoMedioPagoActual);
             return;
@@ -6371,6 +6392,11 @@ function confirmarSeleccionInstrumento() {
  * @param {Object} tipoMedioPago - Tipo de medio de pago seleccionado
  */
 function procesarInstrumentos(instrumentos, tipoMedioPago) {
+    if (esMedioClover(null, tipoMedioPago)) {
+        const reales = (instrumentos || []).filter(i => i.ins_id && i.ins_id !== 'DEF');
+        abrirDetalleClover(reales.length === 1 ? reales[0] : null, tipoMedioPago);
+        return;
+    }
     const documento = instrumentos?.find(esInstrumentoDocumento);
     if (documento) { abrirModalDetalleDocumento(documento, tipoMedioPago); return; }
     console.log('═══════════════════════════════════════════════════');
@@ -6411,7 +6437,7 @@ function procesarInstrumentos(instrumentos, tipoMedioPago) {
         console.log('═══════════════════════════════════════════════════');
 
         // ❺ Verificar si el MP requiere modal de detalle obligatorio
-        if (requiereModalDetalle(tcfId) || esMedioCobroElectronico({ ...tipoMedioPago, ins_desc: instrumentoUnico.ins_desc })) {
+        if (esMedioClover(instrumentoUnico, tipoMedioPago) || requiereModalDetalle(tcfId) || esMedioCobroElectronico({ ...tipoMedioPago, ins_desc: instrumentoUnico.ins_desc })) {
             console.log('✅ FLUJO ESPECIAL: MP con modal obligatorio');
             console.log(`   Abriendo modal de detalle para ${tcfId}...`);
 
@@ -6451,6 +6477,7 @@ function procesarInstrumentos(instrumentos, tipoMedioPago) {
  * @param {Object} tipoMedioPago - Tipo de medio de pago seleccionado
  */
 function agregarValorDirecto(instrumento, tipoMedioPago) {
+    if (esMedioClover(instrumento, tipoMedioPago)) { abrirDetalleClover(instrumento, tipoMedioPago); return; }
     const documento = esInstrumentoDocumento(instrumento) ? instrumento : null;
     if (documento) { abrirModalDetalleDocumento(documento, tipoMedioPago); return; }
     console.log('═══════════════════════════════════════════════════');
@@ -7009,11 +7036,7 @@ function agregarFilaValor(valor) {
             
             <!-- Acciones -->
             <td class="text-center align-middle">
-                <button class="btn btn-sm btn-outline-danger" 
-                        onclick="eliminarValor(${valor.id})"
-                        title="Eliminar">
-                    <i class="bx bx-trash"></i>
-                </button>
+                ${valor.clover ? '<span class="badge bg-success" title="Clover aprobó el cobro. La emisión o registración de Caja se informa por separado."><i class="bx bx-lock-alt"></i> Cobro aprobado</span>' : `<button class="btn btn-sm btn-outline-danger" onclick="eliminarValor(${valor.id})" title="Eliminar"><i class="bx bx-trash"></i></button>`}
             </td>
         </tr>
     `;
@@ -7072,6 +7095,12 @@ function agregarFilaValor(valor) {
  *   - ❌ Deshabilitado en cualquier otro caso
  */
 function actualizarTotalesPago() {
+    // Los ajustes financieros se calculan desde cada pago sin alterar el total base
+    // ni acumularlos de nuevo en conceptosPago al recalcular la pantalla.
+    const recargosCloverCentavos = valoresPago.reduce((s, v) => s + Math.max(0, aCentavosMonto(v.clover?.rb_aux || 0)), 0);
+    const descuentosCloverCentavos = valoresPago.reduce((s, v) => s + Math.max(0, -aCentavosMonto(v.clover?.rb_aux || 0)), 0);
+    $('#totalRecargos').text(`$ ${formatearNumero(desdeCentavosNC(aCentavosMonto(conceptosPago.recargos) + recargosCloverCentavos), 2)}`);
+    $('#totalDescuentos').text(`$ ${formatearNumero(desdeCentavosNC(aCentavosMonto(conceptosPago.descuentos) + descuentosCloverCentavos), 2)}`);
     const totalNetoCentavos = obtenerTotalNetoCentavos();
     const totalOtrosValoresCentavos = obtenerTotalOtrosValoresCentavos();
     const totalCreditosNCCentavos = obtenerTotalCreditosNCCentavos();
@@ -7339,6 +7368,7 @@ function eliminarValor(valorId) {
     }
 
     const valor = valoresPago[index];
+    if (valor.clover) { mostrarMensajeError('Un pago Clover aprobado no se puede eliminar. Complete la registración de Caja.'); return; }
 
     // Confirmar eliminación
     const mensajeHtml = `
@@ -8241,6 +8271,7 @@ function requiereModalDetalle(tcfId) {
     console.log(`🔍 Verificando si ${tcfId} requiere modal de detalle...`);
 
     const tiposConModalObligatorio = [
+        'T1', // POS Clover tiene su propio detalle.
         'TC', 'TD', 'MP', // Captura temporal del cobro mediante formulario de transferencia
         'VA',  // Vales de Compra
         'BA',  // ✅ NUEVO v19.3: Transferencias Bancarias
@@ -8262,6 +8293,7 @@ function requiereModalDetalle(tcfId) {
 function abrirModalDetalleSegunTipo(instrumento, tipoMedioPago) {
     const documento = esInstrumentoDocumento(instrumento) ? instrumento : null;
     if (documento) { abrirModalDetalleDocumento(documento, tipoMedioPago); return; }
+    if (esMedioClover(instrumento, tipoMedioPago)) { abrirDetalleClover(instrumento, tipoMedioPago); return; }
     if (esMedioCobroElectronico({ ...tipoMedioPago, ins_desc: instrumento?.ins_desc })) {
         abrirModalDetalleTransferencia(instrumento, tipoMedioPago);
         return;
@@ -10716,3 +10748,41 @@ function guardarDetalleDocumento() {
     actualizarTotalInstrumento(valor.ins_id, valor.importe);
     $('#modalDetalleDocumento').modal('hide');
 }
+
+// Clover tiene ventana propia; nunca cae a la captura libre de Transferencia.
+function abrirDetalleClover(instrumento, tipoMedioPago) {
+    if (!window.CloverPago) { mostrarMensajeError('No se pudo cargar la ventana Clover. Recargue la página.'); return; }
+    const detalle = { ...instrumento, tcf_id: tipoMedioPago?.tcf_id || instrumento?.tcf_id,
+        ins_id: instrumento?.ins_id === 'DEF' ? '' : instrumento?.ins_id || '',
+        ins_desc: instrumento?.ins_id && instrumento.ins_id !== 'DEF' ? instrumento.ins_desc : tipoMedioPago?.tcf_desc || 'POS Clover' };
+    window.CloverPago.abrir({ instrumento: detalle, medio: tipoMedioPago, coTipo: window._coTipoActual,
+        saldo: Math.max(0, Number(conceptosPago.diferencia) || 0),
+        obtenerValores: construirJsonValores, obtenerUniones: construirJsonUnionesNC,
+        alAprobar: async resultado => {
+            const agregado = aplicarCloverAPago(resultado);
+            if (agregado && conceptosPago.diferencia <= 0.009) setTimeout(finalizarPago, 350);
+            return true;
+        } });
+}
+
+
+function hayCloverPendiente() {
+    return !confirmacionPagoConfirmada && (window.CloverPago?.bloqueado() || valoresPago.some(v => v.clover));
+}
+function aplicarCloverAPago(resultado) {
+    const canonico = resultado.valorCanonico;
+    if (!canonico || Number(canonico.rb_importe) !== Number(resultado.total) || Number(canonico.rb_aux) !== Number(resultado.recargo)) throw new Error('No se recibió el valor canónico Clover. Conserve el ID y verifique el resultado.');
+    if (valoresPago.some(v => canonico.id_externo ? v.clover?.id_externo === canonico.id_externo : resultado.intentoId && v.cloverIntento === resultado.intentoId)) return false;
+    const valor = { id: ++valorIdCounter, tcf_id: 'T1', tcf_desc: 'Clover', ins_id: canonico.ins_id, ins_desc: resultado.datosSP?.ins_id || 'Tarjeta / QR', ins_simbolo: '$', importe: Number(canonico.rb_importe), cloverIntento: resultado.intentoId, clover: Object.freeze({ ...canonico }), observacion: `ID ${canonico.rb_dato1_valor} · Lote ${canonico.rb_dato2_valor} · Cupón ${canonico.rb_dato3_valor} · Recargo ${Number(canonico.rb_rec)} % · $ ${formatearNumero(canonico.rb_aux, 2)}`, detalle: null };
+    valoresPago.push(valor); agregarFilaValor(valor); actualizarTotalesPago();
+    return true;
+}
+$(document).on('hide.bs.modal.cloverProtegido', '#modalPago', function (e) {
+    if (hayCloverPendiente()) { e.preventDefault(); mostrarMensajeError('Complete la registración del pago Clover antes de salir de esta operación.'); }
+});
+document.addEventListener('click', function (e) {
+    if (!hayCloverPendiente() || !e.target.closest('a[href]')) return;
+    const href = e.target.closest('a[href]').getAttribute('href');
+    if (!href || href.startsWith('#') || href.startsWith('javascript:')) return;
+    e.preventDefault(); e.stopImmediatePropagation(); mostrarMensajeError('Hay un pago Clover pendiente. Complete su registración antes de salir.');
+}, true);

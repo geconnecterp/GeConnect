@@ -1,4 +1,4 @@
-﻿using gc.caja.Models.Middleware;
+using gc.caja.Models.Middleware;
 using gc.sitio.core.Extensions;
 using gc.caja.core.Autorizaciones;
 using gc.caja.Models;
@@ -69,6 +69,7 @@ builder.Services.AddServicios();
 
 builder.Services.AddRazorPages();
 builder.Services.AddHttpClient();
+builder.Services.AddHttpClient<gc.caja.core.Servicios.Implementacion.Cajas.CloverApiServicio>(client => client.Timeout = TimeSpan.FromSeconds(660));
 builder.Services.AddMemoryCache();
 builder.Services.AddHttpClient<gc.caja.Models.Administracion.CajaGeneralServicio>((services, client) =>
 {

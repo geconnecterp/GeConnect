@@ -44,6 +44,11 @@
             <!-- BODY PRINCIPAL CON LAYOUT OPTIMIZADO EN 2 COLUMNAS -->
             <!-- ════════════════════════════════════════════════════════════════ -->
             <div class="modal-body p-3 bg-light">
+                <div id="alertaRegistroPago" class="alert alert-danger d-none mb-3" role="alert" aria-live="polite">
+                    <strong><i class="bx bx-error-circle me-1"></i>Cobro aprobado · operación pendiente en Caja</strong>
+                    <p class="mb-1">Falta confirmar la emisión o registración. Conserve los pagos ingresados y no vuelva a cobrar al cliente.</p>
+                    <div id="detalleRegistroPago" class="small text-break"></div>
+                </div>
 
                 <!-- ✅ Layout rebalanceado: 33% Conceptos | 67% Formas de Pago -->
                 <div class="row g-3">

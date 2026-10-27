@@ -1,7 +1,7 @@
 const fs=require('node:fs'),path=require('node:path'),vm=require('node:vm'),assert=require('node:assert/strict');
 const source=fs.readFileSync(path.join(__dirname,'../wwwroot/js/app/pagoFactura.js'),'utf8');
 const cd=fs.readFileSync(path.join(__dirname,'../wwwroot/js/app/pagoDiferido.js'),'utf8');
-const extract=(s,n)=>{const m=s.match(new RegExp('^(?:async )?function '+n+'\\([^]*?^}', 'm'));assert(m,n);return fs.readFileSync(path.join(__dirname,'../wwwroot/js/app/siteGen.js'),'utf8').match(/^function esMedioCobroElectronico\([^]*?^}/m)[0]+'\n'+m[0];};
+const extract=(s,n)=>{const m=s.match(new RegExp('^(?:async )?function '+n+'\\([^]*?^}', 'm'));assert(m,n);return fs.readFileSync(path.join(__dirname,'../wwwroot/js/app/siteGen.js'),'utf8').match(/^function esMedioClover\([^]*?^}/m)[0] + '\n' + fs.readFileSync(path.join(__dirname, '../wwwroot/js/app/siteGen.js'), 'utf8').match(/^function esMedioCobroElectronico\([^]*?^}/m)[0]+'\n'+m[0];};
 const cases=JSON.parse(fs.readFileSync(path.join(__dirname,'ReglasPago.Casos.json'),'utf8'));
 const ctx=vm.createContext({console:{log(){},warn(){},error(){}},window:{_coTipoActual:'CD'},Date,
  formatearMoneda:String,normalizarTextoUpper:x=>String(x||'').trim().toUpperCase()});
@@ -26,10 +26,11 @@ for(const c of cases){
  let ajax, posts=0;
  const ctx=vm.createContext({console:{log(){},warn(){},error(){}},confirmacionPagoEnCurso:false,confirmacionPagoConfirmada:false,
   window:{_coTipoActual:'CC'},actualizarMensajeLoadingGlobal(){},ocultarLoadingGlobal(){},mostrarResultadoCobranzaCtaCte:()=>true,
-  $:{ajax:()=>{posts++;const req={done:f=>{ajax=f;return req;},fail:()=>req};return req;}}});
+  $:Object.assign(()=>({addClass(){return this;},text(){return this;}}),{ajax:()=>{posts++;const req={done:f=>{ajax=f;return req;},fail:()=>req};return req;}})});
  vm.runInContext(extract(source,'enviarPayloadAlServidor'),ctx);
  ctx.enviarPayloadAlServidor([],[],'CuentaCorriente',[]);ctx.enviarPayloadAlServidor([],[],'CuentaCorriente',[]);assert.equal(posts,1);
  ajax({ok:true,data:[{rb_compte:'TEST'}]});ctx.enviarPayloadAlServidor([],[],'CuentaCorriente',[]);assert.equal(posts,1);
+ ctx.hayCloverPendiente = () => false;
  vm.runInContext(extract(source,'advertirSalidaDurantePago'),ctx);
  let prevented=0;ctx.confirmacionPagoEnCurso=true;ctx.advertirSalidaDurantePago({preventDefault(){prevented++;}});assert.equal(prevented,1);
  ctx.confirmacionPagoEnCurso=false;ctx.advertirSalidaDurantePago({preventDefault(){prevented++;}});assert.equal(prevented,1);
