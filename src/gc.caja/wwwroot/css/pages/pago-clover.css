@@ -1,0 +1,16 @@
+/* Mismo nivel que los detalles de pago; por encima de modalPago (5070). */
+#modalDetalleClover { z-index: 5100 !important; }
+#modalDetalleClover.modal.show ~ .modal-backdrop { z-index: 5099 !important; }
+#modalDetalleClover .modal-dialog { max-width: 600px; z-index: 5101 !important; }
+.clover-modal .modal-content { border: 1px solid #d8ba69; border-radius: 12px; overflow: hidden; box-shadow: 0 12px 36px #0003; }
+.clover-modal .modal-header { color: #3d3218; background: linear-gradient(120deg,#c39713,#e0b72b); }
+.clover-modal .clover-contexto { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; color: #625537; font-size: .9rem; }
+.clover-modal .clover-total { color: #765809; border-color: #d9bb63; background: #fff8dd; font-weight: 700; font-size: 1.15rem; }
+.clover-modal .clover-pos { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px; background: #faf7ee; border-radius: 8px; }
+.clover-modal .clover-recuperacion { padding-top: 14px; border-top: 1px solid #e6dfcd; }
+.clover-modal .btn-golden { background: #bf9011; border-color: #bf9011; color: #fff; font-weight: 600; }
+.clover-modal .btn-golden:hover { background: #a87909; color: #fff; }
+.clover-modal button, .clover-modal input, .clover-modal select { min-height: 40px; }
+.clover-modal input.form-check-input { min-height: initial; }
+.clover-modal #txtPaymentIdClover { text-transform: uppercase; }
+@media (max-width: 575px) { .clover-modal .clover-pos { align-items: stretch; flex-direction: column; } .clover-modal .input-group { flex-wrap: wrap; } .clover-modal .modal-body { padding: 14px; } }

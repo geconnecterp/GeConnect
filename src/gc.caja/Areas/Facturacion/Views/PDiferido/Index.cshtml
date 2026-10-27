@@ -76,6 +76,8 @@
 @await Html.PartialAsync("~/Areas/Facturacion/Views/pago/_detalleTransferencia.cshtml")
 @await Html.PartialAsync("~/Areas/Facturacion/Views/pago/_detalleValeCompra.cshtml")
 
+@await Html.PartialAsync("~/Areas/Facturacion/Views/Pago/_detalleClover.cshtml")
+
 @section Scripts {
     <script>
         // =================================================================
@@ -135,5 +137,7 @@
 @*     <script src="~/js/app/pagoCommon.js" asp-append-version="true"></script> *@
     <script src="~/js/app/fact.js" asp-append-version="true"></script>
     <script src="~/js/app/pagoDiferido.js" asp-append-version="true"></script>
+    <script src="~/js/app/cloverPago.js" asp-append-version="true"></script>
+    <script src="~/js/app/cloverPagoVista.js" asp-append-version="true"></script>
     <script src="~/js/app/pagoFactura.js" asp-append-version="true"></script>
 }

@@ -21,7 +21,7 @@ using X.PagedList;
 
 namespace gc.caja.Controllers
 {
-    public class ControladorBaseCaja : Controller
+    public partial class ControladorBaseCaja : Controller
     {
         private readonly AppSettings _options;
         private readonly AppSettings _setting;

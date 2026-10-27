@@ -42,14 +42,29 @@ namespace gc.caja.core.Servicios.Implementacion.Cajas
         {
             try
             {
+                var registrarClover = !string.IsNullOrWhiteSpace(req.clover_operacion_id);
+                var llamadaClover = registrarClover ? Guid.NewGuid().ToString("N") : "";
+                var relojClover = System.Diagnostics.Stopwatch.StartNew();
                 var helper = new HelperAPI();
                 var client = helper.InicializaCliente(req, token, out StringContent contentData);
                 var link = $"{_appSettings.RutaBase}{RutaAPI}{POST_FINALIZAR_PAGO}";
 
+                if (registrarClover && _logger.IsEnabled(LogLevel.Information))
+                    _logger.LogInformation("[CLOVER][REQUEST] ConfirmarOperacionCaja | Llamada={Llamada} | POST {Url}\n{Json}",
+                        llamadaClover, link, CloverJsonDiagnostico.Formatear(await contentData.ReadAsStringAsync(), token));
                 using var response = await client.PostAsync(link, contentData);
+                string? cuerpoClover = null;
+                if (registrarClover)
+                {
+                    cuerpoClover = await response.Content.ReadAsStringAsync();
+                    var nivel = response.IsSuccessStatusCode ? LogLevel.Information : LogLevel.Warning;
+                    if (_logger.IsEnabled(nivel))
+                        _logger.Log(nivel, "[CLOVER][RESPONSE] ConfirmarOperacionCaja | Llamada={Llamada} | HTTP {Estado} | {DuracionMs} ms\n{Json}",
+                            llamadaClover, (int)response.StatusCode, relojClover.ElapsedMilliseconds, CloverJsonDiagnostico.Formatear(cuerpoClover, token));
+                }
                 if (response.StatusCode == HttpStatusCode.OK)
                 {
-                    var stringData = await response.Content.ReadAsStringAsync();
+                    var stringData = cuerpoClover ?? await response.Content.ReadAsStringAsync();
                     if (string.IsNullOrEmpty(stringData))
                     {
                         _logger.LogWarning($"{MethodBase.GetCurrentMethod().Name} - 01 - Error deserializando la respuesta de la API");
