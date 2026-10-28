@@ -81,7 +81,7 @@ ClaimsPrincipal User(string perfiles = "[{\"perfil_id\":\"P1\"}]", bool forced =
 Check(!servicio.TieneAcceso(new ClaimsPrincipal(), "P1", "C") && !servicio.TieneAcceso(User(), "P2", "C") && proxy.Calls == 0, "Anónimo/perfil ajeno rechazados antes de menú y SQL");
 Check(!servicio.TieneAcceso(User("incorrecto"), "P1", "C") && !servicio.TieneAcceso(User(forced: true), "P1", "C"), "Token malformado o cambio de clave denegados");
 proxy.Item = "imp_ap"; await Reject<UnauthorizedAccessException>(() => servicio.Consultar(Filtro(), User(), "P1", "C", default), "Permiso de emitidos no concede certificados sufridos");
-Check(datos.Calls == 0, "Sin acceso no consulta SQL"); proxy.Item = "imp_cs";
+Check(datos.Calls == 0, "Sin acceso no consulta SQL"); proxy.Item = "imp_ret_per_sufridas";
 var opciones = await servicio.Opciones(User(), "P1", "C", default);
 Check(opciones.Select(i => i.Id).SequenceEqual(new[] { "IB", "GA" }), "Catálogo usa cont S y admite GA, no agente_ret/per");
 await servicio.Consultar(Filtro("GA"), User(), "P1", "C", default); Check(datos.Calls == 1, "Consulta contribuyente distinto de IB/IV");

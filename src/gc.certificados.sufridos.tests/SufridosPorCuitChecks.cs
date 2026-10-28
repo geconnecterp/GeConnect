@@ -71,9 +71,9 @@ public static class SufridosPorCuitChecks
         var svc = new CertificadosSufridosServicio(datos, usuarios);
         var user = new ClaimsPrincipal(new ClaimsIdentity([new Claim("user", "prueba"), new Claim("AdmId", "0001#Sucursal"), new Claim("perfiles", "[{\"perfil_id\":\"P1\"}]")], "test"));
         proxy.Item = "imp_ap";
-        await Reject<UnauthorizedAccessException>(() => svc.Consultar(filtro, user, "P1", "C", default), "Agrupado: exige imp_cs antes de leer el SP");
+        await Reject<UnauthorizedAccessException>(() => svc.Consultar(filtro, user, "P1", "C", default), "Agrupado: exige imp_ret_per_sufridas antes de leer el SP");
         Check(datos.Calls == 0 && datos.AgrupadasCalls == 0, "Agrupado: sin acceso no usa ninguno de los SP");
-        proxy.Item = "imp_cs"; var resultado = await svc.Consultar(filtro, user, "P1", "C", default);
+        proxy.Item = "imp_ret_per_sufridas"; var resultado = await svc.Consultar(filtro, user, "P1", "C", default);
         Check(resultado.AgrupadoPorCuit && resultado.Filas.Count == 0 && resultado.FilasPorCuit.Count == 4 && datos.Calls == 0 && datos.AgrupadasCalls == 1, "Agrupado: servicio selecciona sólo el SP x_Cuit");
         datos.FallaAgrupada = true;
         await Reject<IOException>(() => svc.Consultar(filtro, user, "P1", "C", default), "Agrupado: lectura fallida no produce respuesta parcial");

@@ -9,7 +9,7 @@ namespace gc.api.core.Servicios.Libros;
 
 public class CertificadosSufridosServicio(ICertificadosSufridosDatos datos, IApiUsuarioServicio usuarios)
 {
-    public const string Permiso = "imp_cs";
+    public const string Permiso = "imp_ret_per_sufridas";
     public bool TieneAcceso(ClaimsPrincipal usuario, string perfil, string menu)
     {
         if (usuario.Identity?.IsAuthenticated != true || string.IsNullOrWhiteSpace(perfil) || string.IsNullOrWhiteSpace(menu) ||
@@ -25,7 +25,7 @@ public class CertificadosSufridosServicio(ICertificadosSufridosDatos datos, IApi
     }
     private void Autorizar(ClaimsPrincipal usuario, string perfil, string menu)
     {
-        if (!TieneAcceso(usuario, perfil, menu)) throw new UnauthorizedAccessException("El perfil no tiene acceso a Certificados Sufridos (imp_cs).");
+        if (!TieneAcceso(usuario, perfil, menu)) throw new UnauthorizedAccessException($"El perfil no tiene acceso a Certificados Sufridos ({Permiso}).");
     }
     public async Task<List<SufridoImpuesto>> Opciones(ClaimsPrincipal usuario, string perfil, string menu, CancellationToken ct)
     {

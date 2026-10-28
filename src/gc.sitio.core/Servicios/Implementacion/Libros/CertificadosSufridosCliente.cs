@@ -47,7 +47,7 @@ public class CertificadosSufridosCliente(IOptions<AppSettings> options, IOptions
             response.Dispose(); throw new InvalidOperationException("La API no devolvió el formato esperado.");
         }
         var status = (int)response.StatusCode;
-        var mensaje = status is 401 or 403 ? "La sesión venció o el perfil no tiene acceso a Certificados Sufridos (imp_cs)." : "No se pudo completar la consulta o reporte. No se entregaron datos parciales.";
+        var mensaje = status is 401 or 403 ? "La sesión venció o el perfil no tiene acceso a Certificados Sufridos (imp_ret_per_sufridas)." : "No se pudo completar la consulta o reporte. No se entregaron datos parciales.";
         try
         {
             if (status is 400 or 403 or 422 or 429 or 503 or 504 && response.Content.Headers.ContentType?.MediaType == "application/json")
