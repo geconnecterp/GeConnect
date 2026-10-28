@@ -1025,7 +1025,7 @@
                 </tr>
             `);
         } else {
-            subtotales.forEach(function (item) {
+            ordenarConceptosCalculo(subtotales).forEach(function (item) {
                 const importe = parsearNumero(item.importe, 0);
                 $tbody.append(`
                     <tr>
@@ -1073,6 +1073,7 @@
         return filas.map(function (item) {
             const fila = item || {};
             return {
+                orden: fila.orden ?? fila.Orden ?? null,
                 concepto: fila.concepto || fila.Concepto || fila.descripcion || fila.Descripcion || fila.tipo || fila.Tipo || '',
                 tipo: fila.tipo || fila.Tipo || '',
                 importe: parsearNumero(fila.importe ?? fila.Importe ?? fila.total ?? fila.Total ?? fila.monto ?? fila.Monto, 0)

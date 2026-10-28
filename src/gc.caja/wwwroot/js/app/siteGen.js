@@ -1396,6 +1396,25 @@ function formatearNumero(numero, decimales = 2) {
 }
 
 /**
+ * Orden visual del contrato de cálculo: numérico, estable y sin mutar el JSON original.
+ * Las filas sin orden válido van al final y conservan su posición relativa.
+ */
+function ordenarConceptosCalculo(conceptos) {
+    return (Array.isArray(conceptos) ? conceptos : [])
+        .map(function (fila, indice) {
+            const valor = fila?.orden ?? fila?.Orden;
+            const numero = typeof valor === 'number' || (typeof valor === 'string' && valor.trim() !== '')
+                ? Number(valor)
+                : NaN;
+            return { fila, indice, orden: Number.isFinite(numero) ? numero : Infinity };
+        })
+        .sort(function (a, b) {
+            return a.orden === b.orden ? a.indice - b.indice : a.orden - b.orden;
+        })
+        .map(function (item) { return item.fila; });
+}
+
+/**
  * ✅ NUEVO v10.0: Escapa caracteres HTML para prevenir XSS
  * (Mantener esta función existente si ya estaba)
  */

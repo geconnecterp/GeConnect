@@ -62,6 +62,9 @@ app.Use(async(ctx,next)=>{
   ctx.Session.SetString("LP_Id",JsonConvert.SerializeObject("001"));
   ctx.Session.SetString("FacturaSubtotales","""[{"orden":1,"tipo":"SU","concepto":"Subtotal","importe":100}]""");
   ctx.Session.SetString("FacturaProductos","""[{"p_id":"031225","p_cantidad":1}]""");
+  if(ctx.Request.Query["caso"]=="combo-negativo") {
+   ctx.Session.SetString("FacturaSubtotales","""[{"orden":1,"tipo":"SU","concepto":"Subtotal","base":0,"alicuota":0,"importe":82018.74,"id_aux":""},{"orden":2,"tipo":"CO","concepto":"Fernet 3x2 rico","base":0,"alicuota":0,"importe":-8201.87,"id_aux":"006787"}]""");
+  }
   if(ctx.Request.Query["caso"]=="recargo-afip") {
    ctx.Session.SetString("FacturaSubtotales","""[{"orden":1,"tipo":"SU","concepto":"Subtotal","importe":9635.59},{"orden":2,"tipo":"PE","concepto":"Percep. Ingresos Brutos","base":7963.30,"alicuota":1,"importe":79.63,"id_aux":"IB"},{"orden":3,"tipo":"PE","concepto":"Percep. IVA","base":7963.30,"alicuota":3,"importe":238.90,"id_aux":"IV"}]""");
    ctx.Session.SetString("FacturaProductos","""[{"p_id":"051929","cantidad_tot":0.250,"p_pvta_tot":9635.59,"cm_gravado":7963.30,"cm_iva":1672.29}]""");
@@ -251,10 +254,28 @@ try {
    var jsonCv=JArray.Parse((string)serializar.Invoke(null,[preparados])!);
    Check(jsonCv[0]["rb_rec"]!.Value<decimal>()==19.17m && jsonCv[0]["rb_aux"]!.Value<decimal>()==1908.20m && jsonCv[0]["rb_importe"]!.Value<decimal>()==11862.32m,tipo+": serialización real conserva porcentaje, importe de recargo y total");
    Check(jsonCv.Count==(tipo=="CV"?2:1),tipo+": conserva su contrapartida y cantidad de valores");
+   if(tipo=="CV")Check(jsonCv[1]["rb_importe"]!.Value<decimal>()==-11862.32m,"CV: serialización conserva contrapartida negativa");
   }
   var ejemplo=Path.GetFullPath(".artifacts/clover-contrato-20261027");Directory.CreateDirectory(ejemplo);
   File.WriteAllText(Path.Combine(ejemplo,"json_valores-ejemplo.json"),JsonConvert.SerializeObject(pagosEnviados,Formatting.Indented));
   sql.OpcionesCatalogo=null;
+ }
+ // El subtotal negativo debe sobrevivir la sesión real y FinalizarCompra, antes de la frontera SQL.
+ using(var hCombo=new HttpClientHandler{CookieContainer=new CookieContainer(),AllowAutoRedirect=false})
+ using(var cCombo=new HttpClient(hCombo){BaseAddress=client.BaseAddress}) {
+  hCombo.CookieContainer.Add(client.BaseAddress,new Cookie("TokenPrueba",jwt));
+  var paginaCombo=await cCombo.GetStringAsync("/?caso=combo-negativo");
+  var tokenCombo=Regex.Match(paginaCombo,"name=\"__RequestVerificationToken\"[^>]+value=\"([^\"]+)\"").Groups[1].Value;
+  var prepararCombo=new CloverPreparacionDto{ins_id="G00",co_tipo="CR",monto_base=73816.87m,monto_total=73816.87m,recargo=0,cuotas_reales=1,pos_plan=1,intento_id=Guid.NewGuid().ToString()};
+  var pagoCombo=new HttpRequestMessage(HttpMethod.Post,"/Facturacion/Clover/Procesar");pagoCombo.Headers.Add("RequestVerificationToken",tokenCombo);pagoCombo.Content=new StringContent(JsonConvert.SerializeObject(prepararCombo),System.Text.Encoding.UTF8,"application/json");
+  var resCombo=JsonConvert.DeserializeObject<RespuestaDto>(await (await cCombo.SendAsync(pagoCombo)).Content.ReadAsStringAsync())!;
+  Check(resCombo.resultado==0,"Combo negativo: pago simulado usa total neto 73816.87");
+  var valoresCombo=JsonConvert.DeserializeObject<List<Json_Valor>>(resCombo.resultado_id)!;
+  var finCombo=await cCombo.PostAsync("/Facturacion/Checkout/FinalizarCompra",new StringContent(JsonConvert.SerializeObject(new PagoCompletoDto{ModuloOrigen="Facturacion",Valores=valoresCombo}),System.Text.Encoding.UTF8,"application/json"));
+  var resultadoCombo=JsonDocument.Parse(await finCombo.Content.ReadAsStringAsync()).RootElement;
+  Check(resultadoCombo.GetProperty("ok").GetBoolean(),"Checkout real confirma Subtotal menos CO: "+resultadoCombo.GetRawText());
+  var subtotalesCombo=JArray.Parse(sql.UltimaConfirmacion!.json_subtotal);
+  Check(subtotalesCombo[1]["importe"]!.Value<decimal>()==-8201.87m && subtotalesCombo.Sum(x=>x["importe"]!.Value<decimal>())==73816.87m,"HTTP/sesión/BFF preservan CO negativo hasta confirmación");
  }
  var anon=new HttpRequestMessage(HttpMethod.Get,"/Facturacion/Clover/Opciones?coTipo=CR");anon.Headers.Add("X-Fixture-Anonymous","1");Check((await client.SendAsync(anon)).StatusCode==HttpStatusCode.Unauthorized,"Acceso anónimo rechazado");
  Console.WriteLine($"PASS: {cuenta} verificaciones HTTP/Razor/API/SP/Checkout sin proveedor real.");

@@ -2038,7 +2038,7 @@ window.NCDevolucion = window.NCDevolucion || {};
         const fila = item || {};
 
         return {
-            orden: obtenerValor(fila, ['orden', 'Orden']) || 0,
+            orden: obtenerValor(fila, ['orden', 'Orden']) ?? null,
             tipo: String(obtenerValor(fila, ['tipo', 'Tipo', 'id', 'ID']) || ''),
             concepto: String(
                 obtenerValor(
@@ -2113,7 +2113,7 @@ window.NCDevolucion = window.NCDevolucion || {};
 
     function renderizarConceptosCalculo(subtotales) {
         $(SELECTORES.conceptosCalculo).html(
-            subtotales.map(function (item) {
+            ordenarConceptosCalculo(subtotales).map(function (item) {
                 const concepto = item.concepto || item.tipo || '-';
                 const claseTotal = esFilaTotal(item)
                     ? 'fw-bold text-success'

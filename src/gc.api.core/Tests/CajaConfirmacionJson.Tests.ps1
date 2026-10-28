@@ -19,6 +19,12 @@ function Assert-Equal($Actual, $Expected, [string]$Message) {
     $script:checks++
 }
 
+# Regresión reportada: el importe calculado de un combo debe llegar con su signo.
+$tester = '[{"orden":1,"tipo":"SU","concepto":"Subtotal","base":0,"alicuota":0,"importe":82018.74,"id_aux":""},{"orden":2,"tipo":"CO","concepto":"Fernet 3x2 rico","base":0,"alicuota":0,"importe":-8201.87,"id_aux":"006787"}]'
+$testerResult = (Convert-ConfirmationJson $tester) | ConvertFrom-Json
+Assert-Equal $testerResult[1].importe ([decimal]-8201.87) 'CO conserva el descuento del SP'
+Assert-Equal (($testerResult | Measure-Object -Property importe -Sum).Sum) ([decimal]73816.87) 'Subtotal menos combo'
+
 $previousCulture = [Threading.Thread]::CurrentThread.CurrentCulture
 try {
     foreach ($culture in @('es-AR', 'en-US')) {
@@ -30,7 +36,8 @@ try {
                 $json = '[{"' + $field + '":' + $value + '}]'
                 $normalized = Convert-ConfirmationJson $json
                 $result = $normalized | ConvertFrom-Json
-                $expected = if ($value -eq '0') { [decimal]0 } elseif ($integer) { [decimal]42 } else { [decimal]42.18 }
+                $magnitude = if ($integer) { [decimal]42 } else { [decimal]42.18 }
+                $expected = if ($value -eq '0') { [decimal]0 } elseif ($value.Contains('-')) { -$magnitude } else { $magnitude }
                 Assert-Equal $result[0].$field $expected "$culture / $field / $value"
                 if ($integer) {
                     Assert-Equal $normalized ('[{"' + $field + '":' + $expected.ToString('0', [cultureinfo]::InvariantCulture) + '}]') "Tipo entero de $field"
@@ -50,8 +57,8 @@ try {
     $reader = [Newtonsoft.Json.JsonTextReader]::new([IO.StringReader]::new($json))
     $reader.DateParseHandling = [Newtonsoft.Json.DateParseHandling]::None
     $result = [Newtonsoft.Json.Linq.JToken]::Load($reader)
-    Assert-Equal ([decimal]$result[0]['cv_importe'].ToString()) ([decimal]42166.18) 'NC aplicada positiva'
-    Assert-Equal ([decimal]$result[0]['cv_importe_ori'].ToString()) ([decimal]42166.18) 'NC original positiva'
+    Assert-Equal ([decimal]$result[0]['cv_importe'].ToString()) ([decimal]-42166.18) 'NC aplicada conserva signo'
+    Assert-Equal ([decimal]$result[0]['cv_importe_ori'].ToString()) ([decimal]-42166.18) 'NC original conserva signo'
     foreach ($field in @('cm_compte','cta_id','cv_fecha_carga','cv_fecha_vto','cv_concepto','ve_id','so_sorteo','rb_dato1_valor')) {
         Assert-Equal $result[0][$field].ToString() $record[$field] "Preservar $field"
     }
@@ -59,16 +66,16 @@ try {
     Assert-Equal (Convert-ConfirmationJson '[]') '[]' 'Lista vacia'
     Assert-Equal (Convert-ConfirmationJson '{}') '{}' 'Objeto vacio'
     Assert-Equal (Convert-ConfirmationJson '[{"importe":null,"po":false}]') '[{"importe":null,"po":false}]' 'Nulo y booleano preservados'
-    Assert-Equal (Convert-ConfirmationJson '[{"p_pneto":-123456789012345.1234567890}]') '[{"p_pneto":123456789012345.1234567890}]' 'Precision decimal'
-    Assert-Equal (Convert-ConfirmationJson '[{"orden":1.0,"importe":-42166.18}]') '[{"orden":1,"importe":42166.18}]' 'Regresion OPENJSON subtotales'
-    Assert-Equal (Convert-ConfirmationJson '[{"cm_compte_cuota":"1","cv_importe":"-42166.18"}]') '[{"cm_compte_cuota":1,"cv_importe":42166.18}]' 'Regresion OPENJSON union'
+    Assert-Equal (Convert-ConfirmationJson '[{"p_pneto":-123456789012345.1234567890}]') '[{"p_pneto":-123456789012345.1234567890}]' 'Precision decimal y signo'
+    Assert-Equal (Convert-ConfirmationJson '[{"orden":1.0,"importe":-42166.18}]') '[{"orden":1,"importe":-42166.18}]' 'Regresion OPENJSON subtotales'
+    Assert-Equal (Convert-ConfirmationJson '[{"cm_compte_cuota":"1","cv_importe":"-42166.18"}]') '[{"cm_compte_cuota":1,"cv_importe":-42166.18}]' 'Regresion OPENJSON union'
 
     foreach ($invalid in @('[{"importe":"abc"}]', '[{"importe":true}]', '[{"importe":"1.234,56"}]', '[{"orden":1.5}]', '[{"cm_compte_cuota":"1,5"}]', '[1]', '"texto"')) {
         $rejected = $false
         try { $null = Convert-ConfirmationJson $invalid } catch { $rejected = $true }
         Assert-Equal $rejected $true "Rechazar datos invalidos: $invalid"
     }
-    "PASS: $script:checks verificaciones de importes positivos y preservacion del contrato."
+    "PASS: $script:checks verificaciones de signo, precision y preservacion del contrato."
 }
 finally {
     [Threading.Thread]::CurrentThread.CurrentCulture = $previousCulture
