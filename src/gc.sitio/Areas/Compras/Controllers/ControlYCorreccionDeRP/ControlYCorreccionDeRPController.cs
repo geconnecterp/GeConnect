@@ -282,6 +282,35 @@ namespace gc.sitio.Areas.Compras.Controllers.ControlYCorreccionDeRP
 			}
 		}
 
+		[HttpPost]
+		public IActionResult QuitarItemEnDetalleRecepcion([FromBody] ActualizarDetalleRecepcionDto dto)
+		{
+			string msg = "";
+			try
+			{
+				if (!VerificarAutenticacion(out IActionResult redirectResult))
+					return Json(redirectResult);
+				if (dto == null)
+					return Json(new { ok = false, error = true, msg = "No se recibieron los datos para la actualizacion." });
+
+				var lista = RprCtlDetalleLista;
+				var listaFiltrada = lista.Where(x => x.p_id != dto.p_id).ToList();
+				RprCtlDetalleLista = listaFiltrada;
+
+				return Json(new { ok = true });
+			}
+			catch (NegocioException ex)
+			{
+				return Json(new { ok = false, error = false, warn = true, msg = ex.Message });
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, $"{this.GetType().Name}-{MethodBase.GetCurrentMethod()?.Name} Error al intentar actualizar");
+				msg = $"Error al intentar actualizar.";
+				return Json(new { ok = false, error = false, warn = true, msg = ex.Message });
+			}
+		}
+
 		#region Métodos Privados
 		private void CargarDatosIniciales(bool actualizar)
 		{

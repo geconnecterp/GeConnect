@@ -274,6 +274,7 @@ function handlerconfirmarControlRpr() {
                     'Se ha confirmado el Control de Recepcion de Proveedor.',
                     function () {
                         $('#msjModal').modal('hide');
+                        BuscarRecepcionesDelProveedor();
                         //Imprimir Remito
                         //ImprimirPlanilla(obj.id);
                         //console.log("Planilla de Elaboración y Fracción Generada: ", obj.id);
@@ -362,6 +363,27 @@ function actualizarDetalleRecepcion(dto) {
     });
 }
 
+function quitarItemEnDetalleRecepcion(pId, item) {
+    var dto = { p_id: pId, item };
+    var data = JSON.stringify(dto);
+    $.ajax({
+        url: "/Compras/ControlYCorreccionDeRP/QuitarItemEnDetalleRecepcion",
+        type: "POST",
+        contentType: "application/json",
+        data: data,
+
+        success: function (response) {
+
+            console.log("Actualizado correctamente");
+        },
+
+        error: function (xhr) {
+
+            console.error("Error al actualizar", xhr);
+        }
+    });
+}
+
 function normalizarNumero(valor) {
 
     if (!valor) return "";
@@ -423,9 +445,10 @@ function eliminarFilaControlRecepcion($fila) {
         p_id: productoId,
         rpd_item: item
     }]);
-
+    quitarItemEnDetalleRecepcion(productoId, item);
     alternarFilasVisiblesControlRecepcion();
     habilitarConfirmarControlRecepcion();
+
 }
 
 function deshabilitarAgregarControlRecepcion() {
