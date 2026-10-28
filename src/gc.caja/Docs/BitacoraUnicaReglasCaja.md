@@ -1,12 +1,12 @@
 # GECO Caja — Bitácora única de reglas de negocio consolidadas
 
 **Identificador:** CAJA-BITACORA-UNICA  
-**Versión vigente:** 1.20 — 2026-10-27
+**Versión vigente:** 1.22 — 2026-10-28
 **Ámbito:** gc.caja y sus servicios compartidos de Caja.  
 **Archivo canónico:** gc.caja/Docs/BitacoraUnicaReglasCaja.md, dentro de D:/Sis25/git/GeConnect/src.  
 **Cuaderno de referencia:** Arquitectura de Configuración y Acceso al Sistema de Caja.  
 **Destino:** https://notebook.google.com/notebook/00678ebe-1adf-4b1e-b230-21488e92ae71
-**Publicación:** revisión 1.20 local; carga en NotebookLM pendiente por bloqueo de acceso del navegador. No se afirma que el cuaderno ya contenga esta revisión.
+**Publicación:** revisión 1.22 local; carga en NotebookLM pendiente por bloqueo de acceso del navegador. No se afirma que el cuaderno ya contenga esta revisión.
 
 ## 1. Autoridad, alcance y uso
 
@@ -103,6 +103,18 @@
 
 **FAC-16 — Cantidad previa en búsqueda de productos.** Al elegir Productos, conservar el campo de carga. Una cantidad positiva entera o con hasta tres decimales (punto decimal), con signo + final opcional, se combina con el código seleccionado: 4.350 y producto 031225 producen 4.350+031225; 2.357+ produce 2.357+031225. Aplicar esta mejora sólo a productos sin código de barras; si el seleccionado tiene EAN, advertir sin cargar y conservar exactamente la entrada previa. Cero, negativos, exceso de decimales o signos inválidos no cargan ni reemplazan lo escrito. Sin cantidad previa, mantener la carga automática de uno para producto sin EAN y la preparación del código para confirmación manual para producto con EAN. Cancelar la búsqueda conserva la entrada. Usar el servicio existente y sus reglas de presentación/bulto, conservando el origen de búsqueda avanzada; no multiplicar cantidades en el navegador. [C: 2026-10-08; T: 23 escenarios JS con solicitudes simuladas; integración real pendiente de prueba del operador]
 
+
+**FAC-17 — Signo de los importes calculados y confirmados.** Todo importe devuelto por SPGECO_CAJA_Ope_Calcula_Filas, SPGECO_CAJA_Ope_Calcula_Fila o un cálculo equivalente conserva su signo desde el resultado, sesión y presentación hasta los parámetros de SPGECO_CAJA_Ope_Confirmar. Normalizar un decimal/cadena para OPENJSON sólo corrige su tipo/formato; no aplica valor absoluto, no infiere un signo por tipo de concepto/operación ni descarta renglones negativos. La regla común alcanza json_subtotal, json_p, json_union, json_cancela y json_valores; conserva también códigos, fechas, precisión y ceros. No sustituye las reglas que construyen una imputación o contrapartida, ni la validación de magnitudes y el cálculo del efectivo neto: una vez armado el valor contractual, la serialización no lo invierte. rb_rec y rb_aux conservan el contrato de CLV-25, incluido su signo. [C: observación del tester ratificada por el responsable, 2026-10-27]
+
+**FAC-17 — Alcance y corrección.** La revisión del repositorio identificó consumidores de Calcula_Filas en Facturación, NC por devolución y ND/NC/Factura de Servicio, además del endpoint de Calcula_Fila. Esos consumidores guardaban el importe con signo; CajaConfirmacionJson.Normalizar aplicaba Math.Abs a casi todos los campos numéricos al confirmar. Se elimina esa transformación en el único normalizador compartido, conservando conversiones decimales/enteras y rechazo de datos inválidos. También protege Diferir Pago (DP), Cobranza Diferida (CD), Cuenta Corriente (CC) y Cambio/Ingreso de Valores (CV/IV), que llegan a esa misma frontera SQL. La contrapartida PES negativa de CV debe llegar negativa. Las comparaciones de tolerancia y magnitudes de UI no se confunden con el JSON a persistir. No se modifica SQL ni se reconstruyen operaciones históricas. [T: CajaConfirmacionJson/CajaBaseServicio; controladores y clientes de cálculo revisados]
+
+**FAC-17 — Evidencia.** Regresión reproducida antes de corregir: CO=-8201.87 se enviaba como +8201.87. Caso normativo: SU=82018.74, CO=-8201.87, id_aux=006787; al confirmar se conservan ambos importes y la suma es 73816.87. Pasaron 163 comprobaciones con servicios reales de cálculo/confirmación y captura de parámetros SQL simulados, 385 de normalización (es-AR/en-US, ambos signos, cero, cadenas, precisión, códigos, fechas y rechazo de tipos inválidos), y 43 HTTP/Razor/API/Checkout, incluida sesión con el combo negativo y serialización CV. Pasaron las regresiones existentes de NC devolución, conceptos ND/NC/FS, créditos, Clover, efectivo/vuelto, DOC y finalización. Caja/API compilan aisladas sin errores; existen advertencias previas. Evidencia: .artifacts/caja-signos-tests/evidencia/json_subtotal-confirmacion.json. Pruebas sin SQL/POS reales ni emisiones fiscales. Recompilar/desplegar los hosts API que consumen gc.api.core; la instancia anterior no incorpora esta corrección. Publicación NotebookLM de la revisión 1.21 pendiente. [T: 2026-10-27]
+
+**FAC-18 — Orden visual de Detalle de Conceptos.** Mostrar por el campo orden en forma numérica ascendente; admitir orden/Orden y números recibidos como cadenas. No depender de la posición en el arreglo del SP ni ordenar alfabéticamente el concepto. Ante igual orden, conservar la posición recibida; filas sin orden válido al final, conservando su posición relativa. Aplicar el mismo helper de Caja en Facturación, NC por devolución y ND/NC/FS. Ordenar una copia para presentar: no mutar los JSON originales, los importes ni sus signos (FAC-17). La normalización de ND/NC/FS debe conservar orden; en NC no convertir una ausencia de orden a cero. Importe cero debe seguir en cero aunque exista otra propiedad total. [C/T: observación del tester, revisión y corrección 2026-10-28]
+
+**FAC-19 — Lupa estable de carga.** El botón pequeño btnBuscarProducto conserva el marcado de lupa definido en la vista durante búsqueda directa/avanzada, éxito, rechazo, error de red, sesión expirada y limpieza/regreso. Los scripts sólo cambian disabled y aria-busy mediante actualizarEstadoBusquedaProducto; no reemplazan HTML/icono/texto del botón ni lo restauran como carrito/Cargar. La espera se informa en mensajeEstadoProducto, que ya tiene indicador. Productos mantiene su función y botón propios. Se revisaron referencias en todos los scripts de Caja y en las vistas/layout: se retiraron las tres escrituras HTML vigentes de prodfact.js. No se encontró una plantilla carrito/Cargar en las fuentes actuales; una copia JavaScript anterior en el despliegue o caché es una posibilidad, no un origen demostrado. Los recursos afectados utilizan asp-append-version: publicar la versión vigente y recargar la pantalla evita mezclar scripts previos con la vista actual. [C/T: reiteración del responsable y revisión 2026-10-28]
+
+**FAC-18/19 — Verificación.** Pasaron 81 comprobaciones nuevas con funciones reales (orden 2/10 como números/cadenas, empates/ausentes, colección inmutable, respuestas directas/JSON, montos negativos y cero, y búsqueda/limpieza para todos los desenlaces), los 23 escenarios existentes de cantidad previa/EAN, y regresiones de sorteos, NC, ND/NC/FS, créditos y finalización. Sintaxis de los cinco scripts validada y Caja compilada en salidas aisladas sin errores (advertencias existentes). Verificación en navegador integrado con vistas/estilos y funciones reales en fixture aislada: misma lupa y ancho 51.2 px durante espera, éxito, inexistente, error y volver; CO=-8201.87, total=73816.87 y SU antes de CO pese a llegar invertidos. Evidencia: .artifacts/caja-conceptos-busqueda/evidencia/caja-conceptos-lupa-20261028.jpg. Sin conexión SQL/API/POS ni operaciones reales. No se interrumpe Visual Studio ni la instancia del usuario. Bitácora local 1.22; publicación NotebookLM pendiente. [T: 2026-10-28]
 
 ## 6. Motor de pago: importes, vuelto y excedentes
 
@@ -259,6 +271,7 @@ La aclaración técnica y la confirmación posterior del responsable prevalecen 
 
 | Tema ambiguo o anterior | Criterio que prevalece | Referencia |
 | --- | --- | --- |
+| Normalizar OPENJSON convierte todos los importes en positivos | Preservar siempre el signo recibido, incluso CO, NC y contrapartidas | FAC-17 |
 | “facturacion 0 es controlador” | 1 FE / 2 CF; 0 no definido como CF | EMI-01 |
 | Documento sin fecha / rb_fecha_valor = 0 | Vencimiento elegido entre hoy y límite del cliente | DOC-02, CRE-03 |
 | Restaurar crédito al importe original | Restaurar saldo disponible copiado de cv_importe | NC-01 |
@@ -283,6 +296,9 @@ Son escenarios normativos para pruebas; esta publicación documental no afirma h
 
 | Caso | Resultado esperado |
 | --- | --- |
+| Respuesta con orden 10, 2, 1 | Mostrar 1, 2, 10; conservar importes y JSON recibido |
+| Búsqueda y regreso, incluso con error | Botón pequeño con la misma lupa; sólo cambia su estado habilitado |
+| SU 82018.74 + CO -8201.87 | Confirmar los mismos signos; total 73816.87, id_aux 006787 intacto |
 | Total 85.000, efectivo 90.000 | Vuelto 5.000; efectivo SP 85.000 |
 | Total 85.000, NC 30.000, efectivo 60.000 | Vuelto 5.000; NC 30.000 + efectivo SP 55.000 |
 | Facturación total 100, cheque 110 | Rechazar excedente, aunque tenga tope |
@@ -472,6 +488,8 @@ Fuentes locales nuevas: L23 = D:/#Documentos/#GECO/Caja/20261023 Pago Clover.doc
 
 | Versión | Fecha | Cambio y autoridad |
 | --- | --- | --- |
+| 1.22 | 2026-10-28 | FAC-18/19: orden numérico estable y común de conceptos; lupa estática sin reescrituras en búsqueda/limpieza. 81 comprobaciones nuevas, 23 de cantidad/EAN y regresiones aprobadas; verificación en navegador aislado y compilación sin errores. Sin SQL ni operaciones reales. Publicación NotebookLM pendiente. |
+| 1.21 | 2026-10-27 | FAC-17: preservación común de signos hasta el SP; retirada de Math.Abs al normalizar. Verificados cálculo, NC/ND/FS, DP, CD/CC, CV/IV y Checkout con combo negativo. 548 comprobaciones de signos/contrato y 43 HTTP aprobadas, regresiones y compilación sin errores. Sin cambios SQL ni operaciones reales. Publicación NotebookLM pendiente. |
 | 1.20 | 2026-10-27 | CLV-25: rb_rec=porcentaje, rb_aux=importe, rb_importe=total. Alineados API, saldos, resumen, CV/IV y signo de descuentos. Pruebas simuladas y compilación sin errores; emisión fiscal real pendiente. Publicación NotebookLM pendiente. |
 | 1.19 | 2026-10-26 | CLV-23/24: diferenciar cobro aprobado de emisión fallida, aviso persistente y código -2; corregir recargos/descuentos visibles sin duplicarlos. Regresiones y prueba visual aislada. Causa fiscal pendiente tester/DBA; sin modificaciones SQL ni cobros. Publicación NotebookLM pendiente. |
 | 1.18 | 2026-10-26 | CLV-22: reutilización del ID D0DWA08TN7F8T en otra factura rechazada por SP con resultado -1; grilla vacía, saldo intacto y sin segunda emisión. Captura y logs conservados; sin cambios de código ni SP. Publicación NotebookLM pendiente. |

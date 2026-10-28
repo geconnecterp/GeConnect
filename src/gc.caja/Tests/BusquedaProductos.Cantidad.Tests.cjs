@@ -10,7 +10,7 @@ function funcion(texto, nombre) {
     return texto.slice(inicio, fin + 2);
 }
 const codigo = ['selectRegDbl'].map(n => funcion(busqueda,n)).concat(
-    ['BuscarProductos','procesarEntradaCodigo','procesarCodigoConCantidad','buscarProductoPorCodigo'].map(n => funcion(productos,n))
+    ['BuscarProductos','procesarEntradaCodigo','procesarCodigoConCantidad','actualizarEstadoBusquedaProducto','buscarProductoPorCodigo'].map(n => funcion(productos,n))
 ).join('\n');
 function escenario(entrada, ean = '-', cancelar = false) {
     let valor = entrada, solicitud, textoEnviado, avisos = [], foco = 0;
@@ -18,7 +18,7 @@ function escenario(entrada, ean = '-', cancelar = false) {
         val(v) { if (v === undefined) return valor; valor = v; return this; },
         prop() { return this; }, trigger(n) { if(n === 'focus') foco++; return this; }
     };
-    const otro = { length:1, find(){return this;}, val(){return this;}, on(){return this;}, prop(){return this;}, removeClass(){return this;}, addClass(){return this;}, modal(){return this;}, html(){return this;} };
+    const otro = { length:1, find(){return this;}, val(){return this;}, on(){return this;}, prop(){return this;}, attr(){return this;}, removeClass(){return this;}, addClass(){return this;}, modal(){return this;}, html(){return this;} };
     const $ = selector => selector === '#txtCodigoProducto' ? campo : otro;
     $.ajax = opciones => { solicitud = opciones.data; textoEnviado = valor; opciones.complete(); };
     const contexto = { $, console:{log(){},error(){},warn(){}},setTimeout:f=>f(),

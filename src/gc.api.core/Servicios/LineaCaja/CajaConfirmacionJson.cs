@@ -73,9 +73,8 @@ namespace gc.api.core.Servicios.LineaCaja
                         throw new JsonSerializationException($"El campo {propiedad.Name} debe ser numerico.");
                     }
 
-                    // En valores financieros rb_rec es el porcentaje y rb_aux es su importe.
-                    // Ambos conservan el signo cuando la opción es un descuento.
-                    if (propiedad.Name is not ("rb_rec" or "rb_aux")) numero = Math.Abs(numero);
+                    // Normalizar el tipo/formato para OPENJSON nunca cambia el signo recibido.
+                    // Descuentos, créditos y contrapartidas conservan su sentido contable.
                     if (CamposEnteros.Contains(propiedad.Name))
                     {
                         if (numero != decimal.Truncate(numero))

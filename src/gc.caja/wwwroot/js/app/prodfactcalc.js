@@ -405,10 +405,10 @@ function cargarConceptosCalculoFactura(subtotales) {
     console.log(`📊 Total de conceptos a procesar: ${subtotales.length}`);
 
     // ❷ Recorrer cada subtotal y generar filas
-    subtotales.forEach(function (concepto, index) {
+    ordenarConceptosCalculo(subtotales).forEach(function (concepto, index) {
         // ✅ CORREGIDO: Priorizar "importe" sobre "total"
         const descripcion = concepto.concepto || concepto.descripcion || 'Sin descripción';
-        const importe = parseFloat(concepto.importe || concepto.total || 0);
+        const importe = parseFloat(concepto.importe ?? concepto.total ?? 0);
 
         console.log(`   [${index}] ${descripcion}: $ ${importe.toFixed(2)}`);
 

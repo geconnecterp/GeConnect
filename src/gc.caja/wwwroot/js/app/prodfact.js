@@ -481,6 +481,16 @@ function procesarCodigoConCantidad(codigo, cantidad, origenCarga = 'directo') {
 // ═══════════════════════════════════════════════════════════════════
 
 /**
+ * La lupa y el tamaño pertenecen a la vista: ningún ciclo de búsqueda reescribe su HTML.
+ * El estado de espera se informa también en mensajeEstadoProducto.
+ */
+function actualizarEstadoBusquedaProducto(buscando) {
+    $('#btnBuscarProducto')
+        .prop('disabled', buscando)
+        .attr('aria-busy', String(buscando));
+}
+
+/**
  * ✅ ACTUALIZADO v5.2: Busca producto por código mediante AJAX
  * LOGS MEJORADOS: Muestra claramente el estado del parámetro "bulto"
  * NUEVO v5.2: Preserva origen de carga correctamente para búsqueda avanzada
@@ -518,10 +528,9 @@ function buscarProductoPorCodigo(tipoValor, valor, cantidad = 1, bulto = true, o
 
     // ❸ Deshabilitar campo y botón
     const $txtCodigo = $('#txtCodigoProducto');
-    const $btnBuscar = $('#btnBuscarProducto');
 
     $txtCodigo.prop('disabled', true);
-    $btnBuscar.prop('disabled', true).html('<i class="bx bx-loader-alt bx-spin"></i> '); //Buscando...
+    actualizarEstadoBusquedaProducto(true);
 
     // ❹ CORREGIDO: Actualizar mensaje de estado a "Buscando..."
     $('#mensajeEstadoProducto')
@@ -631,7 +640,7 @@ function buscarProductoPorCodigo(tipoValor, valor, cantidad = 1, bulto = true, o
 
             // Rehabilitar campo y botón
             $txtCodigo.prop('disabled', false).val('');
-            $btnBuscar.prop('disabled', false).html('<i class="bx bx-search"></i>');
+            actualizarEstadoBusquedaProducto(false);
 
             // Focus en el campo
             $txtCodigo.trigger('focus');
@@ -1781,7 +1790,7 @@ function limpiarVentaCompleta(eliminarBackup = true) {
 
     // ❹ Limpiar campos de búsqueda
     $('#txtCodigoProducto').val('').prop('disabled', false);
-    $('#btnBuscarProducto').prop('disabled', false).html('<i class="bx bx-search"></i>');
+    actualizarEstadoBusquedaProducto(false);
 
     // ❺ Restaurar mensaje de estado inicial
     $('#mensajeEstadoProducto')

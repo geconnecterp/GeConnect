@@ -57,6 +57,8 @@ namespace gc.api.infra.Extensions
             services.AddScoped<CertificadosRetencionServicio>();
             services.AddScoped<ICertificadosPercepcionDatos, CertificadosPercepcionDatos>();
             services.AddScoped<CertificadosPercepcionServicio>();
+            services.AddScoped<ICertificadosSufridosDatos, CertificadosSufridosDatos>();
+            services.AddScoped<CertificadosSufridosServicio>();
             //services.AddTransient<IConfigServicio, ConfigServicio>();
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 

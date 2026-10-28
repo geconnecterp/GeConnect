@@ -17,6 +17,7 @@ function view(file, suffix) {
     return read('Areas/Facturacion/Views/NotaDebitoCredito/' + file)
         .replace(/@await Html.PartialAsync\([^\n]+/, summary(suffix));
 }
+const helperOrden = read('wwwroot/js/app/siteGen.js').match(/^function ordenarConceptosCalculo\([^]*?^}/m)[0];
 let script = read('wwwroot/js/app/ndNcFs.js');
 const start = script.indexOf('    $(function () {');
 const end = script.indexOf('    function reiniciarEstadoModulo()', start);
@@ -35,7 +36,8 @@ ${css.map(p => `<link rel="stylesheet" href="/${p}">`).join('')}</head><body>
 ${view('_OperacionConceptos.cshtml', 'Conceptos')}${view('_Calculo.cshtml', 'Calculo')}
 <script>${read('wwwroot/lib/jquery/dist/jquery.min.js')}</script>
 <script>${read('wwwroot/lib/bootstrap/dist/js/bootstrap.bundle.min.js')}</script>
-<script>${script}</script></body></html>`;
+<script>${helperOrden}
+${script}</script></body></html>`;
 
 (async () => {
     const browser = await chromium.launch({ headless: true });
