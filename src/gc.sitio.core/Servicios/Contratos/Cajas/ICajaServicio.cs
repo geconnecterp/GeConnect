@@ -8,5 +8,9 @@ namespace gc.sitio.core.Servicios.Contratos.Cajas
 		Task<RespuestaGenerica<RespuestaDto>> CierreCajaGral(string usu_id, string adm_id, string token);
 		Task<RespuestaGenerica<RespuestaDto>> HabilitarCajaGral(string usu_id, string adm_id, string token);
 		Task<List<CajaPVAbiertosDto>> ObtenerPVAbiertos(string admId, string token);
+
+		Task<List<FaltanteDeCajaUltimaFechaDto>> FaltanteDeCajaUltimaFecha(string admId, string token);
+		Task<List<FaltanteDeCajaDto>> BuscarFaltanteDeCaja(FaltanteDeCajaRequest request, string token);
+		Task<List<FaltanteDeCajaDetalleDto>> BuscarFaltanteDeCajaDetalle(FaltanteDeCajaDetalleRequest request, string token);
 	}
 }

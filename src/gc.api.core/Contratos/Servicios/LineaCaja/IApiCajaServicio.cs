@@ -21,6 +21,11 @@ namespace gc.api.core.Contratos.Servicios.LineaCaja
 
         RespuestaDto ValidaEstadoPV(CajaValidaPVDto req);
         RespuestaDto CargaStkDeFactura(CargaStkDto req);
-    }
+
+        List<FaltanteDeCajaUltimaFechaDto> FaltanteDeCajaUltimaFecha(string adm_id);
+		List<FaltanteDeCajaDto> FaltanteDeCaja(FaltanteDeCajaRequest request);
+        List<FaltanteDeCajaDetalleDto> FaltanteDeCajaDetalle(FaltanteDeCajaDetalleRequest request);
+
+	}
 }
 

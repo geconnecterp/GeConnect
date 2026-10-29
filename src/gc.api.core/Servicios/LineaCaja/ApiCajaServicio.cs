@@ -6,6 +6,7 @@ using gc.infraestructura.Core.Exceptions;
 using gc.infraestructura.Core.Interfaces;
 using gc.infraestructura.Dtos.Cajas;
 using gc.infraestructura.Dtos.Cajas.Request;
+using gc.infraestructura.Dtos.Cajas.Response;
 using gc.infraestructura.Dtos.Gen;
 using Microsoft.Data.SqlClient;
 using Newtonsoft.Json;
@@ -317,6 +318,48 @@ namespace gc.api.core.Servicios.LineaCaja
             }
             return new() { resultado = -1, resultado_msj = "Hubo un error al intentar cargar el stock de la factura, por lo que no se recepcionó respuesta desde la BD." };
         }
-    }
+
+		public List<FaltanteDeCajaUltimaFechaDto> FaltanteDeCajaUltimaFecha(string adm_id)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_FAL_ULTIMA_FECHA;
+			var ps = new List<SqlParameter>
+			{
+				new ("@adm_id", adm_id),
+			};
+			var result = _repository.EjecutarLstSpExt<FaltanteDeCajaUltimaFechaDto>(sp, ps, true);
+
+			return result;
+
+		}
+
+		public List<FaltanteDeCajaDto> FaltanteDeCaja(FaltanteDeCajaRequest request)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_FAL_NO_PROCESADOS_C;
+			var ps = new List<SqlParameter>
+			{
+				new ("@adm_id", request.adm_id),
+				new ("@hasta", request.hasta),
+			};
+			var result = _repository.EjecutarLstSpExt<FaltanteDeCajaDto>(sp, ps, true);
+
+			return result;
+
+		}
+
+		public List<FaltanteDeCajaDetalleDto> FaltanteDeCajaDetalle(FaltanteDeCajaDetalleRequest request)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_FAL_NO_PROCESADOS_D;
+			var ps = new List<SqlParameter>
+			{
+				new ("@adm_id", request.adm_id),
+				new ("@hasta", request.hasta),
+				new ("@usu_id", request.usu_id),
+			};
+			var result = _repository.EjecutarLstSpExt<FaltanteDeCajaDetalleDto>(sp, ps, true);
+
+			return result;
+
+		}
+	}
 }
 

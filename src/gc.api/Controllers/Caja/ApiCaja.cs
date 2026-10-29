@@ -1,12 +1,15 @@
 ﻿using gc.api.core.Contratos.Servicios.LineaCaja;
 using gc.infraestructura.Core.Responses;
+using gc.infraestructura.Dtos;
 using gc.infraestructura.Dtos.Almacen;
 using gc.infraestructura.Dtos.Cajas;
 using gc.infraestructura.Dtos.Cajas.Request;
+using gc.infraestructura.Dtos.Consultas;
 using gc.infraestructura.Dtos.Gen;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
+using System.Reflection;
 
 namespace gc.api.Controllers.Caja
 {
@@ -255,6 +258,44 @@ namespace gc.api.Controllers.Caja
             var res = _apiCajaServicio.CargaStkDeFactura(req);
             return Ok(new ApiResponse<RespuestaDto>(res));
         }
-    }
+
+		[HttpGet]
+		[Route("[action]")]
+		public IActionResult BuscarFaltanteDeCajaUltimaFecha(string admId)
+		{
+			var res = _apiCajaServicio.FaltanteDeCajaUltimaFecha(admId);
+			return Ok(new ApiResponse<List<FaltanteDeCajaUltimaFechaDto>>(res));
+		}
+
+		[HttpPost]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<FaltanteDeCajaDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult BuscarFaltanteDeCaja(FaltanteDeCajaRequest request)
+		{
+			ApiResponse<List<FaltanteDeCajaDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
+			var res = _apiCajaServicio.FaltanteDeCaja(request);
+
+			response = new ApiResponse<List<FaltanteDeCajaDto>>(res);
+
+			return Ok(response);
+		}
+
+		[HttpPost]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<FaltanteDeCajaDetalleDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult BuscarFaltanteDeCajaDetalle(FaltanteDeCajaDetalleRequest request)
+		{
+			ApiResponse<List<FaltanteDeCajaDetalleDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
+			var res = _apiCajaServicio.FaltanteDeCajaDetalle(request);
+
+			response = new ApiResponse<List<FaltanteDeCajaDetalleDto>>(res);
+
+			return Ok(response);
+		}
+	}
 }
 

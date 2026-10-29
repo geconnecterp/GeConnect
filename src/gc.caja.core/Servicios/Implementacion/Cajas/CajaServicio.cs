@@ -32,8 +32,12 @@ namespace gc.caja.core.Servicios.Implementacion.Seguridad
         private const string POST_VALIDA_ESTADO_PV = "/ValidaEstadoPV";
         private const string POST_CARGA_STK_FACTURA = "/CargaStkDeFactura";
 
+		private const string PBUSCAR_FALTANTE_DE_CAJA_ULTIMA_FECHA = "/BuscarFaltanteDeCajaUltimaFecha";
+		private const string PBUSCAR_FALTANTE_DE_CAJA = "/BuscarFaltanteDeCaja";
+		private const string PBUSCAR_FALTANTE_DE_CAJA_DETALLE = "/BuscarFaltanteDeCajaDetalle";
 
-        public CajaServicio(IOptions<AppSettings> options, ILogger<CajaServicio> logger):base(options,logger)
+
+		public CajaServicio(IOptions<AppSettings> options, ILogger<CajaServicio> logger):base(options,logger)
         {
         }
 

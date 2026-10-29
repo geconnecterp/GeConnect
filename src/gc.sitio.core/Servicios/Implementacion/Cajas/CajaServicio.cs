@@ -3,7 +3,6 @@ using gc.infraestructura.Core.Exceptions;
 using gc.infraestructura.Core.Helpers;
 using gc.infraestructura.Core.Responses;
 using gc.infraestructura.Dtos;
-using gc.infraestructura.Dtos.Almacen;
 using gc.infraestructura.Dtos.Cajas;
 using gc.infraestructura.Dtos.Cajas.Request;
 using gc.infraestructura.Dtos.Gen;
@@ -11,13 +10,8 @@ using gc.sitio.core.Servicios.Contratos.Cajas;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace gc.sitio.core.Servicios.Implementacion.Cajas
 {
@@ -28,6 +22,10 @@ namespace gc.sitio.core.Servicios.Implementacion.Cajas
 		private const string POST_CIERRE_CAJA_GRAL = "/CierreCajaGral";
 		private const string POST_HABILITAR_CAJA_GRAL = "/HabilitarCajaGral";
 		private const string GET_OBTENER_PV_ABIERTOS = "/ObtenerPVAbiertos";
+
+		private const string GET_FAL_ULTIMA_FECHA = "/BuscarFaltanteDeCajaUltimaFecha";
+		private const string GET_FAL_FALTANTE_DE_CAJA = "/BuscarFaltanteDeCaja";
+		private const string GET_FAL_FALTANTE_DE_CAJA_DETALLE = "/BuscarFaltanteDeCajaDetalle";
 
 		public CajaServicio(IOptions<AppSettings> options, ILogger<CajaServicio> logger) : base(options, logger)
 		{
@@ -205,6 +203,100 @@ namespace gc.sitio.core.Servicios.Implementacion.Cajas
 				return new();
 			}
 
+		}
+
+		public async Task<List<FaltanteDeCajaUltimaFechaDto>> FaltanteDeCajaUltimaFecha(string admId, string token)
+		{
+			ApiResponse<List<FaltanteDeCajaUltimaFechaDto>> apiResponse;
+
+			HelperAPI helper = new();
+			HttpClient client = helper.InicializaCliente(token);
+			HttpResponseMessage response;
+
+			var link = $"{_appSettings.RutaBase}{RutaAPI}{GET_FAL_ULTIMA_FECHA}?admId={admId}";
+
+			response = client.GetAsync(link).GetAwaiter().GetResult();
+
+			if (response.StatusCode == HttpStatusCode.OK)
+			{
+				string stringData = await response.Content.ReadAsStringAsync();
+				if (string.IsNullOrEmpty(stringData))
+				{
+					_logger.LogWarning($"La API devolvió error.");
+					return new();
+				}
+				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<FaltanteDeCajaUltimaFechaDto>>>(stringData) ?? throw new NegocioException("Hubo un problema al deserializar los datos");
+				return apiResponse.Data;
+			}
+			else
+			{
+				string stringData = await response.Content.ReadAsStringAsync();
+				_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+				return new();
+			}
+
+		}
+
+		public async Task<List<FaltanteDeCajaDto>> BuscarFaltanteDeCaja(FaltanteDeCajaRequest request, string token)
+		{
+			ApiResponse<List<FaltanteDeCajaDto>> apiResponse;
+
+			HelperAPI helper = new();
+			HttpClient client = helper.InicializaCliente(request, token, out StringContent contentData);
+			HttpResponseMessage response;
+
+			var link = $"{_appSettings.RutaBase}{RutaAPI}{GET_FAL_FALTANTE_DE_CAJA}";
+
+			response = await client.PostAsync(link, contentData);
+
+			if (response.StatusCode == HttpStatusCode.OK)
+			{
+				string stringData = await response.Content.ReadAsStringAsync();
+				if (string.IsNullOrEmpty(stringData))
+				{
+					_logger.LogWarning($"La API devolvió error. Parametros adm_id:{request.adm_id}");
+					return new();
+				}
+				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<FaltanteDeCajaDto>>>(stringData) ?? throw new NegocioException("Hubo un problema al deserializar los datos");
+				return apiResponse.Data;
+			}
+			else
+			{
+				string stringData = await response.Content.ReadAsStringAsync();
+				_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+				return new();
+			}
+		}
+
+		public async Task<List<FaltanteDeCajaDetalleDto>> BuscarFaltanteDeCajaDetalle(FaltanteDeCajaDetalleRequest request, string token)
+		{
+			ApiResponse<List<FaltanteDeCajaDetalleDto>> apiResponse;
+
+			HelperAPI helper = new();
+			HttpClient client = helper.InicializaCliente(request, token, out StringContent contentData);
+			HttpResponseMessage response;
+
+			var link = $"{_appSettings.RutaBase}{RutaAPI}{GET_FAL_FALTANTE_DE_CAJA_DETALLE}";
+
+			response = await client.PostAsync(link, contentData);
+
+			if (response.StatusCode == HttpStatusCode.OK)
+			{
+				string stringData = await response.Content.ReadAsStringAsync();
+				if (string.IsNullOrEmpty(stringData))
+				{
+					_logger.LogWarning($"La API devolvió error. Parametros adm_id:{request.adm_id}");
+					return new();
+				}
+				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<FaltanteDeCajaDetalleDto>>>(stringData) ?? throw new NegocioException("Hubo un problema al deserializar los datos");
+				return apiResponse.Data;
+			}
+			else
+			{
+				string stringData = await response.Content.ReadAsStringAsync();
+				_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+				return new();
+			}
 		}
 	}
 }

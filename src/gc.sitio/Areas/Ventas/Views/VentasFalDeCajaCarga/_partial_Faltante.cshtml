@@ -1,0 +1,162 @@
+﻿@model GridCoreSmart<FaltanteDeCajaDto>
+@{
+	var alt = true;
+	string clase = string.Empty;
+}
+<style>
+	#tbFaltantes thead th {
+		text-align: center !important;
+		vertical-align: middle !important;
+		white-space: nowrap;
+	}
+	/* Diferencia positiva: azul pastel */
+	#tbFaltantes tbody tr.fila-dif-positiva,
+	#tbFaltantes tbody tr.fila-dif-positiva td {
+		background-color: #b7dbff !important;
+		font-weight: bold !important;
+	}
+
+	/* Diferencia negativa: rojo pastel */
+	#tbFaltantes tbody tr.fila-dif-negativa,
+	#tbFaltantes tbody tr.fila-dif-negativa td {
+		background-color: #ffe0e0 !important;
+		font-weight: bold !important;
+	}
+
+	/* Opcional: que el hover no “borre” el color */
+	#tbFaltantes.table-hover tbody tr.fila-dif-positiva:hover td,
+	#tbFaltantes.table-hover tbody tr.fila-dif-negativa:hover td {
+		background-color: inherit !important;
+	}
+
+	.fuente-negrita {
+		font-weight: bold !important;
+	}
+
+	#tbFaltantes .inicio-modulo {
+		border-left-width: 2px !important;
+	}
+
+
+	#tbFaltantes .input-container {
+		position: relative;
+		width: 100%;
+		padding: 0 !important;
+		margin: 0 !important;
+		display: flex;
+		justify-content: flex-end;
+		align-items: center;
+	}
+
+	#tbFaltantes .campo-modificado {
+		background-color: #d4f1f9 !important;
+		border-color: #a8e1f5 !important;
+	}
+
+	#tbFaltantes .indicador-cambio {
+		position: absolute;
+		top: 0;
+		right: 0;
+		width: 0;
+		height: 0;
+		border-style: solid;
+		border-width: 0 6px 6px 0;
+		border-color: transparent #4bacc6 transparent transparent;
+	}
+
+	.input-container .form-control:not([readonly]) {
+		background-color: #ffffff !important;
+		border-color: #f1db9a !important;
+	}
+
+	#tbFaltantes td,
+	#tbFaltantes th {
+		padding: 0.15rem 0.35rem !important;
+		vertical-align: middle !important;
+		line-height: 1.1;
+	}
+
+	#tbFaltantes .js-control-acumulado {
+		height: 24px !important;
+		min-height: 24px !important;
+		padding: 0 4px !important;
+		font-size: 0.7rem;
+		line-height: 1;
+		width: 130px;
+		max-width: 130px;
+	}
+
+	#tbFaltantes {
+		table-layout: fixed;
+		width: 100%;
+	}
+
+</style>
+<div class="grid-golden" style="padding-left: 0px; padding-right: 0px;">
+	<div class="grid-golden-header">
+		<div class="row align-items-md-center">
+			<div class="col-md-10 col-sm-6 d-flex align-items-center">
+				<h5 class="mb-0 flex-grow-1">
+					<i class="bx bx-package me-2"></i>
+					<strong>Faltante</strong>
+				</h5>
+			</div>
+		</div>
+	</div>
+	<div class="grid-golden-body">
+		<div class="table-responsive table-wrapper-700-full-width">
+			<table class="table table-sm table-hover mb-0 table-golden" id="tbFaltantes">
+				<thead class="sticky-top table-golden-header-compact">
+					<tr class="header">
+						<th style="width:53%;">Usuario</th>
+						<th style="width:12%;">Cuenta</th>
+						<th style="width:10%;">Legajo</th>
+						<th style="width:25%;">Faltante</th>
+					</tr>
+				</thead>
+				<tbody>
+					@if (Model == null || Model.ListaDatos == null || !Model.ListaDatos.Any())
+					{
+						<tr class="fila-vacia">
+							<td colspan="6" class="text-center text-muted py-2">
+								<i class="bx bx-info-circle me-1"></i>
+								No hay items para mostrar.
+							</td>
+						</tr>
+					}
+					else
+					{
+						foreach (var item in Model.ListaDatos)
+						{
+							// Alternancia de filas
+							if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+
+							<tr class="@clase fila-control-"
+								data-usu-id="@item.usu_id"
+								data-adm-id="@item.adm_id"
+								data-cta-id="@item.cta_id"
+								data-cta-emp-legajo="@item.cta_emp_legajo">
+								<td class="text-start">@item.usu_apellidoynombre</td>
+								<td class="text-center">@item.cta_id</td>
+								<td class="text-center">@item.cta_emp_legajo</td>
+								<td class="@Model.ObtenerClase(item.acumulado) inicio-modulo">
+									<div class="input-container">
+										<input type="text"
+											   class="form-control form-control-sm input-control-recepcion js-control-acumulado text-end"
+											   value="@item.acumulado"
+											   data-field="acumulado"
+											   data-decimales="2"
+											   data-tipo="decimal"
+											   data-original-value="@item.acumulado"
+											   inputmode="numeric"
+											   autocomplete="off" />
+									</div>
+								</td>
+							</tr>
+						}
+					}
+				</tbody>
+			</table>
+		</div>
+	</div>
+</div>

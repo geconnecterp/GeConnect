@@ -817,6 +817,13 @@ namespace gc.api.core.Constantes
 			public const string SP_PEF_DATOS = "SPGECO_PEF_Datos";
 			public const string SP_PEF_LISTA = "SPGECO_PEF_Lista";
 			#endregion
+
+			#region FAL
+			public const string SP_FAL_CONSUILTA = "SPGECO_FAL_Consulta";
+			public const string SP_FAL_NO_PROCESADOS_C = "SPGECO_FAL_No_procesados_C";
+			public const string SP_FAL_NO_PROCESADOS_D = "SPGECO_FAL_No_procesados_D";
+			public const string SP_FAL_ULTIMA_FECHA = "SPGECO_FAL_Ultima_Fecha";
+			#endregion
 		}
 
 		public static class StoredFunctions
