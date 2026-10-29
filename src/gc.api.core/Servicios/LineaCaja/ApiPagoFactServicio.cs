@@ -1,4 +1,5 @@
 using gc.api.core.Constantes;
+using gc.infraestructura.Core.Helpers;
 using gc.api.core.Contratos.Servicios.LineaCaja;
 using gc.api.core.Interfaces.Datos;
 using gc.infraestructura.Core.Interfaces;
@@ -93,7 +94,7 @@ namespace gc.api.core.Servicios.LineaCaja
 
         public RespuestaDto ConfirmarOperacionCaja(CajaOpeConfirmarReq req)
         {
-            _logger.Log(TraceEventType.Information, $"{MethodBase.GetCurrentMethod().Name} - request:{JsonConvert.SerializeObject(req)}");
+            _logger.Log(TraceEventType.Information, $"[CAJA][API][REQUEST] ConfirmarOperacionCaja\n{CajaJsonDiagnostico.Formatear(JsonConvert.SerializeObject(req))}");
             return OperacionConfirmacionBase(req);
         }
 

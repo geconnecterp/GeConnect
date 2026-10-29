@@ -1,4 +1,5 @@
 ﻿using gc.api.core.Constantes;
+using gc.infraestructura.Core.Helpers;
 using gc.api.core.Entidades;
 using gc.api.core.Interfaces.Datos;
 using gc.infraestructura.Core.Interfaces;
@@ -32,15 +33,27 @@ namespace gc.api.core.Servicios.LineaCaja
             var json_union = CajaConfirmacionJson.Normalizar(req.json_union);
             var json_valores = CajaConfirmacionJson.Normalizar(req.json_valores);
             var json_subtotal = CajaConfirmacionJson.Normalizar(req.json_subtotal);
-            var json_p = CajaConfirmacionJson.Normalizar(req.json_p);
+            var json_p = CajaConfirmacionJson.ValidarSinModificar(req.json_p);
             var json_cancela = CajaConfirmacionJson.Normalizar(req.json_cancela);
 
-            _logger.Log(System.Diagnostics.TraceEventType.Information,$"json_sorteo: {json_sorteo}");
-            _logger.Log(System.Diagnostics.TraceEventType.Information,$"json_union: {json_union}");
-            _logger.Log(System.Diagnostics.TraceEventType.Information,$"json_valores: {json_valores}");
-            _logger.Log(System.Diagnostics.TraceEventType.Information,$"json_subtotal: {json_subtotal}");
-            _logger.Log(System.Diagnostics.TraceEventType.Information,$"json_p: {json_p}");
-            _logger.Log(System.Diagnostics.TraceEventType.Information,$"json_cancela: {json_cancela}");
+            _logger.Log(System.Diagnostics.TraceEventType.Information,
+                $"[CAJA][CONFIRMACION][REQUEST] {sp} | Caja={req.caja_id} | Proceso={req.caja_nro_proceso} | Cierre={req.caja_nro_cierre} | co_tipo={req.co_tipo} | @json_sorteo\n" +
+                CajaJsonDiagnostico.Formatear(json_sorteo, expandirJsonAnidado: false));
+            _logger.Log(System.Diagnostics.TraceEventType.Information,
+                $"[CAJA][CONFIRMACION][REQUEST] {sp} | Caja={req.caja_id} | Proceso={req.caja_nro_proceso} | Cierre={req.caja_nro_cierre} | co_tipo={req.co_tipo} | @json_union\n" +
+                CajaJsonDiagnostico.Formatear(json_union, expandirJsonAnidado: false));
+            _logger.Log(System.Diagnostics.TraceEventType.Information,
+                $"[CAJA][CONFIRMACION][REQUEST] {sp} | Caja={req.caja_id} | Proceso={req.caja_nro_proceso} | Cierre={req.caja_nro_cierre} | co_tipo={req.co_tipo} | @json_valores\n" +
+                CajaJsonDiagnostico.Formatear(json_valores, expandirJsonAnidado: false));
+            _logger.Log(System.Diagnostics.TraceEventType.Information,
+                $"[CAJA][CONFIRMACION][REQUEST] {sp} | Caja={req.caja_id} | Proceso={req.caja_nro_proceso} | Cierre={req.caja_nro_cierre} | co_tipo={req.co_tipo} | @json_subtotal\n" +
+                CajaJsonDiagnostico.Formatear(json_subtotal, expandirJsonAnidado: false));
+            _logger.Log(System.Diagnostics.TraceEventType.Information,
+                $"[CAJA][CONFIRMACION][REQUEST] {sp} | Caja={req.caja_id} | Proceso={req.caja_nro_proceso} | Cierre={req.caja_nro_cierre} | co_tipo={req.co_tipo} | @json_p\n" +
+                CajaJsonDiagnostico.Formatear(json_p, expandirJsonAnidado: false));
+            _logger.Log(System.Diagnostics.TraceEventType.Information,
+                $"[CAJA][CONFIRMACION][REQUEST] {sp} | Caja={req.caja_id} | Proceso={req.caja_nro_proceso} | Cierre={req.caja_nro_cierre} | co_tipo={req.co_tipo} | @json_cancela\n" +
+                CajaJsonDiagnostico.Formatear(json_cancela, expandirJsonAnidado: false));
 
             var ps = new List<SqlParameter>()
             {
@@ -89,7 +102,8 @@ namespace gc.api.core.Servicios.LineaCaja
             }
             else
             {
-                _logger.Log(System.Diagnostics.TraceEventType.Information,$"OperacionConfirmacionBase Response : {JsonConvert.SerializeObject(res)}");
+                _logger.Log(System.Diagnostics.TraceEventType.Information,
+                    $"[CAJA][CONFIRMACION][RESPONSE] {sp}\n" + CajaJsonDiagnostico.Formatear(JsonConvert.SerializeObject(res)));
                 return res[0];
             }
         }

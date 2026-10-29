@@ -62,6 +62,11 @@ app.Use(async(ctx,next)=>{
   ctx.Session.SetString("LP_Id",JsonConvert.SerializeObject("001"));
   ctx.Session.SetString("FacturaSubtotales","""[{"orden":1,"tipo":"SU","concepto":"Subtotal","importe":100}]""");
   ctx.Session.SetString("FacturaProductos","""[{"p_id":"031225","p_cantidad":1}]""");
+  if(ctx.Request.Query["caso"].ToString().StartsWith("productos-combo-")) {
+   ctx.Session.SetString("FacturaProductos",File.ReadAllText(Path.Combine(root,"Tests/Fixtures/CalculaFila.Productos.Combo.json")));
+   ctx.Session.SetString("FacturaSubtotales","""[{"orden":1,"tipo":"SU","importe":78704.88}]""");
+   if(ctx.Request.Query["caso"]=="productos-combo-CF")ctx.Session.SetString("ClienteActual","""{"Origen":"F","cta_documento":"20123456","ctac_tope_credito":0,"fp":"[]"}""");
+  }
   if(ctx.Request.Query["caso"]=="combo-negativo") {
    ctx.Session.SetString("FacturaSubtotales","""[{"orden":1,"tipo":"SU","concepto":"Subtotal","base":0,"alicuota":0,"importe":82018.74,"id_aux":""},{"orden":2,"tipo":"CO","concepto":"Fernet 3x2 rico","base":0,"alicuota":0,"importe":-8201.87,"id_aux":"006787"}]""");
   }
@@ -276,6 +281,26 @@ try {
   Check(resultadoCombo.GetProperty("ok").GetBoolean(),"Checkout real confirma Subtotal menos CO: "+resultadoCombo.GetRawText());
   var subtotalesCombo=JArray.Parse(sql.UltimaConfirmacion!.json_subtotal);
   Check(subtotalesCombo[1]["importe"]!.Value<decimal>()==-8201.87m && subtotalesCombo.Sum(x=>x["importe"]!.Value<decimal>())==73816.87m,"HTTP/sesión/BFF preservan CO negativo hasta confirmación");
+ }
+ // Confirmación real CR/CF: no reconstruir el json_p calculado por el SP.
+ foreach(var tipo in new[]{"CR","CF"})
+ using(var hProductos=new HttpClientHandler{CookieContainer=new CookieContainer(),AllowAutoRedirect=false})
+ using(var cProductos=new HttpClient(hProductos){BaseAddress=client.BaseAddress}) {
+  hProductos.CookieContainer.Add(client.BaseAddress,new Cookie("TokenPrueba",jwt));
+  var paginaProductos=await cProductos.GetStringAsync("/?caso=productos-combo-"+tipo);
+  var tokenProductos=Regex.Match(paginaProductos,"name=\"__RequestVerificationToken\"[^>]+value=\"([^\"]+)\"").Groups[1].Value;
+  var prepararProductos=new CloverPreparacionDto{ins_id="G00",co_tipo=tipo,monto_base=78704.88m,monto_total=78704.88m,recargo=0,cuotas_reales=1,pos_plan=1,intento_id=Guid.NewGuid().ToString()};
+  var solicitudProductos=new HttpRequestMessage(HttpMethod.Post,"/Facturacion/Clover/Procesar");solicitudProductos.Headers.Add("RequestVerificationToken",tokenProductos);solicitudProductos.Content=new StringContent(JsonConvert.SerializeObject(prepararProductos),System.Text.Encoding.UTF8,"application/json");
+  var resProductos=JsonConvert.DeserializeObject<RespuestaDto>(await (await cProductos.SendAsync(solicitudProductos)).Content.ReadAsStringAsync())!;
+  Check(resProductos.resultado==0,tipo+": pago simulado con detalle original de combo");
+  var valoresProductos=JsonConvert.DeserializeObject<List<Json_Valor>>(resProductos.resultado_id)!;
+  var finProductos=await cProductos.PostAsync("/Facturacion/Checkout/FinalizarCompra",new StringContent(JsonConvert.SerializeObject(new PagoCompletoDto{ModuloOrigen="Facturacion",Valores=valoresProductos}),System.Text.Encoding.UTF8,"application/json"));
+  var datosProductos=JsonDocument.Parse(await finProductos.Content.ReadAsStringAsync()).RootElement;
+  Check(datosProductos.GetProperty("ok").GetBoolean(),tipo+": Checkout real finaliza usando detalle original: "+datosProductos.GetRawText());
+  var esperadoProductos=File.ReadAllText(Path.Combine(root,"Tests/Fixtures/CalculaFila.Productos.Combo.json"));
+  Check(sql.UltimaConfirmacion!.json_p==esperadoProductos,tipo+": HTTP/sesión/Checkout preservan json_p carácter por carácter");
+  var filaProducto=JArray.Parse(sql.UltimaConfirmacion.json_p)[0];
+  Check(filaProducto["cmb_id"]!.Value<string>()=="006787" && filaProducto["cmb_desc"]!.Value<string>()=="Fernet 3x2 rico          " && filaProducto["cmd_cmb"]==null,tipo+": combo, espacios y nombres originales intactos");
  }
  var anon=new HttpRequestMessage(HttpMethod.Get,"/Facturacion/Clover/Opciones?coTipo=CR");anon.Headers.Add("X-Fixture-Anonymous","1");Check((await client.SendAsync(anon)).StatusCode==HttpStatusCode.Unauthorized,"Acceso anónimo rechazado");
  Console.WriteLine($"PASS: {cuenta} verificaciones HTTP/Razor/API/SP/Checkout sin proveedor real.");

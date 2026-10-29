@@ -14,7 +14,7 @@ function nuevo(){
   mostrarLoaderCalculando:noop,ocultarLoaderCalculando:noop,mostrarMensajeEstado:m=>datos.mensajes.push(m),
   agregarProductoAGrilla:p=>{c.productosFactura.push(p);vm.runInContext('programarRespaldoLocal()',c);}
  });
- vm.runInContext(['guardarDetalleLocal','programarRespaldoLocal','verificarBackupPendiente','limpiarVentaCompleta','ejecutarRecuperacionBackup'].map(extraer).join('\n'),c);
+ vm.runInContext(['actualizarEstadoBusquedaProducto','guardarDetalleLocal','programarRespaldoLocal','verificarBackupPendiente','limpiarVentaCompleta','ejecutarRecuperacionBackup'].map(extraer).join('\n'),c);
  return {c,datos,run:s=>vm.runInContext(s,c)};
 }
 async function prueba(nombre,f){await f();cantidad++;console.log('OK '+nombre);}

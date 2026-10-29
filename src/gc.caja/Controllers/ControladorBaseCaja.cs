@@ -678,11 +678,19 @@ namespace gc.caja.Controllers
             }
         }
 
+        // La proyección tipada sirve para consultar la UI; la confirmación usa el texto del SP.
+        // Comparte la misma clave: los reinicios existentes también eliminan el JSON original.
+        public string FacturaProductosJson
+        {
+            get => _context.HttpContext?.Session?.GetString("FacturaProductos") ?? "[]";
+            protected set => _context.HttpContext?.Session?.SetString("FacturaProductos", value);
+        }
+
         public List<ProductoFactJsonDto> FacturaProductos
         {
             get
             {
-                var json = _context.HttpContext?.Session?.GetString("FacturaProductos");
+                var json = FacturaProductosJson;
                 if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
                 {
                     return [];
@@ -692,7 +700,10 @@ namespace gc.caja.Controllers
             set
             {
                 var json = JsonConvert.SerializeObject(value);
-                _context.HttpContext?.Session?.SetString("FacturaProductos", json);
+                FacturaProductosJson = json;
+                // Una carga o edición tipada requiere un cálculo nuevo antes de confirmar.
+                FacturaSubtotales = [];
+                FacturaSorteos = [];
             }
         }
 

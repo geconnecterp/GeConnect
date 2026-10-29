@@ -1,4 +1,5 @@
-﻿using gc.caja.Controllers;
+﻿using gc.infraestructura.Core.Helpers;
+using gc.caja.Controllers;
 using gc.caja.core.Servicios.Contratos.Cajas;
 using gc.caja.Models.NotaCredito;
 using gc.infraestructura.Core.EntidadesComunes.Options;
@@ -1713,7 +1714,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
                 _logger?.LogInformation("   json_p: {JsonProductos}", requestCalculo.json_p);
                 _logger?.LogInformation(
                     "   Request CalcularFilas: {RequestCalculo}",
-                    JsonConvert.SerializeObject(requestCalculo)
+                    "\n" + CajaJsonDiagnostico.Formatear(JsonConvert.SerializeObject(requestCalculo))
                 );
                 _logger?.LogInformation("═══════════════════════════════════════════════════");
 
@@ -1721,6 +1722,11 @@ namespace gc.caja.Areas.Facturacion.Controllers
                     "📡 NC Devolución: invocando servicio NotaCreditoServicio.CalcularFilas. CorrelationId={CorrelationId}",
                     correlationId
                 );
+                // Si el nuevo cálculo falla, no se puede confirmar el JSON de un cálculo anterior.
+                contexto.JsonProductosCalculado = string.Empty;
+                contexto.JsonSubtotal = string.Empty;
+                contexto.FechaUltimoCalculoUtc = null;
+                GuardarContextoDevolucion(contexto);
                 var resultado = await _ncServicio.CalcularFilas(requestCalculo, token);
 
                 _logger?.LogInformation("═══════════════════════════════════════════════════");
@@ -1734,7 +1740,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
                 _logger?.LogInformation("   json_p respuesta longitud: {JsonProductosLength}", resultado?.Entidad?.json_p?.Length ?? 0);
                 _logger?.LogInformation(
                     "   Response CalcularFilas: {ResponseCalculo}",
-                    JsonConvert.SerializeObject(resultado)
+                    "\n" + CajaJsonDiagnostico.Formatear(JsonConvert.SerializeObject(resultado))
                 );
                 _logger?.LogInformation("═══════════════════════════════════════════════════");
 
@@ -1756,13 +1762,16 @@ namespace gc.caja.Areas.Facturacion.Controllers
                     });
                 }
 
+                if (string.IsNullOrWhiteSpace(resultado.Entidad.json_p) ||
+                    string.IsNullOrWhiteSpace(resultado.Entidad.json_subtotal))
+                {
+                    return Json(new { ok = false, codigo = "ERROR_CALCULO_FILAS",
+                        mensaje = "El cálculo no devolvió productos y subtotales completos. Vuelva a calcular antes de confirmar." });
+                }
+
                 contexto.CoTipo = coTipo;
-                contexto.JsonProductosCalculado = string.IsNullOrWhiteSpace(resultado.Entidad.json_p)
-                    ? requestCalculo.json_p ?? "[]"
-                    : resultado.Entidad.json_p;
-                contexto.JsonSubtotal = string.IsNullOrWhiteSpace(resultado.Entidad.json_subtotal)
-                    ? "[]"
-                    : resultado.Entidad.json_subtotal;
+                contexto.JsonProductosCalculado = resultado.Entidad.json_p;
+                contexto.JsonSubtotal = resultado.Entidad.json_subtotal;
                 contexto.JsonSorteo = string.Empty;
                 contexto.FechaUltimoCalculoUtc = DateTime.UtcNow;
 
@@ -2520,7 +2529,17 @@ namespace gc.caja.Areas.Facturacion.Controllers
             var prods = new List<ProductoFactJsonDto>();
             foreach (var item in pdev)
             {
-                var p = new ProductoFactJsonDto(MapeaProdNC(item));
+                // OPENJSON de cálculo espera cmd_cmb_*; su respuesta usa cmb_*.
+                // El constructor genérico deja estos datos vacíos: conservarlos desde NC.
+                var p = new ProductoFactJsonDto(MapeaProdNC(item))
+                {
+                    bultos = item.bultos,
+                    cmd_cmb = item.cmd_cmb ?? string.Empty,
+                    cmd_cmb_id = item.cmd_cmb_id ?? string.Empty,
+                    cmd_cmb_dto = item.cmd_cmb_dto ?? 0m,
+                    cmd_cmb_cant = item.cmd_cmb_cant ?? 0m,
+                    cmd_cmb_desc = item.cmd_cmb_desc ?? string.Empty
+                };
                 prods.Add(p);
             }
 

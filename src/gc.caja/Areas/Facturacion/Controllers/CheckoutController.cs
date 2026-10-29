@@ -645,11 +645,8 @@ namespace gc.caja.Areas.Facturacion.Controllers
                 // Serializar solamente después de validar contexto, NC y totales.
                 var sorteosFactura = FacturaSorteos ?? [];
 
-                string jsonProductos = esCobranzaDiferida ? "{}" : JsonConvert.SerializeObject(
-                    productosFactura ?? [],
-                    Formatting.None,
-                    JsonSettings
-                );
+                // El JSON calculado por el SP es el contrato de persistencia, no la proyección de UI.
+                string jsonProductos = esCobranzaDiferida ? "{}" : FacturaProductosJson;
 
                 string jsonSubtotales = esCobranzaDiferida ? "{}" : JsonConvert.SerializeObject(
                     subtotalesFactura ?? [],
@@ -823,8 +820,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
                 );
 
                 _logger?.LogInformation("   Request PAGO: {Json}",
-                    string.IsNullOrWhiteSpace(request.clover_operacion_id) ? JsonConvert.SerializeObject(request)
-                    : "\n" + CloverJsonDiagnostico.Formatear(JsonConvert.SerializeObject(request), token));
+                    "\n" + CloverJsonDiagnostico.Formatear(JsonConvert.SerializeObject(request), token));
                 _logger?.LogInformation("═══════════════════════════════════════════════════");
 
                 _logger?.LogInformation("📡 Invocando servicio PagoFactServicio.FinalizarCompra...");
