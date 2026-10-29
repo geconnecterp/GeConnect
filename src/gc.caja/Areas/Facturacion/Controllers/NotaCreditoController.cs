@@ -9,6 +9,7 @@ using gc.infraestructura.Dtos.Cajas.Response;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System.Diagnostics;
 using System.Globalization;
 
@@ -1296,9 +1297,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
 
                 contexto.ProductosDevolucion ??= new List<NCProductoBuscarResponseDto>();
 
-                var jsonProductosActuales = JsonConvert.SerializeObject(
-                    contexto.ProductosDevolucion
-                );
+                var jsonProductosActuales = CrearJsonProductosDevolucion(contexto);
 
                 var requestApi = new NCProductoBuscarRequestDto
                 {
@@ -2517,10 +2516,18 @@ namespace gc.caja.Areas.Facturacion.Controllers
 
             List<ProductoFactJsonDto> productos = MapearProductosModeloNC_aModeloFact(contexto.ProductosDevolucion);
 
-            return JsonConvert.SerializeObject(
-                productos ?? [],
-                Formatting.None
-            );
+            // El SELECT usa alias cmd_cmb_*; ambos SP consumen cmb_* dentro de json_p.
+            var documentos = JArray.FromObject(productos ?? []);
+            foreach (var producto in documentos.Children<JObject>())
+            {
+                foreach (var campo in new[] { "cmb", "cmb_id", "cmb_dto", "cmb_cant", "cmb_desc" })
+                {
+                    var propiedad = producto.Property($"cmd_{campo}")!;
+                    propiedad.Replace(new JProperty(campo, propiedad.Value));
+                }
+            }
+
+            return documentos.ToString(Formatting.None);
         }
 
         private List<ProductoFactJsonDto> MapearProductosModeloNC_aModeloFact(List<NCProductoBuscarResponseDto> pdev)
@@ -2529,8 +2536,8 @@ namespace gc.caja.Areas.Facturacion.Controllers
             var prods = new List<ProductoFactJsonDto>();
             foreach (var item in pdev)
             {
-                // OPENJSON de cálculo espera cmd_cmb_*; su respuesta usa cmb_*.
-                // El constructor genérico deja estos datos vacíos: conservarlos desde NC.
+                // Conservar los valores de NC; el serializador adapta los nombres del JSON.
+                // El constructor genérico deja estos datos vacíos.
                 var p = new ProductoFactJsonDto(MapeaProdNC(item))
                 {
                     bultos = item.bultos,

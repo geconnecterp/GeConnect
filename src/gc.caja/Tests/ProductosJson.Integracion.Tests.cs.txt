@@ -126,7 +126,7 @@ foreach(var json in new[]{original,original.Replace("\"item\": 1","\"dato_futuro
  var incompleto=await controller.CalcularFilas(new(){json_p="[{\"p_id\":\"031515\"}]"});
  Ok(!Exito(incompleto) && controller.FacturaProductos.Count==0 && controller.FacturaSubtotales.Count==0,"Cálculo incompleto invalida resultados anteriores");
 }
-// NC entrada: contrato cmd_cmb_* del SP; salida calculada cmb_* opaca hasta confirmar.
+// NC entrada: ambos SP leen cmb_*; las columnas del SELECT siguen siendo cmd_cmb_*.
 foreach(var tipo in new[]{"AA","DV"}) foreach(var signo in new[]{1m,-1m})
 {
  var label=$"NC {tipo} / signo {signo}";
@@ -144,18 +144,31 @@ foreach(var tipo in new[]{"AA","DV"}) foreach(var signo in new[]{1m,-1m})
  var subtotalNC="""[{"orden":1,"tipo":"SU","concepto":"Subtotal","importe":78704.88},{"orden":2,"tipo":"CO","concepto":"Combo de prueba","importe":-7870.49,"id_aux":"006787"}]""";
  sql.CalculoJson=salidaCalculo;sql.CalculoSubtotal=subtotalNC;
  var ncSv=DispatchProxy.Create<INotaCreditoServicio,NcCalculoPrueba>();
- var fakeNC=(NcCalculoPrueba)(object)ncSv;fakeNC.Servicio=apiProductos;
+ var fakeNC=(NcCalculoPrueba)(object)ncSv;fakeNC.Servicio=apiProductos;fakeNC.ServicioNota=new ApiNotaCreditoServicio(new UowPrueba(repo),logApi);
  var cajaNC=DispatchProxy.Create<ICajaServicio,CajaPrueba>();
  var nc=new NotaCreditoController(Options.Create(new AppSettings()),new LogControlador<NotaCreditoController>(),new HttpContextAccessor{HttpContext=httpNC},ncSv,null!,cajaNC){ControllerContext=new ControllerContext{HttpContext=httpNC}};
+ estadoNC.CargarTodoDetalle=false;
+ sesionNC.SetString("NCDEV_CONTEXTO",JsonConvert.SerializeObject(estadoNC));
+ var resultadoBusqueda=await nc.AgregarProductoManual(new AgregarProductoManualRequest{Valor="000002",Cantidad=1m});
+ var bodyBusqueda=resultadoBusqueda is ContentResult contenidoBusqueda?JObject.Parse(contenidoBusqueda.Content!):JObject.FromObject(((JsonResult)resultadoBusqueda).Value!);
+ Ok(bodyBusqueda["ok"]!.Value<bool>(),label+": carga manual real acepta respuesta SP simulada: "+bodyBusqueda);
+ var entradaBusqueda=(JObject)JArray.Parse(sql.JsonBusquedaNcEntrada)[0];
+ Ok(entradaBusqueda["cmb"]?.Value<string>()=="S" && entradaBusqueda["cmb_id"]?.Value<string>()=="006787",label+": NC_B_Producto recibe combo canonical");
+ Ok(entradaBusqueda["cmb_dto"]?.Value<decimal>()==productoNC.cmd_cmb_dto && entradaBusqueda["cmb_cant"]?.Value<decimal>()==6m,label+": NC_B_Producto recibe importe con signo y cantidad");
+ Ok(entradaBusqueda["cmb_desc"]?.Value<string>()==productoNC.cmd_cmb_desc && !entradaBusqueda.Properties().Any(p=>p.Name.StartsWith("cmd_")),label+": NC_B_Producto recibe textos intactos y ninguna clave cmd_*");
+ Ok(entradaBusqueda["cantidad_tot"]!.Value<decimal>()==6m && entradaBusqueda["bultos"]!.Value<int>()==1,label+": consulta manual conserva unidades y bultos");
+ var despuesBusqueda=JsonConvert.DeserializeObject<NCDevolucionContextoSesion>(sesionNC.GetString("NCDEV_CONTEXTO")!)!;
+ Ok(despuesBusqueda.ProductosDevolucion.Count==2 && despuesBusqueda.ProductosDevolucion[0].cmd_cmb=="S",label+": respuesta SQL cmd_cmb_* sigue leyendose y no pierde combo en sesion");
+ sesionNC.SetString("NCDEV_CONTEXTO",JsonConvert.SerializeObject(estadoNC));
  var resultadoNC=(JsonResult)await nc.SeguirCalculo(new SeguirNotaCreditoRequest{DejarEnCuentaCorriente=tipo=="DV",ConfirmacionCuentaCorriente=tipo=="DV"});
  Ok(Exito(resultadoNC),label+": calculo real de controlador acepta fixture: "+JsonConvert.SerializeObject(resultadoNC.Value));
  var entradaNC=JArray.Parse(sql.JsonCalculoEntrada)[0];
- Ok(entradaNC["cmd_cmb"]!.Value<string>()=="S",label+": entrada al SP conserva bandera del combo");
- Ok(entradaNC["cmd_cmb_id"]!.Value<string>()=="006787",label+": entrada conserva ID con ceros");
- Ok(entradaNC["cmd_cmb_dto"]!.Value<decimal>()==productoNC.cmd_cmb_dto,label+": entrada conserva monto y signo del combo");
- Ok(entradaNC["cmd_cmb_cant"]!.Value<decimal>()==6m,label+": entrada conserva cantidad del combo");
- Ok(entradaNC["cmd_cmb_desc"]!.Value<string>()==productoNC.cmd_cmb_desc,label+": entrada conserva espacios de descripcion");
- Ok(entradaNC["cmb"]==null && entradaNC["cmb_id"]==null,label+": entrada usa nombres cmd que espera OPENJSON");
+ Ok(entradaNC["cmb"]!.Value<string>()=="S",label+": entrada al SP conserva bandera del combo");
+ Ok(entradaNC["cmb_id"]!.Value<string>()=="006787",label+": entrada conserva ID con ceros");
+ Ok(entradaNC["cmb_dto"]!.Value<decimal>()==productoNC.cmd_cmb_dto,label+": entrada conserva monto y signo del combo");
+ Ok(entradaNC["cmb_cant"]!.Value<decimal>()==6m,label+": entrada conserva cantidad del combo");
+ Ok(entradaNC["cmb_desc"]!.Value<string>()==productoNC.cmd_cmb_desc,label+": entrada conserva espacios de descripcion");
+ Ok(!((JObject)entradaNC).Properties().Any(p=>p.Name.StartsWith("cmd_")),label+": entrada no contiene propiedades cmd_*");
  foreach(var campo in new[]{"p_in","p_iva","p_pneto","p_pcosto","p_pcosto_repo","p_pvta"})
   Ok(entradaNC[campo]!.Value<decimal>()==JObject.FromObject(productoNC)[campo]!.Value<decimal>(),label+": copia importe sin cambiar unidad/signo "+campo);
  Ok(entradaNC["bultos"]!.Value<int>()==1 && entradaNC["cantidad_tot"]!.Value<decimal>()==6m,label+": conserva bultos y unidades");
@@ -175,11 +188,12 @@ foreach(var tipo in new[]{"AA","DV"}) foreach(var signo in new[]{1m,-1m})
  var crearEntrada=typeof(NotaCreditoController).GetMethod("CrearJsonProductosDevolucion",BindingFlags.NonPublic|BindingFlags.Instance)!;
  var parcialJson=JArray.Parse((string)crearEntrada.Invoke(nc,new[]{parcial})!)[0];
  Ok(parcialJson["cantidad_tot"]!.Value<decimal>()==2.357m && parcialJson["bultos"]!.Value<int>()==2,label+": cantidad decimal no se trunca");
- Ok(parcialJson["cmd_cmb"]!.Value<string>()=="0" && parcialJson["cmd_cmb_id"]!.Value<string>()=="0     ",label+": no inventa un combo ausente");
- Ok(parcialJson["cmd_cmb_dto"]!.Value<decimal>()==0m && parcialJson["cmd_cmb_cant"]!.Value<decimal>()==0m,label+": ausentes numericos mantienen compatibilidad cero");
+ Ok(parcialJson["cmb"]!.Value<string>()=="0" && parcialJson["cmb_id"]!.Value<string>()=="0     ",label+": no inventa un combo ausente");
+ Ok(parcialJson["cmb_dto"]!.Value<decimal>()==0m && parcialJson["cmb_cant"]!.Value<decimal>()==0m,label+": ausentes numericos mantienen compatibilidad cero");
  if(tipo=="AA" && signo>0){
   var dir=Path.Combine(root,".artifacts/caja-productos-json/evidencia");Directory.CreateDirectory(dir);
   File.WriteAllText(Path.Combine(dir,"nc-entrada-calculo.json"),fakeNC.Request!.json_p);
+  File.WriteAllText(Path.Combine(dir,"nc-entrada-busqueda.json"),fakeNC.RequestBusqueda!.json_p);
   File.WriteAllText(Path.Combine(dir,"nc-salida-confirmacion.json"),sql.JsonProductos);
   File.WriteAllText(Path.Combine(dir,"nc-subtotal-confirmacion.json"),sql.JsonSubtotal);
  }
@@ -241,11 +255,15 @@ public class SesionPrueba:ISession
 }
 public class RepoPrueba:DispatchProxy
 {
- public string JsonProductos="[]"; public string CalculoJson="[]"; public string CalculoSubtotal="[]"; public string JsonCalculoEntrada="[]"; public string JsonSubtotal="[]";
+ public string JsonProductos="[]"; public string JsonBusquedaNcEntrada="[]"; public string CalculoJson="[]"; public string CalculoSubtotal="[]"; public string JsonCalculoEntrada="[]"; public string JsonSubtotal="[]";
  protected override object? Invoke(MethodInfo? m,object?[]? args)
  {
   if(m!.Name!="EjecutarLstSpExt")throw new Exception("SQL inesperado");
   if((string)args![0]! is "SPGECO_CAJA_Ope_Calcula_Fila" or "SPGECO_CAJA_Ope_Calcula_Filas"){JsonCalculoEntrada=(string)((List<SqlParameter>)args[1]!).Single(p=>p.ParameterName=="@json_p").Value;return new List<CalculaFilasResDto>{new(){json_p=CalculoJson,json_subtotal=CalculoSubtotal,json_sorteo="[]"}};}
+  if((string)args![0]! == "SPGECO_CAJA_NC_B_Producto"){
+   JsonBusquedaNcEntrada=(string)((List<SqlParameter>)args[1]!).Single(p=>p.ParameterName=="@json_p").Value;
+   return new List<NCProductoBuscarResponseDto>{new(){p_id="000002",p_desc="Producto nuevo de prueba",cantidad_tot=1m,p_pvta=10m,bultos=1,respuesta=0,respuesta_msj="OK simulado",cmd_cmb="N"}};
+  }
   if((string)args![0]! != "SPGECO_CAJA_Ope_Confirmar")throw new Exception("SQL inesperado");
   JsonProductos=(string)((List<SqlParameter>)args[1]!).Single(p=>p.ParameterName=="@json_p").Value;
   JsonSubtotal=(string)((List<SqlParameter>)args[1]!).Single(p=>p.ParameterName=="@json_subtotal").Value;
@@ -266,8 +284,15 @@ public class LogControlador<T>:ILogger<T>
 
 public class NcCalculoPrueba:DispatchProxy
 {
- public ApiProductoFactServicio Servicio=null!;public CalcularFilasReqDto? Request;
+ public ApiProductoFactServicio Servicio=null!;public ApiNotaCreditoServicio ServicioNota=null!;public CalcularFilasReqDto? Request;public NCProductoBuscarRequestDto? RequestBusqueda;
  protected override object? Invoke(MethodInfo? m,object?[]? args){
+  if(m!.Name=="BuscarProducto"){
+   RequestBusqueda=(NCProductoBuscarRequestDto)args![0]!;
+   var req=System.Text.Json.JsonSerializer.Deserialize<NCProductoBuscarRequestDto>(System.Text.Json.JsonSerializer.Serialize(RequestBusqueda))!;
+   var filas=ServicioNota.BuscarProducto(req);
+   var decoded=JsonConvert.DeserializeObject<List<NCProductoBuscarResponseDto>>(System.Text.Json.JsonSerializer.Serialize(filas))!;
+   return Task.FromResult(new RespuestaGenerica<NCProductoBuscarResponseDto>{Ok=true,ListaEntidad=decoded,Mensaje="SP simulado"});
+  }
   if(m!.Name!="CalcularFilas")throw new Exception("Servicio NC inesperado; solo se permite calculo simulado: "+m.Name);
   Request=(CalcularFilasReqDto)args![0]!;
   return Task.FromResult(new RespuestaGenerica<CalculaFilasResDto>{Ok=true,Entidad=Servicio.CalcularFilas(Request),Mensaje="SP simulado"});
