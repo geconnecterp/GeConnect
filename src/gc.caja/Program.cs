@@ -77,6 +77,12 @@ builder.Services.AddHttpClient<gc.caja.Models.Administracion.CajaGeneralServicio
     client.BaseAddress = new Uri((config.RutaBase ?? throw new InvalidOperationException("Falta AppSettings:RutaBase.")).TrimEnd('/') + "/");
     client.Timeout = TimeSpan.FromSeconds(90);
 });
+builder.Services.AddHttpClient<gc.caja.Models.Administracion.CustodiaApiServicio>((services, client) =>
+{
+    var config = services.GetRequiredService<Microsoft.Extensions.Options.IOptions<AppSettings>>().Value;
+    client.BaseAddress = new Uri((config.RutaBase ?? throw new InvalidOperationException("Falta AppSettings:RutaBase.")).TrimEnd('/') + "/");
+    client.Timeout = TimeSpan.FromSeconds(150);
+});
 builder.Services.AddHttpClient<IAutorizacionRemotaServicio, AutorizacionRemotaServicio>((services, client) =>
 {
     var appOptions = services

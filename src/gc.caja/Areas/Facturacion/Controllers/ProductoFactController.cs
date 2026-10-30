@@ -1,3 +1,4 @@
+using gc.infraestructura.Core.Helpers;
 using gc.caja.Controllers;
 using gc.caja.core.Servicios.Contratos.Cajas;
 using gc.infraestructura.Core.EntidadesComunes.Options;
@@ -680,7 +681,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
 
                 _logger?.LogInformation("═══════════════════════════════════════════════════");
                 _logger?.LogInformation("📋 REQUEST COMPLETO CALCULO:");
-                _logger?.LogInformation($"{JsonConvert.SerializeObject(request)}");              
+                _logger?.LogInformation("{Json}", "\n" + CajaJsonDiagnostico.Formatear(JsonConvert.SerializeObject(request)));
                 _logger?.LogInformation("═══════════════════════════════════════════════════");
 
                 // ❾ INVOCAR SERVICIO
@@ -691,6 +692,10 @@ namespace gc.caja.Areas.Facturacion.Controllers
                     return Json(new { ok = false, mensaje = "Sesión expirada" });
                 }
 
+                // Un cálculo fallido no puede dejar disponible el detalle de un cálculo previo.
+                FacturaProductosJson = "[]";
+                FacturaSubtotales = [];
+                FacturaSorteos = [];
                 _logger?.LogInformation("📡 Invocando servicio ProductoFactServicio.CalcularFilas...");
                 var resultado = await _productoFactServicio.CalcularFilas(request, token);
 
@@ -698,13 +703,15 @@ namespace gc.caja.Areas.Facturacion.Controllers
                 _logger?.LogInformation($"⏱️ Tiempo de ejecución: {stopwatch.ElapsedMilliseconds}ms");
                 _logger?.LogInformation("═══════════════════════════════════════════════════");
                 _logger?.LogInformation("📋 RESPONSE COMPLETO:");
-                _logger?.LogInformation($"{JsonConvert.SerializeObject(resultado)}");
+                _logger?.LogInformation("{Json}", "\n" + CajaJsonDiagnostico.Formatear(JsonConvert.SerializeObject(resultado)));
                 _logger?.LogInformation("═══════════════════════════════════════════════════");
                 // ❿ VALIDAR RESPUESTA
-                if (resultado == null)
+                if (resultado == null || string.IsNullOrWhiteSpace(resultado.json_p) ||
+                    string.IsNullOrWhiteSpace(resultado.json_subtotal))
                 {
-                    _logger?.LogError("❌ El servicio retornó null");
-                    return Json(new { ok = false, mensaje = "Error al calcular totales" });
+                    _logger?.LogError("El cálculo no devolvió productos y subtotales completos.");
+                    return Json(new { ok = false, mensaje = !string.IsNullOrWhiteSpace(resultado?.concepto)
+                        ? resultado.concepto : "El cálculo no devolvió productos y subtotales completos. Vuelva a calcular antes de confirmar." });
                 }
 
                 // Reemplazar los sorteos en cada cálculo, incluso si ahora no hay beneficios.
@@ -714,11 +721,10 @@ namespace gc.caja.Areas.Facturacion.Controllers
                 // ⓫ GUARDAR JSON DE PRODUCTOS IMPOSITIVOS EN SESIÓN, SUBTOTALES Y SORTEOS
                 if (!string.IsNullOrEmpty(resultado.json_p))
                 {
-                    FacturaProductos = [];
-                    var prods = JsonConvert.DeserializeObject<List<ProductoFactJsonDto>>(resultado.json_p);
-                    FacturaProductos = prods ?? [];
+                    // Validar la estructura sin proyectar a un DTO que descarte cmb_* u otros campos.
+                    _ = Newtonsoft.Json.Linq.JArray.Parse(resultado.json_p);
+                    FacturaProductosJson = resultado.json_p;
 
-                    //HttpContext.Session.SetString("FacturaProductosImpositivos", resultado.json_p);
                     _logger?.LogInformation("✅ JSON de productos impositivos guardado en sesión");
 
                     FacturaSubtotales = [];
@@ -1476,7 +1482,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
                 _logger?.LogInformation($"✅ Subtotales: {subtotalesFactura.Count}");
 
                 // ❻ SERIALIZAR JSONs
-                string jsonProductos = JsonConvert.SerializeObject(productosFactura);
+                string jsonProductos = FacturaProductosJson;
                 string jsonSubtotales = JsonConvert.SerializeObject(subtotalesFactura);
 
                 var sorteosFactura = FacturaSorteos;

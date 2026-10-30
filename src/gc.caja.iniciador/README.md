@@ -46,6 +46,8 @@ Los JSON de productos anteriores no se borran ni se importan automáticamente. A
 
 ## Verificación reproducible
 
+Los scripts bajo `Tests` de esta sección son herramientas internas privadas: se conservan en la PC de desarrollo y no se incluyen en el repositorio compartido (GOB-06).
+
 - `dotnet run --project gc.caja.iniciador -- --config <ruta> --servidor <url> --validar`: valida acceso a disco sin iniciar sesión.
 - `--sin-abrir`: imprime un pase efímero para diagnóstico en lugar de abrir el navegador. No guardar ni compartir ese enlace.
 - `gc.caja/Tests/Puesto.Respaldo.Servidor.Tests.ps1`: pruebas del pase, aislamiento y recuperación con API simulada.

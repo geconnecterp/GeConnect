@@ -1,4 +1,5 @@
-﻿using gc.caja.Controllers;
+﻿using gc.infraestructura.Core.Helpers;
+using gc.caja.Controllers;
 using gc.caja.core.Servicios.Contratos.Cajas;
 using gc.caja.Models.NotaCredito;
 using gc.infraestructura.Core.EntidadesComunes.Options;
@@ -8,6 +9,7 @@ using gc.infraestructura.Dtos.Cajas.Response;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System.Diagnostics;
 using System.Globalization;
 
@@ -329,6 +331,8 @@ namespace gc.caja.Areas.Facturacion.Controllers
                 });
             }
 
+            _logger?.LogInformation("[CAJA][COMPROBANTE][ENTRADA] Modulo=NC_DEVOLUCION | Solicitud={Solicitud}\n{Json}",
+                HttpContext.TraceIdentifier, CajaJsonDiagnostico.Formatear(JsonConvert.SerializeObject(request)));
             LimpiarEstadoTemporalDevolucion();
 
             if (!TryObtenerDatosCajaParaValidacion(
@@ -420,6 +424,8 @@ namespace gc.caja.Areas.Facturacion.Controllers
                     });
                 }
 
+                _logger?.LogInformation("[CAJA][COMPROBANTE][VALIDACION RESPONSE] Modulo=NC_DEVOLUCION | Solicitud={Solicitud}\n{Json}",
+                    HttpContext.TraceIdentifier, CajaJsonDiagnostico.Formatear(JsonConvert.SerializeObject(resultado), expandirJsonAnidado: false));
                 var candidatos = resultado.ListaEntidad ?? [];
 
                 if (candidatos.Count == 0)
@@ -1295,9 +1301,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
 
                 contexto.ProductosDevolucion ??= new List<NCProductoBuscarResponseDto>();
 
-                var jsonProductosActuales = JsonConvert.SerializeObject(
-                    contexto.ProductosDevolucion
-                );
+                var jsonProductosActuales = CrearJsonProductosDevolucion(contexto);
 
                 var requestApi = new NCProductoBuscarRequestDto
                 {
@@ -1713,7 +1717,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
                 _logger?.LogInformation("   json_p: {JsonProductos}", requestCalculo.json_p);
                 _logger?.LogInformation(
                     "   Request CalcularFilas: {RequestCalculo}",
-                    JsonConvert.SerializeObject(requestCalculo)
+                    "\n" + CajaJsonDiagnostico.Formatear(JsonConvert.SerializeObject(requestCalculo))
                 );
                 _logger?.LogInformation("═══════════════════════════════════════════════════");
 
@@ -1721,6 +1725,11 @@ namespace gc.caja.Areas.Facturacion.Controllers
                     "📡 NC Devolución: invocando servicio NotaCreditoServicio.CalcularFilas. CorrelationId={CorrelationId}",
                     correlationId
                 );
+                // Si el nuevo cálculo falla, no se puede confirmar el JSON de un cálculo anterior.
+                contexto.JsonProductosCalculado = string.Empty;
+                contexto.JsonSubtotal = string.Empty;
+                contexto.FechaUltimoCalculoUtc = null;
+                GuardarContextoDevolucion(contexto);
                 var resultado = await _ncServicio.CalcularFilas(requestCalculo, token);
 
                 _logger?.LogInformation("═══════════════════════════════════════════════════");
@@ -1734,7 +1743,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
                 _logger?.LogInformation("   json_p respuesta longitud: {JsonProductosLength}", resultado?.Entidad?.json_p?.Length ?? 0);
                 _logger?.LogInformation(
                     "   Response CalcularFilas: {ResponseCalculo}",
-                    JsonConvert.SerializeObject(resultado)
+                    "\n" + CajaJsonDiagnostico.Formatear(JsonConvert.SerializeObject(resultado))
                 );
                 _logger?.LogInformation("═══════════════════════════════════════════════════");
 
@@ -1756,13 +1765,16 @@ namespace gc.caja.Areas.Facturacion.Controllers
                     });
                 }
 
+                if (string.IsNullOrWhiteSpace(resultado.Entidad.json_p) ||
+                    string.IsNullOrWhiteSpace(resultado.Entidad.json_subtotal))
+                {
+                    return Json(new { ok = false, codigo = "ERROR_CALCULO_FILAS",
+                        mensaje = "El cálculo no devolvió productos y subtotales completos. Vuelva a calcular antes de confirmar." });
+                }
+
                 contexto.CoTipo = coTipo;
-                contexto.JsonProductosCalculado = string.IsNullOrWhiteSpace(resultado.Entidad.json_p)
-                    ? requestCalculo.json_p ?? "[]"
-                    : resultado.Entidad.json_p;
-                contexto.JsonSubtotal = string.IsNullOrWhiteSpace(resultado.Entidad.json_subtotal)
-                    ? "[]"
-                    : resultado.Entidad.json_subtotal;
+                contexto.JsonProductosCalculado = resultado.Entidad.json_p;
+                contexto.JsonSubtotal = resultado.Entidad.json_subtotal;
                 contexto.JsonSorteo = string.Empty;
                 contexto.FechaUltimoCalculoUtc = DateTime.UtcNow;
 
@@ -2508,10 +2520,18 @@ namespace gc.caja.Areas.Facturacion.Controllers
 
             List<ProductoFactJsonDto> productos = MapearProductosModeloNC_aModeloFact(contexto.ProductosDevolucion);
 
-            return JsonConvert.SerializeObject(
-                productos ?? [],
-                Formatting.None
-            );
+            // El SELECT usa alias cmd_cmb_*; ambos SP consumen cmb_* dentro de json_p.
+            var documentos = JArray.FromObject(productos ?? []);
+            foreach (var producto in documentos.Children<JObject>())
+            {
+                foreach (var campo in new[] { "cmb", "cmb_id", "cmb_dto", "cmb_cant", "cmb_desc" })
+                {
+                    var propiedad = producto.Property($"cmd_{campo}")!;
+                    propiedad.Replace(new JProperty(campo, propiedad.Value));
+                }
+            }
+
+            return documentos.ToString(Formatting.None);
         }
 
         private List<ProductoFactJsonDto> MapearProductosModeloNC_aModeloFact(List<NCProductoBuscarResponseDto> pdev)
@@ -2520,7 +2540,17 @@ namespace gc.caja.Areas.Facturacion.Controllers
             var prods = new List<ProductoFactJsonDto>();
             foreach (var item in pdev)
             {
-                var p = new ProductoFactJsonDto(MapeaProdNC(item));
+                // Conservar los valores de NC; el serializador adapta los nombres del JSON.
+                // El constructor genérico deja estos datos vacíos.
+                var p = new ProductoFactJsonDto(MapeaProdNC(item))
+                {
+                    bultos = item.bultos,
+                    cmd_cmb = item.cmd_cmb ?? string.Empty,
+                    cmd_cmb_id = item.cmd_cmb_id ?? string.Empty,
+                    cmd_cmb_dto = item.cmd_cmb_dto ?? 0m,
+                    cmd_cmb_cant = item.cmd_cmb_cant ?? 0m,
+                    cmd_cmb_desc = item.cmd_cmb_desc ?? string.Empty
+                };
                 prods.Add(p);
             }
 

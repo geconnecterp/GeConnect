@@ -405,8 +405,16 @@ FodyWeavers.xsd
 .codex-build/
 
 # Salidas locales de compilación, verificaciones y pruebas de todos los módulos.
-# Las fuentes y plantillas de pruebas se conservan en sus proyectos/Tests.
+# Las pruebas y fixtures son privadas y se conservan localmente, fuera del seguimiento Git.
 /.artifacts/
 
 # Documentación interna privada: conservar localmente, no publicar en Git.
 /Documentacion/
+
+# Pruebas internas de Caja/API: conservar en disco, no publicar en el repositorio.
+/gc.caja/Tests/
+/gc.caja.core/Tests/
+/gc.caja.iniciador/Tests/
+/gc.api.core/Tests/
+/gc.api/Tests/
+/gc.infraestructura/Tests/

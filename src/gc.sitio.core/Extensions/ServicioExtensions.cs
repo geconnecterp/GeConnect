@@ -36,6 +36,7 @@ namespace gc.sitio.core.Extensions
             services.AddScoped<IvaComprasCierreCliente>();
             services.AddScoped<CertificadosRetencionCliente>();
             services.AddScoped<CertificadosPercepcionCliente>();
+            services.AddScoped<CertificadosSufridosCliente>();
             services.PostConfigure<gc.infraestructura.EntidadesComunes.Options.DocsManager>(IvaVentasResumenDocumentos.Configurar);
             services.AddSingleton<ILoggerHelper, LoggerHelper>();
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();

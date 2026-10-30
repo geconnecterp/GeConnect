@@ -26,7 +26,12 @@ namespace gc.api.core.Servicios.LineaCaja
             "rb_nro_valor", "rb_opcion_cuota"
         };
 
-        public static string Normalizar(string json)
+        public static string Normalizar(string json) => ValidarYNormalizar(json, conservarOriginal: false);
+
+        // json_p ya viene calculado del SP: validar sin reconstruir, renombrar ni agregar campos.
+        public static string ValidarSinModificar(string json) => ValidarYNormalizar(json, conservarOriginal: true);
+
+        private static string ValidarYNormalizar(string json, bool conservarOriginal)
         {
             using var texto = new StringReader(json);
             using var lector = new JsonTextReader(texto)
@@ -73,9 +78,8 @@ namespace gc.api.core.Servicios.LineaCaja
                         throw new JsonSerializationException($"El campo {propiedad.Name} debe ser numerico.");
                     }
 
-                    // En valores financieros rb_rec es el porcentaje y rb_aux es su importe.
-                    // Ambos conservan el signo cuando la opción es un descuento.
-                    if (propiedad.Name is not ("rb_rec" or "rb_aux")) numero = Math.Abs(numero);
+                    // Normalizar el tipo/formato para OPENJSON nunca cambia el signo recibido.
+                    // Descuentos, créditos y contrapartidas conservan su sentido contable.
                     if (CamposEnteros.Contains(propiedad.Name))
                     {
                         if (numero != decimal.Truncate(numero))
@@ -93,7 +97,7 @@ namespace gc.api.core.Servicios.LineaCaja
                 }
             }
 
-            return contenido.ToString(Formatting.None);
+            return conservarOriginal ? json : contenido.ToString(Formatting.None);
         }
     }
 }

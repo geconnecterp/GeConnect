@@ -1,4 +1,5 @@
 ﻿using gc.api.core.Constantes;
+using gc.infraestructura.Core.Helpers;
 using gc.api.core.Contratos.Servicios.LineaCaja;
 using gc.api.core.Interfaces.Datos;
 using gc.infraestructura.Core.Interfaces;
@@ -50,8 +51,11 @@ namespace gc.api.core.Servicios.LineaCaja
                 new SqlParameter("@json_p", req.json_p)
             };
 
+            RegistrarJsonProductosCalculo("REQUEST", sp, req, req.json_p);
             var res = _repository.EjecutarLstSpExt<CalculaFilasResDto>(sp, ps, true);
-            return res.FirstOrDefault();
+            var resultado = res.FirstOrDefault();
+            RegistrarJsonProductosCalculo("RESPONSE", sp, req, resultado?.json_p);
+            return resultado;
         }
 
         public CalculaFilasResDto CalcularFila(CalcularFilasReqDto req)
@@ -80,8 +84,18 @@ namespace gc.api.core.Servicios.LineaCaja
                 new SqlParameter("@json_p", req.json_p)
             };
 
+            RegistrarJsonProductosCalculo("REQUEST", sp, req, req.json_p);
             var res = _repository.EjecutarLstSpExt<CalculaFilasResDto>(sp, ps, true);
-            return res.FirstOrDefault();
+            var resultado = res.FirstOrDefault();
+            RegistrarJsonProductosCalculo("RESPONSE", sp, req, resultado?.json_p);
+            return resultado;
+        }
+
+        private void RegistrarJsonProductosCalculo(string fase, string sp, CalcularFilasReqDto req, string? json)
+        {
+            _logger.Log(System.Diagnostics.TraceEventType.Information,
+                $"[CAJA][CALCULO][{fase}] {sp} | Caja={req.caja_id} | Proceso={req.caja_nro_proceso} | Cierre={req.caja_nro_cierre} | json_p\n" +
+                CajaJsonDiagnostico.Formatear(json ?? "null", expandirJsonAnidado: false));
         }
 
         public List<CotizacionResDto> ObtenerCotizacion(CotizacionReqDto req)
@@ -122,9 +136,12 @@ namespace gc.api.core.Servicios.LineaCaja
                 new SqlParameter("@cta_id", req.cta_id),
                 new SqlParameter("@ctac_dto", req.ctac_dto)
             };
-            var res = _repository.EjecutarLstSpExt<ProductoDatosResponseDto>(sp, ps);
+            // Registrar el detalle de una factura emitida sin llenar el log con cada escaneo.
+            if (string.Equals(req.tipo_valor, "V", StringComparison.Ordinal))
+                return CajaConsultaComprobanteDiagnostico.Ejecutar(_logger, sp, ps,
+                    () => _repository.EjecutarLstSpExt<ProductoDatosResponseDto>(sp, ps));
 
-            return res;
+            return _repository.EjecutarLstSpExt<ProductoDatosResponseDto>(sp, ps);
 
         }
 

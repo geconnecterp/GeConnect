@@ -1,4 +1,5 @@
-﻿using gc.caja.Controllers;
+﻿using gc.infraestructura.Core.Helpers;
+using gc.caja.Controllers;
 using gc.caja.core.Servicios.Contratos.Cajas;
 using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Dtos.Cajas;
@@ -575,7 +576,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
                 _logger?.LogInformation("â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•");
                 _logger?.LogInformation("ND/NC/FS - REQUEST CALCULAR FILAS");
                 _logger?.LogInformation("   Operacion={Operacion}; Cuenta={Cuenta}; Conceptos={Conceptos}", request.CoTipo, contexto.Cuenta.cta_id, productosOriginales.Count);
-                _logger?.LogInformation("   Request={Request}", JsonConvert.SerializeObject(requestCalculo));
+                _logger?.LogInformation("   Request={Request}", "\n" + CajaJsonDiagnostico.Formatear(JsonConvert.SerializeObject(requestCalculo)));
                 _logger?.LogInformation("â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•");
 
                 // Este servicio conserva el mensaje de error HTTP de la misma API de calculo.
@@ -607,7 +608,8 @@ namespace gc.caja.Areas.Facturacion.Controllers
                     });
                 }
 
-                if (resultado == null || string.IsNullOrWhiteSpace(resultado.json_subtotal))
+                if (resultado == null || string.IsNullOrWhiteSpace(resultado.json_subtotal) ||
+                    string.IsNullOrWhiteSpace(resultado.json_p))
                 {
                     return Json(new
                     {
@@ -621,9 +623,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
                 contexto.CmCompteOri = contexto.CoTipo == "NC" ? (request.CmCompteOri ?? string.Empty).Trim() : string.Empty;
                 contexto.CmRepetidoOri = contexto.CoTipo == "NC" ? (request.CmRepetidoOri ?? string.Empty).Trim() : string.Empty;
                 contexto.JsonProductosOriginal = productosOriginales.ToString(Formatting.None);
-                contexto.JsonProductosCalculado = !string.IsNullOrWhiteSpace(resultado.json_p)
-                    ? resultado.json_p
-                    : contexto.JsonProductosOriginal;
+                contexto.JsonProductosCalculado = resultado.json_p;
                 contexto.JsonSubtotal = resultado.json_subtotal;
                 contexto.JsonSorteo = "[]";
                 contexto.Total = totalControl;

@@ -41,7 +41,8 @@ namespace gc.infraestructura.Dtos.Cajas.Response
         public string cm_controlador_fiscal { get; set; }= string.Empty;
         public decimal? cm_percep_imp_nacionales { get; set; }
         public decimal? cm_percep_imp_municipales { get; set; }
-        public decimal? cm_ib { get; set; }
+        // Dato textual del comprobante (varchar), no un importe.
+        public string? cm_ib { get; set; }
         public string cm_cae { get; set; }= string.Empty;
         public DateTime? cm_cae_vto { get; set; }
         public string cm_caea_procesado { get; set; }= string.Empty;

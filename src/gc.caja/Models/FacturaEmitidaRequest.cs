@@ -39,7 +39,11 @@ public sealed class FacturaEmitidaRequest
 
     public static string ConstruirClave(string tipo, string comprobante, int? repetido)
     {
-        // El SP lee la repeticion en la posicion 17 y admite un solo digito.
+        // Contrato V: tco_id (3) + cm_compte NNNN-NNNNNNNN (13) + repetición (1).
+        if (!Regex.IsMatch(tipo ?? string.Empty, "^[0-9]{3}$") ||
+            !Regex.IsMatch(comprobante ?? string.Empty, "^[0-9]{4}-[0-9]{8}$"))
+            throw new ArgumentException(
+                "El comprobante debe tener formato NNNN-NNNNNNNN para cargar su detalle.");
         if (!repetido.HasValue || repetido < 0 || repetido > 9)
             throw new ArgumentException("El comprobante tiene una repeticion incompatible con la carga de productos.");
         return tipo + comprobante + repetido.Value.ToString(CultureInfo.InvariantCulture);

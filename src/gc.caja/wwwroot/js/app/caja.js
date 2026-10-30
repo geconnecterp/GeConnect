@@ -1865,6 +1865,12 @@ $(function () {
     //        cierreIntencional = false;
     //    }
     //});
+    // Al salir de un módulo, abrir el menú mediante el mismo circuito de validación.
+    // El ingreso normal conserva los accesos Operar Caja / Administrador de Caja.
+    if (typeof AbrirMenuCajaAlVolver !== 'undefined' && AbrirMenuCajaAlVolver === true) {
+        $('#btnIngresarCaja').trigger('click');
+    }
+
 });
 
 /**

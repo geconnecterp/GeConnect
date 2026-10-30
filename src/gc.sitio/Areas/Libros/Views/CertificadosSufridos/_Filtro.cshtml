@@ -1,0 +1,57 @@
+@using gc.infraestructura.Dtos.Libros
+@model CertificadosSufridosFiltro
+@{
+    var impuestos = (List<SufridoImpuesto>)ViewBag.Impuestos;
+    var meses = new[] { "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre" };
+}
+@if (ViewBag.Error != null) { <div class="alert alert-warning" role="alert">@ViewBag.Error</div> }
+<form id="suf-filtros">
+    @Html.AntiForgeryToken()
+    <fieldset id="suf-campos" class="filter-golden" disabled="@(ViewBag.Error != null)">
+        <legend class="visually-hidden">Período y filtros de certificados sufridos</legend>
+        <div id="divFiltro">
+            <div class="filter-golden-body">
+                <div class="row g-3">
+                    <div class="col-lg-5"><div class="input-group input-group-sm"><label class="input-group-text" for="suf-impuesto">Impuesto</label>
+                        <select id="suf-impuesto" name="Impuesto" class="form-select" required>
+                            @foreach (var i in impuestos) { <option value="@i.Id" selected="@(i.Id == Model.Impuesto)">@i.Texto (@i.Id)</option> }
+                        </select>
+                    </div></div>
+                    <div class="col-lg-2 col-sm-6"><div class="input-group input-group-sm"><label class="input-group-text" for="suf-periodo">Año</label><select id="suf-periodo" name="Periodo" class="form-select" required>
+                        @for (var anio = Model.Periodo; anio >= Model.Periodo - 5; anio--) { <option value="@anio" selected="@(anio == Model.Periodo)">@anio</option> }
+                    </select></div></div>
+                    <div class="col-lg-3 col-sm-6"><div class="input-group input-group-sm"><label class="input-group-text" for="suf-mes">Mes</label><select id="suf-mes" name="Mes" class="form-select" required>
+                        @for (var mes = 1; mes <= 12; mes++) { <option value="@mes" selected="@(mes == Model.Mes)">@meses[mes - 1]</option> }
+                    </select></div></div>
+                    <div class="col-lg-2"><div class="input-group input-group-sm"><label class="input-group-text" for="suf-tamanio">Filas</label><select id="suf-tamanio" class="form-select"><option value="50">50</option><option value="100" selected>100</option><option value="250">250</option><option value="500">500</option></select></div></div>
+                </div>
+                <p class="suf-help mt-3">Año y mes identifican el período fiscal. Las compras se seleccionan por su Libro IVA; las rendiciones, por su fecha.</p>
+                <div class="row g-3">
+                    <div class="col-md-8">
+                        <div class="form-check form-switch mb-2"><input id="suf-por-fecha" name="Fechas" value="true" type="checkbox" class="form-check-input" /><label for="suf-por-fecha" class="form-check-label">Rango de fechas</label></div>
+                        <fieldset id="suf-fechas" disabled><div class="row g-2">
+                            <div class="col-sm-6"><div class="input-group input-group-sm"><label for="suf-desde" class="input-group-text">Desde</label><input id="suf-desde" name="Desde" type="date" class="form-control" required /></div></div>
+                            <div class="col-sm-6"><div class="input-group input-group-sm"><label for="suf-hasta" class="input-group-text">Hasta</label><input id="suf-hasta" name="Hasta" type="date" class="form-control" required /></div></div>
+                        </div></fieldset>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-check form-switch mb-2"><input id="suf-por-cuit" name="PorCuit" value="true" type="checkbox" class="form-check-input" /><label for="suf-por-cuit" class="form-check-label">CUIT</label></div>
+                        <fieldset id="suf-cuit-campos" disabled><div class="input-group input-group-sm"><label for="suf-cuit" class="input-group-text">CUIT exacto</label><input id="suf-cuit" name="Cuit" type="text" maxlength="15" autocomplete="off" class="form-control" required /></div></fieldset>
+                        <small>El SP compara por igualdad al finalizar. Sin validación de dígito verificador.</small>
+                    </div>
+                    <div class="col-md-6"><div class="form-check form-switch"><input id="suf-separar" name="SepararCierre" value="true" type="checkbox" class="form-check-input" disabled="@(Model.Impuesto != "IB")" /><label for="suf-separar" class="form-check-label">Separar por corte de ventas (sólo IB)</label></div>
+                        <small>La marca S identifica cargas posteriores al cierre. La separación está disponible en la vista detallada.</small>
+                    </div>
+                    <div class="col-md-6"><div class="form-check form-switch"><input id="suf-agrupar" name="AgrupadoPorCuit" value="true" type="checkbox" class="form-check-input" aria-describedby="suf-agrupado-ayuda" /><label for="suf-agrupar" class="form-check-label">Agrupado por CUIT</label></div>
+                        <small id="suf-agrupado-ayuda">Agrupa por CUIT y tipo. El importe ya incluye Lote Hogar; esta vista no separa por cierre.</small>
+                    </div>
+                </div>
+                <p class="suf-help">DDJJ por grupo: pendiente de definir el formato de descarga. En el detalle, las alícuotas se muestran en la escala original. El PDF completo conserva los filtros y vuelve a consultar los datos al imprimir.</p>
+            </div>
+            <div class="filter-golden-footer suf-actions">
+                <button type="reset" class="btn btn-lg btn-danger"><i class="bx bx-sm bx-x-circle" aria-hidden="true"></i> Inicializar</button>
+                <button type="submit" class="btn btn-lg btn-success"><i class="bx bx-sm bx-search" aria-hidden="true"></i> Ver</button>
+            </div>
+        </div>
+    </fieldset>
+</form>

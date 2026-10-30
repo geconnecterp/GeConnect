@@ -1,0 +1,57 @@
+@{
+    ViewData["Title"] = "Entrega de Valores en Custodia";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@section styles {
+    <link rel="stylesheet" href="~/css/pages/reimpresion-z.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/pages/custodia.css" asp-append-version="true" />
+}
+<section class="rz-page cu-page" aria-labelledby="cuTitulo">
+    <header class="rz-header"><span class="rz-icon"><i class="bx bx-lock-alt" aria-hidden="true"></i></span>
+        <div><p class="rz-eyebrow">ADMINISTRADOR DE CAJA</p><h1 id="cuTitulo">Entrega de Valores en Custodia</h1>
+            <p>Seleccione las rendiciones, revise sus importes y registre quién entrega y quién recibe.</p></div></header>
+    <div class="rz-context"><span>Sucursal <strong>@ViewBag.Sucursal</strong></span><span>Operador <strong>@ViewBag.Operador</strong></span><span>No requiere apertura del puesto</span></div>
+    <form id="cuForm" autocomplete="off" data-consulta="@Url.Action("Consulta")" data-corregir="@Url.Action("Corregir")"
+          data-entregar="@Url.Action("Entregar")" data-acuse="@Url.Action("Acuse")" data-solicitud="@Guid.NewGuid()">
+        @Html.AntiForgeryToken()
+        <div id="cuEstado" class="cu-status" role="status" aria-live="polite">Consultando rendiciones pendientes…</div>
+        <div class="cu-superior">
+            <section class="rz-card cu-instrumentos" aria-labelledby="cuMonedasTitulo"><h2 id="cuMonedasTitulo">Instrumentos</h2>
+                <p class="cu-ayuda">Puede incluir ambas monedas en una misma entrega. Los totales se mantienen separados.</p>
+                <div id="cuInstrumentos" class="cu-monedas" role="group" aria-label="Instrumento de las rendiciones"></div>
+            </section>
+            <section class="rz-card" aria-labelledby="cuDatosTitulo"><h2 id="cuDatosTitulo">Datos de la entrega</h2>
+                <div class="cu-datos">
+                    <div><label for="cuCustodio" class="form-label">En custodia de <span aria-hidden="true">*</span></label><input id="cuCustodio" name="responsable_custodia" class="form-control jsteclado" type="text" /></div>
+                    <div><label for="cuResponsable" class="form-label">Responsable de la entrega <span aria-hidden="true">*</span></label><input id="cuResponsable" name="responsable_entrega" class="form-control jsteclado" type="text" /></div>
+                    <div><label for="cuComprobante" class="form-label">N.º de comprobante de entrega <span aria-hidden="true">*</span></label><input id="cuComprobante" name="comprobante_entrega" class="form-control jsteclado" type="text" /></div>
+                </div><p class="cu-ayuda mt-2 mb-0">Estos datos se requieren para confirmar la entrega. Puede guardar únicamente las correcciones de importes.</p>
+            </section>
+        </div>
+        <section class="rz-card cu-detalle" aria-labelledby="cuRendicionesTitulo">
+            <div class="cu-barra"><div><h2 id="cuRendicionesTitulo">Rendiciones pendientes</h2><p id="cuResumen" class="cu-ayuda mb-0">Seleccione un instrumento.</p></div>
+                <button id="cuActualizar" type="button" class="btn btn-outline-secondary" disabled><i class="bx bx-refresh" aria-hidden="true"></i> Actualizar</button></div>
+            <div class="cu-tabla-contenedor"><table class="table cu-tabla align-middle"><caption class="visually-hidden">Rendiciones parciales y finales disponibles para entregar en custodia</caption>
+                <thead><tr><th scope="col">Fecha</th><th scope="col">Proceso</th><th scope="col">Cierre / Rend.</th><th scope="col">Tipo</th><th scope="col">PV</th><th scope="col">Cajero</th><th scope="col" class="text-end">Rendido</th><th scope="col" class="text-end">Importe OK</th><th scope="col" class="text-center"><label><input id="cuTodas" type="checkbox" class="form-check-input" disabled /> Entregar</label></th></tr></thead>
+                <tbody id="cuFilas"><tr><td colspan="9" class="cu-vacio">Consultando rendiciones…</td></tr></tbody>
+            </table></div>
+            <p class="cu-ayuda mb-0">El importe OK admite cero y valores positivos, con hasta dos decimales. Seleccione una rendición para corregirla.</p>
+        </section>
+        <div class="cu-acciones">
+            <a id="cuVolver" class="btn btn-outline-secondary" href="@Url.Action("Index", "Home", new { area = "" })"><i class="bx bx-arrow-back" aria-hidden="true"></i> Volver al menú</a>
+            <div class="cu-confirmaciones"><button id="cuCorregir" type="button" class="btn btn-primary" disabled><i class="bx bx-edit-alt" aria-hidden="true"></i> Aceptar correcciones</button>
+                <button id="cuEntregar" type="button" class="btn btn-success" disabled><i class="bx bx-check-shield" aria-hidden="true"></i> Confirmar entrega</button></div>
+        </div>
+    </form>
+    <section id="cuAcuse" class="rz-card cu-acuse" hidden aria-labelledby="cuAcuseTitulo"><div class="cu-barra"><div><h2 id="cuAcuseTitulo">Entrega registrada</h2><p id="cuEntregaId"></p></div>
+        <div><button id="cuImprimir" class="btn btn-primary" type="button"><i class="bx bx-printer" aria-hidden="true"></i> Ver / imprimir acuse</button>
+            <a class="btn btn-outline-secondary" href="@Url.Action("Index")">Nueva entrega</a></div></div>
+        <p id="cuEstadoAcuse" role="status" aria-live="polite"></p><a id="cuAbrirPdf" class="btn btn-outline-secondary mb-2" target="_blank" rel="noopener" hidden>Abrir PDF en otra pestaña</a>
+        <iframe id="cuPdf" title="Acuse de entrega en custodia" hidden></iframe>
+    </section>
+</section>
+<div id="cuConfirmacion" class="modal fade" tabindex="-1" aria-labelledby="cuConfirmacionTitulo" aria-hidden="true"><div class="modal-dialog modal-dialog-centered"><div class="modal-content">
+    <div class="modal-header"><h2 id="cuConfirmacionTitulo" class="modal-title h5"></h2><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button></div>
+    <div id="cuConfirmacionTexto" class="modal-body"></div><div class="modal-footer"><button class="btn btn-outline-secondary" type="button" data-bs-dismiss="modal">Volver</button><button id="cuContinuar" type="button" class="btn btn-success">Confirmar</button></div>
+</div></div></div>
+@section Scripts { <script src="~/js/app/custodia.js" asp-append-version="true"></script> }

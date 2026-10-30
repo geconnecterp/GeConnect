@@ -1,0 +1,39 @@
+@using gc.infraestructura.Dtos.Libros
+@model CertificadosSufridosFiltro
+@{ Layout = "~/Views/Shared/_Layout.cshtml"; }
+@section styles {
+    <link rel="stylesheet" href="~/css/components/gc-pager.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/modules/certificados-sufridos.css" asp-append-version="true" />
+}
+<section id="certificados-sufridos" class="container-fluid sufridos" data-consulta="@Url.Action("Consultar")" data-pdf="@Url.Action("Pdf")" data-disponible="@(ViewBag.Error == null ? "true" : "false")">
+    <nav class="suf-toolbar" aria-label="Acciones de certificados sufridos">
+        <button id="btnFiltro" class="btn btn-primary btn-sm" type="button" aria-controls="divFiltro" aria-expanded="true" aria-label="Mostrar u ocultar filtros" title="Mostrar u ocultar filtros" disabled="@(ViewBag.Error != null)"><i class="bx bx-filter" aria-hidden="true"></i></button>
+        <button id="btnDetalle" class="btn btn-primary btn-sm" type="button" aria-controls="divDetalle" aria-expanded="false" aria-label="Cerrar consulta y conservar filtros" title="Cerrar consulta y conservar filtros" disabled><i class="bx bx-caret-down" aria-hidden="true"></i></button>
+        <span class="suf-toolbar-end"><button id="suf-pdf" class="btn btn-primary btn-sm" type="button" disabled><i class="bx bx-printer" aria-hidden="true"></i> Imprimir PDF completo</button></span>
+    </nav>
+    <partial name="_Filtro" model="Model" />
+    <div id="suf-mensaje" role="status" aria-live="polite"></div>
+    <div id="divDetalle" class="suf-detail" hidden>
+        <section id="suf-panel" class="suf-panel" aria-busy="false">
+            <header class="suf-heading"><h2>Retenciones y percepciones sufridas</h2><p id="suf-contexto"></p><span id="suf-cantidad"></span></header>
+            <p id="suf-alcance-agrupado" class="suf-help" hidden>Importes agrupados con Lote Hogar incluido. Base imponible, alícuotas y corte de ventas no disponibles en esta vista.</p>
+            <div class="suf-table-wrap" role="region" aria-label="Certificados por tipo; desplazamiento horizontal para todas las columnas" tabindex="0">
+                <table class="suf-table"><caption class="visually-hidden">Certificados sufridos por tipo, con totales completos de cada grupo</caption><thead id="suf-columnas"></thead><tbody id="suf-filas"></tbody></table>
+            </div>
+            <p id="suf-vacio" class="suf-empty" hidden>No se encontraron certificados con estos filtros.</p>
+            <div class="suf-totales" aria-label="Totales de toda la consulta">
+                <span id="suf-base-bloque">Base: <strong id="suf-base"></strong></span><span><span id="suf-importe-etiqueta">Retención / Percepción</span>: <strong id="suf-total"></strong></span>
+                <span id="suf-origen-bloque" hidden>Registros de origen: <strong id="suf-origen"></strong></span>
+                <span id="suf-lh-bloque" hidden>Lote Hogar: <strong id="suf-lh"></strong></span>
+                <span id="suf-final-bloque" hidden>Total con LH: <strong id="suf-final"></strong></span>
+                <small>Totales de toda la consulta y de cada grupo completo, independientemente de la página.</small>
+            </div>
+            <div id="suf-paginador"></div>
+        </section>
+        <div id="suf-cargando" class="suf-loading" role="status" aria-live="polite" hidden><span class="spinner-border" aria-hidden="true"></span><span id="suf-espera-texto">Consultando certificados. Esta operación puede demorar; por favor, espere.</span></div>
+    </div>
+</section>
+@section scripts {
+    <script src="~/js/components/gc-pager.js" asp-append-version="true"></script>
+    <script src="~/js/app/libros/certificados-sufridos.js" asp-append-version="true"></script>
+}

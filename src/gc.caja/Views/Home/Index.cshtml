@@ -96,6 +96,7 @@
 
 @section scripts{
     <script type="text/javascript">
+        var AbrirMenuCajaAlVolver = @((ViewData["AbrirMenuCaja"] is true) ? "true" : "false");
         var AdministradorCajaUrl = '@Url.Action("Index", "AdministradorCaja", new { area = "Facturacion" })';
         var ReimpresionZUrl = '@Url.Action("Index", "ReimpresionZ", new { area = "Facturacion" })';
         var ReimpresionZDisponibleUrl = '@Url.Action("Disponibilidad", "ReimpresionZ", new { area = "Facturacion" })';

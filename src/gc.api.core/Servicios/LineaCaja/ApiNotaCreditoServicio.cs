@@ -28,10 +28,8 @@ namespace gc.api.core.Servicios.LineaCaja
                 new ("@caja_nro_cierre", request.caja_nro_cierre)
             };
 
-            var result = _repository.EjecutarLstSpExt<NCValidaResponseDto>(sp, ps,true);
-            
-                return result;
-            
+            return CajaConsultaComprobanteDiagnostico.Ejecutar(_logger, sp, ps,
+                () => _repository.EjecutarLstSpExt<NCValidaResponseDto>(sp, ps, true));
         }
 
         public List<NCProductoBuscarResponseDto> BuscarProducto(NCProductoBuscarRequestDto request)
@@ -47,9 +45,8 @@ namespace gc.api.core.Servicios.LineaCaja
                 new ("@cantidad", request.cantidad),
                 new ("@json_p", request.json_p)
             };
-            var result = _repository.EjecutarLstSpExt<NCProductoBuscarResponseDto>(sp, ps, true);
-
-            return result;
+            return CajaConsultaComprobanteDiagnostico.Ejecutar(_logger, sp, ps,
+                () => _repository.EjecutarLstSpExt<NCProductoBuscarResponseDto>(sp, ps, true));
 
         }
     }
