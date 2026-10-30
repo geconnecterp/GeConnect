@@ -25,11 +25,12 @@ namespace gc.caja.Controllers
             _caja = cajaService;
         }
 
-        public IActionResult Index()
+        public IActionResult Index(bool menu = false)
         {
             if (!VerificarAutenticacion(out IActionResult redirectResult))
                 return redirectResult;
 
+            ViewData["AbrirMenuCaja"] = menu;
             return View();
         }
 

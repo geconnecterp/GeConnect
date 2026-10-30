@@ -136,9 +136,12 @@ namespace gc.api.core.Servicios.LineaCaja
                 new SqlParameter("@cta_id", req.cta_id),
                 new SqlParameter("@ctac_dto", req.ctac_dto)
             };
-            var res = _repository.EjecutarLstSpExt<ProductoDatosResponseDto>(sp, ps);
+            // Registrar el detalle de una factura emitida sin llenar el log con cada escaneo.
+            if (string.Equals(req.tipo_valor, "V", StringComparison.Ordinal))
+                return CajaConsultaComprobanteDiagnostico.Ejecutar(_logger, sp, ps,
+                    () => _repository.EjecutarLstSpExt<ProductoDatosResponseDto>(sp, ps));
 
-            return res;
+            return _repository.EjecutarLstSpExt<ProductoDatosResponseDto>(sp, ps);
 
         }
 

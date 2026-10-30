@@ -1,4 +1,4 @@
-@{
+﻿@{
     ViewData["Title"] = "Administrador de Caja";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
@@ -10,10 +10,17 @@
     <header class="rz-header">
         <span class="rz-icon"><i class="bx bx-shield-quarter" aria-hidden="true"></i></span>
         <div><p class="rz-eyebrow">GESTIÓN DE LA SUCURSAL</p><h1 id="admTitulo">Administrador de Caja</h1>
-        <p>Habilitación y cierre general de todos los puestos de la sucursal.</p></div>
+        <p>Habilitación, cierre general y gestión de valores de la sucursal.</p></div>
     </header>
     <div class="rz-context"><span><i class="bx bx-store-alt" aria-hidden="true"></i> Sucursal <strong>@ViewBag.Sucursal</strong></span>
         <span>Disponible sin apertura de un puesto</span></div>
+    <section class="rz-card mb-3" aria-labelledby="admCustodiaTitulo">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+            <div><h2 id="admCustodiaTitulo" class="h5 mb-1"><i class="bx bx-lock-alt" aria-hidden="true"></i> Valores en custodia</h2>
+                <p class="mb-0">Prepare la entrega de rendiciones parciales y finales, revise importes y obtenga el acuse.</p></div>
+            <a class="btn btn-primary" href="@Url.Action("Index", "Custodia", new { area = "Facturacion" })">Entrega de valores <i class="bx bx-chevron-right" aria-hidden="true"></i></a>
+        </div>
+    </section>
     <form id="admCaja" class="rz-card" data-puestos="@Url.Action("Puestos")" data-apertura="@Url.Action("Apertura")"
           data-cierre="@Url.Action("Cierre")" data-solicitud="@Guid.NewGuid()" data-sucursal="@ViewBag.Sucursal">
         @Html.AntiForgeryToken()

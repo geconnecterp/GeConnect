@@ -482,8 +482,7 @@ window.NCDevolucion = window.NCDevolucion || {};
     };
 
     const DESTINOS_CANCELACION = Object.freeze({
-        MENU_CAJA: 'MENU_CAJA',
-        REINICIAR_NOTA_CREDITO: 'REINICIAR_NOTA_CREDITO'
+        MENU_CAJA: 'MENU_CAJA'
     });
 
     const SELECTORES_CANCELACION = Object.freeze({
@@ -676,12 +675,12 @@ window.NCDevolucion = window.NCDevolucion || {};
             function () {
                 logInfo('CANCELACIÓN', {
                     accion: 'Solicitud de cancelación recibida desde modal de productos.',
-                    destino: DESTINOS_CANCELACION.REINICIAR_NOTA_CREDITO
+                    destino: DESTINOS_CANCELACION.MENU_CAJA
                 });
 
                 confirmarCancelacion({
                     origen: 'PRODUCTOS',
-                    destino: DESTINOS_CANCELACION.REINICIAR_NOTA_CREDITO,
+                    destino: DESTINOS_CANCELACION.MENU_CAJA,
                     selectorBoton: SELECTORES_CANCELACION.PRODUCTOS
                 });
             }
@@ -1513,32 +1512,6 @@ window.NCDevolucion = window.NCDevolucion || {};
         $tbody.html(filas);
     }
 
-    function volverAInicioNotaCredito() {
-        const urlInicio = String(
-            window.ncDevolucionIndexUrl || window.location.pathname
-        ).trim();
-
-        if (!urlInicio) {
-            mostrarError(
-                'No se encontró la ruta para reiniciar la Nota de Crédito.'
-            );
-
-            return;
-        }
-
-        logInfo('CANCELACIÓN', {
-            accion: 'Operación cancelada. Volviendo al inicio de Nota de Crédito.',
-            destino: 'INDEX_NOTA_CREDITO',
-            url: urlInicio
-        });
-
-        /*
-         * El contexto ya fue eliminado en servidor.
-         * replace evita volver con Atrás a una operación cancelada.
-         */
-        window.location.replace(urlInicio);
-    }
-
     function volverAMenuCaja() {
         const urlMenu = String(
             window.ncDevolucionMenuCajaUrl || ''
@@ -1568,11 +1541,6 @@ window.NCDevolucion = window.NCDevolucion || {};
     function navegarDespuesDeCancelar(destino) {
         if (destino === DESTINOS_CANCELACION.MENU_CAJA) {
             volverAMenuCaja();
-            return;
-        }
-
-        if (destino === DESTINOS_CANCELACION.REINICIAR_NOTA_CREDITO) {
-            volverAInicioNotaCredito();
             return;
         }
 

@@ -1,6 +1,8 @@
 # NC por devolución — mapeo de entrada y revisión para DBA
 
-Fecha: 2026-10-29. Complemento técnico de `BitacoraUnicaReglasCaja.md`, DEV-06/07/08/09 y FAC-17/20/21. La bitácora conserva la autoridad funcional.
+Fecha: 2026-10-29. Complemento técnico de `BitacoraUnicaReglasCaja.md`, DEV-06/07/08/09/10/11/12/13/14/15 y FAC-17/20/21/22/23/24. La bitácora conserva la autoridad funcional.
+
+**Aclaración vigente — 2026-10-29:** el responsable rectificó el número informado por el tester: el correcto es `0203-00013796` (4 + guion + 8). El cero final de `0203-000137960` era un error del ejemplo. La propuesta de modificar el parseo de B_Producto_Datos queda retirada; sus posiciones originales son correctas para este contrato. cm_ib textual y los pendientes de combos/impuestos de las secciones 1–4 son temas independientes.
 
 ## Estado de la corrección en Caja
 
@@ -83,7 +85,7 @@ En esta revisión pasaron además 163 pruebas de cálculo/confirmación con sign
 
 Los SP de las pruebas devuelven fixtures controladas. Esto verifica el mapeo y transporte de Caja; **no acredita que los SQL entregados ya calculen correctamente la devolución**.
 
-Para reproducir: ejecutar `gc.caja/Tests/ProductosJson.Integracion.Tests.ps1` desde la raíz de src. Genera en `.artifacts/caja-productos-json/evidencia` los archivos `nc-entrada-busqueda.json`, `nc-entrada-calculo.json`, `nc-salida-confirmacion.json` y `nc-subtotal-confirmacion.json`. La salida coincide byte por byte con la fixture de productos, SHA256 `4fd4a0b2c66caa0c09ece89562237b0999884d7b3d33bd20d87b8f1d92b9ff5e`.
+Validación interna privada (GOB-06): los scripts, fixtures y evidencias permanecen sólo en la PC de desarrollo y no se distribuyen en Git. Para reproducir localmente: ejecutar `gc.caja/Tests/ProductosJson.Integracion.Tests.ps1` desde la raíz de src. Genera en `.artifacts/caja-productos-json/evidencia` los archivos `nc-entrada-busqueda.json`, `nc-entrada-calculo.json`, `nc-salida-confirmacion.json` y `nc-subtotal-confirmacion.json`. La salida coincide byte por byte con la fixture de productos, SHA256 `4fd4a0b2c66caa0c09ece89562237b0999884d7b3d33bd20d87b8f1d92b9ff5e`.
 
 
 ## Repetición real del cálculo — 2026-10-29
@@ -111,3 +113,77 @@ La corrección del mapeo queda comprobada en ejecución. Continúan pendientes l
 Recompilar/reiniciar gc.caja para incorporar el mapeo. El DBA debe confirmar los puntos anteriores en su versión desplegada y revisar el caso total y los parciales. Después repetir el cálculo real con el combo recuperado y los importes conciliados; recién entonces preparar la emisión con confirmación personal del responsable.
 
 No se emitió ninguna NC, no hubo devolución de dinero ni llamadas al POS, y no se alteraron SP. La factura de prueba anterior permanece registrada; su devolución sigue sin emitir.
+
+
+## 5. Numeración del comprobante — rectificación del ejemplo, 2026-10-29
+
+El responsable corrige la evidencia anterior: la referencia válida es `0203-00013796`, con cuatro dígitos de PV, guion y ocho de número. No corresponde tratar este caso como un comprobante histórico de nueve dígitos ni deducir otro formato por la declaración varchar(15).
+
+Para tipo 082 y repetición 0, el valor usado en la copia tipo V es:
+
+```text
+082 | 0203-00013796 | 0
+```
+
+Tiene diecisiete caracteres. El bloque recibido de SPGECO_CAJA_B_Producto_Datos lo separa correctamente sin modificaciones:
+
+```sql
+tco_id = substring(@valor,1,3)
+cm_compte = substring(@valor,4,13)
+cm_repetido = substring(@valor,17,1)
+```
+
+**La propuesta anterior de cambiar a longitud variable queda retirada. No hay cambio SQL necesario por este motivo.** No se modifica ningún SP. Se conservan los antecedentes en las revisiones de la bitácora y en los archivos privados, identificados como rectificados.
+
+Caja vuelve a limitar el ingreso a cuatro dígitos de PV y ocho del número, manteniendo los ceros y completando por izquierda las entradas más cortas. Se elimina la ampliación a nueve/diez y el supuesto mensaje de incompatibilidad histórica; permanece la validación estructural del formato y de la repetición para impedir claves malformadas. El comprobante correcto carga por el recorrido V habitual. cm_ib sigue string nullable, y se mantienen los logs y el retorno al menú.
+
+Verificación local: 264 comprobaciones (147 integración, 32 JS/vistas, 42 carga factura, 22 identificación, 21 menú), con el número correcto hasta parámetros/constructores simulados y lectura literal de la clave para repeticiones 0, 2 y 9. Caja/Razor compila sin errores. La consulta real sigue pendiente: localhost:7257 rechazó la conexión; el responsable avisa que recompilará/levantará para continuar sin emitir NC. Evidencia privada .artifacts/caja-comprobante-origen/numeracion-4-8-simulada.json y rectificacion-4-8-resultado.txt. No se confunde esa evidencia simulada con una factura encontrada en el servidor.
+
+## 6. Cómo contrastar las pruebas con los logs — 2026-10-29
+
+Se mantienen los registros de diagnóstico de la aplicación, sin editar SP. La propuesta anterior de numeración de la sección 5 quedó retirada tras corregirse el ejemplo. Recompilar y desplegar Caja para aplicar el formato confirmado; la API conserva cm_ib textual y los logs ya agregados.
+
+Buscar el prefijo `[CAJA][COMPROBANTE]` en los archivos configurados para cada host:
+
+- `gc.caja.log`: ENTRADA con lo ingresado por el operador y Solicitud del request web; VALIDACION REQUEST/RESPONSE en Factura emitida; resultado de validación en NC; detalle de la copia admitida y BLOQUEADO para una clave incompatible.
+- `gc.api.log`: SP REQUEST con parámetros y SP RESPONSE con filas para SPGECO_CAJA_NC_Valida, SPGECO_CAJA_NC_B_Producto y SPGECO_CAJA_B_PRODUCTO_DATOS, este último sólo para tipo V. Cada par usa la misma Llamada. En una excepción se registra SP ERROR con esa misma Llamada, conservando el error y sin reintentos.
+
+Los documentos JSON se muestran con sangría y saltos de línea, sin envolver todo el contenido como un string escapado. Los escapes legítimos dentro de los datos permanecen. Los productos JSON anidados se expanden sólo en la representación de diagnóstico de la solicitud; el parámetro real no se modifica. cm_ib se observa como texto en la respuesta. Una búsqueda sin filas muestra [] y se distingue de un error.
+
+En BLOQUEADO, `cm_compte` contiene la referencia completa, `clave_no_enviada` muestra la composición propuesta y `enviado_al_sp` es false. La lectura simulada registrada durante el análisis anterior se retira del código vigente al rectificar el formato; sus ejemplos privados anteriores no son respuestas del SP. No se genera un SP REQUEST del detalle si se detuvo antes de invocarlo. Se conserva el detalle que el operador ya tenía cargado.
+
+No se repite el diagnóstico V para cada escaneo normal de productos. No se incluyen tokens/credenciales en estas entradas ni se cambia configuración de archivos o niveles del logger. En el checkout local, log4net ya dirige los archivos a D:/Sitios/Logs/GC; cada entorno debe consultar su configuración efectiva.
+
+Verificación privada: 134 comprobaciones locales (incluyen numeración, cm_ib y 38 controles de diagnóstico), Caja/API compiladas sin errores. El ejemplo .artifacts/caja-comprobante-origen/log-comprobantes-ejemplo.txt está generado por pruebas simuladas e identificado como tal; no se escribió en los logs operativos ni se ejecutó SQL real. Las filas de ese ejemplo no acreditan el comprobante del tester. Pruebas y evidencia fuera de Git, sin emisión de NC/factura ni POS.
+
+
+## 7. Prueba real de identificación y logs — 2026-10-29
+
+**Antecedente con dato de entrada erróneo:** con Caja/API recompiladas, a las 17:49:52 (hora de Buenos Aires) se consultó por la interfaz NC `082 / 0203-000137960`. El responsable luego rectificó ese cero agregado: este ensayo no corresponde al comprobante válido `0203-00013796`. El request real a SPGECO_CAJA_NC_Valida conserva el número completo; utiliza el proceso 00-06583/cierre 1 desde la caja 0001. El log contiene SP REQUEST a las 17:49:52,484 y SP RESPONSE a las 17:49:52,652 con Llamada 55e67c9391214ad4bfba2d136111d931; la Solicitud web es 0HNPLVN0I0SBB:00000043.
+
+La respuesta es [] (cero filas), y la vista muestra que no encontró un comprobante habilitado. No hubo SP ERROR ni excepción de cm_ib, pero no se acredita el mapeo de ese campo con una fila real porque la consulta no devolvió ninguna. El recorrido se detiene antes de detalle, cálculo y confirmación: no se emite NC, se devuelve dinero ni se contacta POS.
+
+El responsable propone que la diferencia de PV podría explicar el resultado y consultará al Analista. El SP entregado compara tipo/número y hace joins con tipos_comprobantes/condiciones_afip; su WHERE no restringe directamente por caja/PV actual. La base efectiva, la disponibilidad del comprobante y su distribución por sucursal no se inspeccionaron. Se entrega la evidencia para contrastar; no afirmar que el comprobante no existe ni atribuir el resultado a un filtro de puesto no observado.
+
+Evidencia privada .artifacts/nc-082-real-20261029: parámetros y respuesta JSON, extractos de gc.api/gc.caja e informe. Captura guardada con la referencia íntegra y el mensaje. Sin cambios de aplicación/SP, sin tests publicados ni commit/push.
+
+
+## 8. Estado después de la rectificación
+
+Vigente: formato 4-guion-8 y SP original; sin propuesta de modificación de numeración al DBA. cm_ib textual, logs y salida al menú conservados. Los pendientes de datos de combos/impuestos de otra factura de prueba permanecen independientes. Las pruebas privadas anteriores de referencias de nueve/diez dígitos eran simulaciones basadas en el dato entonces confirmado, hoy rectificado; no prueban que esas referencias existan. Los logs reales anteriores se conservan sin reescribirlos. La siguiente prueba operativa debe usar exclusivamente `082 / 0203-00013796`, sin emitir NC; su resultado real se agrega en el apartado 9.
+
+
+## 9. Aceptación real con la referencia corregida — 2026-10-29
+
+Con Caja/API recompiladas, NC_Valida devuelve una fila para `082 / 0203-00013796`: request 19:48:45,394 / response 19:48:45,595 (Buenos Aires), Llamada 261d21fe653b48308804721e27aa079b. cm_ib="NN" se conserva como varchar/string y el mapper no lanza excepción. NC_B_Producto recibe el número exacto y adm_id de origen 0007: request 19:48:55,689 / response 19:49:01,902, Llamada d25d451e26474808a80f00545fd4930f. Devuelve 44 productos cargados en la vista. Se cancela el borrador y regresa automáticamente al menú principal (`/?menu=True#`), sin emitir NC. La búsqueda real correcta supera el bloqueo observado con el cero agregado por error; no fue necesario cambiar el puesto ni modificar SQL. Evidencia privada .artifacts/nc-082-corregida-real-20261029.
+
+Como prueba nueva autorizada se copia ese detalle a precios actuales y se prepara una venta de 50 renglones/44 artículos distintos. El responsable confirma por interfaz la Factura B 0001-00000068, pagada sólo con efectivo por 106384.01. Los json_p y json_subtotal de cálculo y confirmación coinciden estructuralmente con precisión decimal, incluido orden y valores; no hay cmd_cmb* en confirmación. La primera NC queda preparada con quince artículos por 45094.25; se verifican cantidades/totales y los impuestos internos de dos gaseosas contra la factura, sin emisión. Los componentes impositivos del queso agregado difieren .01 entre gravado/IVA por redondeo de dos renglones. Al corte inicial de la revisión 1.37 las tres emisiones y sus remanentes estaban pendientes de la acción final del responsable; el circuito se completa a continuación. Esto no acredita una resolución de los pendientes de combos/impuestos de la factura de prueba anterior. Evidencia privada .artifacts/factura-B-68-tres-NC-20261029; sin cambios de aplicación/SP ni pruebas publicadas.
+
+
+## 10. Tres NC consecutivas y salida al menú operativo — 2026-10-29
+
+El responsable confirma las tres emisiones de la Factura B 0001-00000068: NC B 0001-00000003 por 45094.25 (quince artículos), B 0001-00000004 por 32748.88 (quince) y B 0001-00000005 por 28540.88 (catorce). En conjunto restituyen 44 artículos distintos/cantidad 56.910 de los 50 renglones y el total 106384.01 de la factura. Los conjuntos no se superponen. json_p y json_subtotal son iguales estructuralmente, incluido orden/nombres/valores, entre cada cálculo real y la solicitud recibida por API. Para la comparación textual de descripciones se lee el log API en CP1252 y los archivos Caja/evidencias en UTF8; no se reescriben logs operativos.
+
+NC_B_Producto devuelve 29 artículos pendientes después de la primera NC, catorce después de la segunda y [] después de la tercera. Última respuesta: 20:12:54,721 (Buenos Aires), Llamada 1501c06cc7f74dac80a5d066283cc8ef. La vista queda con cero productos, aviso explícito y Seguir deshabilitado. No se emite una cuarta NC; se limpia el borrador de esa consulta.
+
+A pedido del responsable se refuerza la salida de una NC emitida: tanto Aceptar como cerrar su aviso con X solicitan el menú operativo con menu=true, sin respaldo a una vista inicial, mediante replace y una sola navegación. Se conserva el retorno interno VOLVER para corregir antes de emitir y el tratamiento de errores. Se verifica la salida en la segunda emisión y el cierre con X en la tercera sin pulsar Operar Caja. Pasan 21 verificaciones previas más treinta escenarios de Aceptar/X, rutas y reportes; JS válido. No se modifican SP ni el contrato financiero. Pruebas y evidencias permanecen privadas en .artifacts/factura-B-68-tres-NC-20261029 y Tests; sin commit/push. NotebookLM pendiente.

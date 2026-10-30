@@ -197,6 +197,9 @@ namespace gc.api.infra.Extensions
             services.AddScoped<IApiPagoFactServicio, ApiPagoFactServicio>();
             services.AddScoped<IApiNotaCreditoServicio, ApiNotaCreditoServicio>();
             services.AddScoped<IApiRendicionServicio, ApiRendicionServicio>();
+            services.AddScoped<CustodiaServicio>();
+            services.AddScoped<ICustodiaPersistencia, gc.api.infra.Datos.Implementacion.Cajas.CustodiaPersistencia>();
+            services.AddMemoryCache();
             services.AddScoped<IApiAnulacionServicio, ApiAnulacionServicio>();
 
             //autorizacion Remota

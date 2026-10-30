@@ -1,4 +1,5 @@
 using System.Globalization;
+using gc.infraestructura.Core.Helpers;
 using gc.caja.Models.Facturacion;
 using gc.infraestructura.Dtos.Cajas.Request;
 using Microsoft.AspNetCore.Mvc;
@@ -39,6 +40,8 @@ public partial class ProductoFactController
             return Unauthorized();
         if (request == null)
             return Json(new { ok = false, mensaje = "Ingrese los datos de la factura emitida." });
+        _logger?.LogInformation("[CAJA][COMPROBANTE][ENTRADA] Modulo=FACTURA_EMITIDA | Solicitud={Solicitud}\n{Json}",
+            HttpContext.TraceIdentifier, CajaJsonDiagnostico.Formatear(JsonConvert.SerializeObject(request)));
         if (!request.TryNormalizar(out var tipo, out var comprobante, out var mensaje))
             return Json(new { ok = false, mensaje });
 
@@ -69,12 +72,11 @@ public partial class ProductoFactController
                 caja_nro_proceso = proceso,
                 caja_nro_cierre = cierre
             };
-            _logger?.LogInformation("Factura emitida: SPGECO_CAJA_NC_Valida Request={Request}",
-                JsonConvert.SerializeObject(validacionRequest));
+            _logger?.LogInformation("[CAJA][COMPROBANTE][VALIDACION REQUEST] Modulo=FACTURA_EMITIDA | Solicitud={Solicitud}\n{Json}",
+                HttpContext.TraceIdentifier, CajaJsonDiagnostico.Formatear(JsonConvert.SerializeObject(validacionRequest)));
             var validacion = await _notaCreditoServicio.ValidarNC(validacionRequest, TokenCookie);
-            _logger?.LogInformation("Factura emitida: validacion Ok={Ok}, Mensaje={Mensaje}, Repeticiones={Repeticiones}",
-                validacion?.Ok, validacion?.Mensaje,
-                JsonConvert.SerializeObject(validacion?.ListaEntidad?.Select(x => new { x.tco_id, x.cm_compte, x.cm_repetido })));
+            _logger?.LogInformation("[CAJA][COMPROBANTE][VALIDACION RESPONSE] Modulo=FACTURA_EMITIDA | Solicitud={Solicitud}\n{Json}",
+                HttpContext.TraceIdentifier, CajaJsonDiagnostico.Formatear(JsonConvert.SerializeObject(validacion), expandirJsonAnidado: false));
             if (validacion?.Ok != true)
                 return Json(new { ok = false, mensaje = validacion?.Mensaje ?? "No fue posible validar la factura." });
 
@@ -89,14 +91,24 @@ public partial class ProductoFactController
             }
             catch (ArgumentException ex)
             {
+                var claveNoEnviada = tipo + comprobante + origen.cm_repetido?.ToString(CultureInfo.InvariantCulture);
+                _logger?.LogWarning("[CAJA][COMPROBANTE][BLOQUEADO] SPGECO_CAJA_B_Producto_Datos | Solicitud={Solicitud}\n{Json}",
+                    HttpContext.TraceIdentifier, CajaJsonDiagnostico.Formatear(JsonConvert.SerializeObject(new
+                    {
+                        tco_id = tipo, cm_compte = comprobante, cm_repetido = origen.cm_repetido,
+                        longitud_cm_compte = comprobante.Length, clave_no_enviada = claveNoEnviada,
+                        enviado_al_sp = false,
+                        motivo = ex.Message
+                    })));
                 return Json(new { ok = false, mensaje = ex.Message });
             }
 
             var esConsumidorFinal = string.Equals(cliente.Origen, "F", StringComparison.OrdinalIgnoreCase);
             var canal = string.IsNullOrWhiteSpace(cliente.ctc_id) ? (esConsumidorFinal ? "MI" : "MA") : cliente.ctc_id;
             var resultado = await ObtenerProductoDatosCommon("V", clave, LP_Id, canal, cliente.cta_id ?? string.Empty, 1, true);
-            _logger?.LogInformation("Factura emitida: SPGECO_CAJA_B_Producto_Datos Clave={Clave}, Response={Response}",
-                clave, JsonConvert.SerializeObject(resultado));
+            _logger?.LogInformation("[CAJA][COMPROBANTE][DETALLE RESPONSE] SPGECO_CAJA_B_Producto_Datos | Solicitud={Solicitud} | Clave={Clave}\n{Json}",
+                HttpContext.TraceIdentifier, clave,
+                CajaJsonDiagnostico.Formatear(JsonConvert.SerializeObject(resultado), expandirJsonAnidado: false));
             if (resultado?.Ok != true)
                 return Json(new { ok = false, mensaje = resultado?.Mensaje ?? "No fue posible cargar el detalle de la factura." });
 

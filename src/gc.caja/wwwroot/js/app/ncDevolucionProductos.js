@@ -2475,16 +2475,36 @@ window.NCDevolucion = window.NCDevolucion || {};
             .trim()
             .toUpperCase();
 
+        let salidaIniciada = false;
         const volverAlMenu = function () {
-            window.location.href = window.ncDevolucionMenuCajaUrl || '/';
+            if (salidaIniciada) return;
+            salidaIniciada = true;
+
+            const urlMenu = new URL(
+                window.ncDevolucionMenuCajaUrl || '/',
+                window.location.href
+            );
+            urlMenu.searchParams.set('menu', 'true');
+            logInfo('EMISIÓN - RETORNO', {
+                destino: 'MENU_CAJA',
+                url: urlMenu.href
+            });
+            // No dejar la pantalla de una NC ya emitida en el historial de regreso.
+            window.location.replace(urlMenu.href);
+        };
+
+        const mostrarResultadoFinal = function (mensaje, tipo) {
+            // Aceptar, la X y cualquier cierre del aviso completan la misma salida.
+            $('#msjModal')
+                .off('hidden.bs.modal.salidaNCEmitida')
+                .one('hidden.bs.modal.salidaNCEmitida', volverAlMenu);
+            mostrarMensaje('Nota de Crédito emitida', mensaje, tipo, volverAlMenu);
         };
 
         const cerrarConExito = function () {
-            mostrarMensaje(
-                'Nota de Crédito emitida',
+            mostrarResultadoFinal(
                 renderizarMensajeEmisionExitosa(response, comprobante),
-                'succ!',
-                volverAlMenu
+                'succ!'
             );
         };
 
@@ -2494,23 +2514,19 @@ window.NCDevolucion = window.NCDevolucion || {};
         }
 
         if (!comprobante) {
-            mostrarMensaje(
-                'Nota de Crédito emitida',
+            mostrarResultadoFinal(
                 `${escaparHtml(response.mensaje || 'La Nota de Crédito fue emitida correctamente.')}<br>` +
                 'No se recibieron datos suficientes para generar el comprobante en pantalla.',
-                'warn!',
-                volverAlMenu
+                'warn!'
             );
             return;
         }
 
         if (typeof ModuloReportes === 'undefined') {
-            mostrarMensaje(
-                'Nota de Crédito emitida',
+            mostrarResultadoFinal(
                 `${escaparHtml(response.mensaje || 'La Nota de Crédito fue emitida correctamente.')}<br>` +
                 'No se encontró el módulo de reportes para presentar la NC.',
-                'warn!',
-                volverAlMenu
+                'warn!'
             );
             return;
         }

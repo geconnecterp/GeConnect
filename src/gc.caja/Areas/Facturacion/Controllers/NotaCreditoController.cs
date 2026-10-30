@@ -331,6 +331,8 @@ namespace gc.caja.Areas.Facturacion.Controllers
                 });
             }
 
+            _logger?.LogInformation("[CAJA][COMPROBANTE][ENTRADA] Modulo=NC_DEVOLUCION | Solicitud={Solicitud}\n{Json}",
+                HttpContext.TraceIdentifier, CajaJsonDiagnostico.Formatear(JsonConvert.SerializeObject(request)));
             LimpiarEstadoTemporalDevolucion();
 
             if (!TryObtenerDatosCajaParaValidacion(
@@ -422,6 +424,8 @@ namespace gc.caja.Areas.Facturacion.Controllers
                     });
                 }
 
+                _logger?.LogInformation("[CAJA][COMPROBANTE][VALIDACION RESPONSE] Modulo=NC_DEVOLUCION | Solicitud={Solicitud}\n{Json}",
+                    HttpContext.TraceIdentifier, CajaJsonDiagnostico.Formatear(JsonConvert.SerializeObject(resultado), expandirJsonAnidado: false));
                 var candidatos = resultado.ListaEntidad ?? [];
 
                 if (candidatos.Count == 0)
