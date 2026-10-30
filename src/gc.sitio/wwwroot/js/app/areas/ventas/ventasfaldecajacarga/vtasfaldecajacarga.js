@@ -145,6 +145,7 @@ function InicializaEventos() {
 		.on("click.controlFaltantes", "#btnCancelarFaltantes", function () {
 
 			if (!hayCambiosPendientes) {
+				ultimaFilaDetalle = null;
 				deshabilitarConfirmarFaltantes();
 				CargarFaltantesDeCajas();
 			}
@@ -153,6 +154,7 @@ function InicializaEventos() {
 					$("#msjModal").modal("hide");
 					switch (e) {
 						case "SI":
+							ultimaFilaDetalle = null;
 							deshabilitarConfirmarFaltantes();
 							CargarFaltantesDeCajas();
 							break;
@@ -510,6 +512,10 @@ function CargarFaltantesDeCajas() {
 			// Opcional: dejar enfocado el campo editable
 			//$primeraFila.find(".js-control-acumulado:first").trigger("focus");
 		}
+		else {
+			inicializarDetalleVacio();
+		}
+
 		deshabilitarConfirmarFaltantes();
 		CerrarWaiting();
 		setTimeout(() => {
@@ -517,6 +523,16 @@ function CargarFaltantesDeCajas() {
 		}, 200);
 		return true
 	});
+}
+
+function inicializarDetalleVacio() {
+	$("#tbFaltantesDetalle tbody").html(`
+		<tr class="fila-vacia">
+			<td colspan="100%" class="text-center">
+				No hay datos para mostrar
+			</td>
+		</tr>
+	`);
 }
 
 function getMaskForMoneyType(selector, decimales) {
