@@ -1,8 +1,9 @@
 ﻿let ultimaFechaFaltanteProcesado = null;
 let msgValidacionParaBusqueda = null;
-let controlFaltanteEnEdicion = false;
+let hayCambiosPendientes = false;
 const selectorTablaControl = "#tbFaltantes";
 const selectorInputControl = "#tbFaltantes .js-control-acumulado:not(:disabled)";
+let ultimaFilaDetalle = null;
 
 $(function () {
 	InicializarCamposEnFiltros();
@@ -10,6 +11,7 @@ $(function () {
 });
 
 function InicializaEventos() {
+	$(document).on("click", "#btnImprimir", ImprimirDetalle);
 	$(document).off("change", "#listaSucursales");
 	$(document).on("change", "#listaSucursales", ControlalistaSucursalesSelected);
 
@@ -87,13 +89,9 @@ function InicializaEventos() {
 	$(document).off("focus.controlFaltantes", "#tbFaltantes .js-control-acumulado")
 		.on("focus.controlFaltantes", "#tbFaltantes .js-control-acumulado",
 			function () {
+				const $fila = $(this).closest("tr");
 
-				$("#tbFaltantes tbody tr")
-					.removeClass("selected-row");
-
-				$(this)
-					.closest("tr")
-					.addClass("selected-row");
+				seleccionarFilaFaltante($fila);
 
 				this.select();
 			}
@@ -106,28 +104,171 @@ function InicializaEventos() {
 				return;
 			}
 
-			$("#tbFaltantes tbody tr")
-				.removeClass("selected-row");
+			$("#tbFaltantes tbody tr").removeClass("selected-row");
+			$(this).addClass("selected-row");
 
-			$(this)
-				.addClass("selected-row");
+			const usuId = $(this).data("usu-id");
+			const admId = $(this).data("adm-id");
+			const procesarHasta = $("#ProcesarHasta").val();
+
+			BuscarDetalleDeFaltante(usuId, admId, procesarHasta);
 		});
 
 	$(document).off("click.controlFaltantes", "#tbFaltantes tbody tr")
 				.on("click.controlFaltantes", "#tbFaltantes tbody tr",
 			function () {
 
-				$("#tbFaltantes tbody tr")
+				seleccionarFilaFaltante($(this));
+			}
+	);
+
+	$(document).off("click.controlFaltantes", "#tbFaltantesDetalle tbody tr")
+		.on("click.controlFaltantes", "#tbFaltantesDetalle tbody tr",
+			function () {
+
+				$("#tbFaltantesDetalle tbody tr")
 					.removeClass("selected-row");
 
 				$(this)
 					.addClass("selected-row");
 
-				$(this)
-					.find(".js-control-acumulado:first")
-					.trigger("focus");
 			}
-		);
+	);
+	$(document).off("click.controlFaltantes", "#btnConfirmarFaltantes")
+		.on("click.controlFaltantes", "#btnConfirmarFaltantes", function () {
+
+			console.log("click.controlFaltantes #btnConfirmarFaltantes");
+			confirmarFaltante();
+		}
+	);
+	$(document).off("click.controlFaltantes", "#btnCancelarFaltantes")
+		.on("click.controlFaltantes", "#btnCancelarFaltantes", function () {
+
+			if (!hayCambiosPendientes) {
+				deshabilitarConfirmarFaltantes();
+				CargarFaltantesDeCajas();
+			}
+			else {
+				AbrirMensaje("ATENCIÓN", "¿Cancelar la carga de faltante de caja?", function (e) {
+					$("#msjModal").modal("hide");
+					switch (e) {
+						case "SI":
+							deshabilitarConfirmarFaltantes();
+							CargarFaltantesDeCajas();
+							break;
+						case "NO":
+							break;
+						default: //NO
+							break;
+					}
+					return true;
+
+				}, true, ["SI", "NO"], "question!", null);
+			}
+		});
+}
+
+function confirmarFaltante() {
+	AbrirMensaje("ATENCIÓN", "Desea confirmar el faltante de caja?", function (e) {
+		$("#msjModal").modal("hide");
+		switch (e) {
+			case "SI":
+				handlerconfirmarFaltante();
+				break;
+			case "NO":
+				break;
+			default: //NO
+				break;
+		}
+		return true;
+
+	}, true, ["SI", "NO"], "question!", null);
+}
+
+function handlerconfirmarFaltante() {
+	AbrirWaiting("Guardando cambios....")
+	const fecha_hasta_fal = $("#ProcesarHasta").val();
+	const adm_id_fal = $("#listaSucursales").val();
+
+	PostGen({ fecha_hasta_fal, adm_id_fal }, confirmarFaltanteDeCajaUrl, function (obj) {
+		CerrarWaiting();
+		if (obj.error === true || obj.warn === true) {
+			console.error('❌ Response:', obj.msg);
+			AbrirMensaje("ATENCIÓN", 'Error al intentar confirmar el faltante de caja: ' + (obj.msg || 'Error desconocido'), function () {
+				$("#msjModal").modal("hide");
+				return true;
+			}, false, ["Aceptar"], "error!", null);
+		}
+		else {
+			setTimeout(() => {
+				AbrirMensaje(
+					'CONFIRMACIÓN EXITOSA',
+					'Se ha confirmado el Faltante de Caja.',
+					function () {
+						$('#msjModal').modal('hide');
+						CargarFaltantesDeCajas();
+						//Imprimir Acuse de Confirmación
+						HandlerImprimirAcuse(obj.id);
+						//console.log("Planilla de Elaboración y Fracción Generada: ", obj.id);
+						//ResetearPantalla();
+					},
+					false,
+					['Aceptar'],
+					'success!',
+					null
+				);
+			}, 200);
+		}
+	});
+}
+
+function HandlerImprimirAcuse(id) {
+	ReseteoDeReportes();
+	setTimeout(() => {
+		let data = { id };
+		cargarReporteEnArre(40, data, "DETALLE DE ANTICIPO", "", "");
+		invocacionGestorDoc({});
+	}, 500);
+}
+
+function ReseteoDeReportes() {
+	console.log("Reseto de reportes");
+	ReporteResetArre();
+}
+
+function seleccionarFilaFaltante($fila) {
+
+	const claveActual =
+		$fila.data("usu-id") + "_" +
+		$fila.data("adm-id");
+
+	if (ultimaFilaDetalle === claveActual) {
+		return;
+	}
+
+	ultimaFilaDetalle = claveActual;
+
+	$("#tbFaltantes tbody tr").removeClass("selected-row");
+	$fila.addClass("selected-row");
+
+	const usuId = $fila.data("usu-id");
+	const admId = $fila.data("adm-id");
+
+	BuscarDetalleDeFaltante(usuId, admId, $("#ProcesarHasta").val());
+}
+
+
+function BuscarDetalleDeFaltante(usuId, admId, procesarHasta) {
+	var data = { adm_id: admId, hasta: procesarHasta, usu_id: usuId };
+	AbrirWaiting("Cargando Detalle de Faltantes...");
+	PostGenHtml(data, cargarDetalleDeFaltanteDeCajaURL, function (obj) {
+		$("#divFaltanteDetalle").html(obj);
+		CerrarWaiting();
+		setTimeout(() => {
+
+		}, 200);
+		return true
+	});
 }
 
 function moverFocoVerticalControlRecepcion(inputActual, desplazamiento) {
@@ -182,36 +323,6 @@ function moverFocoControlRecepcion(inputActual, desplazamiento) {
 	$campos.eq(nuevoIndice).trigger("focus");
 }
 
-//function formatearInputControlAcumulado(input) {
-//	const $input = $(input);
-//	const tipo = $input.data("tipo");
-//	const decimales = parseInt($input.data("decimales"), 10) || 0;
-
-//	const valor = obtenerNumeroControlAcumulado($input.val());
-
-//	$input.removeClass("input-invalido");
-
-//	if (!Number.isFinite(valor)) {
-
-//		$input
-//			.val(
-//				tipo === "entero"
-//					? "0"
-//					: (0).toFixed(decimales)
-//			)
-//			.addClass("input-invalido");
-
-//		return;
-//	}
-
-//	if (tipo === "entero") {
-//		$input.val(Math.trunc(valor).toString());
-//		return;
-//	}
-
-//	$input.val(valor.toFixed(decimales));
-//}
-
 function obtenerValorNumerico($input) {
 
 	const valor =
@@ -261,6 +372,7 @@ function actualizarAcumulado(dto) {
 		success: function (response) {
 
 			console.log("Actualizado correctamente");
+			habilitarConfirmarFaltantes();
 		},
 
 		error: function (xhr) {
@@ -304,8 +416,6 @@ function marcarCampoModificadoAcumulado(input) {
 				'<div class="indicador-cambio"></div>'
 			);
 		}
-
-		habilitarConfirmarFaltantes();
 	}
 	else {
 
@@ -320,16 +430,14 @@ function marcarCampoModificadoAcumulado(input) {
 }
 
 function deshabilitarConfirmarFaltantes() {
-	controlFaltanteEnEdicion = true;
-
+	hayCambiosPendientes = false;
 	$("#btnConfirmarFaltantes")
 		.prop("disabled", true)
 		.addClass("disabled");
 }
 
 function habilitarConfirmarFaltantes() {
-	controlFaltanteEnEdicion = false;
-
+	hayCambiosPendientes = true;
 	$("#btnConfirmarFaltantes")
 		.prop("disabled", false)
 		.removeClass("disabled");
@@ -392,6 +500,17 @@ function CargarFaltantesDeCajas() {
 			);
 
 		});
+
+		// Seleccionar automáticamente la primera fila y cargar el detalle
+		const $primeraFila = $("#tbFaltantes tbody tr").not(".fila-vacia").first();
+
+		if ($primeraFila.length) {
+			seleccionarFilaFaltante($primeraFila);
+
+			// Opcional: dejar enfocado el campo editable
+			//$primeraFila.find(".js-control-acumulado:first").trigger("focus");
+		}
+		deshabilitarConfirmarFaltantes();
 		CerrarWaiting();
 		setTimeout(() => {
 			
@@ -427,7 +546,12 @@ function MostrarFiltrosAplicados() {
 		if (!target.length) return;
 
 		const desde = ultimaFechaFaltanteProcesado;
-		const hasta = $("#ProcesarHasta").val();
+		const hastaValue = $("#ProcesarHasta").val();
+		let hasta = "";
+		if (hastaValue) {
+			const [anio, mes, dia] = hastaValue.split("-");
+			hasta = `${dia}/${mes}/${anio}`;
+		}
 
 		const sucursal = $("#listaSucursales option:selected").text();;
 
@@ -443,6 +567,11 @@ function MostrarFiltrosAplicados() {
 	} catch (e) {
 		console.error('MostrarFiltrosAplicados error', e);
 	}
+}
+
+function ImprimirDetalle() {
+	ReseteoDeReportes();
+	HandlerImprimirAcuse("00-00006857");
 }
 
 function InicializarCamposEnFiltros() {

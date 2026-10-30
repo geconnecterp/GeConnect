@@ -16,42 +16,43 @@
 			z-index: 3000 !important;
 		}
 
+	.btn-ancho {
+		width: 150px;
+	}
 </style>
 <div class="container-fluid min-vh-100 d-flex flex-column">
-    <div class="d-flex align-items-center w-100 mt-2" style="position:relative;">
+	<div class="d-flex align-items-center w-100 mt-2" style="position:relative;">
 
-        <!-- Contenedor flotante para filtros aplicados -->
-        <div id="filtrosAplicadosFloating"
-             class="border rounded d-flex align-items-center"
-             style="position:absolute; left:auto; top:-2px; height:auto; width:auto; border-color:#d9534f; background-color:#fff; z-index:1050; padding:6px 10px; overflow:visible; gap:6px; display:inline-flex; white-space:nowrap;">
-            <!-- Badges rellenadas por JS -->
-        </div>
+		<!-- Contenedor flotante para filtros aplicados -->
+		<div id="filtrosAplicadosFloating"
+			 class="border rounded d-flex align-items-center"
+			 style="position:absolute; left:auto; top:-2px; height:auto; width:auto; border-color:#d9534f; background-color:#fff; z-index:1050; padding:6px 10px; overflow:visible; gap:6px; display:inline-flex; white-space:nowrap;">
+			<!-- Badges rellenadas por JS -->
+		</div>
 
-        <!-- Botones -->
-        <div class="ms-auto d-flex align-items-center gap-2">
-            <button id="btnConfirmarFaltantes"
-                    type="button"
-                    class="btn btn-sm btn-success">
-                <i class="bx bx-check-circle"></i>
-                Confirmar Faltantes
-            </button>
+		<!-- Botones -->
+		<div class="ms-auto d-flex align-items-center gap-2">
+			<button id="btnConfirmarFaltantes"
+					type="button"
+					class="btn btn-sm btn-success btn-ancho">
+				<i class="bx bx-check-circle"></i>
+				Confirmar Faltantes
+			</button>
 
-            <button id="btnCancelarFaltantes"
-                    type="button"
-                    class="btn btn-sm btn-danger">
-                <i class="bx bx-x-circle"></i>
-                Cancelar
-            </button>
-        </div>
+			<button id="btnCancelarFaltantes"
+					type="button"
+					class="btn btn-sm btn-danger btn-ancho">
+				<i class="bx bx-x-circle"></i>
+				Cancelar
+			</button>
+		</div>
 
-    </div>
-	<div class="row">
+	</div>
+	<div class="row mt-2">
 		<div class="col-5" id="divFaltante">
-
 		</div>
 		<div class="col-7" id="divFaltanteDetalle">
-
 		</div>
-		
+
 	</div>
 </div>

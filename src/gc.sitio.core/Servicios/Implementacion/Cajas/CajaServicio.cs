@@ -27,6 +27,8 @@ namespace gc.sitio.core.Servicios.Implementacion.Cajas
 		private const string GET_FAL_FALTANTE_DE_CAJA = "/BuscarFaltanteDeCaja";
 		private const string GET_FAL_FALTANTE_DE_CAJA_DETALLE = "/BuscarFaltanteDeCajaDetalle";
 
+		private const string POST_CONFIRMAR_FALTANTE_DE_CAJA = "/ConfirmarFaltanteDeCaja";
+
 		public CajaServicio(IOptions<AppSettings> options, ILogger<CajaServicio> logger) : base(options, logger)
 		{
 		}
@@ -296,6 +298,46 @@ namespace gc.sitio.core.Servicios.Implementacion.Cajas
 				string stringData = await response.Content.ReadAsStringAsync();
 				_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
 				return new();
+			}
+		}
+
+		public RespuestaGenerica<RespuestaDto> ConfirmarFaltanteDeCaja(ConfirmarFaltanteDeCajaRequest request, string token)
+		{
+			try
+			{
+				ApiResponse<RespuestaDto> apiResponse;
+
+				HelperAPI helper = new HelperAPI();
+
+				HttpClient client = helper.InicializaCliente(request, token, out StringContent contentData);
+				HttpResponseMessage response;
+
+				var link = $"{_appSettings.RutaBase}{RutaAPI}{POST_CONFIRMAR_FALTANTE_DE_CAJA}";
+
+				response = client.PostAsync(link, contentData).Result;
+
+				if (response.StatusCode == HttpStatusCode.OK)
+				{
+					string stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+					if (string.IsNullOrEmpty(stringData))
+					{
+						_logger.LogWarning($"La API devolvió error.");
+						return new();
+					}
+					apiResponse = JsonConvert.DeserializeObject<ApiResponse<RespuestaDto>>(stringData) ?? throw new Exception("Error al deserializar la respuesta de la API.");
+					return new RespuestaGenerica<RespuestaDto>() { Entidad = apiResponse.Data };
+				}
+				else
+				{
+					string stringData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+					_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+					return new();
+				}
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, "Error al confirmar el faltante de caja.");
+				return new() { Mensaje = "Algo no fue bien al intentar confirmar el faltante de caja. Verifique Log.", EsError = true };
 			}
 		}
 	}

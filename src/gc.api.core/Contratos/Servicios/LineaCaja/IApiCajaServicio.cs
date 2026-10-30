@@ -25,7 +25,7 @@ namespace gc.api.core.Contratos.Servicios.LineaCaja
         List<FaltanteDeCajaUltimaFechaDto> FaltanteDeCajaUltimaFecha(string adm_id);
 		List<FaltanteDeCajaDto> FaltanteDeCaja(FaltanteDeCajaRequest request);
         List<FaltanteDeCajaDetalleDto> FaltanteDeCajaDetalle(FaltanteDeCajaDetalleRequest request);
-
+        RespuestaDto ConfirmarFaltanteDeCaja(ConfirmarFaltanteDeCajaRequest req);
 	}
 }
 

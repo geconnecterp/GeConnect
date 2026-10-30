@@ -8,6 +8,7 @@ using gc.infraestructura.Dtos.Cajas;
 using gc.infraestructura.Dtos.Cajas.Request;
 using gc.infraestructura.Dtos.Cajas.Response;
 using gc.infraestructura.Dtos.Gen;
+using gc.infraestructura.Dtos.Productos.OrdenDeReparto;
 using Microsoft.Data.SqlClient;
 using Newtonsoft.Json;
 using System.Diagnostics;
@@ -359,6 +360,27 @@ namespace gc.api.core.Servicios.LineaCaja
 
 			return result;
 
+		}
+
+		public RespuestaDto ConfirmarFaltanteDeCaja(ConfirmarFaltanteDeCajaRequest req)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_FAL_CONFIRMAR;
+
+			var ps = new List<SqlParameter>() {
+				new("@json_fal", req.json_fal),
+				new("@fecha_hasta_fal", req.fecha_hasta_fal),
+				new("@adm_id_fal", req.adm_id_fal),
+				new("@usu_id", req.usu_id),
+				new("@adm_id", req.adm_id),
+				};
+
+
+			var respuesta = _repository.EjecutarLstSpExt<RespuestaDto>(sp, ps, true);
+			if (respuesta.Count == 0)
+			{
+				return new RespuestaDto() { resultado = -1, resultado_msj = "No se Recepcionó respuesta del proceso." };
+			}
+			return respuesta[0];
 		}
 	}
 }

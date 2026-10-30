@@ -34,5 +34,23 @@ namespace gc.sitio.Areas.Ventas.Controllers.VentasFalDeCajaCarga
 				_context.HttpContext?.Session.SetString("FaltanteDeCajaLista", json);
 			}
 		}
+
+		public List<FaltanteDeCajaDetalleDto> FaltanteDeCajaDetalleLista
+		{
+			get
+			{
+				var json = _context.HttpContext?.Session.GetString("FaltanteDeCajaDetalleLista");
+				if (string.IsNullOrEmpty(json) || string.IsNullOrWhiteSpace(json))
+				{
+					return [];
+				}
+				return JsonConvert.DeserializeObject<List<FaltanteDeCajaDetalleDto>>(json) ?? [];
+			}
+			set
+			{
+				var json = JsonConvert.SerializeObject(value);
+				_context.HttpContext?.Session.SetString("FaltanteDeCajaDetalleLista", json);
+			}
+		}
 	}
 }

@@ -296,6 +296,22 @@ namespace gc.api.Controllers.Caja
 
 			return Ok(response);
 		}
+
+		[HttpPost]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<RespuestaDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult ConfirmarFaltanteDeCaja(ConfirmarFaltanteDeCajaRequest request)
+		{
+			if (request == null)
+				return BadRequest("El parámetro request es requerido.");
+
+			if (string.IsNullOrEmpty(request.usu_id) || string.IsNullOrEmpty(request.adm_id))
+				return BadRequest("Los parámetros usu_id y adm_id son requeridos.");
+
+			var res = _apiCajaServicio.ConfirmarFaltanteDeCaja(request);
+			return Ok(new ApiResponse<RespuestaDto>(res));
+		}
 	}
 }
 
