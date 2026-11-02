@@ -22,9 +22,9 @@
             </section>
             <section class="rz-card" aria-labelledby="cuDatosTitulo"><h2 id="cuDatosTitulo">Datos de la entrega</h2>
                 <div class="cu-datos">
-                    <div><label for="cuCustodio" class="form-label">En custodia de <span aria-hidden="true">*</span></label><input id="cuCustodio" name="responsable_custodia" class="form-control jsteclado" type="text" /></div>
-                    <div><label for="cuResponsable" class="form-label">Responsable de la entrega <span aria-hidden="true">*</span></label><input id="cuResponsable" name="responsable_entrega" class="form-control jsteclado" type="text" /></div>
-                    <div><label for="cuComprobante" class="form-label">N.º de comprobante de entrega <span aria-hidden="true">*</span></label><input id="cuComprobante" name="comprobante_entrega" class="form-control jsteclado" type="text" /></div>
+                    <div><label for="cuCustodio" class="form-label">En custodia de <span aria-hidden="true">*</span></label><input id="cuCustodio" minlength="4" maxlength="60" name="responsable_custodia" class="form-control jsteclado" type="text" /></div>
+                    <div><label for="cuResponsable" class="form-label">Responsable de la entrega <span aria-hidden="true">*</span></label><input id="cuResponsable" minlength="4" maxlength="60" name="responsable_entrega" class="form-control jsteclado" type="text" /></div>
+                    <div><label for="cuComprobante" class="form-label">N.º de comprobante de entrega <span aria-hidden="true">*</span></label><input id="cuComprobante" minlength="4" maxlength="60" name="comprobante_entrega" class="form-control jsteclado" type="text" /></div>
                 </div><p class="cu-ayuda mt-2 mb-0">Estos datos se requieren para confirmar la entrega. Puede guardar únicamente las correcciones de importes.</p>
             </section>
         </div>

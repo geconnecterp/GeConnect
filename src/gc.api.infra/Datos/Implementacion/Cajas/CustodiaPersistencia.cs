@@ -77,6 +77,75 @@ public partial class CustodiaPersistencia(IDataConnectionContext context, ILogge
         finally { tx?.Dispose(); }
     }
 
+    public CustodiaSpResultado Entregar(IReadOnlyList<CustodiaCambio> cambios, CustodiaDatosEntrega datos, string sucursal, string usuario, Guid solicitud)
+    {
+        // Contrato literal recibido el 30/10/2026. No ejecuta el SP de correcciones previamente.
+        var parametros = CrearParametrosEntrega(cambios.Select(c => c.Despues), datos, sucursal, usuario);
+        using var cnn = Conexion();
+        SqlTransaction? tx = null;
+        bool escribiendo = false, confirmando = false;
+        using var plazoOperacion = new CancellationTokenSource(TimeSpan.FromSeconds(60));
+        try
+        {
+            cnn.Open(); tx = cnn.BeginTransaction(IsolationLevel.Serializable);
+            ValidarVigencia(cnn, tx, cambios, sucursal, plazoOperacion.Token);
+            using var cmd = new SqlCommand(CustodiaServicio.SpEntrega, cnn, tx) { CommandType = CommandType.StoredProcedure, CommandTimeout = 60 };
+            cmd.Parameters.AddRange(parametros.ToArray());
+            plazoOperacion.Token.ThrowIfCancellationRequested();
+            using var cancelar = plazoOperacion.Token.Register(cmd.Cancel);
+            escribiendo = true;
+            var resultado = Ejecutar(cmd, solicitud);
+            if (resultado.Codigo != 0)
+            {
+                // Un ROLLBACK interno del SP también puede haber revertido la transacción exterior.
+                if (!Revertir(tx) && tx.Connection != null)
+                    throw new InvalidOperationException("No se pudo verificar la reversión de la entrega rechazada.");
+                return resultado;
+            }
+            ValidarResultadoEntrega(resultado);
+            plazoOperacion.Token.ThrowIfCancellationRequested();
+            confirmando = true; tx.Commit();
+            return resultado with { Id = resultado.Id.Trim() };
+        }
+        catch (ArgumentException) when (!escribiendo) { Revertir(tx); throw; }
+        catch (Exception ex)
+        {
+            var revertido = Revertir(tx);
+            throw new CustodiaPersistenciaException("No se pudo registrar la entrega.", confirmando || (escribiendo && !revertido), ex);
+        }
+        finally { tx?.Dispose(); }
+    }
+
+    internal static List<SqlParameter> CrearParametrosEntrega(IEnumerable<CustodiaLineaDto> lineas, CustodiaDatosEntrega datos, string sucursal, string usuario)
+    {
+        var filas = lineas.ToList();
+        if (filas.Count == 0 || filas.Any(f => f.adm_id != sucursal || f.ins_id is not ("PES" or "DOL") || f.tcf_id != "EF" || f.rend_importe_ok < 0))
+            throw new ArgumentException("La entrega debe incluir rendiciones de efectivo de la sucursal.");
+        static string Dato(string? valor)
+        {
+            var texto = valor?.Trim() ?? "";
+            if (texto.Length < 4 || texto.Length > 60) throw new ArgumentException("Los datos de la entrega deben tener entre 4 y 60 caracteres.");
+            return texto;
+        }
+        if (string.IsNullOrWhiteSpace(sucursal) || sucursal.Length > 4 || string.IsNullOrWhiteSpace(usuario) || usuario.Length > 10)
+            throw new ArgumentException("La identidad de la sesión no es válida.");
+        return [
+            new("@ent_resp_entrega", SqlDbType.VarChar, 60) { Value = Dato(datos.ResponsableEntrega) },
+            new("@ent_resp_recibe", SqlDbType.VarChar, 60) { Value = Dato(datos.ResponsableCustodia) },
+            new("@ent_compte_retiro", SqlDbType.VarChar, 60) { Value = Dato(datos.Comprobante) },
+            new("@usu_id", SqlDbType.VarChar, 10) { Value = usuario },
+            new("@adm_id", SqlDbType.VarChar, 10) { Value = sucursal },
+            new("@json_rend", SqlDbType.VarChar, -1) { Value = JsonConvert.SerializeObject(filas, Formatting.None, Json) }
+        ];
+    }
+
+    internal static void ValidarResultadoEntrega(CustodiaSpResultado resultado)
+    {
+        // Se valida antes del COMMIT exterior: un OK incompleto no deja una entrega registrada sin acceso al acuse.
+        if (resultado.Codigo == 0 && (string.IsNullOrWhiteSpace(resultado.Id) || resultado.Id.Trim().Length > 20))
+            throw new InvalidOperationException("El SP informó OK sin resultado_id válido para la entrega.");
+    }
+
     internal static List<SqlParameter> CrearParametrosCorreccion(IEnumerable<CustodiaLineaDto> lineas, string sucursal, string usuario)
     {
         var grupo = lineas.ToList();

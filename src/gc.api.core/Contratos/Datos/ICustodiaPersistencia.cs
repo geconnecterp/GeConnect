@@ -4,10 +4,12 @@ namespace gc.api.core.Interfaces.Datos;
 
 public record CustodiaCambio(CustodiaRendicionDto Antes, CustodiaLineaDto Despues);
 public record CustodiaSpResultado(short Codigo, string Mensaje, string Id = "");
+public record CustodiaDatosEntrega(string ResponsableEntrega, string ResponsableCustodia, string Comprobante);
 public interface ICustodiaPersistencia
 {
     List<CustodiaRendicionDto> Pendientes(string sucursal, string instrumento);
     CustodiaSpResultado Corregir(IReadOnlyList<CustodiaCambio> cambios, string sucursal, string usuario, Guid solicitud);
+    CustodiaSpResultado Entregar(IReadOnlyList<CustodiaCambio> cambios, CustodiaDatosEntrega datos, string sucursal, string usuario, Guid solicitud);
 }
 public sealed class CustodiaPersistenciaException(string mensaje, bool incierto, Exception inner) : Exception(mensaje, inner)
 {

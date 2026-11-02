@@ -51,7 +51,14 @@
             });
         }
     }
-    const reglas = { normalizar, centavos, dinero, SeleccionCustodia };
+    function datoEntregaInvalido(operacion) {
+        for (const [campo, nombre] of [['responsable_custodia', 'En custodia de'], ['responsable_entrega', 'Responsable de la entrega'], ['comprobante_entrega', 'N.º de comprobante']]) {
+            const longitud = String(operacion[campo] ?? '').trim().length;
+            if (longitud < 4 || longitud > 60) return { campo, mensaje: nombre + ': ingrese entre 4 y 60 caracteres.' };
+        }
+        return null;
+    }
+    const reglas = { normalizar, centavos, dinero, SeleccionCustodia, datoEntregaInvalido };
     if (typeof module !== 'undefined' && module.exports) module.exports = reglas;
     if (typeof document === 'undefined') return;
     const form = document.getElementById('cuForm'); if (!form) return;
@@ -180,7 +187,8 @@
     async function ejecutar(entrega) {
         if (ocupada || registrada || incierta || !consultaValida || !modelo.valida || (entrega && !entregaHabilitada)) return;
         const operacion = { solicitud, seleccion: modelo.payload(), responsable_entrega: $('cuResponsable').value.trim(), responsable_custodia: $('cuCustodio').value.trim(), comprobante_entrega: $('cuComprobante').value.trim() };
-        if (entrega && (!operacion.responsable_entrega || !operacion.responsable_custodia || !operacion.comprobante_entrega)) { estado('Complete el responsable de la entrega, quién recibe en custodia y el número de comprobante.', 'error'); ['cuCustodio', 'cuResponsable', 'cuComprobante'].map($).find(i => !i.value.trim())?.focus(); return; }
+        const datoInvalido = entrega ? datoEntregaInvalido(operacion) : null;
+        if (datoInvalido) { estado(datoInvalido.mensaje, 'error'); form.querySelector('[name="' + datoInvalido.campo + '"]').focus(); return; }
         const textos = [entrega ? '¿Confirma la entrega en custodia de las rendiciones seleccionadas?' : '¿Desea guardar los importes corregidos de las rendiciones seleccionadas?'];
         for (const [ins, total] of Object.entries(modelo.totales())) if (total.cantidad) textos.push((ins === 'PES' ? 'Pesos: ' : 'Dólares: ') + dinero(total.corregido, ins) + ' · ' + total.cantidad + (total.cantidad === 1 ? ' rendición' : ' rendiciones'));
         if (entrega) textos.push('Entrega: ' + operacion.responsable_entrega, 'Recibe: ' + operacion.responsable_custodia, 'Comprobante: ' + operacion.comprobante_entrega);

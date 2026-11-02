@@ -60,7 +60,7 @@ public partial class CustodiaServicio(IUnitOfWork uow, ILoggerHelper logger, ICu
     public CustodiaConsultaDto Consulta(string sucursal)
     {
         var instrumentos = Instrumentos(sucursal);
-        return new(instrumentos, instrumentos.SelectMany(i => Pendientes(sucursal, i.ins_id)).ToList());
+        return new(instrumentos, instrumentos.SelectMany(i => Pendientes(sucursal, i.ins_id)).ToList(), entrega_habilitada: true);
     }
 
     public List<CustodiaAcuseFilaDto> Acuse(string sucursal, string entrega)
@@ -103,6 +103,35 @@ public partial class CustodiaServicio(IUnitOfWork uow, ILoggerHelper logger, ICu
         if (cambios.Count == 0) return new(true, "No hay correcciones pendientes de guardar.");
         var resultado = persistencia.Corregir(cambios, sucursal, usuario, operacion.solicitud);
         return new(resultado.Codigo == 0, string.IsNullOrWhiteSpace(resultado.Mensaje) ? (resultado.Codigo == 0 ? "Las correcciones se guardaron correctamente." : "El servidor rechazó las correcciones.") : resultado.Mensaje);
+    }
+
+    public CustodiaResultadoDto Entregar(CustodiaOperacionDto operacion, string sucursal, string usuario)
+    {
+        if (string.IsNullOrWhiteSpace(usuario) || usuario.Length > 10) throw new ArgumentException("El usuario de la sesión no es válido.");
+        static string Dato(string? valor, string nombre)
+        {
+            var texto = valor?.Trim() ?? "";
+            if (texto.Length < 4 || texto.Length > 60)
+                throw new ArgumentException($"{nombre} debe tener entre 4 y 60 caracteres.");
+            return texto;
+        }
+        var datos = new CustodiaDatosEntrega(
+            Dato(operacion.responsable_entrega, "El responsable de la entrega"),
+            Dato(operacion.responsable_custodia, "El responsable que recibe en custodia"),
+            Dato(operacion.comprobante_entrega, "El número de comprobante"));
+        // Incluye también filas sin correcciones y ambas monedas en una única llamada de entrega.
+        var cambios = PrepararSeleccion(sucursal, operacion);
+        var resultado = persistencia.Entregar(cambios, datos, sucursal, usuario, operacion.solicitud);
+        if (resultado.Codigo != 0)
+            return new(false, string.IsNullOrWhiteSpace(resultado.Mensaje) ? "El servidor rechazó la entrega." : resultado.Mensaje);
+        var id = resultado.Id?.Trim() ?? "";
+        if (id.Length == 0 || id.Length > 20)
+        {
+            logger.Log(TraceEventType.Error, $"[CUSTODIA] Entrega sin identificador válido. Solicitud={operacion.solicitud}");
+            return new(false, "El servidor informó OK sin un número de entrega válido. Verifique el registro antes de repetir. Referencia: " + operacion.solicitud, incierto: true);
+        }
+        return new(true, string.IsNullOrWhiteSpace(resultado.Mensaje) || resultado.Mensaje.Trim().Equals("OK", StringComparison.OrdinalIgnoreCase)
+            ? "La entrega se registró correctamente." : resultado.Mensaje, id);
     }
 
     private static void ValidarSucursal(string sucursal)
