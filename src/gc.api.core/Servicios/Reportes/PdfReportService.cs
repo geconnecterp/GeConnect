@@ -43,8 +43,9 @@ namespace gc.api.core.Servicios.Reportes
             IOptions<EmpresaGeco> empresa, 
             ICuentaServicio ctaSv, 
             IOrdenDePagoServicio _opSv, 
-            IApiVentasServicio ventasSv, 
-            ILogger<ReportService> logger) : base(uow)
+            IApiVentasServicio ventasSv,
+			IApiCajaServicio cajaSrv,
+			ILogger<ReportService> logger) : base(uow)
         {
 
             // Se inicializa el diccionario de generadores de reportes
@@ -150,6 +151,7 @@ namespace gc.api.core.Servicios.Reportes
 				{ InfoReporte.R101_Devolucion_A_Proveedor, new R101_Devolucion_A_Proveedor(uow,apiProdSv,empresa,ctaSv, logger) },
 				{ InfoReporte.R102_Remito_No_Fiscal, new R102_Remito_No_Fiscal(uow,apiProdSv,empresa,ctaSv, logger) },
 				{ InfoReporte.R103_Planilla_Elaboracion_Y_Fraccion, new R103_Planilla_Elaboracion_Y_Fraccion(uow,apiProdSv,empresa,ctaSv, logger) },
+				{ InfoReporte.R106_Consulta_Faltante_De_Caja, new R106_Consulta_Faltante_De_Caja(uow,consSv,empresa,cajaSrv, logger) },
 			}; 
             _logger = logger;
         }

@@ -111,5 +111,6 @@ namespace gc.infraestructura.Enumeraciones
 		R103_Planilla_Elaboracion_Y_Fraccion = 103,
         R104_LibroIvaVentasResumen = 104,
         R105_LibroIvaComprasResumen = 105,
+		R106_Consulta_Faltante_De_Caja = 106,
 	}
 }
