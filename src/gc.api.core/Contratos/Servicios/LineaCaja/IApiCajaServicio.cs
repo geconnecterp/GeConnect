@@ -26,6 +26,7 @@ namespace gc.api.core.Contratos.Servicios.LineaCaja
 		List<FaltanteDeCajaDto> FaltanteDeCaja(FaltanteDeCajaRequest request);
         List<FaltanteDeCajaDetalleDto> FaltanteDeCajaDetalle(FaltanteDeCajaDetalleRequest request);
         RespuestaDto ConfirmarFaltanteDeCaja(ConfirmarFaltanteDeCajaRequest req);
+        List<FaltanteDeCajaListaDto> FaltanteDeCajaConsulta(FaltanteDeCajaListaRequest request);
 	}
 }
 

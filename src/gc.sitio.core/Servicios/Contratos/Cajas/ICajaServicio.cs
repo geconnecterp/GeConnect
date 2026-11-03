@@ -13,5 +13,6 @@ namespace gc.sitio.core.Servicios.Contratos.Cajas
 		Task<List<FaltanteDeCajaDto>> BuscarFaltanteDeCaja(FaltanteDeCajaRequest request, string token);
 		Task<List<FaltanteDeCajaDetalleDto>> BuscarFaltanteDeCajaDetalle(FaltanteDeCajaDetalleRequest request, string token);
 		RespuestaGenerica<RespuestaDto> ConfirmarFaltanteDeCaja(ConfirmarFaltanteDeCajaRequest request, string token);
+		Task<List<FaltanteDeCajaListaDto>> FaltanteDeCajaConsulta(FaltanteDeCajaListaRequest request, string token);
 	}
 }

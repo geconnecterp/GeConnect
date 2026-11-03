@@ -1,0 +1,20 @@
+﻿@using gc.sitio.Areas.Compras.Models.ControlYCorreccionDeRP
+@model PantallaPrincipalModel
+@{
+}
+<style>
+</style>
+<div class="row">
+    <div class="col-12 d-flex align-items-center">
+        <div class="me-5">
+            Sucursal: <strong>@Model.Sucursal</strong>
+        </div>
+
+        <div>
+            Fechas: <strong>@Model.Desde.ToString("dd/MM/yyyy") - @Model.Hasta.ToString("dd/MM/yyyy")</strong>
+        </div>
+    </div>
+</div>
+
+<div class="row" id="divFaltanteDeCajaLista">
+</div>

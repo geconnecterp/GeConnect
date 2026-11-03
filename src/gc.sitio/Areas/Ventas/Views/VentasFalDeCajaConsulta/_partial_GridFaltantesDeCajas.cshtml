@@ -1,0 +1,91 @@
+﻿@model GridCoreSmart<FaltanteDeCajaListaDto>
+@using gc.infraestructura.Helpers
+@using static gc.infraestructura.Helpers.GridHelper
+@{
+	var alt = true;
+	string clase = string.Empty;
+
+	string grupoActual = string.Empty;
+	string grupoAnterior = string.Empty;
+}
+<style>
+
+</style>
+<div class="grid-golden">
+	<div class="grid-golden-header">
+		<div class="row align-items-md-center">
+			<div class="col-md-10 col-sm-6 d-flex align-items-center">
+				<h5 class="mb-0 flex-grow-1">
+					<i class="bx bx-package me-2"></i>
+					<strong>Faltantes de Caja</strong>
+				</h5>
+			</div>
+
+			<div class="col-md-2 col-sm-6">
+				<div class="d-flex justify-content-sm-end"></div>
+			</div>
+		</div>
+	</div>
+	<div class="grid-golden-body">
+		<div class="table-wrapper" id="containerListaFaltantes">
+			<table class="table table-sm table-golden" id="tbGridFaltantes">
+				<thead>
+					<tr class="header">
+						<th class="text-center" style="width: 10%;">Día</th>
+						<th class="text-center" style="width: 30%;">Sucursal</th>
+						<th class="text-center" style="width: 10%;">Parte</th>
+						<th class="text-center" style="width: 10%;">Cierre</th>
+						<th class="text-center" style="width: 10%;">Faltante</th>
+						<th class="text-center" style="width: 10%;">Sobrante</th>
+						<th class="text-center" style="width: 10%;">Acumulado</th>
+						<th class="text-center" style="width: 10%;">Procesado</th>
+					</tr>
+				</thead>
+				<tbody>
+					@if(Model != null && Model.ListaDatos != null && Model.ListaDatos.Count > 0)
+					{
+						var faltantes = Model.ListaDatos.OrderBy(x => x.usu_id).ToList();
+						foreach (var item in faltantes)
+						{
+							grupoActual = item.usu_id;
+							if (grupoActual != grupoAnterior)
+							{
+								var leyenda = $"Usuario: {item.usu_id} {item.usu_apellidoynombre}";
+								<tr class="table-secondary fw-bold">
+									<td colspan="8" class="text-center">
+										<i class="bx bx-folder me-1"></i>
+										@leyenda
+									</td>
+								</tr>
+								grupoAnterior = grupoActual;
+								alt = true;
+							}
+							var dif = item.faltante - item.sobrante;
+							if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+							<tr class="@clase"
+								data-caja-nro_proceso="@item.caja_nro_proceso"
+								data-caja-nro-cierre="@item.caja_nro_cierre">
+								<td class="text-center">@item.dia.ToString("dd/MM/yyyy")</td>
+								<td class="text-center">@item.adm_nombre</td>
+								<td class="text-center">@item.caja_nro_proceso</td>
+								<td class="text-center">@item.caja_nro_cierre</td>
+								<td class="text-end">@GridHelper.FormatearDato(item.faltante, FormatDato.Monto, true)</td>
+								<td class="text-end">@GridHelper.FormatearDato(item.sobrante, FormatDato.Monto, true)</td>
+								<td class="text-end">@GridHelper.FormatearDato(dif, FormatDato.Monto, true)</td>
+								<td class="text-center">@item.procesado_bool</td>
+							</tr>
+						}
+					}
+					else
+					{
+						<tr>
+							<td colspan="8" class="text-center text-muted py-2">
+								<i class="bx bx-info-circle me-1"></i>No hay faltantes de caja
+							</td>
+						</tr>
+					}
+				</tbody>
+			</table>
+		</div>
+	</div>
+</div>

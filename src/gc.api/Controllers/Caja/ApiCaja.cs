@@ -312,6 +312,21 @@ namespace gc.api.Controllers.Caja
 			var res = _apiCajaServicio.ConfirmarFaltanteDeCaja(request);
 			return Ok(new ApiResponse<RespuestaDto>(res));
 		}
+
+		[HttpPost]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<FaltanteDeCajaListaDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult FaltanteDeCajaConsulta(FaltanteDeCajaListaRequest request)
+		{
+			ApiResponse<List<FaltanteDeCajaListaDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
+			var res = _apiCajaServicio.FaltanteDeCajaConsulta(request);
+
+			response = new ApiResponse<List<FaltanteDeCajaListaDto>>(res);
+
+			return Ok(response);
+		}
 	}
 }
 

@@ -819,11 +819,11 @@ namespace gc.api.core.Constantes
 			#endregion
 
 			#region FAL
-			public const string SP_FAL_CONSUILTA = "SPGECO_FAL_Consulta";
 			public const string SP_FAL_NO_PROCESADOS_C = "SPGECO_FAL_No_procesados_C";
 			public const string SP_FAL_NO_PROCESADOS_D = "SPGECO_FAL_No_procesados_D";
 			public const string SP_FAL_ULTIMA_FECHA = "SPGECO_FAL_Ultima_Fecha";
 			public const string SP_FAL_CONFIRMAR = "SPGECO_FAL_Confirmar";
+			public const string SP_FAL_CONSULTA = "SPGECO_FAL_Consulta";
 			#endregion
 		}
 

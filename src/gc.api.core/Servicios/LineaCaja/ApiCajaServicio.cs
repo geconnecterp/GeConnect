@@ -382,6 +382,21 @@ namespace gc.api.core.Servicios.LineaCaja
 			}
 			return respuesta[0];
 		}
+
+		public List<FaltanteDeCajaListaDto> FaltanteDeCajaConsulta(FaltanteDeCajaListaRequest request)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_FAL_CONSULTA;
+			var ps = new List<SqlParameter>
+			{
+				new ("@adm_list", request.adm_list),
+				new ("@hasta", request.hasta),
+				new ("@desde", request.desde),
+			};
+			var result = _repository.EjecutarLstSpExt<FaltanteDeCajaListaDto>(sp, ps, true);
+
+			return result;
+
+		}
 	}
 }
 

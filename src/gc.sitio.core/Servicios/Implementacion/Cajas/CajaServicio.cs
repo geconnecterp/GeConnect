@@ -26,6 +26,7 @@ namespace gc.sitio.core.Servicios.Implementacion.Cajas
 		private const string GET_FAL_ULTIMA_FECHA = "/BuscarFaltanteDeCajaUltimaFecha";
 		private const string GET_FAL_FALTANTE_DE_CAJA = "/BuscarFaltanteDeCaja";
 		private const string GET_FAL_FALTANTE_DE_CAJA_DETALLE = "/BuscarFaltanteDeCajaDetalle";
+		private const string GET_FAL_FALTANTE_DE_CAJA_CONSULTA = "/FaltanteDeCajaConsulta";
 
 		private const string POST_CONFIRMAR_FALTANTE_DE_CAJA = "/ConfirmarFaltanteDeCaja";
 
@@ -338,6 +339,37 @@ namespace gc.sitio.core.Servicios.Implementacion.Cajas
 			{
 				_logger.LogError(ex, "Error al confirmar el faltante de caja.");
 				return new() { Mensaje = "Algo no fue bien al intentar confirmar el faltante de caja. Verifique Log.", EsError = true };
+			}
+		}
+
+		public async Task<List<FaltanteDeCajaListaDto>> FaltanteDeCajaConsulta(FaltanteDeCajaListaRequest request, string token)
+		{
+			ApiResponse<List<FaltanteDeCajaListaDto>> apiResponse;
+
+			HelperAPI helper = new();
+			HttpClient client = helper.InicializaCliente(request, token, out StringContent contentData);
+			HttpResponseMessage response;
+
+			var link = $"{_appSettings.RutaBase}{RutaAPI}{GET_FAL_FALTANTE_DE_CAJA_CONSULTA}";
+
+			response = await client.PostAsync(link, contentData);
+
+			if (response.StatusCode == HttpStatusCode.OK)
+			{
+				string stringData = await response.Content.ReadAsStringAsync();
+				if (string.IsNullOrEmpty(stringData))
+				{
+					_logger.LogWarning($"La API devolvió error. Parametros adm_list:{request.adm_list}");
+					return new();
+				}
+				apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<FaltanteDeCajaListaDto>>>(stringData) ?? throw new NegocioException("Hubo un problema al deserializar los datos");
+				return apiResponse.Data;
+			}
+			else
+			{
+				string stringData = await response.Content.ReadAsStringAsync();
+				_logger.LogWarning($"Algo no fue bien. Error de API {stringData}");
+				return new();
 			}
 		}
 	}
