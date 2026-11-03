@@ -34,7 +34,7 @@ public partial class ApiCustodiaController
             if (cache.TryGetValue<OperacionRegistrada>(clave, out var anterior))
                 return anterior!.Huella == huella ? Ok(anterior.Resultado) : Conflict(new CustodiaResultadoDto(false, "Esta referencia ya se utilizó con otros datos. Actualice y revise la selección."));
             // Cada comando deriva usuario y sucursal del token. No se reciben desde la pantalla.
-            var resultado = entrega ? EntregarSeleccion(operacion, c.Sucursal, c.Usuario) : servicio.Corregir(operacion, c.Sucursal, c.Usuario);
+            var resultado = entrega ? servicio.Entregar(operacion, c.Sucursal, c.Usuario) : servicio.Corregir(operacion, c.Sucursal, c.Usuario);
             if (resultado.ok || resultado.incierto) cache.Set(clave, new OperacionRegistrada(huella, resultado), TimeSpan.FromHours(24));
             return Ok(resultado);
         }
@@ -50,7 +50,4 @@ public partial class ApiCustodiaController
         finally { gate.Release(); }
     }
 
-    // No se invoca un contrato de escritura supuesto: se habilita al recibir la firma del SP de entregas.
-    private CustodiaResultadoDto EntregarSeleccion(CustodiaOperacionDto operacion, string sucursal, string usuario) =>
-        new(false, "La confirmación de entregas todavía no está disponible. Puede consultar rendiciones y guardar correcciones.");
 }

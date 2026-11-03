@@ -7,7 +7,7 @@ using gc.infraestructura.Core.Interfaces;
 using gc.infraestructura.Dtos.Cajas;
 using Microsoft.Data.SqlClient;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+using gc.infraestructura.Helpers;
 
 namespace gc.api.infra.Datos.Implementacion.Cajas;
 
@@ -16,23 +16,62 @@ public partial class CustodiaPersistencia(IDataConnectionContext context, ILogge
     private static readonly JsonSerializerSettings Json = new() { DateFormatString = "yyyy-MM-dd HH:mm:ss.fff", NullValueHandling = NullValueHandling.Include };
     private SqlConnection Conexion() => (SqlConnection)((ICloneable)context.ObtenerConexionSql()).Clone();
 
-    public List<CustodiaRendicionDto> Pendientes(string sucursal, string instrumento)
+    public List<CustodiaInstrumentoDto> Instrumentos(string sucursal) => Consultar<CustodiaInstrumentoDto>(
+        CustodiaServicio.SpInstrumentos, [new("@adm_id", sucursal), new("@tipo", "P")]);
+
+    public List<CustodiaAcuseFilaDto> Acuse(string entrega) => Consultar<CustodiaAcuseFilaDto>(
+        CustodiaServicio.SpAcuse, [new("@ent_compte", entrega)]);
+
+    private List<T> Consultar<T>(string sp, List<SqlParameter> parametros) where T : class
     {
-        using var cnn = Conexion(); cnn.Open();
-        using var cmd = ConsultaPendientes(cnn, null, sucursal, instrumento);
-        using var plazo = new CancellationTokenSource(TimeSpan.FromSeconds(25));
-        using var cancelar = plazo.Token.Register(cmd.Cancel);
-        logger.Log(TraceEventType.Information, $"[CUSTODIA][SP REQUEST] {cmd.CommandText}\n{JsonConvert.SerializeObject(new { adm_id = sucursal, ins_id = instrumento }, Formatting.Indented)}");
+        using var cnn = Conexion();
+        using var cmd = new SqlCommand(sp, cnn) { CommandType = CommandType.StoredProcedure, CommandTimeout = 600 };
+        cmd.Parameters.AddRange(parametros.ToArray());
+        var diagnostico = new CustodiaSpDiagnostico(logger, cmd, "CONSULTA");
         try
         {
+            cnn.Open();
             using var reader = cmd.ExecuteReader();
-            List<CustodiaRendicionDto> filas;
-            try { filas = CustodiaRendicionReader.Leer(reader, sucursal, instrumento, plazo.Token); }
-            catch { cmd.Cancel(); throw; }
-            logger.Log(TraceEventType.Information, $"[CUSTODIA][SP RESPONSE] {cmd.CommandText} | Sucursal={sucursal} | Instrumento={instrumento} | Filas={filas.Count}");
+            diagnostico.Columnas(reader);
+            var mapper = new GenericDataMapper<T>();
+            var filas = new List<T>();
+            while (reader.Read())
+            {
+                diagnostico.Fila(reader);
+                filas.Add(mapper.Map(reader, true));
+            }
+            diagnostico.Respuesta();
             return filas;
         }
-        catch { cmd.Cancel(); throw; }
+        catch (Exception ex) { diagnostico.Error(ex); throw; }
+    }
+
+    public List<CustodiaRendicionDto> Pendientes(string sucursal, string instrumento)
+    {
+        using var cnn = Conexion();
+        return LeerPendientes(cnn, null, sucursal, instrumento, CancellationToken.None);
+    }
+
+    private List<CustodiaRendicionDto> LeerPendientes(SqlConnection cnn, SqlTransaction? tx, string sucursal, string instrumento,
+        CancellationToken cancellationToken, Guid? solicitud = null)
+    {
+        using var cmd = ConsultaPendientes(cnn, tx, sucursal, instrumento);
+        var diagnostico = new CustodiaSpDiagnostico(logger, cmd, tx == null ? "CONSULTA" : "VALIDAR_VIGENCIA", solicitud);
+        try
+        {
+            if (cnn.State != ConnectionState.Open) cnn.Open();
+            using var plazo = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            plazo.CancelAfter(TimeSpan.FromSeconds(25));
+            using var cancelar = plazo.Token.Register(cmd.Cancel);
+            using var reader = cmd.ExecuteReader();
+            diagnostico.Columnas(reader);
+            List<CustodiaRendicionDto> filas;
+            try { filas = CustodiaRendicionReader.Leer(reader, sucursal, instrumento, plazo.Token, diagnostico.Fila); }
+            catch { cmd.Cancel(); throw; }
+            diagnostico.Respuesta();
+            return filas;
+        }
+        catch (Exception ex) { cmd.Cancel(); diagnostico.Error(ex); throw; }
     }
 
     private static SqlCommand ConsultaPendientes(SqlConnection cnn, SqlTransaction? tx, string sucursal, string instrumento)
@@ -53,7 +92,7 @@ public partial class CustodiaPersistencia(IDataConnectionContext context, ILogge
         try
         {
             cnn.Open(); tx = cnn.BeginTransaction(IsolationLevel.Serializable);
-            ValidarVigencia(cnn, tx, cambios, sucursal, plazoOperacion.Token);
+            ValidarVigencia(cnn, tx, cambios, sucursal, plazoOperacion.Token, solicitud);
             foreach (var grupo in cambios.GroupBy(c => (c.Despues.caja_nro_proceso, c.Despues.caja_nro_cierre, c.Despues.caja_nro_rend)))
             {
                 using var cmd = new SqlCommand(CustodiaServicio.SpCorrecciones, cnn, tx) { CommandType = CommandType.StoredProcedure, CommandTimeout = 60 };
@@ -62,19 +101,109 @@ public partial class CustodiaPersistencia(IDataConnectionContext context, ILogge
                 cmd.Parameters.AddRange(CrearParametrosCorreccion(grupo.Select(c => c.Despues), sucursal, usuario).ToArray());
                 escribiendo = true;
                 var resultado = Ejecutar(cmd, solicitud);
-                if (resultado.Codigo != 0) { Revertir(tx); return resultado; }
+                if (resultado.Codigo != 0)
+                {
+                    var revertido = Revertir(tx);
+                    RegistrarTransaccion(cnn, CustodiaServicio.SpCorrecciones, solicitud, revertido ? "ROLLBACK" : "SIN_CONFIRMAR", "Rechazo del SP: " + resultado.Codigo);
+                    return resultado;
+                }
             }
             plazoOperacion.Token.ThrowIfCancellationRequested();
             confirmando = true; tx.Commit();
+            RegistrarTransaccion(cnn, CustodiaServicio.SpCorrecciones, solicitud, "COMMIT", "Correcciones confirmadas.");
             return new(0, "Las correcciones se guardaron correctamente.");
         }
-        catch (ArgumentException) when (!escribiendo) { Revertir(tx); throw; }
+        catch (ArgumentException ex) when (!escribiendo)
+        {
+            var revertido = Revertir(tx);
+            RegistrarTransaccion(cnn, CustodiaServicio.SpCorrecciones, solicitud, revertido ? "ROLLBACK" : "SIN_TRANSACCION_ACTIVA", ex.Message);
+            throw;
+        }
         catch (Exception ex)
         {
             var revertido = Revertir(tx);
+            RegistrarTransaccion(cnn, CustodiaServicio.SpCorrecciones, solicitud, confirmando || (escribiendo && !revertido) ? "INCIERTO" : "ROLLBACK", ex.ToString());
             throw new CustodiaPersistenciaException("No se pudieron guardar las correcciones.", confirmando || (escribiendo && !revertido), ex);
         }
         finally { tx?.Dispose(); }
+    }
+
+    public CustodiaSpResultado Entregar(IReadOnlyList<CustodiaCambio> cambios, CustodiaDatosEntrega datos, string sucursal, string usuario, Guid solicitud)
+    {
+        // Contrato literal recibido el 30/10/2026. No ejecuta el SP de correcciones previamente.
+        var parametros = CrearParametrosEntrega(cambios.Select(c => c.Despues), datos, sucursal, usuario);
+        using var cnn = Conexion();
+        SqlTransaction? tx = null;
+        bool escribiendo = false, confirmando = false;
+        using var plazoOperacion = new CancellationTokenSource(TimeSpan.FromSeconds(60));
+        try
+        {
+            cnn.Open(); tx = cnn.BeginTransaction(IsolationLevel.Serializable);
+            ValidarVigencia(cnn, tx, cambios, sucursal, plazoOperacion.Token, solicitud);
+            using var cmd = new SqlCommand(CustodiaServicio.SpEntrega, cnn, tx) { CommandType = CommandType.StoredProcedure, CommandTimeout = 60 };
+            cmd.Parameters.AddRange(parametros.ToArray());
+            plazoOperacion.Token.ThrowIfCancellationRequested();
+            using var cancelar = plazoOperacion.Token.Register(cmd.Cancel);
+            escribiendo = true;
+            var resultado = Ejecutar(cmd, solicitud);
+            if (resultado.Codigo != 0)
+            {
+                // Un ROLLBACK interno del SP también puede haber revertido la transacción exterior.
+                var revertido = Revertir(tx);
+                RegistrarTransaccion(cnn, CustodiaServicio.SpEntrega, solicitud, revertido ? "ROLLBACK" : "SIN_TRANSACCION_ACTIVA", "Rechazo del SP: " + resultado.Codigo);
+                if (!revertido && tx.Connection != null)
+                    throw new InvalidOperationException("No se pudo verificar la reversión de la entrega rechazada.");
+                return resultado;
+            }
+            ValidarResultadoEntrega(resultado);
+            plazoOperacion.Token.ThrowIfCancellationRequested();
+            confirmando = true; tx.Commit();
+            RegistrarTransaccion(cnn, CustodiaServicio.SpEntrega, solicitud, "COMMIT", "Entrega confirmada: " + resultado.Id);
+            return resultado with { Id = resultado.Id.Trim() };
+        }
+        catch (ArgumentException ex) when (!escribiendo)
+        {
+            var revertido = Revertir(tx);
+            RegistrarTransaccion(cnn, CustodiaServicio.SpEntrega, solicitud, revertido ? "ROLLBACK" : "SIN_TRANSACCION_ACTIVA", ex.Message);
+            throw;
+        }
+        catch (Exception ex)
+        {
+            var revertido = Revertir(tx);
+            RegistrarTransaccion(cnn, CustodiaServicio.SpEntrega, solicitud, confirmando || (escribiendo && !revertido) ? "INCIERTO" : "ROLLBACK", ex.ToString());
+            throw new CustodiaPersistenciaException("No se pudo registrar la entrega.", confirmando || (escribiendo && !revertido), ex);
+        }
+        finally { tx?.Dispose(); }
+    }
+
+    internal static List<SqlParameter> CrearParametrosEntrega(IEnumerable<CustodiaLineaDto> lineas, CustodiaDatosEntrega datos, string sucursal, string usuario)
+    {
+        var filas = lineas.ToList();
+        if (filas.Count == 0 || filas.Any(f => f.adm_id != sucursal || f.ins_id is not ("PES" or "DOL") || f.tcf_id != "EF" || f.rend_importe_ok < 0))
+            throw new ArgumentException("La entrega debe incluir rendiciones de efectivo de la sucursal.");
+        static string Dato(string? valor)
+        {
+            var texto = valor?.Trim() ?? "";
+            if (texto.Length < 4 || texto.Length > 60) throw new ArgumentException("Los datos de la entrega deben tener entre 4 y 60 caracteres.");
+            return texto;
+        }
+        if (string.IsNullOrWhiteSpace(sucursal) || sucursal.Length > 4 || string.IsNullOrWhiteSpace(usuario) || usuario.Length > 10)
+            throw new ArgumentException("La identidad de la sesión no es válida.");
+        return [
+            new("@ent_resp_entrega", SqlDbType.VarChar, 60) { Value = Dato(datos.ResponsableEntrega) },
+            new("@ent_resp_recibe", SqlDbType.VarChar, 60) { Value = Dato(datos.ResponsableCustodia) },
+            new("@ent_compte_retiro", SqlDbType.VarChar, 60) { Value = Dato(datos.Comprobante) },
+            new("@usu_id", SqlDbType.VarChar, 10) { Value = usuario },
+            new("@adm_id", SqlDbType.VarChar, 10) { Value = sucursal },
+            new("@json_rend", SqlDbType.VarChar, -1) { Value = JsonConvert.SerializeObject(filas, Formatting.None, Json) }
+        ];
+    }
+
+    internal static void ValidarResultadoEntrega(CustodiaSpResultado resultado)
+    {
+        // Se valida antes del COMMIT exterior: un OK incompleto no deja una entrega registrada sin acceso al acuse.
+        if (resultado.Codigo == 0 && (string.IsNullOrWhiteSpace(resultado.Id) || resultado.Id.Trim().Length > 20))
+            throw new InvalidOperationException("El SP informó OK sin resultado_id válido para la entrega.");
     }
 
     internal static List<SqlParameter> CrearParametrosCorreccion(IEnumerable<CustodiaLineaDto> lineas, string sucursal, string usuario)
@@ -102,26 +231,12 @@ public partial class CustodiaPersistencia(IDataConnectionContext context, ILogge
         try { tx.Rollback(); return true; } catch { return false; }
     }
 
-    private static void ValidarVigencia(SqlConnection cnn, SqlTransaction tx, IReadOnlyList<CustodiaCambio> cambios, string sucursal, CancellationToken cancellationToken)
+    private void ValidarVigencia(SqlConnection cnn, SqlTransaction tx, IReadOnlyList<CustodiaCambio> cambios, string sucursal, CancellationToken cancellationToken, Guid solicitud)
     {
         var disponibles = new Dictionary<string, CustodiaRendicionDto>();
         foreach (var instrumento in cambios.Select(c => c.Despues.ins_id).Distinct())
-        {
-            using var cmd = ConsultaPendientes(cnn, tx, sucursal, instrumento);
-            using var plazo = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken); plazo.CancelAfter(TimeSpan.FromSeconds(25));
-            using var cancelar = plazo.Token.Register(cmd.Cancel);
-            try
-            {
-                using var reader = cmd.ExecuteReader();
-                try
-                {
-                    foreach (var fila in CustodiaRendicionReader.Leer(reader, sucursal, instrumento, plazo.Token))
-                        if (!disponibles.TryAdd(fila.clave, fila)) throw new ArgumentException("Hay identificadores de rendición duplicados en la consulta.");
-                }
-                catch { cmd.Cancel(); throw; }
-            }
-            catch { cmd.Cancel(); throw; }
-        }
+            foreach (var fila in LeerPendientes(cnn, tx, sucursal, instrumento, cancellationToken, solicitud))
+                if (!disponibles.TryAdd(fila.clave, fila)) throw new ArgumentException("Hay identificadores de rendición duplicados en la consulta.");
         foreach (var cambio in cambios)
             if (!disponibles.TryGetValue(cambio.Antes.clave, out var fila) || fila.version != cambio.Antes.version)
                 throw new ArgumentException("Una rendición cambió o ya fue entregada. Actualice la consulta antes de continuar.");
@@ -129,18 +244,27 @@ public partial class CustodiaPersistencia(IDataConnectionContext context, ILogge
 
     private CustodiaSpResultado Ejecutar(SqlCommand cmd, Guid solicitud)
     {
-        var parametros = JObject.FromObject(cmd.Parameters.Cast<SqlParameter>().ToDictionary(p => p.ParameterName, p => p.Value));
-        if (cmd.Parameters.Contains("@json_rend")) parametros["@json_rend"] = JArray.Parse((string)cmd.Parameters["@json_rend"].Value);
-        logger.Log(TraceEventType.Information, $"[CUSTODIA][SP REQUEST] {cmd.CommandText} | Solicitud={solicitud}\n{parametros.ToString(Formatting.Indented)}");
-        using var reader = cmd.ExecuteReader();
-        if (!reader.Read()) throw new InvalidOperationException("El SP no devolvió un resultado explícito.");
-        var codigo = reader.GetOrdinal("resultado");
-        if (reader.IsDBNull(codigo)) throw new InvalidOperationException("El SP devolvió resultado nulo.");
-        var mensaje = reader["resultado_msj"]?.ToString() ?? "";
-        var id = "";
-        for (var i = 0; i < reader.FieldCount; i++) if (reader.GetName(i).Equals("resultado_id", StringComparison.OrdinalIgnoreCase)) id = reader.IsDBNull(i) ? "" : reader.GetValue(i).ToString() ?? "";
-        var resultado = new CustodiaSpResultado(Convert.ToInt16(reader.GetValue(codigo)), mensaje, id);
-        logger.Log(TraceEventType.Information, $"[CUSTODIA][SP RESPONSE] {cmd.CommandText} | Solicitud={solicitud}\n{JsonConvert.SerializeObject(new { resultado = resultado.Codigo, resultado_msj = resultado.Mensaje, resultado_id = resultado.Id }, Formatting.Indented)}");
-        return resultado;
+        var diagnostico = new CustodiaSpDiagnostico(logger, cmd, "REGISTRAR", solicitud);
+        try
+        {
+            using var reader = cmd.ExecuteReader();
+            diagnostico.Columnas(reader);
+            if (!reader.Read()) { diagnostico.Respuesta(); throw new InvalidOperationException("El SP no devolvió un resultado explícito."); }
+            diagnostico.Fila(reader);
+            // Registrar el retorno real antes de validarlo; así se conserva incluso un resultado incompleto.
+            diagnostico.Respuesta();
+            var codigo = reader.GetOrdinal("resultado");
+            if (reader.IsDBNull(codigo)) throw new InvalidOperationException("El SP devolvió resultado nulo.");
+            var mensaje = reader["resultado_msj"]?.ToString() ?? "";
+            var id = "";
+            for (var i = 0; i < reader.FieldCount; i++) if (reader.GetName(i).Equals("resultado_id", StringComparison.OrdinalIgnoreCase)) id = reader.IsDBNull(i) ? "" : reader.GetValue(i).ToString() ?? "";
+            return new(Convert.ToInt16(reader.GetValue(codigo)), mensaje, id);
+        }
+        catch (Exception ex) { diagnostico.Error(ex); throw; }
+    }
+
+    private void RegistrarTransaccion(SqlConnection cnn, string sp, Guid solicitud, string estado, string motivo)
+    {
+        try { logger.Log(TraceEventType.Information, $"[CUSTODIA][TRANSACCION] {sp} | Solicitud={solicitud} | Servidor={cnn.DataSource} | Base={cnn.Database} | Estado={estado} | {motivo}"); } catch { /* El log no altera el resultado de COMMIT/ROLLBACK. */ }
     }
 }
