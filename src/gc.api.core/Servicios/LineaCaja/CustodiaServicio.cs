@@ -3,8 +3,6 @@ using gc.api.core.Entidades;
 using gc.api.core.Interfaces.Datos;
 using gc.infraestructura.Core.Interfaces;
 using gc.infraestructura.Dtos.Cajas;
-using Microsoft.Data.SqlClient;
-using Newtonsoft.Json;
 
 namespace gc.api.core.Servicios.LineaCaja;
 
@@ -16,27 +14,10 @@ public partial class CustodiaServicio(IUnitOfWork uow, ILoggerHelper logger, ICu
     public const string SpEntrega = "SPGECO_Vtas_PV_CTL_Entregas_Guardar";
     public const string SpAcuse = "SPGECO_ENT_Datos";
 
-    private List<T> Consultar<T>(string sp, List<SqlParameter> parametros) where T : class
-    {
-        var llamada = Guid.NewGuid().ToString("N");
-        logger.Log(TraceEventType.Information, $"[CUSTODIA][SP REQUEST] {sp} | Llamada={llamada}\n{JsonConvert.SerializeObject(parametros.ToDictionary(p => p.ParameterName, p => p.Value), Formatting.Indented)}");
-        try
-        {
-            var filas = _repository.EjecutarLstSpExt<T>(sp, parametros, true) ?? [];
-            logger.Log(TraceEventType.Information, $"[CUSTODIA][SP RESPONSE] {sp} | Llamada={llamada} | Filas={filas.Count}");
-            return filas;
-        }
-        catch (Exception ex)
-        {
-            logger.Log(TraceEventType.Error, $"[CUSTODIA][SP ERROR] {sp} | Llamada={llamada} | {ex.GetType().Name}: {ex.Message}");
-            throw;
-        }
-    }
-
     public List<CustodiaInstrumentoDto> Instrumentos(string sucursal)
     {
         ValidarSucursal(sucursal);
-        return Consultar<CustodiaInstrumentoDto>(SpInstrumentos, [new("@adm_id", sucursal), new("@tipo", "P")])
+        return persistencia.Instrumentos(sucursal)
             .Where(i => i.ins_id?.Trim() is "PES" or "DOL")
             .Select(i => new CustodiaInstrumentoDto { ins_id = i.ins_id.Trim(), ins_desc = i.ins_desc?.Trim() ?? i.ins_id })
             .GroupBy(i => i.ins_id).Select(g => g.First()).OrderBy(i => i.ins_id == "PES" ? 0 : 1).ToList();
@@ -46,7 +27,7 @@ public partial class CustodiaServicio(IUnitOfWork uow, ILoggerHelper logger, ICu
     {
         ValidarSucursal(sucursal);
         if (instrumento is not ("PES" or "DOL")) throw new ArgumentException("Instrumento de efectivo inválido.");
-        // El SP instalado no filtra por adm_id/ins_id: el alcance se exige antes de exponer filas o reconstruir un comando.
+        // Revalidar el alcance aun cuando el SP ya filtra por sucursal e instrumento.
         var filas = persistencia.Pendientes(sucursal, instrumento)
             .Where(r => r.adm_id?.Trim() == sucursal && r.ins_id?.Trim() == instrumento)
             .OrderBy(r => r.rend_fecha).ThenBy(r => r.caja_nro_proceso).ThenBy(r => r.caja_nro_cierre)
@@ -67,7 +48,7 @@ public partial class CustodiaServicio(IUnitOfWork uow, ILoggerHelper logger, ICu
     {
         ValidarSucursal(sucursal);
         if (string.IsNullOrWhiteSpace(entrega) || entrega.Length > 20) throw new ArgumentException("Identificador de entrega inválido.");
-        var filas = Consultar<CustodiaAcuseFilaDto>(SpAcuse, [new("@ent_compte", entrega)]);
+        var filas = persistencia.Acuse(entrega);
         if (filas.Count == 0) throw new ArgumentException("No hay datos disponibles para imprimir este acuse. No registre nuevamente la entrega.");
         if (filas.Any(r => r.adm_id?.Trim() != sucursal || r.ent_compte?.Trim() != entrega.Trim()))
             throw new UnauthorizedAccessException("La entrega no pertenece a la sucursal de la sesión.");

@@ -6,7 +6,7 @@ namespace gc.api.infra.Datos.Implementacion.Cajas;
 // Ordinales una sola vez; se descartan otras sucursales/instrumentos antes de construir DTO.
 public static class CustodiaRendicionReader
 {
-    public static List<CustodiaRendicionDto> Leer(DbDataReader reader, string sucursal, string instrumento, CancellationToken cancellationToken = default)
+    public static List<CustodiaRendicionDto> Leer(DbDataReader reader, string sucursal, string instrumento, CancellationToken cancellationToken = default, Action<DbDataReader>? observarFila = null)
     {
         var nombres = new[] { "adm_id", "adm_nombre", "ins_id", "caja_nro_proceso", "caja_nro_cierre", "caja_nro_rend", "rend_item", "caja_id", "rend_tipo", "rend_tipo_desc", "rend_fecha", "rend_importe_arq", "rend_importe_ok", "usu_id", "usu_apellidoynombre", "rend_estado", "rend_entrega" };
         var columnas = nombres.ToDictionary(n => n, reader.GetOrdinal);
@@ -18,6 +18,7 @@ public static class CustodiaRendicionReader
         {
             cancellationToken.ThrowIfCancellationRequested();
             if (Texto("adm_id").Trim() != sucursal || Texto("ins_id").Trim() != instrumento) continue;
+            observarFila?.Invoke(reader);
             resultado.Add(new()
             {
                 adm_id = Texto("adm_id"), adm_nombre = Texto("adm_nombre"), ins_id = Texto("ins_id"),
