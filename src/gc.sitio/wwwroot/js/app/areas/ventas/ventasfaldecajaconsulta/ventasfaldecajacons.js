@@ -22,6 +22,8 @@ function InicializaPantallaConsultaFaltante() {
 		window.location.href = homePedido;
 	});
 
+	$("#btnImprimir").off("click");
+	$("#btnImprimir").on("click", controlaImprimirFaltanteDeCaja);
 	$("#SucursalesList").on("dblclick", 'option', function () { $(this).remove(); })
 	$(document).off("change", "#listaSucursales");
 	$(document).on("change", "#listaSucursales", ControlalistaSucursalesSelected);
@@ -64,14 +66,55 @@ function InicializaPantallaConsultaFaltante() {
 	});
 }
 
+function controlaImprimirFaltanteDeCaja() {
+	const tieneDatos = $("#tbGridFaltantes tbody tr[data-caja-nro_proceso]").length > 0;
+	if (!tieneDatos) {
+		AbrirMensaje("ATENCIÓN", "No hay faltantes de caja para imprimir", function () {
+			$("#msjModal").modal("hide");
+			return true;
+		}, false, ["Aceptar"], "error!", null);
+	}
+	else {
+		ImprimirFaltanteDeCaja();
+	}
+}
+
+function ReseteoDeReportes() {
+	console.log("Reseto de reportes");
+	ReporteResetArre();
+}
+
+function ImprimirFaltanteDeCaja() {
+	ReseteoDeReportes();
+	setTimeout(() => {
+		let desde = $("#Desde").val();
+		let hasta = $("#Hasta").val();
+		let temp = ObtenerFiltroLista("#chkSucursales", "#SucursalesList");
+		let lSuc = (temp.ids.length === 1 && temp.ids[0] === "%") ? "%" : temp.ids.join(",");
+		lSucTextos = temp.textos;
+		// 🔥 Construcción del string de filtros
+		var filtrosDesc = [];
+		filtrosDesc.push(ConstruirDescripcionFiltro("Sucursales", "#chkSucursales", "#SucursalesList"));
+		filtrosDesc.push(`Desde el ${desde} al ${hasta}`);
+		// Limpieza: eliminar vacíos
+		filtrosDesc = filtrosDesc.filter(x => x !== "");
+		// String final
+		var filtrosString = filtrosDesc.join(" | ");
+		let data = { desde, hasta, lSuc, lSucTextos, filtrosString };
+		cargarReporteEnArre(106, data, "CONSULTA FALTANTE DE CAJA", "", "");
+		invocacionGestorDoc({});
+	}, 500);
+}
+
 function InicializarPantallaPrincipal() {
 	let desde = $("#Desde").val();
 	let hasta = $("#Hasta").val();
 	var temp = ObtenerFiltroLista("#chkSucursales", "#SucursalesList");
 	lSuc = temp.ids;
 	lSucTextos = temp.textos;
+
 	AbrirWaiting("Cargando Faltantes de Caja.")
-	var data = { desde, hasta, lSucTextos };
+	var data = { desde, hasta, lSuc, lSucTextos };
 	PostGenHtml(data, cargarPantallaPrincipalURL, function (obj) {
 		$("#divDetalle").html(obj);
 		$("#divFiltro").collapse("hide");
@@ -81,6 +124,36 @@ function InicializarPantallaPrincipal() {
 
 	});
 	console.log("BuscarRecepcionesDelProveedor");
+}
+
+function ConstruirDescripcionFiltro(nombre, idCheckbox, idListBox) {
+
+	const activo = $(idCheckbox).is(":checked");
+
+	// Si NO está activo → devolver "Todos"
+	if (!activo) {
+		return `${nombre}: Todos`;
+	}
+
+	// Si está activo → obtener valores
+	const valores = [];
+	$(idListBox + " option").each(function () {
+		const txt = $(this).text().trim();
+
+		// Si viene "%" → reemplazar por "Todos"
+		if (txt === "%" || txt === "") {
+			valores.push("Todos");
+		} else {
+			valores.push(txt);
+		}
+	});
+
+	// Si no hay valores → "Todos"
+	if (valores.length === 0) {
+		return `${nombre}: Todos`;
+	}
+
+	return `${nombre}: ${valores.join(", ")}`;
 }
 
 function CargarFaltantesDeCajasListado(desde, hasta, lSuc) {
@@ -169,8 +242,8 @@ function ValidarFiltro() {
 	let diffMs = dHasta - dDesde;
 	let diffDias = diffMs / (1000 * 60 * 60 * 24);
 
-	if (diffDias > 30) {
-		return [false, "El rango de fechas no puede superar los 30 días."];
+	if (diffDias > 31) {
+		return [false, "El rango de fechas no puede superar los 31 días."];
 	}
 
 	return [true, ""];

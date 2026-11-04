@@ -137,39 +137,167 @@ namespace gc.api.core.Servicios.Reportes
 				return;
 			}
 
-			
-		}
+			registros = registros.OrderBy(x => x.usu_id).ThenBy(x => x.dia).ToList();
+
+			string usuarioActual = string.Empty;
+
+			PdfPTable tabla = null;
+
+			decimal totalFaltante = 0;
+			decimal totalSobrante = 0;
+			decimal totalAcumulado = 0;
+
+			Action agregarCabecera = () =>
+			{
+				tabla = new PdfPTable(8);
+				tabla.WidthPercentage = 100;
+				tabla.SpacingBefore = 3f;
+
+				tabla.SetWidths(new float[]
+				{
+						12f, // Día
+						28f, // Sucursal
+						12f, // Parte
+						10f, // Cierre
+						12f, // Faltante
+						12f, // Sobrante
+						12f, // Acumulado
+						10f  // Procesado
+				});
+
+				string[] titulos = { "Fecha", "Sucursal", "Parte", "Cierre", "Faltante", "Sobrante", "Acumulado", "Procesado"};
+
+				foreach (var tituloCol in titulos)
+				{
+					PdfPCell c = new PdfPCell(new Phrase(tituloCol, chicoBold));
+					c.HorizontalAlignment = Element.ALIGN_CENTER;
+					c.VerticalAlignment = Element.ALIGN_MIDDLE;
+					c.BackgroundColor = new BaseColor(230, 230, 230);
+					c.Padding = 4;
+					tabla.AddCell(c);
+				}
+			};
+
+			Action agregarTotales = () =>
+			{
+				if (tabla == null)
+					return;
 
 
-		private static void AgregarCeldaHeader(PdfPTable tabla, string texto, Font font)
-		{
-			PdfPCell celda = new PdfPCell(new Phrase(texto, font));
-			celda.HorizontalAlignment = Element.ALIGN_CENTER;
-			celda.BackgroundColor = new BaseColor(184, 134, 11); // Golden
-			celda.Padding = 4;
-			tabla.AddCell(celda);
-		}
+				PdfPCell vacio = new PdfPCell(new Phrase(""));
+				vacio.BorderWidth = 0;
 
-		private static void AgregarCeldaDato(
-			PdfPTable tabla,
-			string texto,
-			Font font,
-			BaseColor bg,
-			int align)
-		{
-			PdfPCell celda = new PdfPCell(new Phrase(texto, font));
-			celda.HorizontalAlignment = align;
-			celda.BackgroundColor = bg;
-			celda.Padding = 3;
-			celda.BorderColor = new BaseColor(220, 220, 220);
-			tabla.AddCell(celda);
-		}
+				for (int i = 0; i < 4; i++)
+					tabla.AddCell(vacio);
 
-		private static string FormatearMonto(decimal valor, bool permiteDecimales)
-		{
-			return permiteDecimales
-				? valor.ToString("N2")
-				: valor.ToString("N0");
+				PdfPCell faltante = new PdfPCell(
+					new Phrase(totalFaltante.ToString("#,##0.00"), chicoBold));
+				faltante.HorizontalAlignment = Element.ALIGN_RIGHT;
+				faltante.BackgroundColor = new BaseColor(230, 230, 230);
+
+				PdfPCell sobrante = new PdfPCell(
+					new Phrase(totalSobrante.ToString("#,##0.00"), chicoBold));
+				sobrante.HorizontalAlignment = Element.ALIGN_RIGHT;
+				sobrante.BackgroundColor = new BaseColor(210, 210, 210);
+
+				PdfPCell acumulado = new PdfPCell(
+					new Phrase(totalAcumulado.ToString("#,##0.00"), chicoBold));
+				acumulado.HorizontalAlignment = Element.ALIGN_RIGHT;
+				acumulado.BackgroundColor = new BaseColor(230, 230, 230);
+
+				PdfPCell procesado = new PdfPCell(new Phrase(""));
+				procesado.BackgroundColor = new BaseColor(230, 230, 230);
+
+				tabla.AddCell(faltante);
+				tabla.AddCell(sobrante);
+				tabla.AddCell(acumulado);
+				tabla.AddCell(procesado);
+
+				pdf.Add(tabla);
+				pdf.Add(new Paragraph(" "));
+			};
+
+			foreach (var item in registros)
+			{
+				if (usuarioActual != item.usu_id)
+				{
+					if (!string.IsNullOrEmpty(usuarioActual))
+					{
+						agregarTotales();
+					}
+
+					usuarioActual = item.usu_id;
+
+					totalFaltante = 0;
+					totalSobrante = 0;
+					totalAcumulado = 0;
+
+					Paragraph usuario = new Paragraph(
+						$"Cajero: {item.usu_apellidoynombre.ToUpper()}",
+						normalBold);
+
+					usuario.SpacingBefore = 8f;
+					usuario.SpacingAfter = 3f;
+
+					pdf.Add(usuario);
+
+					agregarCabecera();
+				}
+
+				decimal acumulado = item.faltante - item.sobrante;
+
+				totalFaltante += item.faltante;
+				totalSobrante += item.sobrante;
+				totalAcumulado += acumulado;
+
+				PdfPCell celda;
+
+				celda = new PdfPCell(
+					new Phrase(item.dia.ToString("dd/MM/yyyy"), chico));
+				celda.HorizontalAlignment = Element.ALIGN_CENTER;
+				tabla.AddCell(celda);
+
+				celda = new PdfPCell(
+					new Phrase(item.adm_nombre ?? "", chico));
+				celda.HorizontalAlignment = Element.ALIGN_LEFT;
+				tabla.AddCell(celda);
+
+				celda = new PdfPCell(
+					new Phrase(item.caja_nro_proceso.ToString(), chico));
+				celda.HorizontalAlignment = Element.ALIGN_CENTER;
+				tabla.AddCell(celda);
+
+				celda = new PdfPCell(
+					new Phrase(item.caja_nro_cierre.ToString(), chico));
+				celda.HorizontalAlignment = Element.ALIGN_CENTER;
+				tabla.AddCell(celda);
+
+				celda = new PdfPCell(
+					new Phrase(item.faltante.ToString("#,##0.00"), chico));
+				celda.HorizontalAlignment = Element.ALIGN_RIGHT;
+				tabla.AddCell(celda);
+
+				celda = new PdfPCell(
+					new Phrase(item.sobrante.ToString("#,##0.00"), chico));
+				celda.HorizontalAlignment = Element.ALIGN_RIGHT;
+				tabla.AddCell(celda);
+
+				celda = new PdfPCell(
+					new Phrase(acumulado.ToString("#,##0.00"), chico));
+				celda.HorizontalAlignment = Element.ALIGN_RIGHT;
+				tabla.AddCell(celda);
+
+				string check = item.procesado_bool == "SI"
+					? "SI"
+					: "NO";
+
+				celda = new PdfPCell(
+					new Phrase(check, chicoBold));
+				celda.HorizontalAlignment = Element.ALIGN_CENTER;
+				tabla.AddCell(celda);
+			}
+
+			agregarTotales();
 		}
 
 
