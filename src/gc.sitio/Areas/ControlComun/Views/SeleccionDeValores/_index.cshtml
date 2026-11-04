@@ -16,6 +16,7 @@
 		height: 385px; /* ya lo tenés */
 		max-height: 385px;
 		overflow: hidden;
+		padding: 8px !important;
 	}
 
 	#divSeccionEditable {
@@ -23,15 +24,30 @@
 		/*overflow-y: auto;  scroll interno si hace falta */
 		margin-top: 5px !important; /* elimina huecos grandes */
 	}
+
+	#seleccionDeValoresModal.modal-cartera .modal-dialog {
+		height: 750px !important;
+		max-height: 750px !important;
+	}
+
+	#seleccionDeValoresModal.modal-cartera .modal-content {
+		height: 750px !important;
+		max-height: 750px !important;
+	}
+
+	#seleccionDeValoresModal.modal-cartera .modal-body {
+		height: 635px !important;
+		max-height: 635px !important;
+	}
+
 </style>
-<div class="modal fade modal-golden" id="seleccionDeValoresModal" style="display: block;height: 530px;padding-left: 0px;" tabindex="-1" aria-labelledby="seleccionDeValoresModalLabel" aria-hidden="true" data-bs-backdrop="static">
+<div class="modal fade modal-golden" id="seleccionDeValoresModal" style="display: block;padding-left: 0px;" tabindex="-1" aria-labelledby="seleccionDeValoresModalLabel" aria-hidden="true" data-bs-backdrop="static">
 	<div class="modal-dialog modal-lg" style="height: 500px;max-height: 500px;">
 		<div class="modal-content" style="height: 500px;max-height: 500px;">
 			<div class="modal-header padding-5">
 				<h5 class="modal-title" id="seleccionDeValoresModalLabel">Selección de Valores</h5>
 				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 			</div>
-			@* <div class="modal-body" style="padding-right: 5px;padding-top: 5px;padding-left: 5px;padding-bottom: 5px;height: 385px;max-height:385px;"> *@
 			<div class="modal-body" >
 				<div class="row" style="max-height: 125px;height: 125px;">
 					<div class="col-4" style="padding-right: 0px;">

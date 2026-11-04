@@ -314,6 +314,12 @@ function invocarModalDeSeleccionDeValores(p) {
 		$("#modalSeleccionValores").html(obj);
 		$("#modalSeleccionValores").show();
 		$("#seleccionDeValoresModal").modal("show");
+
+		let primeraFila = $("#tbTipoCuentaFin tbody tr:first")[0];
+		if (primeraFila) {
+			seleccionarTipoFin(primeraFila);
+		}
+
 		$('#seleccionDeValoresModal').on('hidden.bs.modal', function (e) {
 			// Disparo evento para actualizar lo que tenga que actualizar en origen
 			$("#UpdateValores").val(true).trigger("change");
@@ -329,6 +335,16 @@ function seleccionarTipoFin(x) {
 	var data = { tcf_id, importeSugerido };
 	PostGenHtml(data, cargarCtaFinParaSeleccionDeValoresUrl, function (obj) {
 		$("#divFinancieros").html(obj);
+
+		let primeraFilaFinanciero = $("#tbFinanciero tbody tr:first")[0];
+		if (!primeraFilaFinanciero) {
+			return;
+		}
+		seleccionarFinanciero(primeraFilaFinanciero);
+
+		if (tcf_id !== "CH") {
+			seleccionarFinancieroDbl(primeraFilaFinanciero);
+		}
 	});
 	PostGenHtml(data, cargarSeccionEdicionEnSeleccionDeValoresUrl, function (obj) {
 		$("#divSeccionEditable").html(obj);
@@ -367,6 +383,17 @@ function seleccionarTipoFin(x) {
 	});
 }
 
+function AjustarModalSegunContenido() {
+
+	const modal = $("#seleccionDeValoresModal");
+
+	if ($("#tbValoresEnCartera").length) {
+		modal.addClass("modal-cartera");
+	} else {
+		modal.removeClass("modal-cartera");
+	}
+}
+
 function onChangeFecha(x) {
 }
 
@@ -383,13 +410,19 @@ function seleccionarFinancieroDbl(x) {
 function DarFocoEnBaseAlaSeleccion() {
 	switch (tcf_id_selected) {
 		case "BA"://Transferencias
-			document.getElementById("txtNroTransferencia").focus();
+			setTimeout(() => {
+				$("#txtNroTransferencia").trigger('focus');
+			}, 400);
 			break;
 		case "EC"://Emision de cheques
-			document.getElementById("txtNroCheque").focus();
+			setTimeout(() => {
+				$("#txtNroCheque").trigger('focus');
+			}, 400);
 			break;
 		case "EF": //Efectivo
-			document.getElementById("ImporteS").focus();
+			setTimeout(() => {
+				$("#ImporteS").trigger('focus');
+			}, 400);
 			break;
 		default:
 	}
@@ -398,14 +431,22 @@ function DarFocoEnBaseAlaSeleccion() {
 function seleccionarFinanciero(x) {
 	if (tcf_id_selected == "CH") {
 		AbrirWaiting("Actualizando lista...");
-		ctaf_id = x.cells[2].innerText.trim();
+		if (x.cells.length == 5) {
+			ctaf_id = x.cells[2].innerText.trim();
+		}
+		else {
+			ctaf_id = x.cells[1].innerText.trim();
+		}
 		ctaf_denominacion = x.cells[0].innerText.trim();
 		var verSoloValoresVencidos = $("#chkVerSoloValoresVencidos")[0].checked
 		var data = { ctaf_id, verSoloValoresVencidos };
 		PostGenHtml(data, cargarGrillaFinancieroCarteraEnSeleccionDeValoresUrl, function (obj) {
 			CerrarWaiting();
 			$("#divSeccionEditable").html(obj);
-			$("#chkVerSoloValoresVencidos").on("change", function () {
+
+			AjustarModalSegunContenido();
+
+			$("#chkVerSoloValoresVencidos").off("change").on("change", function () {
 				seleccionarFinanciero(x);
 			});
 			if ($("#tbValoresEnCartera tbody tr").length <= 0) {

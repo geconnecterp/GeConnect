@@ -101,12 +101,19 @@
 		<table class="table table-bordered table-hover table-golden" id="tbListaChequesDeTercerosEnCartera">
 			<thead>
 				<tr class="header">
-					<th style="width:10%;">Fecha Valor</th>
-					<th style="width:10%;">Fecha Carga</th>
-					<th style="width:50%;">@col1</th>
+					<th style="width:8%;">
+						<span>Fecha</span><br />
+						<span>Valor</span>
+					</th>
+					<th style="width:8%;">
+						<span>Fecha</span><br />
+						<span>Carga</span>
+					</th>
+					<th style="width:34%;">Cliente</th>
+					<th style="width:25%;">@col1</th>
 					<th style="width:8%;">@col2</th>
 					<th style="width:8%;">@col3</th>
-					<th style="width:15%;">Importe</th>
+					<th style="width:10%;">Importe</th>
 					<th style="width:0%; display:none;">dia_movi</th>
 					<th style="width:0%; display:none;">fc_compte</th>
 					<th style="width:0%; display:none;">fc_item</th>
@@ -118,9 +125,11 @@
 					@foreach (var item in Model.GrillaChequesEnCartera.ListaDatos)
 					{
 						if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+						var cliente = $"{item.cta_denominacion} ({item.cta_id})";
 						<tr class="@clase" onclick="selectReg(this, 'tbListaChequesDeTercerosEnCartera')" >
 							<td class="align-center cell-fit-content" title="@item.concepto_valor">@Model.GrillaChequesEnCartera.FormatearDato(item.fc_fecha_valor, FormatDato.Fecha)</td>
 							<td class="align-center cell-fit-content" title="@item.concepto_valor">@Model.GrillaChequesEnCartera.FormatearDato(item.fc_fecha, FormatDato.Fecha)</td>
+							<td class="align-left cell-fit-content">@Model.GrillaChequesEnCartera.FormatearDato(cliente, FormatDato.Ninguno)</td>
 							<td class="@Model.GrillaChequesEnCartera.ObtenerClase(item.fc_dato1_valor) cell-fit-content" title="@item.concepto_valor">@Model.GrillaChequesEnCartera.FormatearDato(item.fc_dato1_valor, FormatDato.Ninguno)</td>
 							<td class="align-center cell-fit-content" title="@item.concepto_valor">@Model.GrillaChequesEnCartera.FormatearDato(item.fc_dato2_valor, FormatDato.Monto)</td>
 							<td class="align-center cell-fit-content" title="@item.concepto_valor">@Model.GrillaChequesEnCartera.FormatearDato(item.fc_dato3_valor, FormatDato.Monto)</td>

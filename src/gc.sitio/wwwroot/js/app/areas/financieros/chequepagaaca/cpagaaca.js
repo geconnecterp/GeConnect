@@ -13,16 +13,23 @@
 			$("#txtClienteItem").val("");
 		}
 	});
-	$("#chkDocumentoEnCuenta").on("click", function () {
-		if ($("#chkDocumentoEnCuenta").is(":checked")) {
-			$("#chkCambioDeFechaDePresentacion").prop('checked', false);
-			$("#chkCambioDeFechaDePresentacion").trigger("change");
+	$("#chkDocumentoEnCuenta").on("change", function () {
+		if ($(this).is(":checked")) {
+			$("#chkCambioDeFechaDePresentacion").prop("checked", false);
+		}
+		else {
+			// Evitar que queden ambos desmarcados
+			$("#chkCambioDeFechaDePresentacion").prop("checked", true);
 		}
 	});
-	$("#chkCambioDeFechaDePresentacion").on("click", function () {
-		if ($("#chkCambioDeFechaDePresentacion").is(":checked")) {
-			$("#chkDocumentoEnCuenta").prop('checked', false);
-			$("#chkDocumentoEnCuenta").trigger("change");
+
+	$("#chkCambioDeFechaDePresentacion").on("change", function () {
+		if ($(this).is(":checked")) {
+			$("#chkDocumentoEnCuenta").prop("checked", false);
+		}
+		else {
+			// Evitar que queden ambos desmarcados
+			$("#chkDocumentoEnCuenta").prop("checked", true);
 		}
 	});
 	$(document).on("click", "#btnBuscar", btnBuscarValidar);
@@ -171,6 +178,25 @@ function btnCancelValidar() {
 			}
 		});
 		aplicarRenderClienteAutocomplete($("#txtCliente"));
+		$("#chkDocumentoEnCuenta").on("change", function () {
+			if ($(this).is(":checked")) {
+				$("#chkCambioDeFechaDePresentacion").prop("checked", false);
+			}
+			else {
+				// Evitar que queden ambos desmarcados
+				$("#chkCambioDeFechaDePresentacion").prop("checked", true);
+			}
+		});
+
+		$("#chkCambioDeFechaDePresentacion").on("change", function () {
+			if ($(this).is(":checked")) {
+				$("#chkDocumentoEnCuenta").prop("checked", false);
+			}
+			else {
+				// Evitar que queden ambos desmarcados
+				$("#chkDocumentoEnCuenta").prop("checked", true);
+			}
+		});
 	});
 }
 

@@ -28,20 +28,36 @@
 		border-left: none !important;
 		border-right: none !important;
 	}
+
+	#containerValoresEnCartera {
+		height: 500px;
+		max-height: 500px;
+	}
+
+	#tbValoresEnCartera {
+		table-layout: fixed;
+	}
+
+		#tbValoresEnCartera td:nth-child(3) {
+			white-space: nowrap;
+			overflow: hidden;
+			text-overflow: ellipsis;
+		}
 </style>
 <div class="row col-md-12">
 	@Html.HiddenFor(x => x.ctaf_id)
 	@Html.HiddenFor(x => x.ctaf_denominacion)
 	@Html.HiddenFor(x => x.ban_razon_social)
-	<div class="table-responsive table-wrapper-225-full" id="containerValoresEnCartera" style="padding-right: 0px;">
+	<div class="table-responsive table-wrapper-500-full-width" id="containerValoresEnCartera" style="padding-right: 0px;">
 		<table class="table table-bordered table-hover table-golden" id="tbValoresEnCartera" disabled >
 			<thead>
 				<tr class="header">
 					<th style="width:7%;" class="col-header-small align-center tiny-row">Fecha Valor</th>
 					<th style="width:7%;" class="col-header-small align-center tiny-row">Carga</th>
-					<th style="width:40%;" class="col-header-small align-center tiny-row">Banco</th>
+					<th style="width:35%;" class="col-header-small align-center tiny-row">Cliente</th>
+					<th style="width:23%;" class="col-header-small align-center tiny-row">Banco</th>
 					<th style="width:10%;" class="col-header-small align-center tiny-row">Nro. Cheque</th>
-					<th style="width:15%;" class="col-header-small align-center tiny-row">Importe</th>
+					<th style="width:12%;" class="col-header-small align-center tiny-row">Importe</th>
 					<th style="width:6%;" class="col-header-small align-center tiny-row"><input name="select_all" value="1" type="checkbox"></th>
 					<th style="width:0%; display:none;">ins_dato1_desc</th>
 					<th style="width:0%; display:none;">ins_dato2_desc</th>
@@ -62,9 +78,11 @@
 					{
 						if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
 						var nombre = "chk" + item.fc_dato2_valor;
+						var cliente = $"{item.cta_denominacion} ({item.cta_id})";
 						<tr class="@clase tooltip-native" onclick="seleccionarValoresEnCartera(this)" >
 							<td class="align-center tiny-row" title="@item.concepto_valor">@Model.GrillaValoresEnCartera.FormatearDato(item.fc_fecha_valor, FormatDato.Fecha)</td>
 							<td class="align-center tiny-row" title="@item.concepto_valor">@Model.GrillaValoresEnCartera.FormatearDato(item.fc_fecha, FormatDato.Fecha)</td>
+							<td class="align-left tiny-row" title="@cliente">@Model.GrillaValoresEnCartera.FormatearDato(cliente, FormatDato.Ninguno)</td>
 							<td class="align-left tiny-row" title="@item.concepto_valor">@Model.GrillaValoresEnCartera.FormatearDato(item.fc_dato1_valor, FormatDato.Ninguno)</td>
 							<td class="align-center tiny-row" title="@item.concepto_valor">@Model.GrillaValoresEnCartera.FormatearDato(item.fc_dato2_valor, FormatDato.Ninguno)</td>
 							<td class="align-right tiny-row" title="@item.concepto_valor">@GridHelper.FormatearDato(item.fc_importe, FormatDato.Monto, true)</td>

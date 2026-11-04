@@ -784,12 +784,13 @@ $("#Rel01").autocomplete({
 		// Mostrar SIN el "#"
 		$("#Rel01").val(textoSinSeparador);
 
+		if ($("#Rel01List").has('option:contains("' + ui.item.id + '")').length === 0) {
+			$("#Rel01Item").val(ui.item.id);
+			var opc = "<option value=" + ui.item.id + ">" + textoSinSeparador + "</option>"
+			$("#Rel01List").append(opc);
+		}
 		ctaIdSelected = ui.item.id;
 		ctaDescSelected = partes[0];
-		$("#Rel01List").empty();
-		$("#Rel01Item").val(ui.item.id);
-		var opc = "<option value=" + ui.item.id + ">" + textoSinSeparador + "</option>"
-		$("#Rel01List").append(opc);
 
 		event.preventDefault();
 		return true;
