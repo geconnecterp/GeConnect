@@ -207,6 +207,19 @@ namespace gc.caja.Controllers
             return presentacion;
         }
 
+        protected string ObtenerModoSalidaComprobante()
+        {
+            var puesto = HttpContext.RequestServices?.GetService<gc.caja.Models.Estacion.EstacionPuestoServicio>()?.Obtener(HttpContext);
+            return gc.caja.Models.Estacion.ModoSalidaComprobantes.Resolver(puesto?.ImpresionModo);
+        }
+
+        protected bool TieneReporteRecibo(string tipo)
+        {
+            var reportes = HttpContext.RequestServices?.GetService<IReportesConfigService>()?.ObtenerTodos();
+            return reportes?.Any(r => string.Equals(r.Key, tipo, StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(r.Key, "RECIBO", StringComparison.OrdinalIgnoreCase)) == true;
+        }
+
         protected ProductoBusquedaDto ProductoBase
         {
             get

@@ -1838,11 +1838,17 @@ function esMedioClover(instrumento, medio) {
     return tipo === 'T1' || !tipo && ['G0', 'G00'].includes(codigo);
 }
 
+function esMedioMercadoPago(instrumento, medio) { return String(medio?.tcf_id || instrumento?.tcf_id || '').trim().toUpperCase() === 'T2'; }
+function esMedioPagoIntegrado(instrumento, medio) { return esMedioClover(instrumento, medio) || esMedioMercadoPago(instrumento, medio); }
+function esCobroIntegrado(valor) { return !!(valor?.clover || valor?.mercadoPago); }
+function obtenerValorPagoIntegrado(valor) { const dato = valor?.clover || valor?.mercadoPago; return dato ? (typeof dato === 'object' ? dato : valor) : null; }
+function cobroIntegradoEnProceso() { return !!(window.CloverPago?.bloqueado() || window.MercadoPagoPoint?.bloqueado()); }
+
 function esMedioCobroElectronico(valor) {
-    if (valor?.clover || valor?.id_externo && valor?.tcf_id === "T1") return true;
+    if (esCobroIntegrado(valor) || valor?.id_externo && ["T1","T2"].includes(valor?.tcf_id)) return true;
     if (!valor) return false;
     const tipo = String(valor.tcf_id || '').trim().toUpperCase();
-    if (['TC', 'TD', 'MP'].includes(tipo)) return true;
+    if (['TC', 'TD', 'MP', 'T1', 'T2'].includes(tipo)) return true;
     const descripcion = [valor.tcf_desc, valor.ins_desc].filter(Boolean).join(' ')
         .normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase();
     return /\b(TARJETAS?|CLOVER|MERCADO\s*(PAGO|LIBRE))\b/.test(descripcion);

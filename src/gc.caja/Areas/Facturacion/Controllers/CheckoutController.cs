@@ -556,8 +556,9 @@ namespace gc.caja.Areas.Facturacion.Controllers
                 var catalogoPago = LeerCatalogoPago(coTipo, clienteActual);
                 var tieneClover = valores.Any(v => catalogoPago.GetValueOrDefault(v.ins_id) == "T1");
                 var contextoClover = tieneClover ? ContextoClover(coTipo) : null;
-                var recargoClover = valores.Where(v => catalogoPago.GetValueOrDefault(v.ins_id) == "T1").Sum(v => v.rb_aux);
-                var totalOperacionPago = ObtenerTotalOperacionParaNc(esCobranzaGen, importe, subtotalesFactura) + recargoClover;
+                var ajustePagosIntegrados = gc.infraestructura.Core.ReglasCaja.PagosIntegrados.TotalAjustes(valores, catalogoPago);
+                var contextoMp = valores.Any(v => catalogoPago.GetValueOrDefault(v.ins_id) == "T2") ? ContextoCobroIntegrado<PagoIntegradoContextoDto>(coTipo, "MP") : null;
+                var totalOperacionPago = ObtenerTotalOperacionParaNc(esCobranzaGen, importe, subtotalesFactura) + ajustePagosIntegrados;
                 var reglasCredito = ReglasCreditoPago.Validar(valores, totalOperacionPago, validacionNc.TotalImputado,
                     coTipo, ReglasCreditoPago.ObtenerCondiciones(clienteActual), catalogoPago, DateTime.Today);
                 if (!reglasCredito.Ok) return Json(new { ok = false, mensaje = reglasCredito.Mensaje });
@@ -969,6 +970,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
                 _logger?.LogInformation("═══════════════════════════════════════════════════");
 
                 if (contextoClover != null) LimpiarOperacionClover(contextoClover);
+                if (contextoMp != null) LimpiarOperacionIntegrada(contextoMp, "MP");
                 // ⓳ LIMPIAR SESIÓN DE FACTURA
                 FacturaProductos = new List<ProductoFactJsonDto>();
                 FacturaSubtotales = [];
@@ -1006,7 +1008,9 @@ namespace gc.caja.Areas.Facturacion.Controllers
                         : $"Factura {comprobante.tco_letra} Nro {comprobante.cm_compte} emitida y pagada exitosamente";
 
                 var presentacion = ObtenerPresentacionComprobante(
-                    esCobranzaDiferida || esCobranzaCtaCteTemporal, reporteRecibo: esCobranzaDiferida);
+                    esCobranzaDiferida || esCobranzaCtaCteTemporal,
+                    reporteRecibo: (esCobranzaDiferida || esCobranzaCtaCteTemporal) &&
+                        TieneReporteRecibo(esCobranzaDiferida ? "RECIBO_CD" : "RECIBO_CC"));
                 var respuestaFinal = new
                 {
                     ok = true,

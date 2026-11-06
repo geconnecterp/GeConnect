@@ -1,0 +1,56 @@
+<link rel="stylesheet" href="~/css/pages/pago-mercadopago.css" asp-append-version="true" />
+<link rel="stylesheet" href="~/css/pages/pago-clover.css" asp-append-version="true" />
+<div class="modal fade clover-modal mp-modal" id="modalDetalleMercadoPago" tabindex="-1" role="dialog"
+     aria-labelledby="modalDetalleMercadoPagoLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false"
+     data-opciones-url="@Url.Action("Opciones", "MercadoPago", new { area = "Facturacion" })"
+     data-procesar-url="@Url.Action("Procesar", "MercadoPago", new { area = "Facturacion" })">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content modal-golden">
+            <div class="modal-header bg-gradient-golden">
+                <h5 class="modal-title" id="modalDetalleMercadoPagoLabel"><i class="bx bx-credit-card me-2"></i>Pago Mercado Pago</h5>
+                <button type="button" class="btn-close" id="btnCerrarMercadoPago" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body">
+                <div class="clover-contexto"><span id="lblInstrumentoMercadoPago">Mercado Pago</span><span>Saldo pendiente: <strong id="lblSaldoMercadoPago">$ 0.00</strong></span></div>
+                <div id="avisoMercadoPago" class="alert alert-info py-2 small" role="status">Pagar MP solicita el cobro en el Point. Recuperar por ID consulta un pago existente. Un pago aprobado debe registrarse en Caja.</div>
+                <form id="formDetalleMercadoPago" novalidate>
+                    @Html.AntiForgeryToken()
+                    <div class="row g-3">
+                        <div class="col-sm-6">
+                            <label for="txtMontoMercadoPago" class="form-label fw-bold">Monto a cancelar</label>
+                            <div class="input-group"><span class="input-group-text">$</span><input type="text" id="txtMontoMercadoPago" class="form-control text-end jsteclado jsdecimal" inputmode="decimal" autocomplete="off" required /></div>
+                        </div>
+                        <div class="col-sm-6">
+                            <label for="cmbCuotaMercadoPago" class="form-label fw-bold">Cuotas</label>
+                            <select id="cmbCuotaMercadoPago" class="form-select" required disabled><option value="">Cargando opciones…</option></select>
+                        </div>
+                        <div class="col-sm-6">
+                            <label for="txtRecargoMercadoPago" class="form-label fw-bold">Recargo / descuento</label>
+                            <input id="txtRecargoMercadoPago" class="form-control text-end bg-light" readonly value="$ 0.00" />
+                        </div>
+                        <div class="col-sm-6">
+                            <label for="txtTotalMercadoPago" class="form-label fw-bold">Total a cobrar</label>
+                            <input id="txtTotalMercadoPago" class="form-control text-end clover-total" readonly value="$ 0.00" />
+                        </div>
+                    </div>
+                    <div class="clover-pos mt-3">
+                        <fieldset class="mp-tipos"><legend class="form-label fw-bold mb-1">Tipo de pago</legend>
+                            <label><input type="radio" name="tipoMercadoPago" id="tipoDebitoMercadoPago" value="1" /> Débito</label>
+                            <label><input type="radio" name="tipoMercadoPago" id="tipoCreditoMercadoPago" value="2" checked /> Crédito</label>
+                            <label><input type="radio" name="tipoMercadoPago" id="tipoQrMercadoPago" value="3" /> QR</label>
+                        </fieldset>
+                        <button type="button" id="btnPagarMercadoPago" class="btn btn-golden" disabled><i class="bx bx-credit-card me-1"></i>Pagar MP</button>
+                    </div>
+                    <p id="ayudaTipoMercadoPago" class="form-text mb-0"></p>
+                    <div class="clover-recuperacion mt-3">
+                        <label for="txtPaymentIdMercadoPago" class="form-label fw-bold">Recuperar pago pendiente</label>
+                        <div class="input-group"><input type="text" id="txtPaymentIdMercadoPago" class="form-control jsteclado" maxlength="30" autocomplete="off" autocapitalize="characters" spellcheck="false" aria-describedby="ayudaPaymentIdMercadoPago" placeholder="ID de pago del cupón" /><button type="button" id="btnManualMercadoPago" class="btn btn-outline-secondary" disabled>Cargar manual MP</button></div>
+                        <div class="form-text" id="ayudaPaymentIdMercadoPago">Utilice esta opción si el pago ya se realizó y quedó pendiente de registrar.</div>
+                    </div>
+                </form>
+                <div id="estadoMercadoPago" class="alert alert-light border mt-3 mb-0" role="status" aria-live="polite"></div>
+            </div>
+            <div class="modal-footer bg-light"><button type="button" id="btnVolverMercadoPago" class="btn btn-secondary"><i class="bx bx-left-arrow-alt me-1"></i>Volver</button></div>
+        </div>
+    </div>
+</div>

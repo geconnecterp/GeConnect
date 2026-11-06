@@ -1,4 +1,4 @@
-﻿using gc.infraestructura.Core.Helpers;
+using gc.infraestructura.Core.Helpers;
 using gc.caja.Controllers;
 using gc.caja.core.Servicios.Contratos.Cajas;
 using gc.infraestructura.Core.EntidadesComunes.Options;
@@ -812,7 +812,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
 
                 var presentacion = ObtenerPresentacionComprobante();
                 var debeImprimir = presentacion.GenerarReporte;
-                var reporteModo = NormalizarModoReporte(_appSettings.NotaCreditoReporteModo);
+                var reporteModo = ObtenerModoSalidaComprobante();
                 var mensajeFinal = CrearMensajeOperacionConfirmada(contexto.CoTipo, comprobanteEmitido.tco_letra, comprobanteEmitido.cm_compte);
 
                 return Json(new
@@ -1096,15 +1096,6 @@ namespace gc.caja.Areas.Facturacion.Controllers
                 co_tipo = coTipo?.Trim().ToUpperInvariant() ?? string.Empty,
                 item
             };
-        }
-
-        private static string NormalizarModoReporte(string? modo)
-        {
-            var valor = (modo ?? string.Empty).Trim().ToUpperInvariant();
-
-            return valor == "IMPRESORA"
-                ? "IMPRESORA"
-                : "PANTALLA";
         }
 
         private static string CrearMensajeOperacionConfirmada(string coTipo, string tcoLetra, string cmCompte)

@@ -1,4 +1,4 @@
-﻿@{
+@{
     ViewData["Title"] = "Cierre de Caja";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
@@ -263,7 +263,7 @@
         var cierreCargarInstrumentosUrl = '@Url.Action("CargarRendiciones", "CierreCaja", new { area = "Facturacion" })';
         var cierreCargarNominacionesUrl = '@Url.Action("CargarNominaciones", "CierreCaja", new { area = "Facturacion" })';
         var cierreConfirmarUrl = '@Url.Action("Confirmar", "CierreCaja", new { area = "Facturacion" })';
-        var cierreMenuCajaUrl = '@Url.Action("Index", "Home", new { area = "" })';
+        var cierreMenuCajaUrl = '@Url.MenuPrincipalCaja()';
         var cierreLogoutUrl = '@Url.Action("Logout", "Token", new { area = "Seguridad" })';
     </script>
     <script src="~/js/app/cierreCaja.js" asp-append-version="true"></script>

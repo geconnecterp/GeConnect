@@ -2,18 +2,7 @@ using gc.infraestructura.Dtos.Gen;
 
 namespace gc.infraestructura.Dtos.Cajas;
 
-public sealed class CloverContextoDto
-{
-    public string adm_id { get; set; } = "";
-    public string caja_id { get; set; } = "";
-    public string caja_nro_proceso { get; set; } = "";
-    public short caja_nro_cierre { get; set; }
-    public string cta_id { get; set; } = "";
-    public string usu_id { get; set; } = "";
-    public string co_tipo { get; set; } = "";
-    public string operacion_id { get; set; } = "";
-    public string huella { get; set; } = "";
-}
+public sealed class CloverContextoDto : PagoIntegradoContextoDto { }
 
 public sealed class CloverPeticionDto
 {

@@ -32,7 +32,7 @@
         </fieldset>
         <div id="rzEstado" class="rz-status" role="status" aria-live="polite"></div>
         <div class="rz-actions">
-            <a id="rzVolver" class="btn btn-outline-secondary" href="@Url.Action("Index", "Home", new { area = "" })"><i class="bx bx-arrow-back" aria-hidden="true"></i> Volver al menú</a>
+            <a id="rzVolver" class="btn btn-outline-secondary" href="@Url.MenuPrincipalCaja()"><i class="bx bx-arrow-back" aria-hidden="true"></i> Volver al menú</a>
             <button id="rzNueva" type="button" class="btn btn-outline-secondary" hidden>Preparar otra solicitud</button>
             <button id="rzImprimir" type="submit" class="btn btn-success" disabled="@(!habilitado)"><i class="bx bx-printer" aria-hidden="true"></i> Imprimir Z</button>
         </div>

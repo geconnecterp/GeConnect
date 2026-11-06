@@ -70,6 +70,7 @@ builder.Services.AddServicios();
 builder.Services.AddRazorPages();
 builder.Services.AddHttpClient();
 builder.Services.AddHttpClient<gc.caja.core.Servicios.Implementacion.Cajas.CloverApiServicio>(client => client.Timeout = TimeSpan.FromSeconds(660));
+builder.Services.AddHttpClient<gc.caja.core.Servicios.Implementacion.Cajas.MercadoPagoApiServicio>(client => client.Timeout = TimeSpan.FromSeconds(660));
 builder.Services.AddMemoryCache();
 builder.Services.AddHttpClient<gc.caja.Models.Administracion.CajaGeneralServicio>((services, client) =>
 {

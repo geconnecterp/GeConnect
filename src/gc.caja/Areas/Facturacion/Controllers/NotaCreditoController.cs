@@ -1,4 +1,4 @@
-﻿using gc.infraestructura.Core.Helpers;
+using gc.infraestructura.Core.Helpers;
 using gc.caja.Controllers;
 using gc.caja.core.Servicios.Contratos.Cajas;
 using gc.caja.Models.NotaCredito;
@@ -1987,7 +1987,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
                 var resultadoStock = await RegistrarStockNotaCredito(comprobanteEmitido, token);
                 var presentacion = ObtenerPresentacionComprobante();
                 var debeImprimir = presentacion.GenerarReporte;
-                var reporteModo = NormalizarModoReporteNC(_appSettings.NotaCreditoReporteModo);
+                var reporteModo = ObtenerModoSalidaComprobante();
                 var mensajeFinal = $"Nota de Crédito {comprobanteEmitido.tco_letra} Nro {comprobanteEmitido.cm_compte} emitida correctamente.";
 
                 if (!resultadoStock.Ok)
@@ -2709,15 +2709,6 @@ namespace gc.caja.Areas.Facturacion.Controllers
             {
                 return [];
             }
-        }
-
-        private static string NormalizarModoReporteNC(string? modo)
-        {
-            var valor = (modo ?? string.Empty).Trim().ToUpperInvariant();
-
-            return valor == "IMPRESORA"
-                ? "IMPRESORA"
-                : "PANTALLA";
         }
 
         private async Task<StockNotaCreditoResultado> RegistrarStockNotaCredito(

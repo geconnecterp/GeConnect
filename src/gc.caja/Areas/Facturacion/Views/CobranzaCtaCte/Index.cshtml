@@ -47,6 +47,7 @@
 @await Html.PartialAsync("~/Areas/Facturacion/Views/pago/_detalleValeCompra.cshtml")
 
 @await Html.PartialAsync("~/Areas/Facturacion/Views/Pago/_detalleClover.cshtml")
+@await Html.PartialAsync("~/Areas/Facturacion/Views/Pago/_detalleMercadoPago.cshtml")
 
 @section Scripts {
     <script>
@@ -55,7 +56,7 @@
         const coTipo = '@coTipo';
 
          // URLs del backend
-        const MenuCajaUrl = '@Url.Action("Index", "Home", new { Area = "" })';
+        const MenuCajaUrl = '@Url.MenuPrincipalCaja()';
         var ValidacionIntegridadUrl = "@Url.Action("ValidacionIntegridad", "Home", new { area = "" })";
         var AperturaCajaUrl = "@Url.Action("AperturaCaja", "Home", new { area = "" })";
         var ObtenerDatosCajaUrl = "@Url.Action("ObtenerDatosCaja", "Home", new { area = "" })";
@@ -92,6 +93,8 @@
     <script src="~/js/app/fact.js" asp-append-version="true"></script>
     <script src="~/js/app/cloverPago.js" asp-append-version="true"></script>
     <script src="~/js/app/cloverPagoVista.js" asp-append-version="true"></script>
+    <script src="~/js/app/mercadoPago.js" asp-append-version="true"></script>
+    <script src="~/js/app/mercadoPagoVista.js" asp-append-version="true"></script>
     <script src="~/js/app/pagoFactura.js" asp-append-version="true"></script>
     <script src="~/js/app/pagoCtaCte.js" asp-append-version="true"></script>
 }

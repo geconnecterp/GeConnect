@@ -278,7 +278,9 @@ namespace gc.caja.Areas.Facturacion.Controllers
                 }
 
                 var tipo = string.Equals(request?.Tipo, "IV", StringComparison.OrdinalIgnoreCase) ? "IV" : "CV";
-                var contextoClover = valores.Any(v => !string.IsNullOrWhiteSpace(v.id_externo)) ? ContextoClover(tipo) : null;
+                var catalogoIntegrado = LeerCatalogoIntegrado(tipo);
+                var contextoClover = valores.Any(v => catalogoIntegrado.GetValueOrDefault(v.ins_id) == "T1") ? ContextoClover(tipo) : null;
+                var contextoMp = valores.Any(v => catalogoIntegrado.GetValueOrDefault(v.ins_id) == "T2") ? ContextoCobroIntegrado<PagoIntegradoContextoDto>(tipo, "MP") : null;
                 var valoresConfirmacion = PrepararValoresConfirmacion(valores, tipo);
                 var totalValoresIngresados = valores.Sum(x => Math.Abs(x.rb_importe));
                 var jsonValores = SerializarValoresConfirmacion(valoresConfirmacion);
@@ -339,7 +341,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
                     tipo,
                     requestConfirmacion.caea,
                     jsonValores,
-                    string.IsNullOrWhiteSpace(requestConfirmacion.clover_operacion_id) ? JsonConvert.SerializeObject(requestConfirmacion)
+                    contextoClover == null && contextoMp == null ? JsonConvert.SerializeObject(requestConfirmacion)
                     : "\n" + CloverJsonDiagnostico.Formatear(JsonConvert.SerializeObject(requestConfirmacion), token));
 
                 var resultado = await _checkoutServicio.FinalizarCompra(requestConfirmacion, token);
@@ -368,6 +370,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
                 }
 
                 if (contextoClover != null) LimpiarOperacionClover(contextoClover);
+                if (contextoMp != null) LimpiarOperacionIntegrada(contextoMp, "MP");
                 var comprobanteConfirmacion = ObtenerComprobanteConfirmacion(respuesta.resultado_id);
 
                 return Json(new
