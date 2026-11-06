@@ -9,7 +9,7 @@
     <header class="cuenta-heading">
         <div><span class="cuenta-eyebrow">GECO CAJA · ACCESO PERSONAL</span><h1 id="cuentaTitulo">Mi cuenta</h1><p>Tu identidad y la seguridad de tu acceso.</p></div>
         <div class="d-flex align-items-center gap-3">
-            @if (!restringida) { <a class="cuenta-back" asp-area="" asp-controller="Home" asp-action="Index"><i class="bx bx-arrow-back" aria-hidden="true"></i> Volver al menú</a> }
+            @if (!restringida) { <a class="cuenta-back" href="@Url.MenuPrincipalCaja()"><i class="bx bx-arrow-back" aria-hidden="true"></i> Volver al menú</a> }
             @await Html.PartialAsync("_CuentaOperador")
         </div>
     </header>
@@ -85,7 +85,7 @@
                     </div>
                     <div class="cuenta-actions">
                         <button type="submit" id="cuentaGuardar" class="btn btn-golden"><i class="bx bx-check-circle" aria-hidden="true"></i> Guardar contraseña</button>
-                        @if (!restringida) { <a class="btn btn-outline-secondary" asp-area="" asp-controller="Home" asp-action="Index">Cancelar</a> }
+                        @if (!restringida) { <a class="btn btn-outline-secondary" href="@Url.MenuPrincipalCaja()">Cancelar</a> }
                         else { <a class="btn btn-outline-secondary" asp-area="Seguridad" asp-controller="Token" asp-action="Logout">Cerrar sesión</a> }
                     </div>
                     <a id="cuentaReingresar" class="btn btn-outline-secondary d-none mt-3" asp-area="Seguridad" asp-controller="Token" asp-action="Logout">Volver a ingresar</a>

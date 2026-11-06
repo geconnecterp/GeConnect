@@ -1,4 +1,4 @@
-﻿// ========================================================
+// ========================================================
 // GESTOR PRINCIPAL DEL MÓDULO DE COBRANZA DIFERIDA (CD)
 // ✅ v3.1 - FLUJO DUAL: Ver todas las facturas O buscar cliente específico
 // ========================================================
@@ -182,7 +182,7 @@ $(function () {
     // ✅ NUEVO v3.1: Manejador del botón de salida
     $('#btnSalirFacturacion').off('click').on('click', function () {
         console.log('🚪 Usuario solicitó salir al menú principal desde Cobranza Diferida...');
-        window.location.href = MenuCajaUrl;
+        window.location.href = obtenerUrlMenuPrincipalCaja();
     });
 });
 

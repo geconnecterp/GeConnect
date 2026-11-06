@@ -65,7 +65,7 @@
     const $ = id => document.getElementById(id);
     const modelo = new SeleccionCustodia();
     let instrumentos = [], instrumento = '', ocupada = false, consultaValida = false, registrada = false, incierta = false, entregaHabilitada = false;
-    let entregaId = '', pdfUrl = '', solicitud = form.dataset.solicitud, dialogoActivo = false, descartando = false, registrando = false;
+    let entregaId = '', solicitud = form.dataset.solicitud, dialogoActivo = false, descartando = false, registrando = false;
     function nuevoId() { return globalThis.crypto?.randomUUID?.() || 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => { const r = Math.floor(Math.random() * 16); return (c === 'x' ? r : (r & 3 | 8)).toString(16); }); }
     function estado(texto, tipo) { $('cuEstado').textContent = texto; $('cuEstado').dataset.tipo = tipo || ''; }
     function celda(fila, texto, clase) { const td = document.createElement('td'); td.textContent = texto; if (clase) td.className = clase; fila.append(td); return td; }
@@ -172,15 +172,15 @@
             boton.disabled = false; boton.addEventListener('click', aceptar); elemento.addEventListener('hidden.bs.modal', cerrado); modal.show();
         });
     }
-    async function acuse() {
+    async function acuse(reimprimir = false) {
         if (!entregaId) return;
         $('cuImprimir').disabled = true; $('cuEstadoAcuse').textContent = 'Obteniendo acuse…';
         try {
-            const response = await fetch(form.dataset.acuse + '?entrega=' + encodeURIComponent(entregaId), { credentials: 'same-origin', cache: 'no-store', headers: { Accept: 'application/pdf', 'X-Requested-With': 'XMLHttpRequest' } });
-            if (!response.ok || !response.headers.get('content-type')?.includes('application/pdf')) throw new Error('No se pudo obtener el acuse. La entrega está registrada; puede volver a solicitar el PDF sin confirmar otra entrega.');
-            const blob = await response.blob(); if (pdfUrl) URL.revokeObjectURL(pdfUrl); pdfUrl = URL.createObjectURL(blob);
-            $('cuPdf').src = pdfUrl; $('cuPdf').hidden = false; $('cuAbrirPdf').href = pdfUrl; $('cuAbrirPdf').hidden = false;
-            $('cuEstadoAcuse').textContent = 'Acuse disponible. Puede imprimirlo o guardarlo desde el visor PDF.';
+            const resultado = await SalidaComprobantes.solicitar({ tipo: 'CUSTODIA', entrega_id: entregaId }, {
+                reimprimir: reimprimir === true
+            });
+            $('cuEstadoAcuse').textContent = resultado.mensaje || 'El acuse conserva su registro.';
+            $('cuImprimir').textContent = SalidaComprobantes.resolverModo() === 'IMPRESORA' ? 'Reimprimir acuse' : 'Ver acuse';
         } catch (ex) { $('cuEstadoAcuse').textContent = ex.message; }
         finally { $('cuImprimir').disabled = false; }
     }
@@ -224,7 +224,7 @@
         if (modelo.seleccion.size && !await confirmar('Actualizar rendiciones', ['Se consultará nuevamente la sucursal y se descartará la selección que está preparando. ¿Desea continuar?'])) return;
         await cargar(false);
     });
-    $('cuCorregir').addEventListener('click', () => ejecutar(false)); $('cuEntregar').addEventListener('click', () => ejecutar(true)); $('cuImprimir').addEventListener('click', acuse);
+    $('cuCorregir').addEventListener('click', () => ejecutar(false)); $('cuEntregar').addEventListener('click', () => ejecutar(true)); $('cuImprimir').addEventListener('click', () => acuse(true));
     $('cuVolver').addEventListener('click', async event => {
         if (registrando) { event.preventDefault(); return; }
         if (!registrada && modelo.seleccion.size) { event.preventDefault(); if (await confirmar('Volver al menú', incierta ? ['No se recibió un resultado definitivo. Salir no revierte la operación.', 'Conserve la referencia ' + solicitud + ' y verifique el resultado antes de repetirla. ¿Desea volver al menú?'] : ['La entrega no fue confirmada. ¿Desea descartar esta selección y volver al menú?', 'Las correcciones que ya haya guardado se conservan.'])) { descartando = true; window.location.assign($('cuVolver').href); } }

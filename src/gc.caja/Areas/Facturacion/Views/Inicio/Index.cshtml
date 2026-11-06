@@ -90,6 +90,7 @@
 
 
 @await Html.PartialAsync("~/Areas/Facturacion/Views/Pago/_detalleClover.cshtml")
+@await Html.PartialAsync("~/Areas/Facturacion/Views/Pago/_detalleMercadoPago.cshtml")
 
 @section Scripts {
     <script>
@@ -130,7 +131,7 @@
         var ActualizarConsumidorFinalUrl = '@Url.Action("ActualizarConsumidorFinal", "Cliente", new { area = "Facturacion" })';
         var ObtenerProductoDatosUrl = '@Url.Action("ObtenerProductoDatos", "ProductoFact", new { area = "Facturacion" })';
         // URLs de Menú
-        var MenuCajaUrl = '@Url.Action("Index", "Home", new { area = "" })';
+        var MenuCajaUrl = '@Url.MenuPrincipalCaja()';
 
         //funcionalidad busqueda avanzada controlador común
         let productoBase = null; //se hidrata en busquedas.
@@ -197,6 +198,8 @@
     <script src="~/js/app/factFacturaEmitida.js" asp-append-version="true"></script>
     <script src="~/js/app/cloverPago.js" asp-append-version="true"></script>
     <script src="~/js/app/cloverPagoVista.js" asp-append-version="true"></script>
+    <script src="~/js/app/mercadoPago.js" asp-append-version="true"></script>
+    <script src="~/js/app/mercadoPagoVista.js" asp-append-version="true"></script>
     <script src="~/js/app/pagoFactura.js" asp-append-version="true"></script>
 
 }

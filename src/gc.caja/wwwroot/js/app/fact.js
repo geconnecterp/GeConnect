@@ -1509,12 +1509,19 @@ function confirmarSalidaAlMenu() {
     }
 }
 
+// La portada y el menú operativo comparten Home. El retorno debe pedir el menú.
+function obtenerUrlMenuPrincipalCaja() {
+    const base = typeof MenuCajaUrl !== 'undefined' && MenuCajaUrl
+        ? MenuCajaUrl
+        : (typeof home !== 'undefined' && home ? home : '/Home/Index');
+    const destino = new URL(base, window.location.href);
+    destino.searchParams.set('menu', 'true');
+    return destino.href;
+}
+
 function redirigirAlMenu() {
     limpiarSesionClientesBuscados();
-
-    const urlMenu = typeof MenuCajaUrl !== 'undefined' && MenuCajaUrl
-        ? MenuCajaUrl
-        : '/Home/Index';
+    const urlMenu = obtenerUrlMenuPrincipalCaja();
 
     setTimeout(() => {
         window.location.href = urlMenu;

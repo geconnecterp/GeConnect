@@ -1,0 +1,29 @@
+@inject gc.caja.Models.Estacion.EstacionPuestoServicio Estaciones
+@inject gc.caja.core.Servicios.Contratos.Cajas.IReportesConfigService Reportes
+@inject Microsoft.AspNetCore.Antiforgery.IAntiforgery Antiforgery
+@{
+    var puesto = Estaciones.Obtener(Context);
+    var reportes = Reportes.ObtenerTodos();
+    var operador = User.FindFirst("unique_name")?.Value ?? User.FindFirst("name")?.Value ?? User.Identity?.Name ?? User.FindFirst("sub")?.Value ?? Guid.NewGuid().ToString("N");
+    bool Existe(string key) => reportes.Any(r => string.Equals(r.Key, key, StringComparison.OrdinalIgnoreCase));
+    var configuracion = new {
+        modo = gc.caja.Models.Estacion.ModoSalidaComprobantes.Resolver(puesto?.ImpresionModo),
+        ambito = string.Join("|", puesto?.EstacionId, puesto?.AdmId, puesto?.CajaId, operador),
+        reportes = Url.Action("ObtenerConfigReportes", "ProductoFact", new { area = "Facturacion" }),
+        factura = Url.Action("GenerarReporteComprobante", "ProductoFact", new { area = "Facturacion" }),
+        acuse = Url.Action("Acuse", "Custodia", new { area = "Facturacion" }),
+        recibo = Url.Action("Recibo", "SalidaComprobantes", new { area = "Facturacion" }),
+        registro = Url.Action("Registrar", "SalidaComprobantes", new { area = "Facturacion" }),
+        token = Antiforgery.GetAndStoreTokens(Context).RequestToken,
+        reciboCD = Existe("RECIBO_CD") || Existe("RECIBO"),
+        reciboCC = Existe("RECIBO_CC") || Existe("RECIBO")
+    };
+}
+<script id="gcSalidaConfiguracion" type="application/json">@Html.Raw(System.Text.Json.JsonSerializer.Serialize(configuracion))</script>
+<aside id="gcSalidaEstado" class="gc-salida-estado" hidden aria-label="Salida del comprobante" aria-live="polite">
+    <button type="button" class="btn-close" data-salida-cerrar aria-label="Ocultar aviso"></button>
+    <strong data-salida-titulo></strong><p data-salida-mensaje></p>
+    <button type="button" class="btn btn-sm btn-outline-secondary" data-salida-accion="ver">Ver PDF</button>
+    <button type="button" class="btn btn-sm btn-primary" data-salida-accion="reimprimir">Reimprimir</button>
+</aside>
+<script src="~/js/app/salidaComprobantes.js" asp-append-version="true"></script>

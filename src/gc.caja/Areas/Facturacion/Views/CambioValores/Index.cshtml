@@ -1,4 +1,4 @@
-﻿@{
+@{
     ViewData["Title"] = "Cambios e Ingresos de Valores";
     Layout = "~/Views/Shared/_Layout.cshtml";
     var modulo = ViewBag.Modulo as string ?? "CambioValores";
@@ -194,6 +194,7 @@
 @await Html.PartialAsync("~/Areas/Facturacion/Views/Pago/_detalleCheque.cshtml")
 @await Html.PartialAsync("~/Areas/Facturacion/Views/Pago/_detalleTransferencia.cshtml")
 @await Html.PartialAsync("~/Areas/Facturacion/Views/Pago/_detalleClover.cshtml")
+@await Html.PartialAsync("~/Areas/Facturacion/Views/Pago/_detalleMercadoPago.cshtml")
 
 @section Scripts {
     <script>
@@ -201,7 +202,7 @@
         let clienteActualFactura = null;
         const coTipo = 'CV';
 
-        const MenuCajaUrl = '@Url.Action("Index", "Home", new { area = "" })';
+        const MenuCajaUrl = '@Url.MenuPrincipalCaja()';
         const BuscarClienteUrl = '@Url.Action("BuscarCliente", "Cliente", new { Area = "Facturacion", app = "CV" })';
         const TraerGrillaClientesUrl = '@Url.Action("TraerGrillaClientes", "Cliente", new { Area = "Facturacion" })';
         const LimpiarSesionClientesUrl = '@Url.Action("LimpiarSesionClientes", "Cliente", new { Area = "Facturacion" })';
@@ -212,11 +213,13 @@
         const cambioValoresInstrumentosUrl = '@Url.Action("ObtenerInstrumentos", "CambioValores", new { Area = "Facturacion" })';
         const cambioValoresConfirmarOperacionUrl = '@Url.Action("ConfirmarOperacion", "CambioValores", new { Area = "Facturacion" })';
         const cambioValoresBancosUrl = '@Url.Action("ObtenerBancos", "CambioValores", new { Area = "Facturacion" })';
-        const cambioValoresMenuUrl = '@Url.Action("Index", "Home", new { area = "" })';
+        const cambioValoresMenuUrl = '@Url.MenuPrincipalCaja()';
     </script>
 
     <script src="~/js/app/fact.js" asp-append-version="true"></script>
     <script src="~/js/app/cloverPago.js" asp-append-version="true"></script>
     <script src="~/js/app/cloverPagoVista.js" asp-append-version="true"></script>
+    <script src="~/js/app/mercadoPago.js" asp-append-version="true"></script>
+    <script src="~/js/app/mercadoPagoVista.js" asp-append-version="true"></script>
     <script src="~/js/app/cambioValores.js" asp-append-version="true"></script>
 }

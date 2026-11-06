@@ -1,0 +1,10 @@
+#modalDetalleMercadoPago { z-index: 5100 !important; }
+#modalDetalleMercadoPago .modal-dialog { max-width: 640px; z-index: 5101 !important; }
+#modalDetalleMercadoPago.modal.show ~ .modal-backdrop { z-index: 5099 !important; }
+.mp-modal .mp-tipos { min-width: 0; margin: 0; }
+.mp-modal .mp-tipos legend { font-size: 1rem; }
+.mp-modal .mp-tipos label { display: inline-flex; align-items: center; gap: .3rem; margin-right: .7rem; }
+.mp-modal .mp-tipos input { min-height: initial; }
+.mp-modal #txtPaymentIdMercadoPago { text-transform: uppercase; }
+
+.mp-modal input[type="radio"] { min-height: initial; width: 1rem; height: 1rem; accent-color: #bf9011; }
