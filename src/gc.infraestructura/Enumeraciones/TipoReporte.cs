@@ -112,5 +112,7 @@ namespace gc.infraestructura.Enumeraciones
         R104_LibroIvaVentasResumen = 104,
         R105_LibroIvaComprasResumen = 105,
 		R106_Consulta_Faltante_De_Caja = 106,
+		R107_Reporte_De_Proveedores = 107,
+		R108_Reporte_De_Clientes = 108,
 	}
 }

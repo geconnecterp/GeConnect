@@ -45,6 +45,8 @@ namespace gc.api.core.Servicios.Reportes
             IOrdenDePagoServicio _opSv, 
             IApiVentasServicio ventasSv,
 			IApiCajaServicio cajaSrv,
+			IABMClienteServicio iCliSrv,
+			IABMProveedorServicio iProvSrv,
 			ILogger<ReportService> logger) : base(uow)
         {
 
@@ -152,6 +154,8 @@ namespace gc.api.core.Servicios.Reportes
 				{ InfoReporte.R102_Remito_No_Fiscal, new R102_Remito_No_Fiscal(uow,apiProdSv,empresa,ctaSv, logger) },
 				{ InfoReporte.R103_Planilla_Elaboracion_Y_Fraccion, new R103_Planilla_Elaboracion_Y_Fraccion(uow,apiProdSv,empresa,ctaSv, logger) },
 				{ InfoReporte.R106_Consulta_Faltante_De_Caja, new R106_Consulta_Faltante_De_Caja(uow,consSv,empresa,cajaSrv, logger) },
+				{ InfoReporte.R107_Reporte_De_Proveedores, new R107_Reporte_De_Proveedores(uow,consSv, iCliSrv, iProvSrv,empresa,cajaSrv, logger) },
+				{ InfoReporte.R108_Reporte_De_Clientes, new R107_Reporte_De_Proveedores(uow,consSv, iCliSrv, iProvSrv,empresa,cajaSrv, logger) },
 			}; 
             _logger = logger;
         }

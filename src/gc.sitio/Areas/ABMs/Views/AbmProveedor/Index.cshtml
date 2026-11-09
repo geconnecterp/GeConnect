@@ -11,6 +11,7 @@
 
 @section styles {
 	<link rel="stylesheet" href="~/css/simplePagination.css" />
+	<link rel="stylesheet" href="~/lib/jstree/themes/default/style.min.css" />
 }
 
 <div class="container">
@@ -97,6 +98,9 @@
 	</div>
 </div>
 
+<!-- para el modal del geston de impresion -->
+<div id="modalGestorDocumental"></div>
+
 @section scripts {
 	<script type="text/javascript">
 		var totalRegs = 0;
@@ -139,9 +143,19 @@
 		var dataOpsFamiliaUrl = "@Url.Action("DataOpsProveedorFamilia", "abmproveedor", new { area = "abms" })";
 		var dataOpsProveedorUrl = "@Url.Action("DataOpsProveedor", "abmproveedor", new { area = "abms" })";
 		var cargarListaTipoOpeUrl = "@Url.Action("CargarListaTipoOpe", "abmproveedor", new { area = "abms" })";
+
+		// Gestor de impresión
+		var repoApiUrl = '@Url.Action("ObtenerPdfDesdeAPI", "GestorImpresion", new { area = "ControlComun" })';
+		var OrquestadorDeModulosUrl = "@Url.Action("OrquestadorDeModulos", "GestorImpresion", new { area = "ControlComun" })";
+		var presentarArchivosUrl = "@Url.Action("presentarArchivos", "GestorImpresion", new { area = "ControlComun" })";
+		var enviarEmailUrl = "@Url.Action("EnviarEmail", "GestorImpresion", new { area = "ControlComun" })";
+		var enviarWhatsAppUrl = "@Url.Action("EnviarWhatsApp", "GestorImpresion", new { area = "ControlComun" })";
+		var generadorArchivoUrl = "@Url.Action("GeneradorArchivo", "GestorImpresion", new { area = "ControlComun" })";
 	</script>
 	<script src="~/js/plugins/jquery.simplePagination.js"></script>
 	<script src="~/js/app/busquedas.js"></script>
+	<script src="~/lib/jstree/jstree.min.js"></script>
+	<script src="~/js/app/areas/docmngr/docmanager.js" asp-append-version="true"></script>
 	<script src="~/js/app/areas/abms/abmsettings.js" type="text/javascript"></script>
 	<script src="~/js/app/areas/abms/abmcommons.js" type="text/javascript"></script>
 	<script src="~/js/app/areas/abms/abmproveedor.js" type="text/javascript"></script>

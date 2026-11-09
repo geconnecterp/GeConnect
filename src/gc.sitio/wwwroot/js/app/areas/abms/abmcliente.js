@@ -3,15 +3,27 @@
 		var div = $("#divPaginacion");
 		presentaPaginacion(div);
 	});
+	$(document).off("change", "#listaAfip");
 	$(document).on("change", "#listaAfip", controlaValorAfip);
+	$(document).off("change", "#listaProvi");
 	$(document).on("change", "#listaProvi", controlaValorProvi);
+	$(document).off("change", "#listaTipoCanal");
 	$(document).on("change", "#listaTipoCanal", controlaValorCanal);
+	$(document).off("click", "#chkPivaCertActiva");
 	$(document).on("click", "#chkPivaCertActiva", controlaCertIva);
+	$(document).off("click", "#chkIbCertActiva");
 	$(document).on("click", "#chkIbCertActiva", controlaCertIb);
+	$(document).off("click", "#chkCtaEmpActiva");
 	$(document).on("click", "#chkCtaEmpActiva", controlaCtaEmp);
+	$(document).off("change", "#listaFP");
 	$(document).on("change", "#listaFP", controlaValorFP);
+	$(document).off("keyup", "#FormaDePago_Fp_Dias");
 	$(document).on("keyup", "#FormaDePago_Fp_Dias", controlaKeyUpFP);
+	$(document).off("focusout", "#FormaDePago_Fp_Dias");
 	$(document).on("focusout", "#FormaDePago_Fp_Dias", controlaFocusOutFP);
+
+	$("#btnImprimir").off("click");
+	$("#btnImprimir").on("click", analizaImprimirReporte);
 
 	$("#Rel02List").on("dblclick", 'option', function () { $(this).remove(); })
 	$("#Rel03List").on("dblclick", 'option', function () { $(this).remove(); })
@@ -60,6 +72,63 @@
 	funcCallBack = buscarClientes;
 	return true;
 });
+
+function ReseteoDeReportes() {
+	console.log("Reseto de reportes");
+	ReporteResetArre();
+}
+
+function analizaImprimirReporte() {
+	ReseteoDeReportes();
+	setTimeout(() => {
+		var buscar = "";
+		var id = "";
+		var id2 = "";
+		var r01 = [];
+		var r02 = [];
+
+		if ($("#chkDescr").is(":checked")) {
+			buscar = $("#Buscar").val();
+		}
+		if ($("#chkDesdeHasta").is(":checked")) {
+			id = $("#Id").val();
+			id2 = $("#Id2").val();
+		}
+		if ($("#chkRel01").is(":checked")) {
+			$("#Rel02List").children().each(function (i, item) { r01.push($(item).val()) });
+		}
+		if ($("#chkRel03").is(":checked")) {
+			$("#Rel03List").children().each(function (i, item) { r02.push($(item).val()) });
+		}
+
+		var data1 = {
+			id, id2,
+			rel01: r01,
+			rel02: r02,
+			rel03: [],
+			"fechaD": null, //"0001-01-01T00:00:00",
+			"fechaH": null, //"0001-01-01T00:00:00",
+			buscar
+		};
+
+		var data = {
+			id, id2,
+			rel01: r01,
+			rel02: r02,
+			rel03: [],
+			"fechaD": null, //"0001-01-01T00:00:00",
+			"fechaH": null, //"0001-01-01T00:00:00",
+			buscar,
+			tipo: 'C'
+		};
+
+		cargarReporteEnArre(108, data, "LISTADO DE CLIENTES", "", "");
+		invocacionGestorDoc({});
+	}, 500);
+
+
+
+}
 
 function controlaKeyUpFP(e) { }
 
