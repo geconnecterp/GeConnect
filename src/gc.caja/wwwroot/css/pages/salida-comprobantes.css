@@ -1,0 +1,8 @@
+.gc-salida-estado { position: fixed; z-index: 1050; right: 1rem; bottom: 7rem; max-width: min(34rem, calc(100vw - 2rem)); padding: .85rem 1rem; border: 1px solid #d6aa30; border-left: 5px solid #c4980b; border-radius: .65rem; background: #fffdf6; color: #343434; box-shadow: 0 4px 18px #0002; }
+.gc-salida-estado[hidden] { display: none; }
+.gc-salida-estado p { margin: .2rem 1.5rem .6rem 0; font-size: .9rem; }
+.gc-salida-estado button { margin-right: .4rem; }
+.gc-salida-estado [data-salida-cerrar] { position: absolute; top: .6rem; right: .5rem; }
+.gc-salida-estado[data-estado="VERIFICAR"] { border-left-color: #e08b00; }
+.gc-salida-impresion { position: fixed; left: -10000px; top: 0; width: 1px; height: 1px; border: 0; }
+@media print { .gc-salida-estado { display: none !important; } }

@@ -17,6 +17,9 @@ public sealed class EstacionPuesto
     [Range(1, 2)] public int Facturacion { get; set; }
     [Range(0, 2)] public int TipoCnnCF { get; set; }
     public bool Acumula { get; set; }
+    // Ausente usa impresión directa; PANTALLA debe elegirse expresamente en el puesto.
+    [RegularExpression(@"(?i)^(PANTALLA|IMPRESORA)$")]
+    public string? ImpresionModo { get; set; }
 
     public CajaSettings Configuracion() => new() { CajaId = CajaId, AdmId = AdmId, IP = IP,
         Facturacion = (TipoFact)Facturacion, TipoCnnCF = (TipoCnnCF)TipoCnnCF, acumula = Acumula };

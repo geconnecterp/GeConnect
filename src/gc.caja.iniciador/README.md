@@ -74,3 +74,10 @@ El iniciador necesita que el servidor tenga publicada la versión que incorpora 
 Una solicitud de diagnóstico con cuerpo `{}` a ese endpoint debe devolver **400** de validación, porque faltan los datos del puesto; una configuración válida devuelve **200** con un pase. Una respuesta **302** al login no es válida para esta etapa.
 
 > Referencia funcional común: [Bitácora única de reglas de Caja](../gc.caja/Docs/BitacoraUnicaReglasCaja.md). Este documento conserva las instrucciones técnicas de despliegue y recuperación.
+
+
+## Salida de comprobantes
+
+El iniciador transmite la propiedad opcional `impresionModo` del JSON local: `PANTALLA` o `IMPRESORA`. El ejemplo publicado selecciona `IMPRESORA`; los JSON anteriores sin ese campo siguen siendo válidos y usan impresión directa por defecto. `PANTALLA` se elige expresamente. La impresión directa utiliza la predeterminada de Windows del puesto y requiere preparar Chrome/Edge, no la impresora del servidor. No es necesario aplicar políticas para compilar ni desarrollar en modo Pantalla.
+
+La publicación incluye `Configurar-Impresion.ps1`, con consulta, habilitación y restauración de las dos políticas, con respaldo previo. Ver [configuración, alternativas sin habilitar scripts, diagnóstico y límites](../gc.caja/Docs/ImpresionComprobantes.md). No se modifica la política de ejecución de PowerShell ni se aplican ajustes del navegador al iniciar Caja automáticamente.

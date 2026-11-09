@@ -22,27 +22,30 @@ public static class CustodiaAcusePdf
         if (filas.Any(f => f.ent_compte != cabecera.ent_compte || f.adm_id != cabecera.adm_id))
             throw new ArgumentException("Los datos del acuse no corresponden a una única entrega y sucursal.");
         using var stream = new MemoryStream();
-        using (var pdf = new Document(PageSize.A4.Rotate(), 28, 28, 30, 35))
+        // A4 vertical coincide con el papel predeterminado del puesto y evita depender del giro automático.
+        // 12 mm de margen resguardan el contenido del área no imprimible del dispositivo.
+        var hoja = new Rectangle(PageSize.A4.Width, PageSize.A4.Height);
+        using (var pdf = new Document(hoja, 34, 34, 34, 35))
         {
             var writer = PdfWriter.GetInstance(pdf, stream); writer.CloseStream = false;
             writer.PageEvent = new Pie();
             pdf.AddTitle("Acuse de entrega en custodia " + cabecera.ent_compte);
             pdf.AddAuthor("GECO Caja"); pdf.Open();
-            pdf.Add(new Paragraph("GECO CAJA · ENTREGA DE VALORES EN CUSTODIA", FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 16, Dorado)) { SpacingAfter = 12 });
+            pdf.Add(new Paragraph("GECO CAJA · ENTREGA DE VALORES EN CUSTODIA", FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 14, Dorado)) { SpacingAfter = 12 });
             pdf.Add(new Paragraph("ACUSE · Entrega N.º " + cabecera.ent_compte, FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 12)) { SpacingAfter = 6 });
             pdf.Add(new Paragraph("Sucursal: " + cabecera.adm_id + " · " + cabecera.adm_nombre + "     Fecha: " + cabecera.ent_fecha.ToString("dd/MM/yyyy HH:mm", Cultura), Normal));
             pdf.Add(new Paragraph("Responsable de la entrega: " + cabecera.ent_resp_entrega, Normal));
             pdf.Add(new Paragraph("En custodia de: " + cabecera.ent_resp_recibe, Normal));
             pdf.Add(new Paragraph("Comprobante de entrega: " + cabecera.ent_compte_retiro, Normal) { SpacingAfter = 14 });
             var tabla = new PdfPTable(8) { WidthPercentage = 100, HeaderRows = 1, SpacingAfter = 12 };
-            tabla.SetWidths([11f, 18f, 12f, 10f, 7f, 10f, 16f, 16f]);
+            tabla.SetWidths([11f, 13f, 11f, 8f, 6f, 8f, 21.5f, 21.5f]);
             foreach (var titulo in new[] { "Fecha", "Proceso", "Cierre / Rend.", "Tipo", "PV", "Moneda", "Rendido", "Importe OK" })
-                tabla.AddCell(new PdfPCell(new Phrase(titulo, FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 9, BaseColor.White))) { BackgroundColor = Dorado, Padding = 7, BorderColor = Dorado });
+                tabla.AddCell(new PdfPCell(new Phrase(titulo, FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 8, BaseColor.White))) { BackgroundColor = Dorado, Padding = 5, BorderColor = Dorado, VerticalAlignment = Element.ALIGN_MIDDLE });
             var indice = 0;
             foreach (var f in filas.OrderBy(f => f.ins_id).ThenBy(f => f.rend_fecha).ThenBy(f => f.caja_nro_proceso).ThenBy(f => f.caja_nro_cierre).ThenBy(f => f.caja_nro_rend).ThenBy(f => f.rend_item))
             {
                 var valores = new[] { f.rend_fecha.ToString("dd/MM/yyyy", Cultura), f.caja_nro_proceso, f.caja_nro_cierre + " / " + f.caja_nro_rend, f.rend_tipo == "P" ? "Parcial" : "Final", f.caja_id, f.ins_id.Trim(), Importe(f.rend_importe_arq, f.ins_id), Importe(f.rend_importe_ok, f.ins_id) };
-                for (var i = 0; i < valores.Length; i++) tabla.AddCell(new PdfPCell(new Phrase(valores[i] ?? "", Normal)) { Padding = 6, BorderColor = new BaseColor(226, 222, 211), BackgroundColor = indice % 2 == 0 ? BaseColor.White : new BaseColor(251, 248, 240), HorizontalAlignment = i >= 6 ? Element.ALIGN_RIGHT : Element.ALIGN_LEFT });
+                for (var i = 0; i < valores.Length; i++) tabla.AddCell(new PdfPCell(new Phrase(valores[i] ?? "", Normal)) { Padding = 4, BorderColor = new BaseColor(226, 222, 211), BackgroundColor = indice % 2 == 0 ? BaseColor.White : new BaseColor(251, 248, 240), HorizontalAlignment = i >= 6 ? Element.ALIGN_RIGHT : Element.ALIGN_LEFT });
                 indice++;
             }
             pdf.Add(tabla);
@@ -60,8 +63,8 @@ public static class CustodiaAcusePdf
     {
         public override void OnEndPage(PdfWriter writer, Document document)
         {
-            ColumnText.ShowTextAligned(writer.DirectContent, Element.ALIGN_LEFT, new Phrase("GECO Caja · Acuse de entrega de valores en custodia", FontFactory.GetFont(FontFactory.HELVETICA, 8)), document.LeftMargin, 18, 0);
-            ColumnText.ShowTextAligned(writer.DirectContent, Element.ALIGN_RIGHT, new Phrase("Página " + writer.PageNumber, Normal), document.PageSize.Width - document.RightMargin, 18, 0);
+            ColumnText.ShowTextAligned(writer.DirectContent, Element.ALIGN_LEFT, new Phrase("GECO Caja · Acuse de entrega de valores en custodia", FontFactory.GetFont(FontFactory.HELVETICA, 8)), document.LeftMargin, 24, 0);
+            ColumnText.ShowTextAligned(writer.DirectContent, Element.ALIGN_RIGHT, new Phrase("Página " + writer.PageNumber, Normal), document.PageSize.Width - document.RightMargin, 24, 0);
         }
     }
 }

@@ -16,7 +16,7 @@ using System.Globalization;
 
 namespace gc.caja.Controllers;
 
-public abstract class PagoConCreditosController : ControladorBaseCaja
+public abstract partial class PagoConCreditosController : ControladorBaseCaja
 {
     protected readonly ICheckoutServicio _pagoFactServicio;
     protected PagoConCreditosController(IOptions<AppSettings> options, ICheckoutServicio pago,

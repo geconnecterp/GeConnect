@@ -20,6 +20,7 @@ try
         throw new InvalidOperationException($"El archivo de configuración no contiene JSON válido: {ruta}. Revise su contenido.");
     }
     config.EstacionId = string.IsNullOrWhiteSpace(config.EstacionId) ? Environment.MachineName : config.EstacionId;
+    config.ImpresionModo = config.ImpresionModo?.Trim().ToUpperInvariant();
     Validator.ValidateObject(config, new ValidationContext(config), true);
     var servidor = Opcion("--servidor") ?? config.Servidor;
     if (!Uri.TryCreate(servidor?.TrimEnd('/') + "/", UriKind.Absolute, out var destino) || destino.Scheme != "https" || !string.IsNullOrEmpty(destino.UserInfo) || !string.IsNullOrEmpty(destino.Query) || !string.IsNullOrEmpty(destino.Fragment))
@@ -31,7 +32,7 @@ try
     cliente.DefaultRequestHeaders.Accept.ParseAdd("application/json");
     var endpoint = new Uri(destino, "Seguridad/Estacion/Preparar");
     using var respuesta = await cliente.PostAsJsonAsync(endpoint, new {
-        config.EstacionId, config.CajaId, config.AdmId, config.IP, config.Facturacion, config.TipoCnnCF, config.Acumula
+        config.EstacionId, config.CajaId, config.AdmId, config.IP, config.Facturacion, config.TipoCnnCF, config.Acumula, config.ImpresionModo
     });
     var pase = await RespuestaInicio.LeerPaseAsync(respuesta, endpoint);
     var url = new Uri(destino, "Seguridad/Estacion/Iniciar?pase=" + pase).AbsoluteUri;
@@ -60,4 +61,6 @@ sealed class Configuracion
     [Range(1, 2)] public int Facturacion { get; set; }
     [Range(0, 2)] public int TipoCnnCF { get; set; }
     public bool Acumula { get; set; }
+    [RegularExpression(@"(?i)^(PANTALLA|IMPRESORA)$")]
+    public string? ImpresionModo { get; set; }
 }

@@ -1,4 +1,4 @@
-﻿@{
+@{
     ViewData["Title"] = "Nota de Crédito por Devolución";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
@@ -179,7 +179,7 @@
             '@Url.Action("CancelarOperacion", "NotaCredito", new { area = "Facturacion" })';
 
         var ncDevolucionMenuCajaUrl =
-            '@Url.Action("Index", "Home", new { area = "", menu = true })';
+            '@Url.MenuPrincipalCaja()';
 
         var ncDevolucionIndexUrl =
             '@Url.Action("Index", "NotaCredito", new { area = "Facturacion" })';

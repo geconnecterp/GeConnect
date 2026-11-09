@@ -46,7 +46,7 @@
                 <p id="mensajeInicialTexto"></p>
                 <hr>
                 <p class="mb-0">
-                    <a href="@Url.Action("Index", "Home", new { Area = "" })" class="btn btn-primary">
+                    <a href="@Url.MenuPrincipalCaja()" class="btn btn-primary">
                         <i class='bx bx-arrow-back'></i> Volver al Menú Principal
                     </a>
                 </p>
@@ -77,6 +77,7 @@
 @await Html.PartialAsync("~/Areas/Facturacion/Views/pago/_detalleValeCompra.cshtml")
 
 @await Html.PartialAsync("~/Areas/Facturacion/Views/Pago/_detalleClover.cshtml")
+@await Html.PartialAsync("~/Areas/Facturacion/Views/Pago/_detalleMercadoPago.cshtml")
 
 @section Scripts {
     <script>
@@ -94,7 +95,7 @@
         const MENSAJE_ERROR = '@Html.Raw(mensajeError)';
 
         // URLs del backend
-        const MenuCajaUrl = '@Url.Action("Index", "Home", new { Area = "" })';
+        const MenuCajaUrl = '@Url.MenuPrincipalCaja()';
         var ValidacionIntegridadUrl = "@Url.Action("ValidacionIntegridad", "Home", new { area = "" })";
         var AperturaCajaUrl = "@Url.Action("AperturaCaja", "Home", new { area = "" })";
         var ObtenerDatosCajaUrl = "@Url.Action("ObtenerDatosCaja", "Home", new { area = "" })";
@@ -139,5 +140,7 @@
     <script src="~/js/app/pagoDiferido.js" asp-append-version="true"></script>
     <script src="~/js/app/cloverPago.js" asp-append-version="true"></script>
     <script src="~/js/app/cloverPagoVista.js" asp-append-version="true"></script>
+    <script src="~/js/app/mercadoPago.js" asp-append-version="true"></script>
+    <script src="~/js/app/mercadoPagoVista.js" asp-append-version="true"></script>
     <script src="~/js/app/pagoFactura.js" asp-append-version="true"></script>
 }

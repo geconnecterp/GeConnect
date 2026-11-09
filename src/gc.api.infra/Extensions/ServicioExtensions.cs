@@ -1,4 +1,4 @@
-﻿using gc.api.core.Contratos.Servicios;
+using gc.api.core.Contratos.Servicios;
 using gc.api.core.Contratos.Servicios.ABM;
 using gc.api.core.Contratos.Servicios.Asientos;
 using gc.api.core.Contratos.Servicios.Contable;
@@ -192,6 +192,7 @@ namespace gc.api.infra.Extensions
 
             // Servicio común a los hosts API. Clover no depende de un diario del POS.
             services.TryAddScoped<CloverServicio>();
+            services.TryAddScoped<MercadoPagoServicio>();
             services.AddScoped<IApiCajaServicio, ApiCajaServicio>();
             services.AddScoped<IApiProductoFactServicio, ApiProductoFactServicio>();
             services.AddScoped<IApiPagoFactServicio, ApiPagoFactServicio>();

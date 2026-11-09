@@ -1,4 +1,4 @@
-﻿@{
+@{
     ViewData["Title"] = "Rendiciones Parciales de Caja";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
@@ -226,7 +226,7 @@
         var rendicionCargarInstrumentosUrl = '@Url.Action("CargarRendiciones", "Rendicion", new { area = "Facturacion" })';
         var rendicionCargarNominacionesUrl = '@Url.Action("CargarNominaciones", "Rendicion", new { area = "Facturacion" })';
         var rendicionConfirmarUrl = '@Url.Action("Confirmar", "Rendicion", new { area = "Facturacion" })';
-        var rendicionMenuCajaUrl = '@Url.Action("Index", "Home", new { area = "" })';
+        var rendicionMenuCajaUrl = '@Url.MenuPrincipalCaja()';
     </script>
     <script src="~/js/app/rendicionParcial.js" asp-append-version="true"></script>
 }

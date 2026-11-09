@@ -38,16 +38,15 @@
             <p class="cu-ayuda mb-0">El importe OK admite cero y valores positivos, con hasta dos decimales. Seleccione una rendición para corregirla.</p>
         </section>
         <div class="cu-acciones">
-            <a id="cuVolver" class="btn btn-outline-secondary" href="@Url.Action("Index", "Home", new { area = "" })"><i class="bx bx-arrow-back" aria-hidden="true"></i> Volver al menú</a>
+            <a id="cuVolver" class="btn btn-outline-secondary" href="@Url.MenuPrincipalCaja()"><i class="bx bx-arrow-back" aria-hidden="true"></i> Volver al menú</a>
             <div class="cu-confirmaciones"><button id="cuCorregir" type="button" class="btn btn-primary" disabled><i class="bx bx-edit-alt" aria-hidden="true"></i> Aceptar correcciones</button>
                 <button id="cuEntregar" type="button" class="btn btn-success" disabled><i class="bx bx-check-shield" aria-hidden="true"></i> Confirmar entrega</button></div>
         </div>
     </form>
     <section id="cuAcuse" class="rz-card cu-acuse" hidden aria-labelledby="cuAcuseTitulo"><div class="cu-barra"><div><h2 id="cuAcuseTitulo">Entrega registrada</h2><p id="cuEntregaId"></p></div>
-        <div><button id="cuImprimir" class="btn btn-primary" type="button"><i class="bx bx-printer" aria-hidden="true"></i> Ver / imprimir acuse</button>
+        <div><button id="cuImprimir" class="btn btn-primary" type="button"><i class="bx bx-printer" aria-hidden="true"></i> Reimprimir acuse</button>
             <a class="btn btn-outline-secondary" href="@Url.Action("Index")">Nueva entrega</a></div></div>
-        <p id="cuEstadoAcuse" role="status" aria-live="polite"></p><a id="cuAbrirPdf" class="btn btn-outline-secondary mb-2" target="_blank" rel="noopener" hidden>Abrir PDF en otra pestaña</a>
-        <iframe id="cuPdf" title="Acuse de entrega en custodia" hidden></iframe>
+        <p id="cuEstadoAcuse" role="status" aria-live="polite"></p>
     </section>
 </section>
 <div id="cuConfirmacion" class="modal fade" tabindex="-1" aria-labelledby="cuConfirmacionTitulo" aria-hidden="true"><div class="modal-dialog modal-dialog-centered"><div class="modal-content">

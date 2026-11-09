@@ -182,7 +182,7 @@
         let clienteActualFactura = null;
         const coTipo = 'CC';
 
-        const MenuCajaUrl = '@Url.Action("Index", "Home", new { area = "" })';
+        const MenuCajaUrl = '@Url.MenuPrincipalCaja()';
         const BuscarClienteUrl = '@Url.Action("BuscarCliente", "Cliente", new { Area = "Facturacion", app = "AC" })';
         const TraerGrillaClientesUrl = '@Url.Action("TraerGrillaClientes", "Cliente", new { Area = "Facturacion" })';
         const LimpiarSesionClientesUrl = '@Url.Action("LimpiarSesionClientes", "Cliente", new { Area = "Facturacion" })';
@@ -191,7 +191,7 @@
         const verificarExistenciaCuentaCorrienteUrl = '@Url.Action("ValidarClienteRegistrado", "AnulacionCobranza", new { Area = "Facturacion" })';
         const anulacionCobranzaBuscarUrl = '@Url.Action("BuscarCobranzas", "AnulacionCobranza", new { Area = "Facturacion" })';
         const anulacionCobranzaAnularUrl = '@Url.Action("Anular", "AnulacionCobranza", new { Area = "Facturacion" })';
-        const anulacionCobranzaMenuUrl = '@Url.Action("Index", "Home", new { area = "" })';
+        const anulacionCobranzaMenuUrl = '@Url.MenuPrincipalCaja()';
     </script>
 
     <script src="~/js/app/fact.js" asp-append-version="true"></script>

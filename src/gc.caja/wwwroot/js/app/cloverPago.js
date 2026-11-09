@@ -62,7 +62,8 @@
         return Object.freeze({ valorCanonico: valor, intentoId: solicitud.intento_id, paymentId: valor.id_externo || valor.rb_dato1_valor, datosSP: valor, recargo: Number(valor.rb_aux), recargoPorcentaje: Number(valor.rb_rec), base: (Math.round(Number(valor.rb_importe) * 100) - Math.round(Number(valor.rb_aux) * 100)) / 100, total: Number(valor.rb_importe), simulacion: respuesta.simulacion === true });
     }
     class Sesion {
-        constructor(transporte, alCambiar = function () {}, alAprobar = function () {}) {
+        constructor(transporte, alCambiar = function () {}, alAprobar = function () {}, configuracion = {}) {
+            this.configuracion = { nombre: "Clover", esInstrumento, ...configuracion };
             this.transporte = transporte; this.alCambiar = alCambiar; this.alAprobar = alAprobar; this.version = 0; this.estado = 'CERRADO'; this.opciones = []; this.mensaje = ''; this.resultado = null;
         }
         notificar() { this.alCambiar(this); }
@@ -71,9 +72,9 @@
         async abrir(contexto) {
             if (!this.puedeCerrar()) return false;
             const version = ++this.version;
-            this.contexto = { ...contexto, instrumento: { ...contexto.instrumento } }; this.base = String(contexto.saldo ?? 0); this.plan = ''; this.paymentid = ''; this.qr = false; this.resultado = null; this.opciones = []; this.mensaje = ''; this.estado = 'CARGANDO'; this.notificar();
+            this.contexto = { ...contexto, instrumento: { ...contexto.instrumento } }; this.base = String(contexto.saldo ?? 0); this.plan = ''; this.paymentid = ''; this.qr = false; this.tipo = 2; this.resultado = null; this.opciones = []; this.mensaje = ''; this.estado = 'CARGANDO'; this.notificar();
             try {
-                if (!esInstrumento(contexto.instrumento, contexto.medio)) throw new Error('El instrumento seleccionado no corresponde a Clover.');
+                if (!this.configuracion.esInstrumento(contexto.instrumento, contexto.medio)) throw new Error('El instrumento seleccionado no corresponde a ' + this.configuracion.nombre + '.');
                 const instrumento = this.contexto.instrumento;
                 instrumento.tcf_id = contexto.medio?.tcf_id || instrumento.tcf_id;
                 instrumento.ins_id = instrumento.ins_id === 'DEF' ? '' : String(instrumento.ins_id || '').trim();
@@ -85,11 +86,11 @@
                 // El catálogo del servidor define el código; T1 no supone G0 ni G00.
                 if (!instrumento.ins_id && Array.isArray(r.opciones) && r.opciones.length) {
                     const codigos = new Set(r.opciones.map(o => String(o.ins_id || '').trim()));
-                    if (codigos.size !== 1 || !Array.from(codigos)[0]) throw new Error('No se pudo identificar un único instrumento Clover en las cuotas.');
+                    if (codigos.size !== 1 || !Array.from(codigos)[0]) throw new Error('No se pudo identificar un único instrumento de ' + this.configuracion.nombre + ' en las cuotas.');
                     instrumento.ins_id = Array.from(codigos)[0];
                 }
                 this.opciones = opcionesValidas(r.opciones, instrumento, contexto.coTipo);
-                if (!this.opciones.length) throw new Error(contexto.coTipo === 'CD' ? 'Cobranza Diferida requiere una opción sin recargo financiero.' : 'No hay un instrumento Clover con cuotas configuradas para esta operación.');
+                if (!this.opciones.length) throw new Error(contexto.coTipo === 'CD' ? 'Cobranza Diferida requiere una opción sin recargo financiero.' : 'No hay un instrumento de ' + this.configuracion.nombre + ' con cuotas configuradas para esta operación.');
                 this.plan = this.opciones[0].clave; this.estado = 'PREPARANDO'; this.mensaje = r.simulacion ? 'SIMULACIÓN: no se ejecutan cobros ni registros de Caja.' : 'Revise monto y cuotas antes de solicitar el pago.';
             } catch (error) { if (version !== this.version) return false; this.estado = 'BLOQUEADO'; this.mensaje = error.message || 'No se pudieron cargar las cuotas.'; }
             this.notificar(); return true;
@@ -101,11 +102,14 @@
             if (datos.plan !== undefined) this.plan = datos.plan;
             if (datos.paymentid !== undefined) this.paymentid = String(datos.paymentid).toUpperCase();
             if (datos.qr !== undefined) this.qr = !!datos.qr;
+            if (datos.tipo !== undefined) this.tipo = Number(datos.tipo);
+            if (this.configuracion.point && this.opciones.find(o => o.clave === this.plan)?.cuota > 1) this.tipo = 2;
             this.notificar(); return true;
         }
         cotizacion() {
             const opcion = this.opciones.find(o => o.clave === this.plan);
             if (!opcion) throw new Error('Seleccione una opción de cuotas válida.');
+            if (this.configuracion.point && (![1,2,3].includes(this.tipo) || opcion.cuota > 1 && this.tipo !== 2)) throw new Error('Con más de una cuota sólo se admite Crédito. Seleccione un tipo válido.');
             return { ...calcular(this.base, opcion, this.contexto.saldo), opcion };
         }
         cerrar() { if (!this.puedeCerrar()) return false; this.version++; this.estado = 'CERRADO'; this.notificar(); return true; }
@@ -116,6 +120,7 @@
                 if (!['POS','MANUAL'].includes(modo)) throw new Error('Seleccione una acción de pago válida.');
                 const c = this.cotizacion();
                 solicitud = { ins_id: this.contexto.instrumento.ins_id, co_tipo: this.contexto.coTipo, monto_base: c.base, recargo: c.recargo, monto_total: c.total, cuotas_reales: c.opcion.cuota, pos_plan: c.opcion.pos_plan, qr: this.qr, paymentid: modo === 'MANUAL' ? normalizarId(this.paymentid) : '' };
+                if (this.configuracion.point) { delete solicitud.qr; solicitud.tipo = this.tipo; }
                 solicitud.intento_id = nuevoIntento();
                 solicitud.valores = this.contexto.obtenerValores?.() || [];
                 solicitud.uniones = this.contexto.obtenerUniones?.() || [];
@@ -129,6 +134,7 @@
                     this.estado = r.sin_respuesta ? 'INCIERTO' : 'RECHAZADO'; this.mensaje = r.resultado_msj || 'No se aprobó la solicitud.'; this.notificar(); return false;
                 }
                 this.resultado = validarAprobacion(r, solicitud);
+                if (this.configuracion.point && !this.resultado.paymentId) throw new Error('La respuesta no identifica el pago. Verifique antes de repetir.');
                 const c = this.cotizacion();
                 this.estado = 'APROBADO'; this.mensaje = this.resultado.simulacion ? 'Pago SIMULADO aprobado; no se registró ninguna operación real.' : 'Pago aprobado pendiente de registración.'; this.notificar();
                 // El motor incorpora el valor canónico y finaliza si el saldo queda cubierto.
@@ -138,6 +144,7 @@
             } catch (error) { if (version !== this.version) return false; this.estado = 'INCIERTO'; this.mensaje = error.message || 'No se pudo conocer el resultado. Verifique el pago antes de repetir.'; this.notificar(); return false; }
         }
     }
+    global.PagoIntegradoModelo = Object.freeze({ Sesion, calcular, centavos, normalizarId, opcionesValidas, validarAprobacion });
     global.CloverModelo = Object.freeze({ Sesion, esInstrumento, calcular, centavos, normalizarId, opcionesValidas, validarAprobacion });
     if (typeof module !== 'undefined' && module.exports) module.exports = global.CloverModelo;
 })(typeof window !== 'undefined' ? window : globalThis);
