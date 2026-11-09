@@ -97,7 +97,7 @@ namespace gc.api.core.Servicios.Reportes
 
 				#region Generación de Cabecera               
 
-				PdfPTable tabla = GeneraCabeceraPDF2_NoFecha(solicitud, chico, titulo, tituloBig, logo, _empresaGeco);
+				PdfPTable tabla = GeneraCabeceraPDF2_NoFecha(solicitud, chico, titulo, tituloBig, logo, _empresaGeco, 1, 1, true);
 
 				// Convertir la tabla en un Phrase
 				Phrase phrase = [tabla];
@@ -118,6 +118,9 @@ namespace gc.api.core.Servicios.Reportes
 				}
 
 				pdf.Open();
+
+				// Espacio
+				pdf.Add(new Paragraph(" ", normal));
 
 				#region Datos de la Transferencia
 				HelperPdf.CargarTablaDatosDeAcuseDeTransferencia_Encabezado(pdf, registros.First(), normal, normalBold, titulo);

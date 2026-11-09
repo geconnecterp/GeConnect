@@ -1,11 +1,20 @@
 ﻿$(function () {
 	InicializarCampos();
+	$(document).off("click", "#btnBuscar");
 	$(document).on("click", "#btnBuscar", btnBuscarValidar);
+	$(document).off("change", "#ListaCuentaBancaria");
 	$(document).on("change", "#ListaCuentaBancaria", ControlaListaCuentaBancariaSelected);
+	$(document).off("click", "#btnCancel");
 	$(document).on("click", "#btnCancel", btnCancelValidar);
+	$(document).off("click", "#btnAceptar");
 	$(document).on("click", "#btnAceptar", btnAceptarValidar);
-	//
+	$(document).off("click", "#btnImprimir");
+	$(document).on("click", "#btnImprimir", btnImprimirValidar);
 });
+
+function btnImprimirValidar() {
+	ImprimirTRA_Generada('00-00139541');
+}
 
 function btnAceptarValidar() {
 	// 🔥 VALIDACIÓN NUEVA: La tabla debe tener al menos un registro
@@ -111,6 +120,8 @@ function btnCancelValidar() {
 	PostGenHtml(data, volverPasoUnoUrl, function (obj) {
 		$("#divPrincipal").html(obj);
 		InicializarCampos();
+		CuentaBancariaSelected = "";
+		$(document).off("click", "#btnCancel");
 		$(document).on("click", "#btnCancel", btnCancelValidar);
 	});
 }
@@ -154,13 +165,9 @@ function btnBuscarValidar() {
 				AbrirWaiting("Buscando Cheques...");
 				var data = { ctaf_id: CuentaBancariaSelected, fechaDesde, fechaHasta };
 				PostGenHtml(data, buscarChequesDepositadosUrl, function (obj) {
-					// $("#divUno").removeClass("col-4").addClass("col-2");
-					// $("#divDos").removeClass("col-4").addClass("col-2");
 					$("#divPrincipal").html(obj);
-					// $("#divPrincipal").removeClass("col-4").addClass("col-8");
-					// Centrar el div
-					// $("#divPrincipal").parent().addClass("d-flex justify-content-center");
 					EstablecerValoresLimites();
+					$(document).off("click", "#btnCancel");
 					$(document).on("click", "#btnCancel", btnCancelValidar);
 					CerrarWaiting();
 				});
@@ -261,11 +268,11 @@ function selectReg(x, gridId) {
 	});
 	$(x).addClass("selected-row");
 	if (gridId == "tbListaChequesDepositados") {
-		tra_compte_selected = x.childNodes[1].innerText;
-		fc_dia_movi_selected = x.childNodes[19].innerText;
-		fc_compte_selected = x.childNodes[21].innerText;
-		fc_item_selected = x.childNodes[23].innerText;
-		conciliado = x.childNodes[25].innerText;
-		rechazado = x.childNodes[27].innerText;
+		tra_compte_selected = $(x).data("tra-compte");
+		fc_dia_movi_selected = $(x).data("fc-dia-movi");
+		fc_compte_selected = $(x).data("fc-compte");
+		fc_item_selected = $(x).data("fc-item");
+		conciliado = $(x).data("conciliado");
+		rechazado = $(x).data("rechazado");
 	}
 }

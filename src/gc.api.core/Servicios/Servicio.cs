@@ -720,7 +720,7 @@
 		}
 
 
-		protected PdfPTable GeneraCabeceraPDF2_NoFecha(ReporteSolicitudDto solicitud, Font chico, Font titulo, Font tituloBig, Image? logo, EmpresaGeco _empresaGeco, int titHorAlign = 1, int subtitHorAlign = 1)
+		protected PdfPTable GeneraCabeceraPDF2_NoFecha(ReporteSolicitudDto solicitud, Font chico, Font titulo, Font tituloBig, Image? logo, EmpresaGeco _empresaGeco, int titHorAlign = 1, int subtitHorAlign = 1, bool incluyeRecuadro = false)
 		{
 			PdfPTable tabla = HelperPdf.GeneraTabla(3, [10f, 20f, 70f], 100, 10, 20);
 
@@ -795,6 +795,24 @@
 			};
 			tabla.AddCell(celdaSubTablaC3);
 
+
+			if (incluyeRecuadro)
+			{
+				PdfPTable tablaContenedora = new PdfPTable(1);
+				tablaContenedora.WidthPercentage = 100;
+
+				// borde alrededor de toda la cabecera
+				PdfPCell celdaContenedora = new PdfPCell(tabla)
+				{
+					Border = Rectangle.BOX,
+					Padding = 1f,
+					BorderWidth = 2f
+				};
+
+				tablaContenedora.AddCell(celdaContenedora);
+
+				return tablaContenedora;
+			}
 			return tabla;
 		}
 

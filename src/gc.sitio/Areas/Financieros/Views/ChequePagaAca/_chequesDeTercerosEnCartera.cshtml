@@ -94,6 +94,9 @@
 			<button type="button" id="btnCancel" class="btn btn-sm btn-danger">
 				<i class="bx bx-x-circle"></i>Cancelar
 			</button>
+			@* <button type="button" id="btnImprimir" class="btn btn-sm btn-danger">
+				<i class="bx bx-x-circle"></i>Imprimir
+			</button> *@
 		</div>
 		<div class="col-4"></div>
 	</div>
@@ -126,7 +129,11 @@
 					{
 						if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
 						var cliente = $"{item.cta_denominacion} ({item.cta_id})";
-						<tr class="@clase" onclick="selectReg(this, 'tbListaChequesDeTercerosEnCartera')" >
+						<tr class="@clase" 
+							data-dia-movi="@item.dia_movi"
+							data-fc-compte="@item.fc_compte"
+							data-fc-item="@item.fc_item"
+							onclick="selectReg(this, 'tbListaChequesDeTercerosEnCartera')" >
 							<td class="align-center cell-fit-content" title="@item.concepto_valor">@Model.GrillaChequesEnCartera.FormatearDato(item.fc_fecha_valor, FormatDato.Fecha)</td>
 							<td class="align-center cell-fit-content" title="@item.concepto_valor">@Model.GrillaChequesEnCartera.FormatearDato(item.fc_fecha, FormatDato.Fecha)</td>
 							<td class="align-left cell-fit-content">@Model.GrillaChequesEnCartera.FormatearDato(cliente, FormatDato.Ninguno)</td>
@@ -139,6 +146,15 @@
 							<td style="display:none;">@item.fc_item</td>
 						</tr>
 					}
+				}
+				else
+				{
+					<tr>
+						<td colspan="7" class="text-center text-muted py-4">
+							<i class="bx bx-info-circle me-2"></i>
+							No se encontraron items con los criterios especificados
+						</td>
+					</tr>
 				}
 			</tbody>
 		</table>
