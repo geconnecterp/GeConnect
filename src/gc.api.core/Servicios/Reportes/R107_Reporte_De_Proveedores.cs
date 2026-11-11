@@ -19,6 +19,7 @@ using iTextSharp.text;
 using iTextSharp.text.pdf;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using System.Text.Json;
 
 namespace gc.api.core.Servicios.Reportes
 {
@@ -57,10 +58,11 @@ namespace gc.api.core.Servicios.Reportes
 				var ms = new MemoryStream();
 				#region Obteniendo registros desde la base de datos
 				string tit;
-				List<ABMProveedorSearchDto> registros = ObtenerDatos(solicitud, out tit);
+				string subTit;
+				List<ABMProveedorSearchDto> registros = ObtenerDatos(solicitud, out tit, out subTit);
 
 				solicitud.Titulo = tit;
-				solicitud.SubTitulo = string.Empty;
+				solicitud.SubTitulo = subTit;
 
 				//hago el modelo de dato aca ya que necesito los datos de la cuenta
 				var regs = registros.Select(x => new
@@ -95,7 +97,7 @@ namespace gc.api.core.Servicios.Reportes
 
 				#region Generación de Cabecera               
 
-				PdfPTable tabla = GeneraCabeceraPDF2_NoFecha(solicitud, chico, titulo, tituloBig, logo, _empresaGeco);
+				PdfPTable tabla = GeneraCabeceraPDF2_NoFecha(solicitud, chico, titulo, tituloBig, logo, _empresaGeco, 1, 1, true);
 
 				// Convertir la tabla en un Phrase
 				Phrase phrase = [tabla];
@@ -111,6 +113,10 @@ namespace gc.api.core.Servicios.Reportes
 				#endregion
 
 				pdf.Open();
+
+				// Espacio
+				pdf.Add(new Paragraph(" ", normal));
+				pdf.Add(new Paragraph(" ", normal));
 
 				#region Armado de Reporte
 				CargarRepoListadoDeProveedores(pdf, registros, chicoplus, normal, chicoBold, normalBold, titulo, tituloBig);
@@ -142,13 +148,112 @@ namespace gc.api.core.Servicios.Reportes
 				return;
 			}
 
-			
+			var tabla = new PdfPTable(8)
+			{
+				WidthPercentage = 100,
+				HeaderRows = 1
+			};
+
+			tabla.SetWidths(
+			[
+				10f, // Cuenta
+				35f, // Denominación
+				8f,  // Legajo
+				10f, // Tipo Doc
+				15f, // Documento
+				40f, // Domicilio
+				15f, // Teléfono
+				25f  // Email
+			]);
+
+			AgregarCabecera(tabla, "Cuenta", chicoBold);
+			AgregarCabecera(tabla, "Denominación", chicoBold);
+			AgregarCabecera(tabla, "Legajo", chicoBold);
+			AgregarCabecera(tabla, "Tipo Doc", chicoBold);
+			AgregarCabecera(tabla, "Documento", chicoBold);
+			AgregarCabecera(tabla, "Domicilio", chicoBold);
+			AgregarCabecera(tabla, "Teléfono", chicoBold);
+			AgregarCabecera(tabla, "Email", chicoBold);
+
+			foreach (var item in registros)
+			{
+				tabla.AddCell(CrearCelda(item.cta_id, chico, Element.ALIGN_CENTER));
+				tabla.AddCell(CrearCelda(item.cta_denominacion, chico, Element.ALIGN_LEFT));
+				tabla.AddCell(CrearCelda(string.Empty, chico, Element.ALIGN_CENTER));
+				tabla.AddCell(CrearCelda(item.tdoc_desc, chico, Element.ALIGN_CENTER));
+				tabla.AddCell(CrearCelda(item.cta_documento, chico, Element.ALIGN_CENTER));
+
+				var tablaDomicilio = new PdfPTable(2)
+				{
+					WidthPercentage = 100
+				};
+
+				tablaDomicilio.SetWidths(new float[] { 95f, 5f });
+
+				// Domicilio
+				var domicilioCell = new PdfPCell(
+					new Phrase(item.cta_domicilio ?? string.Empty, chico))
+				{
+					Border = Rectangle.NO_BORDER,
+					HorizontalAlignment = Element.ALIGN_LEFT,
+					VerticalAlignment = Element.ALIGN_MIDDLE,
+					Padding = 0
+				};
+
+				tablaDomicilio.AddCell(domicilioCell);
+
+				// ProvId
+				var provCell = new PdfPCell(
+					new Phrase(item.prov_id ?? string.Empty, chico))
+				{
+					HorizontalAlignment = Element.ALIGN_CENTER,
+					VerticalAlignment = Element.ALIGN_MIDDLE,
+					BackgroundColor = BaseColor.LightGray,
+					Padding = 2
+				};
+
+				tablaDomicilio.AddCell(provCell);
+
+				var celdaDomicilio = new PdfPCell(tablaDomicilio)
+				{
+					Padding = 2,
+					VerticalAlignment = Element.ALIGN_MIDDLE
+				};
+
+				tabla.AddCell(celdaDomicilio);
+
+				tabla.AddCell(CrearCelda(item.cta_celu, chico, Element.ALIGN_CENTER));
+				tabla.AddCell(CrearCelda(item.cta_email, chico, Element.ALIGN_CENTER));
+			}
+
+			pdf.Add(tabla);
 		}
 
+		private static void AgregarCabecera(PdfPTable tabla, string texto, Font fuente)
+		{
+			var celda = new PdfPCell(new Phrase(texto, fuente))
+			{
+				BackgroundColor = BaseColor.LightGray,
+				HorizontalAlignment = Element.ALIGN_CENTER,
+				VerticalAlignment = Element.ALIGN_MIDDLE,
+				Padding = 4
+			};
 
+			tabla.AddCell(celda);
+		}
+
+		private static PdfPCell CrearCelda(string texto, Font fuente, int align = 0)
+		{
+			return new PdfPCell(new Phrase(texto ?? string.Empty, fuente))
+			{
+				Padding = 3,
+				VerticalAlignment = Element.ALIGN_MIDDLE,
+				HorizontalAlignment = align
+			};
+		}
 		#endregion
 
-		private List<ABMProveedorSearchDto> ObtenerDatos(ReporteSolicitudDto solicitud, out string titulo)
+		private List<ABMProveedorSearchDto> ObtenerDatos(ReporteSolicitudDto solicitud, out string titulo, out string subTit)
 		{
 			try
 			{
@@ -156,29 +261,30 @@ namespace gc.api.core.Servicios.Reportes
 				var id = solicitud.Parametros.GetValueOrDefault("id", "")?.ToString() ?? null;
 				var id2 = solicitud.Parametros.GetValueOrDefault("id2", "")?.ToString() ?? null;
 				var buscar = solicitud.Parametros.GetValueOrDefault("buscar", "")?.ToString() ?? null;
-				var rel01 = solicitud.Parametros.GetValueOrDefault("rel01", "")?.ToString() ?? null;
-				var listaRel01 = (solicitud.Parametros.GetValueOrDefault("rel01", "")?.ToString() ?? "")
-				.Split(',', StringSplitOptions.RemoveEmptyEntries)
-				.Select(x => x.Trim())
-				.ToList();
+				var filtrosString = solicitud.Parametros.GetValueOrDefault("filtrosString", "")?.ToString() ?? null;
 
+				var listaRel01Temp = JsonSerializer.Deserialize<List<string>>(
+					solicitud.Parametros.GetValueOrDefault("rel01", "[]")?.ToString() ?? "[]"
+				) ?? [];
 
 				ret = _iProvSrv.Buscar(new QueryFilters()
 				{
 					Id = id,
 					Id2 = id2,
 					Buscar = buscar,
-					Rel01 = listaRel01,
+					Rel01 = listaRel01Temp,
 					Registros = int.MaxValue,
 					Pagina = 1,
 					Sort = "cta_id"
 				});
 				titulo = $"Listado de Proveedores";
+				subTit = filtrosString;
 				return ret;
 			}
 			catch (Exception)
 			{
 				titulo = "";
+				subTit = "";
 				return [];
 			}
 
@@ -188,7 +294,8 @@ namespace gc.api.core.Servicios.Reportes
 		{
 			#region Obteniendo registros desde la base de datos
 			string tit;
-			List<ABMProveedorSearchDto> registros = ObtenerDatos(solicitud, out tit);
+			string subTit;
+			List<ABMProveedorSearchDto> registros = ObtenerDatos(solicitud, out tit, out subTit);
 
 			if (registros == null || registros.Count == 0)
 			{
@@ -211,7 +318,8 @@ namespace gc.api.core.Servicios.Reportes
 		{
 			#region Obteniendo registros desde la base de datos
 			string tit;
-			List<ABMProveedorSearchDto> registros = ObtenerDatos(solicitud, out tit);
+			string subTit;
+			List<ABMProveedorSearchDto> registros = ObtenerDatos(solicitud, out tit, out subTit);
 
 			if (registros == null || registros.Count == 0)
 			{

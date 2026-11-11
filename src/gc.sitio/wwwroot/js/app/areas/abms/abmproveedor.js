@@ -90,17 +90,44 @@ function analizaImprimirReporte() {
 		var id = "";
 		var id2 = "";
 		var r01 = [];
+		var filtros = [];
 
 		if ($("#chkDescr").is(":checked")) {
 			buscar = $("#Buscar").val();
+			if (buscar) {
+				filtros.push(`Denominación: ${buscar}`);
+			}
 		}
+
 		if ($("#chkDesdeHasta").is(":checked")) {
 			id = $("#Id").val();
 			id2 = $("#Id2").val();
+
+			if (id || id2) {
+				filtros.push(`Id Cuenta: ${id} - ${id2}`);
+			}
 		}
 		if ($("#chkRel01").is(":checked")) {
-			$("#Rel02List").children().each(function (i, item) { r01.push($(item).val()) });
+			var tipos = [];
+
+			$("#Rel02List").children().each(function (i, item) {
+				r01.push($(item).val());
+
+				tipos.push($(this).text());
+			});
+
+			if (tipos.length > 0) {
+				filtros.push(`Tipo Prov: ${tipos.join(", ")}`);
+			}
+			else {
+				filtros.push(`Tipo Prov: TODOS`);
+			}
 		}
+		else {
+			filtros.push(`Tipo Prov: TODOS`);
+		}
+
+		var tituloFiltros = filtros.join(" | ");
 
 		var data = {
 			id, id2,
@@ -110,10 +137,11 @@ function analizaImprimirReporte() {
 			"fechaD": null, //"0001-01-01T00:00:00",
 			"fechaH": null, //"0001-01-01T00:00:00",
 			buscar,
-			tipo: 'P'
+			tipo: 'P',
+			filtrosString: tituloFiltros
 		};
 
-		cargarReporteEnArre(107, data, "CONSULTA DE PROVEEDORES Y CLIENTES", "", "");
+		cargarReporteEnArre(107, data, "REPORTE DE PROVEEDORES", "", "");
 		invocacionGestorDoc({});
 	}, 500);
 	

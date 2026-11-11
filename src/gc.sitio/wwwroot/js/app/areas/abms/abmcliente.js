@@ -52,6 +52,8 @@
 	$("#btnDetalle").on("mousedown", analizaEstadoBtnDetalle);
 
 	$("#btnDetalle").prop("disabled", true);
+	$("#btnImprimir").prop("disabled", true);
+
 	$("#btnCancel").on("click", function () {
 		//$("#btnFiltro").trigger("click");
 		InicializaPantallaAbmCliente();
@@ -86,30 +88,56 @@ function analizaImprimirReporte() {
 		var id2 = "";
 		var r01 = [];
 		var r02 = [];
+		var filtros = [];
+		var tipos = [];
 
 		if ($("#chkDescr").is(":checked")) {
 			buscar = $("#Buscar").val();
+			if (buscar) {
+				filtros.push(`Denominación: ${buscar}`);
+			}
 		}
 		if ($("#chkDesdeHasta").is(":checked")) {
 			id = $("#Id").val();
 			id2 = $("#Id2").val();
+
+			if (id || id2) {
+				filtros.push(`Id Cuenta: ${id} - ${id2}`);
+			}
 		}
 		if ($("#chkRel01").is(":checked")) {
-			$("#Rel02List").children().each(function (i, item) { r01.push($(item).val()) });
+			tipos = [];
+			$("#Rel02List").children().each(function (i, item) {
+				r01.push($(item).val())
+
+				tipos.push($(this).text());
+			});
+			if (tipos.length > 0) {
+				filtros.push(`Tipo Cli.: ${tipos.join(", ")}`);
+			}
+			else {
+				filtros.push(`Tipo Cli.: TODOS`);
+			}
+		}
+		else {
+			filtros.push(`Tipo Cli.: TODOS`);
 		}
 		if ($("#chkRel03").is(":checked")) {
-			$("#Rel03List").children().each(function (i, item) { r02.push($(item).val()) });
+			tipos = [];
+			$("#Rel03List").children().each(function (i, item) {
+				r02.push($(item).val())
+
+				tipos.push($(this).text());
+			});
+			if (tipos.length > 0) {
+				filtros.push(`: ${tipos.join(", ")}`);
+			}
+			else {
+				filtros.push(`Tipo Cli.: TODOS`);
+			}
 		}
 
-		var data1 = {
-			id, id2,
-			rel01: r01,
-			rel02: r02,
-			rel03: [],
-			"fechaD": null, //"0001-01-01T00:00:00",
-			"fechaH": null, //"0001-01-01T00:00:00",
-			buscar
-		};
+		var tituloFiltros = filtros.join(" | ");
 
 		var data = {
 			id, id2,
@@ -119,7 +147,8 @@ function analizaImprimirReporte() {
 			"fechaD": null, //"0001-01-01T00:00:00",
 			"fechaH": null, //"0001-01-01T00:00:00",
 			buscar,
-			tipo: 'C'
+			tipo: 'C',
+			filtrosString: tituloFiltros
 		};
 
 		cargarReporteEnArre(108, data, "LISTADO DE CLIENTES", "", "");
@@ -149,6 +178,9 @@ function analizaEstadoBtnDetalle() {
 	if (res === true) {
 		selectRegCli(regSelected, Grids.GridCliente);
 		activarGrilla(Grids.GridCliente);
+
+		const tieneRegistros = $("#tbGridCliente tbody tr").length > 0;
+		$("#btnImprimir").prop("disabled", !tieneRegistros);
 	}
 	return true;
 
@@ -443,6 +475,8 @@ function buscarClientes(pag, esBaja = false) {
 				pags = obj.metadata.totalPages;
 				pagRegs = obj.metadata.pageSize;
 
+				$("#btnImprimir").prop("disabled", totalRegs === 0);
+
 				$("#pagEstado").val(true).trigger("change");
 				$(".activable").prop("disabled", true);
 				$("#divGrilla").removeClass("collapse");
@@ -477,6 +511,7 @@ function BuscarCliente(ctaId) {
 		$("#divDatosCliente").html(obj);
 		$("#IdSelected").val($("#Cliente_Cta_Id").val());
 		$(".activable").prop("disabled", true);
+		$("#btnImprimir").prop("disabled", true);
 		CerrarWaiting();
 	}, function (obj) {
 		ControlaMensajeError(obj.message);

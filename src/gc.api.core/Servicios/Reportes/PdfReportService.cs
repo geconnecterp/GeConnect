@@ -155,7 +155,7 @@ namespace gc.api.core.Servicios.Reportes
 				{ InfoReporte.R103_Planilla_Elaboracion_Y_Fraccion, new R103_Planilla_Elaboracion_Y_Fraccion(uow,apiProdSv,empresa,ctaSv, logger) },
 				{ InfoReporte.R106_Consulta_Faltante_De_Caja, new R106_Consulta_Faltante_De_Caja(uow,consSv,empresa,cajaSrv, logger) },
 				{ InfoReporte.R107_Reporte_De_Proveedores, new R107_Reporte_De_Proveedores(uow,consSv, iCliSrv, iProvSrv,empresa,cajaSrv, logger) },
-				{ InfoReporte.R108_Reporte_De_Clientes, new R107_Reporte_De_Proveedores(uow,consSv, iCliSrv, iProvSrv,empresa,cajaSrv, logger) },
+				{ InfoReporte.R108_Reporte_De_Clientes, new R108_Reporte_De_Clientes(uow,consSv, iCliSrv, iProvSrv,empresa,cajaSrv, logger) },
 			}; 
             _logger = logger;
         }
