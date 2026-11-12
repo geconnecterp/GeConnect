@@ -49,6 +49,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 
 				ViewData["Titulo"] = "VALORIZACIÓN DE COMPROBANTE";
 				CargarDatosIniciales(true);
+				LimpiarDatosEnSesion();
 				return View();
 			}
 			catch (Exception ex)
@@ -817,12 +818,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 		{
 			try
 			{
-				CtaIdSelected = string.Empty;
-				ComprobantesPendientesDeValorizarLista = [];
-				ComprobantesValorizaDescuentosFinancLista = [];
-				ComprobantesValorizaDetalleRprLista = [];
-				ComprobantesValorizaDetalleRprListaOriginal = [];
-
+				LimpiarDatosEnSesion();
 				return Json(new { error = false, warn = false, msg = "Inicializacion correcta." });
 			}
 			catch (Exception)
@@ -831,6 +827,15 @@ namespace gc.sitio.Areas.Compras.Controllers
 			}
 		}
 
+		private void LimpiarDatosEnSesion()
+		{
+			CtaIdSelected = string.Empty;
+			ComprobantesPendientesDeValorizarLista = [];
+			ComprobantesValorizaDescuentosFinancLista = [];
+			ComprobantesValorizaDetalleRprLista = [];
+			ComprobantesValorizaDetalleRprListaOriginal = [];
+			ComprobantesValorizaLista = [];
+		}
 		/// <summary>
 		/// Método que guarda o confirma la valorización de un comprobante.
 		/// </summary>

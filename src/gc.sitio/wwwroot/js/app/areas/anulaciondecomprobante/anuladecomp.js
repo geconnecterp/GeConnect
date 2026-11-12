@@ -15,6 +15,7 @@ function InicializaPantalla() {
 		$("#Rel01Item").val("");
 	});
 	$("#Rel01List").collapse("hide");
+	$("#btnBuscar").off("click");
 	$("#btnBuscar").on("click", function () {
 		if (ctaIdSelected == "") {
 			AbrirMensaje("ATENCIÓN", "Debe seleccionar una cuenta.", function () {
@@ -27,6 +28,7 @@ function InicializaPantalla() {
 			InicializarComprobante(ctaIdSelected);
 		}
 	});
+	$("#btnCancel").off("click");
 	$("#btnCancel").on("click", function () {
 		InicializarDatosEnSesion(true);
 		InicializaPantalla();
@@ -35,6 +37,7 @@ function InicializaPantalla() {
 		$("#btnDetalle").trigger("click");
 		$("#divDetalle").collapse("hide");
 	});
+	$("#btnAbmCancelar").off("click");
 	$("#btnAbmCancelar").on("click", function () {
 		InicializarDatosEnSesion(true);
 		InicializaPantalla();
@@ -130,7 +133,7 @@ function btnAbmAceptarClick() {
 			}
 			return true;
 
-		}, true, ["Aceptar", "Cancelar"], "question!", null);
+		}, true, ["SI", "NO"], "question!", null);
 
 	}
 }
@@ -183,7 +186,6 @@ function InicializarComprobante(id) {
 				}
 			}
 		});
-		//$('input[name="opcion"][value="opcion1"]').prop('checked', true);
 		CerrarWaiting();
 		return true
 	});

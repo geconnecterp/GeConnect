@@ -9,39 +9,54 @@ $(function () {
 		$("input#Rel03").prop("disabled", true);
 		$("input#Rel04").prop("disabled", true);
 	});
+	$(document).off("change", "#listaComptesPend");
 	$(document).on("change", "#listaComptesPend", ControlaListaCompteSelected);
+	$(document).off("click", "#btnAceptarDescFinanc");
 	$(document).on("click", "#btnAceptarDescFinanc", AceptarDescFinanc);
+	$(document).off("click", "#btnAplicarOC");
 	$(document).on("click", "#btnAplicarOC", ValidarOC);
+	$(document).off("click", "#btnCostoActual");
 	$(document).on("click", "#btnCostoActual", SetearCostoActual);
+	$(document).off("click", "#btnAplicarSeteoMasivo");
 	$(document).on("click", "#btnAplicarSeteoMasivo", AplicarSeteoMasivo);
+	$(document).off("click", "#btnCancelarDesdeDetalleRpr");
 	$(document).on("click", "#btnCancelarDesdeDetalleRpr", CancelarDesdeDetalleRpr);
+	$(document).off("click", "#btnCostoOC");
 	$(document).on("click", "#btnCostoOC", SetearCostoDesdeOc);
+	$(document).off("click", "#btnAceptarDesdeDetalleRpr");
 	$(document).on("click", "#btnAceptarDesdeDetalleRpr", AceptarDesdeDetalleRpr);
+	$(document).off("click", "#btnCancel");
 	$(document).on("click", "#btnCancel", btnCancelClick);
-	//
 
+	$(document).off("click", "#btnGuardarValorizacion");
 	$(document).on("click", "#btnGuardarValorizacion", GuardarValorizacion);
+	$(document).off("click", "#btnConfirmarValorizacion");
 	$(document).on("click", "#btnConfirmarValorizacion", ConfirmarValorizacion);
+	$(document).off("click", "#btnCancelarValorizacion");
 	$(document).on("click", "#btnCancelarValorizacion", CancelarValorizacion);
 
+	$(document).off("keyup", "#txtPLista");
 	$(document).on("keyup", "#txtPLista", ControlaKeyUpTxtPLista);
+	$(document).off("keyup", "#txtDto1");
 	$(document).on("keyup", "#txtDto1", ControlaKeyUpTxtDto1);
+	$(document).off("keyup", "#txtDto2");
 	$(document).on("keyup", "#txtDto2", ControlaKeyUpTxtDto2);
+	$(document).off("keyup", "#txtDto3");
 	$(document).on("keyup", "#txtDto3", ControlaKeyUpTxtDto3);
+	$(document).off("keyup", "#txtDto4");
 	$(document).on("keyup", "#txtDto4", ControlaKeyUpTxtDto4);
+	$(document).off("keyup", "#txtDpa");
 	$(document).on("keyup", "#txtDpa", ControlaKeyUpTxtDpa);
+	$(document).off("keyup", "#txtBoni");
 	$(document).on("keyup", "#txtBoni", ControlaKeyUpTxtBoni);
 
+	$(document).off("click", "#btnAgregarProducto");
 	$(document).on("click", "#btnAgregarProducto", AbrirModalAgregarProducto); //Abrir modal
-	/*$("#estadoFuncion").on("change", verificaEstado); //este control debe ser insertado el mismo o similar para cada modulo.*/
 
 	$(document).on("mouseup", "#tbListaDescFinanc tbody tr", function (e) {
 
-		// Ignorar click derecho (botón 2) y botón central (botón 3)
 		if (e.button !== 0) return;
 
-		// Ejecutar solo si realmente se seleccionó la fila
-		// (evita disparos por clicks en elementos internos)
 		if (!$(e.target).closest("tr").is(this)) return;
 
 		setTimeout(() => {
@@ -121,13 +136,14 @@ function AbrirModalAgregarProducto() {
 			backdrop: 'static',
 		});
 		$('#modalAgregarProducto').modal('show');
-
+		$("#btnBusquedaBase").off("click");
 		$("#btnBusquedaBase").on("click", function () {
 			buscarProducto();
 			return true;
 		});
+		$("#estadoFuncion").off("change");
 		$("#estadoFuncion").on("change", verificaEstado); //este control debe ser insertado el mismo o similar para cada modulo.
-		
+		$(document).off("keyup", "#Busqueda");
 		$(document).on("keyup", "#Busqueda", verificaTeclaDeBusqueda);
 
 		CerrarWaiting();
@@ -614,9 +630,11 @@ function CargarDatosParaValorizar(cmCompteSelected) {
 			colorearFilasValorizacion();
 			AddEventListenerToGrid("tbListaDescFinanc");
 			MostrarDatosDeCuenta(true);
+			$("#chkSobreTotal").off("click");
 			$("#chkSobreTotal").on("click", function () {
 				ActualizarEstadoChecks_SobreTotal();
 			});
+			$("#chkNetoFijo").off("click");
 			$("#chkNetoFijo").on("click", function () {
 				ActualizarEstadoChecks_NetoFijo();
 			});
@@ -853,6 +871,7 @@ function CargarComprobantesDelProveedorSeleccionado(id) {
 }
 
 function addHandlerOnChkRel04_Click() {
+	$("#chkRel04").off("click");
 	$("#chkRel04").on("click", function () {
 		if ($("#chkRel04").is(":checked")) {
 			$("#listaComptesPend").prop("disabled", false);

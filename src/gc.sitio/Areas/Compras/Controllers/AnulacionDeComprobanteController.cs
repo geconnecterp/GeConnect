@@ -39,6 +39,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 
 				ViewData["Titulo"] = "ANULAR CARGA DE COMPROBANTE Y/O VALORIZACIONES";
 				CargarDatosIniciales(true);
+				LimpiarDatosEnSesion();
 				return View();
 			}
 			catch (Exception ex)
@@ -144,8 +145,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 		{
 			try
 			{
-				ListaComprobanteParaAnular = [];
-				ListaNotaACuenta = [];
+				LimpiarDatosEnSesion();
 				return Json(new { error = false, warn = false, msg = "Inicializacion correcta." });
 			}
 			catch (Exception)
@@ -153,6 +153,8 @@ namespace gc.sitio.Areas.Compras.Controllers
 				return Json(new { error = true, warn = false, msg = $"Se prudujo un error al intentar inicializar los datos en Sesion - ANULACIONDECOMPROBANT" });
 			}
 		}
+
+		
 
 		[HttpPost]
 		public JsonResult ConfirmarAnulacion(ConfirmarAnulacionRequest request)
@@ -185,6 +187,11 @@ namespace gc.sitio.Areas.Compras.Controllers
 		}
 
 		#region Métodos Privados
+		private void LimpiarDatosEnSesion()
+		{
+			ListaComprobanteParaAnular = [];
+			ListaNotaACuenta = [];
+		}
 		private void CargarDatosIniciales(bool actualizar)
 		{
 			if (ProveedoresLista.Count == 0 || actualizar)
