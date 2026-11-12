@@ -798,6 +798,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
 
                 // Un resultado exitoso ya no debe poder enviarse nuevamente, aun si falla su presentacion.
                 LimpiarContexto();
+                RegistrarOperacionConfirmada();
                 if (!TryParsearComprobanteJson(respuesta.resultado_id, out var comprobanteEmitido) ||
                     comprobanteEmitido == null)
                 {

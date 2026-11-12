@@ -1,5 +1,7 @@
 using gc.infraestructura.Dtos.Cajas;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using System.Globalization;
 
 namespace gc.caja.core.Servicios.Implementacion.Cajas;
 
@@ -8,15 +10,41 @@ public static class ReglasCreditoPago
     public sealed record Condiciones(bool registrado, decimal tope, int? dias_cheque, int? dias_documento);
     public sealed record Resultado(bool Ok, string Mensaje, bool ExcedenteCheques = false);
 
-    public static Condiciones ObtenerCondiciones(CuentaDatosResultadoDto cliente)
+    public static Condiciones ObtenerCondiciones(CuentaDatosResultadoDto cliente, Action<string>? diagnostico = null)
     {
-        List<FormaPagoItem> formas;
-        try { formas = JsonConvert.DeserializeObject<List<FormaPagoItem>>(cliente.fp ?? "[]") ?? []; }
-        catch (JsonException) { formas = []; }
+        JArray? formas = null;
+        try
+        {
+            if (!string.IsNullOrWhiteSpace(cliente.fp))
+            {
+                var raiz = JToken.Parse(cliente.fp);
+                formas = raiz as JArray ?? (raiz as JObject)?.GetValue("fp", StringComparison.OrdinalIgnoreCase) as JArray;
+                if (formas == null) diagnostico?.Invoke("fp debe contener un arreglo o un objeto con el arreglo fp.");
+            }
+        }
+        catch (JsonException) { diagnostico?.Invoke("fp no contiene JSON válido."); }
+
         int? Dias(string tipo)
         {
-            var opciones = formas.Where(f => string.Equals(f.fp_id?.Trim(), tipo, StringComparison.OrdinalIgnoreCase)).ToList();
-            return opciones.Count == 0 || opciones.Any(f => f.fp_dias < 1) ? null : opciones.Min(f => f.fp_dias);
+            if (formas == null) return null;
+            var opciones = formas.OfType<JObject>().Where(f =>
+                f["fp_id"]?.Type == JTokenType.String &&
+                string.Equals(f["fp_id"]!.Value<string>()?.Trim(), tipo, StringComparison.OrdinalIgnoreCase)).ToList();
+            if (opciones.Count == 0) return null;
+            int? minimo = null;
+            foreach (var opcion in opciones)
+            {
+                var valor = opcion["fp_dias"];
+                if (valor?.Type is not (JTokenType.Integer or JTokenType.Float or JTokenType.String) ||
+                    !decimal.TryParse(valor.ToString(), NumberStyles.Float, CultureInfo.InvariantCulture, out var dias) ||
+                    dias < 1 || dias > int.MaxValue || decimal.Truncate(dias) != dias)
+                {
+                    diagnostico?.Invoke($"fp_id={tipo}: fp_dias debe ser un entero positivo; medio no habilitado.");
+                    return null;
+                }
+                minimo = Math.Min(minimo ?? int.MaxValue, (int)dias);
+            }
+            return minimo;
         }
         return new(string.Equals(cliente.Origen?.Trim(), "C", StringComparison.OrdinalIgnoreCase) &&
             !string.IsNullOrWhiteSpace(cliente.cta_id), cliente.ctac_tope_credito, Dias("H"), Dias("D"));

@@ -68,6 +68,11 @@ namespace gc.caja.Areas.Facturacion.Controllers
         {
             try
             {
+                CuentaCorrienteDelCliente = [];
+                CuentaCorrienteDelClienteSeleccionadaParaElCobro = [];
+                HttpContext.Session.Remove("CC_CONSULTA_CUENTA");
+                if (string.IsNullOrWhiteSpace(cta_id) || !string.Equals(cta_id.Trim(), ClienteActual?.cta_id?.Trim(), StringComparison.OrdinalIgnoreCase))
+                    return Json(new { ok = false, mensaje = "Identifique nuevamente al cliente antes de consultar su cuenta corriente." });
                 if (string.IsNullOrEmpty(cta_id))
                 {
                     _logger?.LogWarning("❌ clienteId vacío o nulo");
@@ -94,6 +99,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
 
                         //resguardamos la información en la sesión para poder usarla posteriormente
                         CuentaCorrienteDelCliente = resp.ListaEntidad ?? [];
+                        HttpContext.Session.SetString("CC_CONSULTA_CUENTA", cta_id.Trim());
 
                         return Json(new { ok = true, hayDatos = resp.ListaEntidad?.Any() });
                     }
@@ -129,6 +135,8 @@ namespace gc.caja.Areas.Facturacion.Controllers
         {
             try
             {
+                if (ClienteActual == null || !string.Equals(HttpContext.Session.GetString("CC_CONSULTA_CUENTA"), ClienteActual.cta_id?.Trim(), StringComparison.OrdinalIgnoreCase))
+                    return Json(new { ok = false, mensaje = "Consulte nuevamente los comprobantes del cliente." });
                 var lista = CuentaCorrienteDelCliente;
 
                 return Json(new { ok = true, lista });               
