@@ -32,6 +32,7 @@ $(function () {
 		console.info("pId o ctaId no son válidos:", pId, ctaId);
 	}
 
+	$("#btnCollapseSectionInfoProd").off("click");
 	$("#btnCollapseSectionInfoProd").on("click", function (e) {
 		e.preventDefault();
 
@@ -55,10 +56,7 @@ $(function () {
 				});	
 			}, 500);
 		} else {
-			AbrirMensaje("ATENCIÓN", "Debe seleccionar un producto.", function () {
-				$("#msjModal").modal("hide");
-				return true;
-			}, false, ["Aceptar"], "error!", null);
+			MostrarError("Debe seleccionar un producto.");
 		}
 	});
 
@@ -67,10 +65,11 @@ $(function () {
 	$("#chkRel01").trigger("change");
 	$("#chkRel01").prop("disabled", true);
 	$("#Rel01").prop("disabled", false);
+	$("input#Rel01").off("click");
 	$("input#Rel01").on("click", function () {
 		$("input#Rel01").val("");
 		$("#Rel01Item").val("");
-		$("listaLs03").val("");
+		$("#listaLs03").val("");
 		$("#Rel03Item").val("");
 		$("#Rel03List").empty();
 		$("input#Rel04").val("");
@@ -79,25 +78,24 @@ $(function () {
 		$("#chkRel03").trigger("change");
 		$("#chkRel04").prop('checked', false);
 		$("#chkRel04").trigger("change");
-		$("listaLs03").prop("disabled", true);
+		$("#listaLs03").prop("disabled", true);
 		$("input#Rel04").prop("disabled", true);
 	});
 	//elimina item de la lista
+	$("#Rel02List").off("dblclick");
 	$("#Rel02List").on("dblclick", 'option', function () { $(this).remove(); })
+	$("#Rel03List").off("dblclick");
 	$("#Rel03List").on("dblclick", 'option', function () { $(this).remove(); })
 
+	$("input#Rel04").off("click");
 	$("input#Rel04").on("click", function () {
 		$("input#Rel04").val("");
 		$("#Rel04Item").val("");
 	});
-	//$("#btnBuscar").on("click"
+	$("#btnBuscar").off("click");
 	$("#btnBuscar").on("click", function () {
-		if (ctaIdSelected == "") {
-			AbrirMensaje("ATENCIÓN", "Debe seleccionar una cuenta.", function () {
-				$("#msjModal").modal("hide");
-				$("input#Rel01").focus();
-				return true;
-			}, false, ["Aceptar"], "error!", null);
+		if (ctaIdSelected === "") {
+			MostrarError("Debe seleccionar una cuenta.");
 		}
 		else {
 			dataBak = "";
@@ -105,7 +103,7 @@ $(function () {
 			BuscarProductos(pagina);
 		}
 	});
-
+	$("#btnFiltro").off("click");
 	$("#btnFiltro").on("click", function () {
 		if ($("#divFiltros").hasClass("show")) {
 			$("#divFiltros").collapse("hide");
@@ -117,7 +115,7 @@ $(function () {
 		}
 	});
 
-	//$(document).on("click", "#btnAbmCancelar"
+	$(document).off("click", "#btnAbmCancelar");
 	$(document).on("click", "#btnAbmCancelar", function () {
 		const filas = window.obtenerFilasGrillaOCModificadas();
 		if (filas.length !== 0) {
@@ -158,35 +156,46 @@ $(function () {
 		var div = $("#divPaginacion");
 		presentaPaginacionOC(div);
 	});
+	$(document).off("change", "#listaOCPend");
 	$(document).on("change", "#listaOCPend", ControlaListaOcSelected);
+	$(document).off("change", "#listaSucursales");
 	$(document).on("change", "#listaSucursales", ControlaSucursalSeleccionada);
+	$(document).off("keypress", ".inputEditable");
 	$(document).on("keypress", ".inputEditable", analizaEnterInput);
+	$(document).off("change", "#listaLs02");
 	$(document).on("change", "#listaLs02", ControlalistaRubroSelected);
+	$(document).off("change", "#listaLs03");
 	$(document).on("change", "#listaLs03", ControlalistaFamiliaSelected);
+	$(document).off("click", "#btnAbmAceptar");
 	$(document).on("click", "#btnAbmAceptar", function () {
 		ConfirmarOrdenDeCompra();
 	});
-
+	$(document).off("click", "#btnCancel");
 	$(document).on("click", "#btnCancel", function () {
 		LimpiarDatosDelFiltroInicial();
 		$("#divDetalle").collapse("hide");
 		$("#divFiltros").collapse("show");
 	});
-
+	$("#btnCollapseSection").off("click");
 	$("#btnCollapseSection").on("click", btnCollapseSectionClicked);
+	$("#tabResumen").off("click");
 	$("#tabResumen").on("click", function () {
 		$("#btnAbmAceptar").prop("disabled", false);
 		CargarResumenDeOc();
 	});
+	$("#tabNuevaOC").off("click");
 	$("#tabNuevaOC").on("click", function () {
 		$("#btnAbmAceptar").prop("disabled", true);
 	});
+	$("#tabProductos").off("click");
 	$("#tabProductos").on("click", function () {
 		$("#btnAbmAceptar").prop("disabled", true);
 	});
+	$("#btnImprimirTemp").off("click");
 	$("#btnImprimirTemp").on("click", function () {
 		ImprimirOC_Generada("00-00063621", "C0017180");
 	});
+	$("#chkRel02").off("click");
 	$("#chkRel02").on("click", function () {
 		if ($("#chkRel02").is(":checked")) {
 			$("#listaLs02").prop("disabled", false);
@@ -197,6 +206,7 @@ $(function () {
 			$("#Rel02List").prop("disabled", true);
 		}
 	})
+	$("#chkRel03").off("click");
 	$("#chkRel03").on("click", function () {
 		if ($("#chkRel03").is(":checked")) {
 			$("#listaLs03").prop("disabled", false);
@@ -207,7 +217,7 @@ $(function () {
 			$("#Rel03List").prop("disabled", true);
 		}
 	})
-
+	$("#btnTabProductos, #btnTabNuevaOC, #btnTabResumen").off("click");
 	$("#btnTabProductos, #btnTabNuevaOC, #btnTabResumen").on("click", function () {
 		$("#divInfoAdicionaDeProducto").collapse("hide");
 		pIdSeleccionado = "";
@@ -280,6 +290,7 @@ function ControlaListaOcSelected() {
 }
 
 function addHandlerOnChkRel04_Click() {
+	$("#chkRel04").off("click");
 	$("#chkRel04").on("click", function () {
 		if ($("#chkRel04").is(":checked")) {
 			$("#listaOCPend").prop("disabled", false);
@@ -366,10 +377,7 @@ function ConfirmarOrdenDeCompra() {
 				PostGen(data, "/Compras/ordendecompra/ConfirmarOrdenDeCompra", function (obj) {
 					CerrarWaiting();
 					if (obj.error === true) {
-						AbrirMensaje("ATENCIÓN", obj.msg, function () {
-							$("#msjModal").modal("hide");
-							return true;
-						}, false, ["Aceptar"], "error!", null);
+						MostrarError(obj.msg);
 					}
 					else {
 						AbrirMensaje("ATENCIÓN", obj.msg, function () {
@@ -396,7 +404,7 @@ function ConfirmarOrdenDeCompra() {
 		}
 		return true;
 
-	}, true, ["Aceptar", "Cancelar"], "question!", null);
+	}, true, ["SI", "NO"], "question!", null);
 }
 
 function ReseteoDeReportes() {
@@ -416,10 +424,7 @@ function ImprimirOC_Generada(ocCompte, ctaId) {
 function InicializarDatosEnSesion() {
 	PostGen({}, inicializarDatosEnSesionURL, function (obj) {
 		if (obj.error === true) {
-			AbrirMensaje("ATENCIÓN", obj.msg, function () {
-				$("#msjModal").modal("hide");
-				return true;
-			}, false, ["Aceptar"], "error!", null);
+			MostrarError(obj.msg);
 		}
 		else {
 			console.log(obj.msg);
@@ -442,10 +447,7 @@ function ActualizarGrillaConceptos() {
 	var data = { Oc_Compte, Entrega_Fecha, Entrega_Adm, Pago_Anticipado, Pago_Fecha, Observaciones, Oce_Id };
 	PostGenHtml(data, ObtenerConceptoURL, function (obj) {
 		if (obj.error === true) {
-			AbrirMensaje("ATENCIÓN", obj.msg, function () {
-				$("#msjModal").modal("hide");
-				return true;
-			}, false, ["Aceptar"], "error!", null);
+			MostrarError(obj.msg);
 		}
 		else {
 			$("#divGridConcepto").html(obj);
@@ -510,10 +512,7 @@ function AplicarSeteoMasivo() {
 		var data = { pIds, dto1, dto2, dto3, dto4, dpa, boolFlete, flete };
 		PostGenHtml(data, UpdateMasivoEnOcURL, function (obj) {
 			if (obj.error === true) {
-				AbrirMensaje("ATENCIÓN", obj.msg, function () {
-					$("#msjModal").modal("hide");
-					return true;
-				}, false, ["Aceptar"], "error!", null);
+				MostrarError(obj.msg);
 			}
 			else {
 				$("#divListaProductoNuevaOC").html(obj);
@@ -524,10 +523,7 @@ function AplicarSeteoMasivo() {
 		});
 	}
 	else {
-		AbrirMensaje("ATENCIÓN", "Debe seleccionar al menos un producto para la edición masiva.", function () {
-			$("#msjModal").modal("hide");
-			return true;
-		}, false, ["Aceptar"], "error!", null);
+		MostrarError("Debe seleccionar al menos un producto para la edición masiva.");
 	}
 }
 
@@ -566,10 +562,7 @@ function AbrirInfoProducto() {
 			});
 		}, 500);
 	} else {
-		AbrirMensaje("ATENCIÓN", "Debe seleccionar un producto.", function () {
-			$("#msjModal").modal("hide");
-			return true;
-		}, false, ["Aceptar"], "error!", null);
+		MostrarError("Debe seleccionar un producto.");
 	}
 }
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -593,7 +586,7 @@ function formatearTotalesEnTabDetalleOC() {
 }
 
 function ActualizarProductoEnOc(row, campoActual) {
-	if (campoActual == undefined) return false;
+	if (campoActual === undefined || $(campoActual).val() === undefined || $(campoActual).val() === "") return false;
 	else {
 		var pId = row.data('p-id');
 		var field = $(campoActual).data('field');
@@ -601,10 +594,7 @@ function ActualizarProductoEnOc(row, campoActual) {
 		var data = { pId, field, val };
 		PostGen(data, ActualizarProductoEnOcURL, function (obj) {
 			if (obj.error === true) {
-				AbrirMensaje("ATENCIÓN", obj.msg, function () {
-					$("#msjModal").modal("hide");
-					return true;
-				}, false, ["Aceptar"], "error!", null);
+				MostrarError(obj.msg);
 			}
 			else {
 				//Actualizar valores en la grilla
@@ -612,7 +602,7 @@ function ActualizarProductoEnOc(row, campoActual) {
 					var td = $(this).find('td');
 					if (td.length > 0 && td[1].innerText !== undefined && td[1].innerText === pId) {
 						//GRILLA
-						if (obj.data.permiteDecimales == "true") {
+						if (obj.data.permiteDecimales === "true") {
 							td[7].innerText = obj.data.pedidoCantidad.toFixed(3);//
 							td[15].innerText = obj.data.pedido_Mas_Boni.toFixed(1);//PEDIDO +BONI -> obj.data.pedido_Mas_Boni
 						}
@@ -659,33 +649,23 @@ function CargarResumenDeOc() {
 		var data = { ocIdSelected };
 		PostGenHtml(data, CargarResumenDeOcURL, function (obj) {
 			if (obj.error === true) {
-				AbrirMensaje("ATENCIÓN", obj.msg, function () {
-					$("#msjModal").modal("hide");
-					return true;
-				}, false, ["Aceptar"], "error!", null);
+				MostrarError(obj.msg);
 			}
 			else {
 				$("#divResumen").html(obj);
 				FormatearValores("#tbGridConcepto", 1);
+				$("#Obs").off('focusout');
 				$("#Obs").on('focusout', function (e) {
 					ActualizarGrillaConceptos();
 				});
+				$("#chkPagoAnticipado").off("click");
 				$("#chkPagoAnticipado").on("click", function () {
 					ActualizarGrillaConceptos();
 				});
+				$("#chkDejarOCActiva").off("click");
 				$("#chkDejarOCActiva").on("click", function () {
 					ActualizarGrillaConceptos();
 				});
-				// const dateControl2 = $('input[type="date"]');
-				// var now = moment().format('yyyy-MM-DD');
-				// var min = now;
-				// var max = moment().add(4, 'months');
-				// for (var i = 0; i < dateControl2.length; i++) {
-				// 	if (dateControl2[i].id == "FechaEntrega") {
-				// 		dateControl2[i].setAttribute('min', min);
-				// 		dateControl2[i].setAttribute('max', max.format('yyyy-MM-DD'));
-				// 	}
-				// }
 			}
 		});
 	}
@@ -766,10 +746,12 @@ function ActualizarInfoDeProductosEnGrilla() {
 	}
 }
 
+///TODO -> como modificarlo a lo que sugiere
 function AddEventListenerToGrid(tabla) {
 	var grilla = document.getElementById(tabla);
 	if (grilla) {
 		document.getElementById(tabla).addEventListener('click', function (e) {
+			console.log("CLICK GRID");
 			if (e.target.nodeName === 'TD') {
 				var selectedRow = this.querySelector('.selected-row');
 				if (selectedRow) {
@@ -786,10 +768,7 @@ function quitarProductoEnOC(e) {
 	var data = { pId };
 	PostGenHtml(data, QuitarProductoEnOcURL, function (obj) {
 		if (obj.error === true) {
-			AbrirMensaje("ATENCIÓN", obj.msg, function () {
-				$("#msjModal").modal("hide");
-				return true;
-			}, false, ["Aceptar"], "error!", null);
+			MostrarError(obj.msg);
 		}
 		else {
 			$("#divListaProductoNuevaOC").html(obj);
@@ -810,10 +789,7 @@ function actualizarProducto(e) {
 		PostGenHtml(data, AgregarProductoEnOcURL, function (obj) {
 			if (obj.error === true) {
 				CerrarWaiting();
-				AbrirMensaje("ATENCIÓN", obj.msg, function () {
-					$("#msjModal").modal("hide");
-					return true;
-				}, false, ["Aceptar"], "error!", null);
+				MostrarError(obj.msg);
 			}
 			else {
 				$("#divListaProductoNuevaOC").html(obj);
@@ -827,16 +803,10 @@ function actualizarProducto(e) {
 		});
 	}
 	else if ($(e).hasClass("btn-secondary")) {
-		AbrirMensaje("ATENCIÓN", "El producto seleccionado esta discontínuo.", function () {
-			$("#msjModal").modal("hide");
-			return true;
-		}, false, ["Aceptar"], "error!", null);
+		MostrarError("El producto seleccionado esta discontínuo.");
 	}
 	else if ($(e).hasClass("btn-danger")) {
-		AbrirMensaje("ATENCIÓN", "El producto seleccionado ya esta incluído en la OC.", function () {
-			$("#msjModal").modal("hide");
-			return true;
-		}, false, ["Aceptar"], "error!", null);
+		MostrarError("El producto seleccionado ya esta incluído en la OC.");
 	}
 	else {
 		console.log("chan!");
@@ -970,16 +940,18 @@ function activarBotones(activar) {
 }
 
 function addTxtMesesKeyUpHandler() {
+	$("#txtMeses").off('keyup');
 	$("#txtMeses").on('keyup', function (e) {
-		if (e.keyCode == 13) {
+		if (e.key === "Enter") {
 			BuscarInfoAdicional();
 		}
 	});
 }
 
 function addTxtSemanasKeyUpHandler() {
+	$("#txtSemanas").off('keyup');
 	$("#txtSemanas").on('keyup', function (e) {
-		if (e.keyCode == 13) {
+		if (e.key === "Enter") {
 			BuscarInfoAdicional();
 		}
 	});
@@ -1013,7 +985,7 @@ function selectListaProductoRow(x, event) {
 }
 
 function NoHayProdSeleccionado() {
-	if (pIdSeleccionado == undefined || pIdSeleccionado == "") {
+	if (pIdSeleccionado === undefined || pIdSeleccionado === "") {
 		return true;
 	}
 	return false;
@@ -1021,10 +993,7 @@ function NoHayProdSeleccionado() {
 
 function BuscarInfoAdicional() {
 	if (NoHayProdSeleccionado()) {
-		AbrirMensaje("Atención", "Debe seleccionar un producto.", function () {
-			$("#msjModal").modal("hide");
-			return true;
-		}, false, ["Aceptar"], "error!", null);
+		MostrarError("Debe seleccionar un producto.");
 	}
 	AbrirWaiting();
 	var admId = $("#listaSucursales").val();
@@ -1148,10 +1117,7 @@ function BuscarProductosTabOC() {
 	PostGenHtml(data, BuscarProductosTabOCURL, function (obj) {
 		CerrarWaiting();
 		if (obj.error === true) {
-			AbrirMensaje("ATENCIÓN", obj.msg, function () {
-				$("#msjModal").modal("hide");
-				return true;
-			}, false, ["Aceptar"], "error!", null);
+			MostrarError(obj.msg);
 		}
 		else {
 			$("#divListaProductoNuevaOC").html(obj);
@@ -1235,10 +1201,7 @@ function BuscarProductos(pag = 1) {
 		AddEventListenerToGrid("tbListaProducto");
 		PostGen({}, buscarMetadataURL, function (obj) {
 			if (obj.error === true) {
-				AbrirMensaje("ATENCIÓN", obj.msg, function () {
-					$("#msjModal").modal("hide");
-					return true;
-				}, false, ["Aceptar"], "error!", null);
+				MostrarError(obj.msg);
 			}
 			else {
 				totalRegs = obj.metadata.totalCount;
@@ -1303,10 +1266,7 @@ function BuscarProductosDesdeNCPI(pag = 1, pId, ctaId, ctaDeno, SoloProductoSele
 		AddEventListenerToGrid("tbListaProducto");
 		PostGen({}, buscarMetadataURL, function (obj) {
 			if (obj.error === true) {
-				AbrirMensaje("ATENCIÓN", obj.msg, function () {
-					$("#msjModal").modal("hide");
-					return true;
-				}, false, ["Aceptar"], "error!", null);
+				MostrarError(obj.msg);
 			}
 			else {
 				totalRegs = obj.metadata.totalCount;
@@ -1345,16 +1305,10 @@ function CargarTopesDeOC() {
 	data = {};
 	PostGen(data, ObtenerTopesDeOcURL, function (obj) {
 		if (obj.error === true) {
-			AbrirMensaje("ATENCIÓN", obj.msg, function () {
-				$("#msjModal").modal("hide");
-				return true;
-			}, false, ["Aceptar"], "error!", null);
+			MostrarError(obj.msg);
 		}
 		else if (obj.warn === true) {
-			AbrirMensaje("ATENCIÓN", obj.msg, function () {
-				$("#msjModal").modal("hide");
-				return true;
-			}, false, ["Aceptar"], "error!", null);
+			MostrarError(obj.msg);
 		}
 		else {
 			//formatter.format(e.target.value);
@@ -1527,10 +1481,7 @@ function CargarOCLista(id) {
 	data = { ctaId };
 	PostGen(data, buscarOCDesdeCtaIdSeleccionadoUrl, function (obj) {
 		if (obj.error === true) {
-			AbrirMensaje("ATENCIÓN", obj.msg, function () {
-				$("#msjModal").modal("hide");
-				return true;
-			}, false, ["Aceptar"], "error!", null);
+			MostrarError(obj.msg);
 		}
 		else {
 			$("#divLstOcPendiente").html(obj);
@@ -2043,4 +1994,13 @@ function activarSiguienteCampo(campoActual) {
 		$siguienteCampo.prop('readonly', false).removeClass('campo-readonly');
 		setTimeout(() => { $siguienteCampo[0].focus(); $siguienteCampo[0].select(); }, 0);
 	}
+}
+
+function MostrarError(msg) {
+	AbrirMensaje("ATENCIÓN", msg, function () {
+			$("#msjModal").modal("hide");
+			return true;
+		},
+		false, ["Aceptar"], "error!", null
+	);
 }

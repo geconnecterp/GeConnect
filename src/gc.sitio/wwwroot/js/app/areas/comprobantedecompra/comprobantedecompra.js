@@ -27,6 +27,7 @@ function InicializaPantalla() {
 		$("#Rel01Item").val("");
 	});
 	$("#Rel01List").collapse("hide")
+	$("#btnBuscar").off("click");
 	$("#btnBuscar").on("click", function () {
 		if (ctaIdSelected == "") {
 			AbrirMensaje("ATENCIÓN", "Debe seleccionar una cuenta.", function () {
@@ -39,9 +40,11 @@ function InicializaPantalla() {
 			InicializarComprobante(ctaIdSelected);
 		}
 	});
+	$("#btnAbmAceptar").off("click");
 	$("#btnAbmAceptar").on("click", function () {
 		ConfirmarComprobanteDeCompra();
 	});
+	$("#btnCancel").off("click");
 	$("#btnCancel").on("click", function () {
 		InicializarDatosEnSesion();
 		InicializaPantalla();
@@ -50,6 +53,7 @@ function InicializaPantalla() {
 		$("#btnDetalle").trigger("click");
 		$("#divDetalle").collapse("hide");
 	});
+	$("#btnAbmCancelar").off("click");
 	$("#btnAbmCancelar").on("click", function () {
 		InicializarDatosEnSesion();
 		InicializaPantalla();
@@ -67,9 +71,9 @@ function InicializaPantalla() {
 	ctaIdSelected = "";
 	MostrarDatosDeCuenta(false);
 
-	DesregistrarEventos();
 	RegistrarEventos();
 
+	$(".inputEditable").off("keypress");
 	$(".inputEditable").on("keypress", analizaEnterInput);
 	document.getElementById("Rel01").focus();
 
@@ -86,51 +90,48 @@ function InicializaPantalla() {
 }
 
 function RegistrarEventos() {
-	$(document).on("change", "#listaTCompte", ControlaListaOpcionesSeleccion);
-	$(document).on("change", "#listaOpeIva", ControlaListaOpcionesSeleccion);
-	$(document).on("change", "#listaOpciones", ObtenerGrillaDesdeOpcionSeleccionada);
-	$(document).on("click", "#btnAgregarConceptoFacturado", AbrirModalConceptoFacturado); //Abrir modal
-	$(document).on("change", "#listaIvaSit", ControlaSituacionSeleccionada);
-	$(document).on("change", "#listaIvaAli", ControlaIvaAliSeleccionada);
-	$(document).on("click", "#btnAgregarOtroTributo", AbrirModalAgregarOtroTributo); //Abrir modal
-	$(document).on("change", "#listaOtroTrib", ControlaOtroTribSeleccionada);
-	$(document).on("change", "#Comprobante_fecha_compte", ControlaFechaCompteSeleccionada);
-	$(document).on("keyup", "#Comprobante_cm_compte_pto_vta", ControlaKeyUpComptePtoVta);
-	$(document).on("focusout", "#Comprobante_cm_compte_pto_vta", ControlaFocusOutComptePtoVta);
-	$(document).on("keyup", "#Comprobante_cm_compte_pto_nro", ControlaKeyUpCompteNro);
-	$(document).on("focusout", "#Comprobante_cm_compte_pto_nro", ControlaFocusOutCompteNro);
-	$(document).on("keyup", "#ConceptoFacturado_concepto", ControlaKeyUpConceptoFacturado_concepto);
-	$(document).on("keyup", "#ConceptoFacturado_subtotal", ControlaKeyUpConceptoFacturado_subtotal);
-	$(document).on("focusin", "#ConceptoFacturado_subtotal", ControlaGotFocusConceptoFacturado_subtotal);
-	$(document).on("keyup", "#ConceptoFacturado_iva", ControlaKeyUpConceptoFacturado_iva);
-	$(document).on("focusin", "#ConceptoFacturado_iva", ControlaGotFocusConceptoFacturado_iva);
-	$(document).on("focusin", "#OtroTributo_base_imp", ControlaGotFocusOtroTributo_base_imp);
-	$(document).on("focusin", "#OtroTributo_alicuota", ControlaGotFocusOtroTributo_alicuota);
-	$(document).on("keyup", "#OtroTributo_base_imp", ControlaKeyUpOtroTributo_base_imp);
-}
-
-function DesregistrarEventos() {
 	$(document).off("change", "#listaTCompte");
+	$(document).on("change", "#listaTCompte", ControlaListaOpcionesSeleccion);
 	$(document).off("change", "#listaOpeIva");
+	$(document).on("change", "#listaOpeIva", ControlaListaOpcionesSeleccion);
 	$(document).off("change", "#listaOpciones");
+	$(document).on("change", "#listaOpciones", ObtenerGrillaDesdeOpcionSeleccionada);
 	$(document).off("click", "#btnAgregarConceptoFacturado");
+	$(document).on("click", "#btnAgregarConceptoFacturado", AbrirModalConceptoFacturado); //Abrir modal
 	$(document).off("change", "#listaIvaSit");
+	$(document).on("change", "#listaIvaSit", ControlaSituacionSeleccionada);
 	$(document).off("change", "#listaIvaAli");
+	$(document).on("change", "#listaIvaAli", ControlaIvaAliSeleccionada);
 	$(document).off("click", "#btnAgregarOtroTributo");
+	$(document).on("click", "#btnAgregarOtroTributo", AbrirModalAgregarOtroTributo); //Abrir modal
 	$(document).off("change", "#listaOtroTrib");
+	$(document).on("change", "#listaOtroTrib", ControlaOtroTribSeleccionada);
 	$(document).off("change", "#Comprobante_fecha_compte");
+	$(document).on("change", "#Comprobante_fecha_compte", ControlaFechaCompteSeleccionada);
 	$(document).off("keyup", "#Comprobante_cm_compte_pto_vta");
+	$(document).on("keyup", "#Comprobante_cm_compte_pto_vta", ControlaKeyUpComptePtoVta);
 	$(document).off("focusout", "#Comprobante_cm_compte_pto_vta");
+	$(document).on("focusout", "#Comprobante_cm_compte_pto_vta", ControlaFocusOutComptePtoVta);
 	$(document).off("keyup", "#Comprobante_cm_compte_pto_nro");
+	$(document).on("keyup", "#Comprobante_cm_compte_pto_nro", ControlaKeyUpCompteNro);
 	$(document).off("focusout", "#Comprobante_cm_compte_pto_nro");
+	$(document).on("focusout", "#Comprobante_cm_compte_pto_nro", ControlaFocusOutCompteNro);
 	$(document).off("keyup", "#ConceptoFacturado_concepto");
+	$(document).on("keyup", "#ConceptoFacturado_concepto", ControlaKeyUpConceptoFacturado_concepto);
 	$(document).off("keyup", "#ConceptoFacturado_subtotal");
+	$(document).on("keyup", "#ConceptoFacturado_subtotal", ControlaKeyUpConceptoFacturado_subtotal);
 	$(document).off("focusin", "#ConceptoFacturado_subtotal");
+	$(document).on("focusin", "#ConceptoFacturado_subtotal", ControlaGotFocusConceptoFacturado_subtotal);
 	$(document).off("keyup", "#ConceptoFacturado_iva");
+	$(document).on("keyup", "#ConceptoFacturado_iva", ControlaKeyUpConceptoFacturado_iva);
 	$(document).off("focusin", "#ConceptoFacturado_iva");
+	$(document).on("focusin", "#ConceptoFacturado_iva", ControlaGotFocusConceptoFacturado_iva);
 	$(document).off("focusin", "#OtroTributo_base_imp");
+	$(document).on("focusin", "#OtroTributo_base_imp", ControlaGotFocusOtroTributo_base_imp);
 	$(document).off("focusin", "#OtroTributo_alicuota");
+	$(document).on("focusin", "#OtroTributo_alicuota", ControlaGotFocusOtroTributo_alicuota);
 	$(document).off("keyup", "#OtroTributo_base_imp");
+	$(document).on("keyup", "#OtroTributo_base_imp", ControlaKeyUpOtroTributo_base_imp);
 }
 
 function ControlaFocusOutComptePtoVta() {
@@ -172,18 +173,12 @@ function ConfirmarComprobanteDeCompra() {
 	var cuit = $("#Comprobante_cuit_parcial").inputmask('unmaskedvalue');
 	if (cuit.length != 11) {
 		valido = false;
-		AbrirMensaje("ATENCIÓN", "El valor de 'CUIT' no es válido.", function () {
-			$("#msjModal").modal("hide");
-			return true;
-		}, false, ["Aceptar"], "error!", null);
+		MostrarError("El valor de 'CUIT' no es válido.");
 	}
 	var rowsConceptosFacturados = $("#tbGridConceptoFacturado > tbody > tr").length;
 	if (rowsConceptosFacturados <= 0 && valido) {
 		valido = false;
-		AbrirMensaje("ATENCIÓN", "Debe al menos ingresar un Concepto Facturado.", function () {
-			$("#msjModal").modal("hide");
-			return true;
-		}, false, ["Aceptar"], "error!", null);
+		MostrarError("Debe al menos ingresar un Concepto Facturado.");
 	}
 	if (valido) {
 		AbrirMensaje("ATENCIÓN", "¿Confirma la generación del Comprobante de Compra?", function (e) {
@@ -202,10 +197,7 @@ function ConfirmarComprobanteDeCompra() {
 					var data = { cta_id, encabezado, asociaciones };
 					PostGen(data, confirmarComprobanteDeCompraURL, function (obj) {
 						if (obj.error === true) {
-							AbrirMensaje("ATENCIÓN", obj.msg, function () {
-								$("#msjModal").modal("hide");
-								return true;
-							}, false, ["Aceptar"], "error!", null);
+							MostrarError(obj.msg);
 						}
 						else {
 							// MOstrar mensaje
@@ -230,7 +222,7 @@ function ConfirmarComprobanteDeCompra() {
 			}
 			return true;
 
-		}, true, ["Aceptar", "Cancelar"], "question!", null);
+		}, true, ["SI", "NO"], "question!", null);
 	}
 }
 
@@ -315,10 +307,7 @@ function ObtenerEncabezado() {
 function InicializarDatosEnSesion() {
 	PostGen({}, inicializarDatosEnSesionURL, function (obj) {
 		if (obj.error === true) {
-			AbrirMensaje("ATENCIÓN", obj.msg, function () {
-				$("#msjModal").modal("hide");
-				return true;
-			}, false, ["Aceptar"], "error!", null);
+			MostrarError(obj.msg);
 		}
 	});
 }
@@ -687,10 +676,7 @@ function ActualizarOtroTributo(row, campoActual) {
 	var data = { id, val, idOtroTributoSeleccionado, tco_id };
 	PostGen(data, editarItemEnOtrosConceptosUrl, function (obj) {
 		if (obj.error === true) {
-			AbrirMensaje("ATENCIÓN", obj.msg, function () {
-				$("#msjModal").modal("hide");
-				return true;
-			}, false, ["Aceptar"], "error!", null);
+			MostrarError(obj.msg);
 		}
 		else {
 			CargarGrillaTotales(); //Actualizo grilla de totales con info del BE
@@ -1126,4 +1112,19 @@ $("#Rel01").autocomplete({
             </div>`
 		)
 		.appendTo(ul);
-};
+	};
+
+function MostrarError(msg) {
+	AbrirMensaje(
+		"ATENCIÓN",
+		msg,
+		function () {
+			$("#msjModal").modal("hide");
+			return true;
+		},
+		false,
+		["Aceptar"],
+		"error!",
+		null
+	);
+}

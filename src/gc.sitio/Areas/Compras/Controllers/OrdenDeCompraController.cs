@@ -85,6 +85,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 				ViewBag.Rel03List = HelperMvc<ComboGenDto>.ListaGenerica(listR03);
 
 				CargarDatosIniciales(true);
+				LimpiarDatosEnSesion();
 				return View(model);
 			}
 			catch (Exception ex)
@@ -679,9 +680,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 		{
 			try
 			{
-				CtaIdSelected = "";
-				ListaProductos = [];
-				ListaProductosOC = [];
+				LimpiarDatosEnSesion();
 
 				return Json(new { error = false, warn = false, msg = "Inicializacion correcta." });
 			}
@@ -912,6 +911,12 @@ namespace gc.sitio.Areas.Compras.Controllers
 		#endregion
 
 		#region Métodos privados
+		private void LimpiarDatosEnSesion()
+		{
+			CtaIdSelected = "";
+			ListaProductos = [];
+			ListaProductosOC = [];
+		}
 		private SelectList ComboRubros()
 		{
 			var adms = _rubroServicio.ObtenerListaRubros("", TokenCookie);

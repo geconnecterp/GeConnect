@@ -1,32 +1,46 @@
 ﻿$(function () {
+	$(document).off("click", "#btnCancelDesdeValidPrev");
 	$(document).on("click", "#btnCancelDesdeValidPrev", CancelDesdeValidPrev);
+	$(document).off("click", "#btnAceptarDesdeValidPrev");
 	$(document).on("click", "#btnAceptarDesdeValidPrev", AceptarDesdeValidPrev);
+	$(document).off("click", "#btnSiguiente1");
 	$(document).on("click", "#btnSiguiente1", btnSiguiente1Validar);
+	$(document).off("click", "#btnAnterior2");
 	$(document).on("click", "#btnAnterior2", btnAnterior2Validar);
+	$(document).off("click", "#btnAgregarValor");
 	$(document).on("click", "#btnAgregarValor", btnAgregarValorValidar);
+	$(document).off("click", "#btnConfirmar2");
 	$(document).on("click", "#btnConfirmar2", btnConfirmar2Validar);
+	$(document).off("click", "#btnAgregarConceptoCancelatoriobtnAgregarConceptoCancelatorio");
 	$(document).on("click", "#btnAgregarConceptoCancelatoriobtnAgregarConceptoCancelatorio", btnAgregarConceptoCancelatoriobtnAgregarConceptoCancelatorio);
+	$(document).off("keyup", "#txtValorCtaDirSeleccionada");
 	$(document).on("keyup", "#txtValorCtaDirSeleccionada", ControlaKeyUpValorCtaDirSeleccionada);
+	$(document).off("keyup", "#txtMotivoCtaDirSeleccionada");
 	$(document).on("keyup", "#txtMotivoCtaDirSeleccionada", ControlaKeyUpMotivoCtaDirSeleccionada);
+	$(document).off("change", "#listaCtaDir");
 	$(document).on("change", "#listaCtaDir", ControlaListaCtaDir);
+	$(document).off("click", "#btnCancelar1");
 	$(document).on("click", "#btnCancelar1", btnCancelarValidar);
+	$(document).off("click", "#btnCancelar2");
 	$(document).on("click", "#btnCancelar2", btnCancelarValidar);
 
 	// Botón de imprimir
+	$(document).off("click", ".btnImprimir");
 	$(document).on("click", ".btnImprimir", function () {
 		imprimirOPP();
 	});
-
+	$("#btnImprimirTemp").off("click");
 	$("#btnImprimirTemp").on("click", function () {
 		ImprimirOPP_Generada("00-C0123771", "C0193779");
 	});
 	//
 	InicializaPantalla();
+	$("#btnBuscar").off("click");
 	$("#btnBuscar").on("click", function () {
 		if (ctaIdSelected == "") {
 			AbrirMensaje("ATENCIÓN", "Debe seleccionar una cuenta.", function () {
 				$("#msjModal").modal("hide");
-				$("input#Rel01").focus();
+				$("input#Rel01").trigger('focus');
 				return true;
 			}, false, ["Aceptar"], "error!", null);
 		}
@@ -34,12 +48,14 @@
 			ValidarProveedor();
 		}
 	});
+	$("#UpdateValores").off("change");
 	$("#UpdateValores").on("change", function () {
 		if ($(this).val() == 'true') {
 			CargarValoresDesdeObligYCredSeleccionados();
 			$("#CuentaObs").prop("disabled", false);
 		}
 	});
+	$("#btnCancel").off("click");
 	$("#btnCancel").on("click", function () {
 		InicializarDatosEnSesion();
 		InicializaPantalla();
@@ -81,10 +97,7 @@ function btnAgregarConceptoCancelatoriobtnAgregarConceptoCancelatorio() {
 		var data = { ctag_id, ctag_desc, importe, ctag_motivo };	
 		PostGen(data, agregarCreditoDesdeCuentaDirectaUrl, function (obj) {
 			if (obj.error === true) {
-				AbrirMensaje("ATENCIÓN", obj.msg, function () {
-					$("#msjModal").modal("hide");
-					return true;
-				}, false, ["Aceptar"], "error!", null);
+				MostrarError(obj.msg);
 			}
 			else {
 				//Recargar Grilla de creditos
@@ -119,10 +132,7 @@ function ImprimirOPP_Generada(opCompte, ctaId) {
 	let data = { opCompte };
 	PostGen(data, validarExistenciaDeCertificadosParaImprimirUrl, function (obj) {
 		if (obj.error === true) {
-			AbrirMensaje("ATENCIÓN", obj.msg, function () {
-				$("#msjModal").modal("hide");
-				return true;
-			}, false, ["Aceptar"], "error!", null);
+			MostrarError(obj.msg);
 		}
 		else {
 			ReseteoDeReportes();
@@ -173,10 +183,7 @@ function ValidarPrevioAConfirmar() {
 	var data = {};
 	PostGen(data, validarAntesDeConfirmarUrl, function (obj) {
 		if (obj.error === true) {
-			AbrirMensaje("ATENCIÓN", obj.msg, function () {
-				$("#msjModal").modal("hide");
-				return false;
-			}, false, ["Aceptar"], "error!", null);
+			MostrarError(obj.msg)
 		}
 		else {
 			AbrirMensaje("ATENCIÓN", "¿Confirma la generación de la Orden de Pago a Proveedor?", function (e) {
@@ -194,10 +201,7 @@ function ValidarPrevioAConfirmar() {
 						PostGen(data, confirmarOPaProveedorUrl, function (obj) {
 							CerrarWaiting();
 							if (obj.error === true) {
-								AbrirMensaje("ATENCIÓN", obj.msg, function () {
-									$("#msjModal").modal("hide");
-									return true;
-								}, false, ["Aceptar"], "error!", null);
+								MostrarError(obj.msg);
 							}
 							else {
 								console.log(obj.id);
@@ -331,10 +335,7 @@ function CancelDesdeValidPrev() {
 	var data = {};
 	PostGen(data, cancelarDesdeGrillaDeValidacionesPreviasURL, function (obj) {
 		if (obj.error === true) {
-			AbrirMensaje("ATENCIÓN", obj.msg, function () {
-				$("#msjModal").modal("hide");
-				return true;
-			}, false, ["Aceptar"], "error!", null);
+			MostrarError(obj.msg);
 		}
 		else {
 			InicializaPantalla();
@@ -382,10 +383,7 @@ function selectRegDbl(x, gridId) {
 			}
 			CerrarWaiting();
 			if (msg != "") {
-				AbrirMensaje("ATENCIÓN", msg, function () {
-					$("#msjModal").modal("hide");
-					return true;
-				}, false, ["Aceptar"], "error!", null);
+				MostrarError(msg);
 			}
 			EvaluarBotonesWizzard();
 		});
@@ -419,10 +417,7 @@ function selectRegDbl(x, gridId) {
 			}
 			CerrarWaiting();
 			if (msg != "") {
-				AbrirMensaje("ATENCIÓN", msg, function () {
-					$("#msjModal").modal("hide");
-					return true;
-				}, false, ["Aceptar"], "error!", null);
+				MostrarError(msg);
 			}
 			EvaluarBotonesWizzard();
 		});
@@ -507,6 +502,7 @@ function AceptarDesdeValidPrev() {
 			CargarObligacionesOCreditos("Obligaciones"); //Obligaciones
 		}, 1000);
 		$("#btnAbmCancelar").prop("disabled", false);
+		$("#btnAbmCancelar").off("click");
 		$("#btnAbmCancelar").on("click", function () {
 			InicializarDatosEnSesion();
 			InicializaPantalla();
@@ -550,15 +546,17 @@ function InicializaPantalla() {
 	$("#chkRel01").trigger("change");
 	$("#chkRel01").prop("disabled", true);
 	$("#Rel01").prop("disabled", false);
+	$("input#Rel01").off("click");
 	$("input#Rel01").on("click", function () {
 		$("input#Rel01").val("");
 		$("#Rel01Item").val("");
 	});
 	$("input#Rel01").trigger("click");
 	$("#Rel01List").empty();
-	$("#Rel01").focus();
+	$("#Rel01").trigger('focus');
 	$("#lbRel01").text("Proveedor");
 	$("#btnDetalle").prop("disabled", true);
+	$("#btnAbmCancelar").off("click");
 	$("#btnAbmCancelar").on("click", function () {
 		InicializarDatosEnSesion();
 		InicializaPantalla();
@@ -577,10 +575,7 @@ function InicializaPantalla() {
 function InicializarDatosEnSesion() {
 	PostGen({}, inicializarDatosEnSesionURL, function (obj) {
 		if (obj.error === true) {
-			AbrirMensaje("ATENCIÓN", obj.msg, function () {
-				$("#msjModal").modal("hide");
-				return true;
-			}, false, ["Aceptar"], "error!", null);
+			MostrarError(obj.msg);
 		}
 	});
 }
@@ -730,4 +725,19 @@ function getMaskForMoneyType(selector) {
 		rightAlign: true,
 		unmaskAsNumber: true
 	});
+}
+
+function MostrarError(msg) {
+	AbrirMensaje(
+		"ATENCIÓN",
+		msg,
+		function () {
+			$("#msjModal").modal("hide");
+			return true;
+		},
+		false,
+		["Aceptar"],
+		"error!",
+		null
+	);
 }

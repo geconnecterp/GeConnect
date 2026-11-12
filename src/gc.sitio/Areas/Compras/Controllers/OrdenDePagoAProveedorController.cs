@@ -95,6 +95,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 				ViewBag.Rel01List = HelperMvc<ComboGenDto>.ListaGenerica(listR01);
 
 				CargarDatosIniciales(true);
+				LimpiarDatosEnSesion();
 				return View();
 			}
 			catch (Exception ex)
@@ -702,16 +703,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 		{
 			try
 			{
-				CtaIdSelected = "";
-				OPValidacionPrevLista = [];
-				OPDebitoLista = [];
-				OPDebitoOriginalLista = [];
-				OPDebitoNuevaLista = [];
-				OPCreditoLista = [];
-				OPCreditoOriginalLista = [];
-				OPCreditoNuevaLista = [];
-				OPRetencionesDesdeObligYCredLista = [];
-				OPValoresDesdeObligYCredLista = [];
+				LimpiarDatosEnSesion();
 				return Json(new { error = false, warn = false, msg = "Inicializacion correcta." });
 			}
 			catch (Exception)
@@ -719,6 +711,8 @@ namespace gc.sitio.Areas.Compras.Controllers
 				return Json(new { error = true, warn = false, msg = $"Se prudujo un error al intentar inicializar los datos en Sesion - ORDENDECOMPRA" });
 			}
 		}
+
+		
 
 		[HttpPost]
 		public IActionResult CargarVistaObligacionesYCreditosPaso1()
@@ -1100,6 +1094,19 @@ namespace gc.sitio.Areas.Compras.Controllers
 		#endregion
 
 		#region Metodos Privados
+		private void LimpiarDatosEnSesion()
+		{
+			CtaIdSelected = "";
+			OPValidacionPrevLista = [];
+			OPDebitoLista = [];
+			OPDebitoOriginalLista = [];
+			OPDebitoNuevaLista = [];
+			OPCreditoLista = [];
+			OPCreditoOriginalLista = [];
+			OPCreditoNuevaLista = [];
+			OPRetencionesDesdeObligYCredLista = [];
+			OPValoresDesdeObligYCredLista = [];
+		}
 		private List<RetencionesDesdeObligYCredDto> ObtenerRetenciones()
 		{
 			var cta_id = CtaIdSelected;

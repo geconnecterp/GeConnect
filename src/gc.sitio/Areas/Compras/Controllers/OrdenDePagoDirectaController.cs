@@ -88,6 +88,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 				ViewBag.Rel01List = HelperMvc<ComboGenDto>.ListaGenerica(listR01);
 
 				CargarDatosIniciales(true);
+				InicializarDatosEnSession(true);
 				return View();
 			}
 			catch (Exception ex)

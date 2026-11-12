@@ -67,6 +67,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 
 				ViewData["Titulo"] = "CARGA DE COMPROBANTE DE COMPRA";
 				CargarDatosIniciales(true);
+				LimpiarDatosDeSesion();
 				return View();
 			}
 			catch (Exception ex)
@@ -504,11 +505,7 @@ namespace gc.sitio.Areas.Compras.Controllers
 		{
 			try
 			{
-				ListaNotasACuenta = [];
-				ListaRprAsociados = [];
-				ListaTotales = [];
-				ListaOtrosTributos = [];
-				ListaConceptoFacturado = [];
+				LimpiarDatosDeSesion();
 
 				return Json(new { error = false, warn = false, msg = "Inicializacion correcta." });
 			}
@@ -517,6 +514,8 @@ namespace gc.sitio.Areas.Compras.Controllers
 				return Json(new { error = true, warn = false, msg = $"Se prudujo un error al intentar inicializar los datos en Sesion - COMPROBANTEDECOMPRA" });
 			}
 		}
+
+		
 
 		[HttpPost]
 		public IActionResult ObtenerDatosModalConceptoFacturado(string tco_id)
@@ -1029,6 +1028,15 @@ namespace gc.sitio.Areas.Compras.Controllers
 			var item_Total = listaTotalesTemp.Where(x => x.id.Contains("total")).First();
 			item_Total.Importe = listaTotalesTemp.Where(y => y.id != null && !y.id.Equals("total")).Sum(x => x.Importe);
 			ListaTotales = listaTotalesTemp;
+		}
+
+		private void LimpiarDatosDeSesion()
+		{
+			ListaNotasACuenta = [];
+			ListaRprAsociados = [];
+			ListaTotales = [];
+			ListaOtrosTributos = [];
+			ListaConceptoFacturado = [];
 		}
 		private void ActualizarItemEnGrillaTotales(string id, decimal val)
 		{

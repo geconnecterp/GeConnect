@@ -1,53 +1,90 @@
 ﻿const afipConCuit = ["01", "04", "06"];
 
 $(function () {
+	$(document).off("change", "#listaTipoOP");
 	$(document).on("change", "#listaTipoOP", ControlalistaTipoOPSelected);
+	$(document).off("change", "#listaTCompte");
 	$(document).on("change", "#listaTCompte", ControlalistaTCompteSelected);
+	$(document).off("change", "#listaCondAfip");
 	$(document).on("change", "#listaCondAfip", ControlalistaCondAfipSelected);
+	$(document).off("change", "#listaCtaDir");
 	$(document).on("change", "#listaCtaDir", ControlalistaCtaDirSelected);
 
+	$(document).off("click", "#btnAgregarConceptoFacturado");
 	$(document).on("click", "#btnAgregarConceptoFacturado", AbrirModalConceptoFacturado); //Abrir modal
+	$(document).off("click", "#btnAgregarOtroTributo");
 	$(document).on("click", "#btnAgregarOtroTributo", AbrirModalAgregarOtroTributo); //Abrir modal
+	$(document).off("change", "#listaIvaSit");
 	$(document).on("change", "#listaIvaSit", ControlaSituacionSeleccionada);
 
+	$(document).off("keyup", "#ConceptoFacturado_concepto");
 	$(document).on("keyup", "#ConceptoFacturado_concepto", ControlaKeyUpConceptoFacturado_concepto);
+	$(document).off("keyup", "#ConceptoFacturado_subtotal");
 	$(document).on("keyup", "#ConceptoFacturado_subtotal", ControlaKeyUpConceptoFacturado_subtotal);
+	$(document).off("focusin", "#ConceptoFacturado_subtotal");
 	$(document).on("focusin", "#ConceptoFacturado_subtotal", ControlaGotFocusConceptoFacturado_subtotal);
+	$(document).off("keyup", "#ConceptoFacturado_iva");
 	$(document).on("keyup", "#ConceptoFacturado_iva", ControlaKeyUpConceptoFacturado_iva);
+	$(document).off("focusin", "#ConceptoFacturado_iva");
 	$(document).on("focusin", "#ConceptoFacturado_iva", ControlaGotFocusConceptoFacturado_iva);
 
+	$(document).off("focusin", "#OtroTributo_base_imp");
 	$(document).on("focusin", "#OtroTributo_base_imp", ControlaGotFocusOtroTributo_base_imp);
+	$(document).off("focusin", "#OtroTributo_alicuota");
 	$(document).on("focusin", "#OtroTributo_alicuota", ControlaGotFocusOtroTributo_alicuota);
+	$(document).off("keyup", "#OtroTributo_base_imp");
 	$(document).on("keyup", "#OtroTributo_base_imp", ControlaKeyUpOtroTributo_base_imp);
 
+	$(document).off("keyup", "#itemOPD_cm_compte_pto_vta");
 	$(document).on("keyup", "#itemOPD_cm_compte_pto_vta", ControlaKeyUpComptePtoVta);
+	$(document).off("focusout", "#itemOPD_cm_compte_pto_vta");
 	$(document).on("focusout", "#itemOPD_cm_compte_pto_vta", ControlaFocusOutComptePtoVta);
+	$(document).off("keyup", "#itemOPD_cm_compte_pto_nro");
 	$(document).on("keyup", "#itemOPD_cm_compte_pto_nro", ControlaKeyUpCompteNro);
+	$(document).off("focusout", "#itemOPD_cm_compte_pto_nro");
 	$(document).on("focusout", "#itemOPD_cm_compte_pto_nro", ControlaFocusOutCompteNro);
+	$(document).off("keyup", "#itemOPD_cm_cuit");
 	$(document).on("keyup", "#itemOPD_cm_cuit", ControlaKeyUpCmCuit);
+	$(document).off("focusout", "#itemOPD_cm_cuit");
 	$(document).on("focusout", "#itemOPD_cm_cuit", ControlaFocusOutCmCuit);
+	$(document).off("keyup", "#itemOPD_cm_nombre");
 	$(document).on("keyup", "#itemOPD_cm_nombre", ControlaKeyUpCmNombre);
+	$(document).off("keyup", "#itemOPD_cm_domicilio");
 	$(document).on("keyup", "#itemOPD_cm_domicilio", ControlaKeyUpCmDomicilio);
+	$(document).off("keyup", "#itemOPD_cm_fecha");
 	$(document).on("keyup", "#itemOPD_cm_fecha", ControlaKeyUpCmFecha);
+	$(document).off("blur", "#itemOPD_cm_fecha");
 	$(document).on("blur", "#itemOPD_cm_fecha", ValidarCMFecha);
 
+	$(document).off("keyup", "#Rel03");
 	$(document).on("keyup", "#Rel03", ControlaKeyUpRel03);
 
+	$(document).off("click", "#btnAbmAgregarItem");
 	$(document).on("click", "#btnAbmAgregarItem", AbmAgregarItem);
+	$(document).off("click", "#btnAbmEditarItem");
 	$(document).on("click", "#btnAbmEditarItem", AbmEditarItem);
+	$(document).off("click", "#btnAbmEliminarItem");
 	$(document).on("click", "#btnAbmEliminarItem", AbmEliminarItem);
+	$(document).off("click", "#btnAbmAceptarItem");
 	$(document).on("click", "#btnAbmAceptarItem", AbmAceptarItem);
+	$(document).off("click", "#btnAbmCancelarItem");
 	$(document).on("click", "#btnAbmCancelarItem", AbmCancelarItem);
 
+	$(document).off("click", "#btnSiguiente1");
 	$(document).on("click", "#btnSiguiente1", btnSiguiente1);
+	$(document).off("click", "#btnAnterior2");
 	$(document).on("click", "#btnAnterior2", btnAnterior2);
+	$(document).off("click", "#btnConfirmar");
 	$(document).on("click", "#btnConfirmar", btnConfirmar);
+	$(document).off("click", "#btnCancelar1");
 	$(document).on("click", "#btnCancelar1", btnCancelar1);
+	$(document).off("click", "#btnCancelar2");
 	$(document).on("click", "#btnCancelar2", btnCancelar2);
-	//
 
+	$(document).off("click", "#btnAgregarValor");
 	$(document).on("click", "#btnAgregarValor", btnAgregarValorValidar);
 
+	$(".inputEditable").off("keypress");
 	$(".inputEditable").on("keypress", analizaEnterInput);
 	$(document).on("keydown.autocomplete", "input#Rel03", function () {
 		$(this).autocomplete({
@@ -79,6 +116,7 @@ $(function () {
 		});
 	});
 	CargarListaTiposDeOrdenDePago();
+	$("#btnBuscar").off("click");
 	$("#btnBuscar").on("click", function () {
 		if (tipoOPSelected == "") {
 			AbrirMensaje("ATENCIÓN", "Debe seleccionar un tipo de Orden de Pago.", function () {
@@ -91,6 +129,7 @@ $(function () {
 			AceptarDesdeSeleccionarTipoDeOP();
 		}
 	});
+	$("#UpdateValores").off("change");
 	$("#UpdateValores").on("change", function () {
 		if ($(this).val() == 'true') {
 			CargarValores();
@@ -98,10 +137,12 @@ $(function () {
 	});
 	$(".activable").prop("disabled", true);
 	EstadoBotonesABM(AbmAction.ALTA, false);
+	$("#btnCancel").off("click");
 	$("#btnCancel").on("click", function () {
 		CancelarCarga();
 	});
 
+	$("#btnImprimirTemp").off("click");
 	$("#btnImprimirTemp").on("click", function () {
 		ImprimirOPD_Generada("00-00003444", "");
 	});
@@ -343,7 +384,7 @@ function ValidarAntesDeCancelar() {
 				}
 				return true;
 
-			}, true, ["Aceptar", "Cancelar"], "question!", null);
+			}, true, ["SI", "NO"], "question!", null);
 		}
 	});
 }
@@ -398,10 +439,7 @@ function btnConfirmar() {
 					PostGen(data, confirmarOpdUrl, function (obj) {
 						if (obj.error === true) {
 							CerrarWaiting();
-							AbrirMensaje("ATENCIÓN", obj.msg, function () {
-								$("#msjModal").modal("hide");
-								return true;
-							}, false, ["Aceptar"], "error!", null);
+							MostrarError(obj.msg);
 						}
 						else {
 							console.log(obj.id); //Tomar este valor para imprimir.
@@ -425,7 +463,7 @@ function btnConfirmar() {
 			}
 			return true;
 
-		}, true, ["Aceptar", "Cancelar"], "question!", null);
+		}, true, ["SI", "NO"], "question!", null);
 	}
 	else {
 		AbrirMensaje("ATENCIÓN", mensajeErrorAlAgregarAntesDeConfirmar, function () {
@@ -596,7 +634,7 @@ function AgregarItemObligaciones() {
 			}
 			return true;
 
-		}, true, ["Aceptar", "Cancelar"], "question!", null);
+		}, true, ["SI", "NO"], "question!", null);
 	}
 	else {
 		AbrirMensaje("ATENCIÓN", mensajeErrorAlAgregarAntesDeGuardar, function () {
@@ -619,10 +657,7 @@ function EditarItemObligaciones() {
 					var data = { request };
 					PostGen(data, editarItemEnOpdPaso1Url, function (obj) {
 						if (obj.error === true) {
-							AbrirMensaje("ATENCIÓN", obj.msg, function () {
-								$("#msjModal").modal("hide");
-								return true;
-							}, false, ["Aceptar"], "error!", null);
+							MostrarError(obj.msg);
 						}
 						else {
 							LimpiarCamposDeEdicion();
@@ -645,7 +680,7 @@ function EditarItemObligaciones() {
 			}
 			return true;
 
-		}, true, ["Aceptar", "Cancelar"], "question!", null);
+		}, true, ["SI", "NO"], "question!", null);
 	}
 	else {
 		AbrirMensaje("ATENCIÓN", mensajeErrorAlAgregarAntesDeGuardar, function () {
@@ -668,10 +703,7 @@ function EliminarItemObligaciones() {
 					var data = { request };
 					PostGen(data, eliminarItemEnOpdPaso1Url, function (obj) {
 						if (obj.error === true) {
-							AbrirMensaje("ATENCIÓN", obj.msg, function () {
-								$("#msjModal").modal("hide");
-								return true;
-							}, false, ["Aceptar"], "error!", null);
+							MostrarError(obj.msg);
 						}
 						else {
 							LimpiarCamposDeEdicion();
@@ -694,7 +726,7 @@ function EliminarItemObligaciones() {
 			}
 			return true;
 
-		}, true, ["Aceptar", "Cancelar"], "question!", null);
+		}, true, ["SI", "NO"], "question!", null);
 	}
 	else {
 		AbrirMensaje("ATENCIÓN", mensajeErrorAlAgregarAntesDeGuardar, function () {
@@ -746,10 +778,7 @@ function LimpiarVariablesDeSesion(limpiaValores = false) {
 	var data = { limpiaValores };
 	PostGen(data, limpiarVariablesDeSesionUrl, function (obj) {
 		if (obj.error === true) {
-			AbrirMensaje("ATENCIÓN", obj.msg, function () {
-				$("#msjModal").modal("hide");
-				return true;
-			}, false, ["Aceptar"], "error!", null);
+			MostrarError(obj.msg);
 		}
 		else {
 			//Limpiar variables de sesión
@@ -842,10 +871,7 @@ function AceptarDesdeSeleccionarTipoDeOP() {
 			return true;
 		}
 		else {
-			AbrirMensaje("ATENCIÓN", "No se encontraron resultados.", function () {
-				$("#msjModal").modal("hide");
-				return true;
-			}, false, ["Aceptar"], "error!", null);
+			MostrarError("No se encontraron resultados.");
 			return false;
 		}
 	});
@@ -1207,4 +1233,19 @@ function ObtenerEncabezado() {
 		afip_id, cm_cuit, cm_nombre, cm_domicilio, tco_id, tco_desc, cm_compte, cm_fecha, ctag_id, ctag_desc, ctag_motivo, orden
 	};
 	return encabezado;
+}
+
+function MostrarError(msg) {
+	AbrirMensaje(
+		"ATENCIÓN",
+		msg,
+		function () {
+			$("#msjModal").modal("hide");
+			return true;
+		},
+		false,
+		["Aceptar"],
+		"error!",
+		null
+	);
 }
