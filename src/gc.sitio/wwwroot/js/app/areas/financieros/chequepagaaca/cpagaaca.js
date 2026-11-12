@@ -32,10 +32,19 @@
 			$("#chkDocumentoEnCuenta").prop("checked", true);
 		}
 	});
+	$(document).off("click", "#btnBuscar");
 	$(document).on("click", "#btnBuscar", btnBuscarValidar);
+	$(document).off("click", "#btnCancel");
 	$(document).on("click", "#btnCancel", btnCancelValidar);
+	$(document).off("click", "#btnAceptar");
 	$(document).on("click", "#btnAceptar", btnAceptarValidar);
+	$(document).off("click", "#btnImprimir");
+	$(document).on("click", "#btnImprimir", btnImprimirValidar);
 });
+
+function btnImprimirValidar() {
+	ImprimirTRA_Generada('00-00140426');
+}
 
 function ObtenerMensaje() {
 	if (docEnCuenta) {
@@ -206,9 +215,9 @@ function selectReg(x, gridId) {
 		$(this).removeClass("selectedEdit-row");
 	});
 	$(x).addClass("selected-row");
-	dia_movi = x.childNodes[13].innerText;
-	fc_compte = x.childNodes[15].innerText;
-	fc_item = x.childNodes[17].innerText;
+	dia_movi = $(x).data("dia-movi");
+	fc_compte = $(x).data("fc-compte");
+	fc_item = $(x).data("fc-item");
 }
 
 function onChangeFechaValor(x) {
@@ -276,7 +285,17 @@ function CargarChequesDeTercerosEnCartera(ctaf_id, cta_id, docEnCuenta, cambioDe
 	PostGenHtml(data, cargarChequesDeTercerosEnCarteraUrl, function (obj) {
 		CerrarWaiting();
 		$("#divPrincipal").html(obj);
+		validarBotonAceptarCheques();
 	});
+}
+
+function validarBotonAceptarCheques() {
+
+	const filasValidas = $("#tbListaChequesDeTercerosEnCartera tbody tr")
+		.not(":has(td[colspan='7'])")   // excluye la fila "No se encontraron items"
+		.length;
+
+	$("#btnAceptar").prop("disabled", filasValidas === 0);
 }
 
 $("#txtCliente").autocomplete({

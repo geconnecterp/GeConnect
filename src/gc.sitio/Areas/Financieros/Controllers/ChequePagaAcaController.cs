@@ -105,14 +105,8 @@ namespace gc.sitio.Areas.Financieros.Controllers
 
 				if (cheques == null || cheques.Count() == 0)
 				{
-					RespuestaGenerica<EntidadBase> response = new()
-					{
-						Ok = false,
-						EsError = true,
-						EsWarn = false,
-						Mensaje = "No se han encontrado Cheques en Cartera"
-					};
-					return PartialView("_gridMensaje", response);
+					model.GrillaChequesEnCartera = ObtenerGridCoreSmart<FinancieroCarteraDto>(new List<FinancieroCarteraDto>());
+					return PartialView("_chequesDeTercerosEnCartera", model);
 				}
 
 				CambioDeFechaDePresentacion = mostrarFecha;

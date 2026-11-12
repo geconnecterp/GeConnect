@@ -41,31 +41,6 @@
 	<div class="row col-12 justify-content-sm-center mb-1 mt-3">
 		<div class="col-1" id="divUno"></div>
 		<div class="col-10" id="divPrincipal">
-			@* <fieldset style="height: 140px;">
-				<legend></legend>
-				<div class="input-group input-group-sm mt-1">
-					<span class="input-group-text">Cuenta de Banco: </span>
-					@Html.DropDownListFor(m => m.ctaSelected, list, "Seleccionar...", new { @id = "ListaCuentaBancaria", @class = "form-control activable" })
-				</div>
-				<div class="input-group input-group-sm mt-1">
-					<span class="input-group-text">Desde: </span>
-					@Html.TextBoxFor(m => m.FechaDesde, "{0:yyyy-MM-dd}", new { type = "date", @class = "form-control activable inputEditable", @onchange = "onChangeFechaDesde(this);", @id = "fechaDesde" })
-					<span class="input-group-text">Hasta: </span>
-					@Html.TextBoxFor(m => m.FechaHasta, "{0:yyyy-MM-dd}", new { type = "date", @class = "form-control activable inputEditable", @onchange = "onChangeFechaHasta(this);", @id = "fechaHasta" })
-				</div>
-				<div class="row mt-3">
-					<div class="col-2"></div>
-					<div class="col-8 text-center">
-						<button type="button" id="btnBuscar" class="btn btn-sm btn-primary">
-							<i class="bx bx-search"></i>Buscar
-						</button>
-						<button type="button" id="btnCancel" class="btn btn-sm btn-danger">
-							<i class="bx bx-x-circle"></i>Cancelar
-						</button>
-					</div>
-					<div class="col-2"></div>
-				</div>
-			</fieldset> *@
 			<div class="card card-golden" style="padding-left: 0px;padding-right: 0px;">
 				<div class="card-header mb-2">
 					<h5 class="mb-0" id="tituloLegend">Filtros </h5>

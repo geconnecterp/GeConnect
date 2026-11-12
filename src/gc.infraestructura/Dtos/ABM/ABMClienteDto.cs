@@ -26,5 +26,8 @@ namespace gc.infraestructura.Dtos.ABM
         public string ctac_habilitada_des { get; set; } = string.Empty;
         [Display(Name = "Tipo de cuenta")]
         public string tipo_desc { get; set; } = string.Empty;
-    }
+		public string cta_email { get; set; } = string.Empty;
+		public string cta_celu { get; set; } = string.Empty;
+		public string prov_id { get; set; } = string.Empty;
+	}
 }

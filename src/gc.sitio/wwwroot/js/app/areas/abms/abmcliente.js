@@ -3,15 +3,27 @@
 		var div = $("#divPaginacion");
 		presentaPaginacion(div);
 	});
+	$(document).off("change", "#listaAfip");
 	$(document).on("change", "#listaAfip", controlaValorAfip);
+	$(document).off("change", "#listaProvi");
 	$(document).on("change", "#listaProvi", controlaValorProvi);
+	$(document).off("change", "#listaTipoCanal");
 	$(document).on("change", "#listaTipoCanal", controlaValorCanal);
+	$(document).off("click", "#chkPivaCertActiva");
 	$(document).on("click", "#chkPivaCertActiva", controlaCertIva);
+	$(document).off("click", "#chkIbCertActiva");
 	$(document).on("click", "#chkIbCertActiva", controlaCertIb);
+	$(document).off("click", "#chkCtaEmpActiva");
 	$(document).on("click", "#chkCtaEmpActiva", controlaCtaEmp);
+	$(document).off("change", "#listaFP");
 	$(document).on("change", "#listaFP", controlaValorFP);
+	$(document).off("keyup", "#FormaDePago_Fp_Dias");
 	$(document).on("keyup", "#FormaDePago_Fp_Dias", controlaKeyUpFP);
+	$(document).off("focusout", "#FormaDePago_Fp_Dias");
 	$(document).on("focusout", "#FormaDePago_Fp_Dias", controlaFocusOutFP);
+
+	$("#btnImprimir").off("click");
+	$("#btnImprimir").on("click", analizaImprimirReporte);
 
 	$("#Rel02List").on("dblclick", 'option', function () { $(this).remove(); })
 	$("#Rel03List").on("dblclick", 'option', function () { $(this).remove(); })
@@ -40,6 +52,8 @@
 	$("#btnDetalle").on("mousedown", analizaEstadoBtnDetalle);
 
 	$("#btnDetalle").prop("disabled", true);
+	$("#btnImprimir").prop("disabled", true);
+
 	$("#btnCancel").on("click", function () {
 		//$("#btnFiltro").trigger("click");
 		InicializaPantallaAbmCliente();
@@ -61,6 +75,90 @@
 	return true;
 });
 
+function ReseteoDeReportes() {
+	console.log("Reseto de reportes");
+	ReporteResetArre();
+}
+
+function analizaImprimirReporte() {
+	ReseteoDeReportes();
+	setTimeout(() => {
+		var buscar = "";
+		var id = "";
+		var id2 = "";
+		var r01 = [];
+		var r02 = [];
+		var filtros = [];
+		var tipos = [];
+
+		if ($("#chkDescr").is(":checked")) {
+			buscar = $("#Buscar").val();
+			if (buscar) {
+				filtros.push(`Denominación: ${buscar}`);
+			}
+		}
+		if ($("#chkDesdeHasta").is(":checked")) {
+			id = $("#Id").val();
+			id2 = $("#Id2").val();
+
+			if (id || id2) {
+				filtros.push(`Id Cuenta: ${id} - ${id2}`);
+			}
+		}
+		if ($("#chkRel01").is(":checked")) {
+			tipos = [];
+			$("#Rel02List").children().each(function (i, item) {
+				r01.push($(item).val())
+
+				tipos.push($(this).text());
+			});
+			if (tipos.length > 0) {
+				filtros.push(`Tipo Cli.: ${tipos.join(", ")}`);
+			}
+			else {
+				filtros.push(`Tipo Cli.: TODOS`);
+			}
+		}
+		else {
+			filtros.push(`Tipo Cli.: TODOS`);
+		}
+		if ($("#chkRel03").is(":checked")) {
+			tipos = [];
+			$("#Rel03List").children().each(function (i, item) {
+				r02.push($(item).val())
+
+				tipos.push($(this).text());
+			});
+			if (tipos.length > 0) {
+				filtros.push(`: ${tipos.join(", ")}`);
+			}
+			else {
+				filtros.push(`Tipo Cli.: TODOS`);
+			}
+		}
+
+		var tituloFiltros = filtros.join(" | ");
+
+		var data = {
+			id, id2,
+			rel01: r01,
+			rel02: r02,
+			rel03: [],
+			"fechaD": null, //"0001-01-01T00:00:00",
+			"fechaH": null, //"0001-01-01T00:00:00",
+			buscar,
+			tipo: 'C',
+			filtrosString: tituloFiltros
+		};
+
+		cargarReporteEnArre(108, data, "LISTADO DE CLIENTES", "", "");
+		invocacionGestorDoc({});
+	}, 500);
+
+
+
+}
+
 function controlaKeyUpFP(e) { }
 
 function controlaFocusOutFP(x) {
@@ -80,6 +178,9 @@ function analizaEstadoBtnDetalle() {
 	if (res === true) {
 		selectRegCli(regSelected, Grids.GridCliente);
 		activarGrilla(Grids.GridCliente);
+
+		const tieneRegistros = $("#tbGridCliente tbody tr").length > 0;
+		$("#btnImprimir").prop("disabled", !tieneRegistros);
 	}
 	return true;
 
@@ -374,6 +475,8 @@ function buscarClientes(pag, esBaja = false) {
 				pags = obj.metadata.totalPages;
 				pagRegs = obj.metadata.pageSize;
 
+				$("#btnImprimir").prop("disabled", totalRegs === 0);
+
 				$("#pagEstado").val(true).trigger("change");
 				$(".activable").prop("disabled", true);
 				$("#divGrilla").removeClass("collapse");
@@ -408,6 +511,7 @@ function BuscarCliente(ctaId) {
 		$("#divDatosCliente").html(obj);
 		$("#IdSelected").val($("#Cliente_Cta_Id").val());
 		$(".activable").prop("disabled", true);
+		$("#btnImprimir").prop("disabled", true);
 		CerrarWaiting();
 	}, function (obj) {
 		ControlaMensajeError(obj.message);

@@ -3,38 +3,61 @@
 		var div = $("#divPaginacion");
 		presentaPaginacion(div);
 	});
-
+	$(document).off("change", "#listaAfip");
 	$(document).on("change", "#listaAfip", controlaValorAfip);
+	$(document).off("change", "#listaProvi");
 	$(document).on("change", "#listaProvi", controlaValorProvi);
+	$(document).off("change", "#listaFP");
 	$(document).on("change", "#listaFP", controlaValorFP);
+	$(document).off("keyup", "#FormaDePago_Fp_Dias");
 	$(document).on("keyup", "#FormaDePago_Fp_Dias", controlaKeyUpFP);
+	$(document).off("focusout", "#FormaDePago_Fp_Dias");
 	$(document).on("focusout", "#FormaDePago_Fp_Dias", controlaFocusOutFP);
+	$(document).off("change", "#listaLs02");
 	$(document).on("change", "#listaLs02", controlalistaLs02Selected);
 	$(document).on("dblclick", "#" + Grids.GridProveedor + " tbody tr", function () {
 		x = $(this);
 		ejecutaDblClickGrid(x, Grids.GridProveedor);
 	});
 
+	$("#btnBuscar").off("click");
 	$("#btnBuscar").on("click", function () { buscarProveedores(pagina); });
 
 	//tabProveedor
+	$("#tabProveedor").off("click");
 	$("#tabProveedor").on("click", function () { SeteaIDProvSelected(); });
+	$("#tabFormaDePago").off("click");
 	$("#tabFormaDePago").on("click", function () { BuscarFormaDePagoTabClick(); });
+	$("#tabOtrosContactos").off("click");
 	$("#tabOtrosContactos").on("click", function () { BuscarOtrosContactosTabClick(); });
+	$("#tabNotas").off("click");
 	$("#tabNotas").on("click", function () { BuscarNotasTabClick(); });
+	$("#tabObservaciones").off("click");
 	$("#tabObservaciones").on("click", function () { BuscarObservacionesTabClick(); });
+	$("#tabFliaProv").off("click");
 	$("#tabFliaProv").on("click", function () { BuscarFamiliasTabClick(); });
 
 	/*ABM Botones*/
+	$("#btnAbmNuevo").off("click");
 	$("#btnAbmNuevo").on("click", function () { btnNuevoClick(); });
+	$("#btnAbmModif").off("click");
 	$("#btnAbmModif").on("click", function () { btnModiClick(); });
+	$("#btnAbmElimi").off("click");
 	$("#btnAbmElimi").on("click", function () { btnBajaClick(); });
+	$("#btnAbmAceptar").off("click");
 	$("#btnAbmAceptar").on("click", function () { btnSubmitClick(); });
+	$("#btnAbmCancelar").off("click");
 	$("#btnAbmCancelar").on("click", function () { btnCancelClick(); });
 
+	$("#btnDetalle").off("mousedown");
 	$("#btnDetalle").on("mousedown", analizaEstadoBtnDetalle);
 
 	$("#btnDetalle").prop("disabled", true);
+	$("#btnImprimir").prop("disabled", true);
+
+	$("#btnImprimir").off("click");
+	$("#btnImprimir").on("click", analizaImprimirReporte);
+
 	$("#btnCancel").on("click", function () {
 		InicializaPantallaAbmProveedor();
 	});
@@ -54,6 +77,77 @@
 	funcCallBack = buscarProveedores;
 	return true;
 });
+
+function ReseteoDeReportes() {
+	console.log("Reseto de reportes");
+	ReporteResetArre();
+}
+
+function analizaImprimirReporte() {
+	ReseteoDeReportes();
+	setTimeout(() => {
+		var buscar = "";
+		var id = "";
+		var id2 = "";
+		var r01 = [];
+		var filtros = [];
+
+		if ($("#chkDescr").is(":checked")) {
+			buscar = $("#Buscar").val();
+			if (buscar) {
+				filtros.push(`Denominación: ${buscar}`);
+			}
+		}
+
+		if ($("#chkDesdeHasta").is(":checked")) {
+			id = $("#Id").val();
+			id2 = $("#Id2").val();
+
+			if (id || id2) {
+				filtros.push(`Id Cuenta: ${id} - ${id2}`);
+			}
+		}
+		if ($("#chkRel01").is(":checked")) {
+			var tipos = [];
+
+			$("#Rel02List").children().each(function (i, item) {
+				r01.push($(item).val());
+
+				tipos.push($(this).text());
+			});
+
+			if (tipos.length > 0) {
+				filtros.push(`Tipo Prov: ${tipos.join(", ")}`);
+			}
+			else {
+				filtros.push(`Tipo Prov: TODOS`);
+			}
+		}
+		else {
+			filtros.push(`Tipo Prov: TODOS`);
+		}
+
+		var tituloFiltros = filtros.join(" | ");
+
+		var data = {
+			id, id2,
+			rel01: r01,
+			rel02: [],
+			rel03: [],
+			"fechaD": null, //"0001-01-01T00:00:00",
+			"fechaH": null, //"0001-01-01T00:00:00",
+			buscar,
+			tipo: 'P',
+			filtrosString: tituloFiltros
+		};
+
+		cargarReporteEnArre(107, data, "REPORTE DE PROVEEDORES", "", "");
+		invocacionGestorDoc({});
+	}, 500);
+	
+
+
+}
 
 function controlaKeyUpFP(e) { }
 
@@ -153,6 +247,8 @@ function analizaEstadoBtnDetalle() {
 	if (res === true) {
 		selectRegProv(regSelected, Grids.GridProveedor);
 		activarGrilla(Grids.GridProveedor);
+		const tieneRegistros = $("#tbGridProveedor tbody tr").length > 0;
+		$("#btnImprimir").prop("disabled", !tieneRegistros);
 	}
 	return true;
 
@@ -327,6 +423,8 @@ function buscarProveedores(pag, esBaja = false) {
 				totalRegs = obj.metadata.totalCount;
 				pags = obj.metadata.totalPages;
 				pagRegs = obj.metadata.pageSize;
+
+				$("#btnImprimir").prop("disabled", totalRegs === 0);
 
 				$("#pagEstado").val(true).trigger("change");
 				$(".activable").prop("disabled", true);
@@ -540,6 +638,7 @@ function BuscarProveedor(ctaId) {
 		$("#divDatosProveedor").html(obj);
 		$("#IdSelected").val($("#ProveedorGrupo_Pg_Id").val());
 		$(".activable").prop("disabled", true);
+		$("#btnImprimir").prop("disabled", true);
 		handlerEnPLazos();
 		CerrarWaiting();
 	}, function (obj) {

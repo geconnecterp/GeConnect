@@ -2155,33 +2155,52 @@ namespace gc.infraestructura.Helpers
 		public static void CargarTablaDatosDeAcuseDeTransferencia_Encabezado(Document pdf, FinancieroTraRepoDDto fTra, Font fuenteEtiqueta, Font fuenteValor, Font titulo)
 		{
 			PdfPTable tabla = GeneraTabla(1, [100f], 100, 10, 10);
-			PdfPTable tablaDatos = GeneraTabla(4, [20f, 45f, 15f, 20f], 100, 10, 10);
+			PdfPTable tablaDatos1 = GeneraTabla(4, [16f, 50f, 10f, 24f], 100, 11, 1);
+			PdfPTable tablaDatos2 = GeneraTabla(2, [8f, 92f], 100, 1, 1);
+			PdfPTable tablaDatos3 = GeneraTabla(4, [12f, 54f, 11f, 23f], 100, 1, 1);
 
 			// FILA 0
-			tablaDatos.AddCell(CeldaSinBorde(string.Empty, fuenteEtiqueta, Element.ALIGN_RIGHT));
-			tablaDatos.AddCell(CeldaSinBorde(string.Empty, fuenteValor, Element.ALIGN_LEFT));
-			tablaDatos.AddCell(CeldaSinBorde(string.Empty, fuenteEtiqueta, Element.ALIGN_RIGHT));
-			tablaDatos.AddCell(CeldaSinBorde(string.Empty, fuenteValor, Element.ALIGN_LEFT));
+			tablaDatos1.AddCell(CeldaSinBorde(string.Empty, fuenteEtiqueta, Element.ALIGN_RIGHT));
+			tablaDatos1.AddCell(CeldaSinBorde(string.Empty, fuenteValor, Element.ALIGN_LEFT));
+			tablaDatos1.AddCell(CeldaSinBorde(string.Empty, fuenteEtiqueta, Element.ALIGN_RIGHT));
+			tablaDatos1.AddCell(CeldaSinBorde(string.Empty, fuenteValor, Element.ALIGN_LEFT));
 
 			// FILA 1
-			tablaDatos.AddCell(CeldaSinBorde("Tipo de Transferencia:", fuenteEtiqueta, Element.ALIGN_RIGHT));
-			tablaDatos.AddCell(CeldaSinBorde(fTra.ttra_desc, fuenteValor, Element.ALIGN_LEFT));
-			tablaDatos.AddCell(CeldaSinBorde("Fec. Registro:", fuenteEtiqueta, Element.ALIGN_RIGHT));
-			tablaDatos.AddCell(CeldaSinBorde(fTra.tra_fecha.ToString("dd/MM/yyyy"), fuenteValor, Element.ALIGN_LEFT));
+			tablaDatos1.AddCell(CeldaSinBorde("Tipo de Transferencia:", fuenteEtiqueta, Element.ALIGN_LEFT));
+			tablaDatos1.AddCell(CeldaSinBorde(fTra.ttra_desc, fuenteValor, Element.ALIGN_LEFT));
+			tablaDatos1.AddCell(CeldaSinBorde("Fec. Registro:", fuenteEtiqueta, Element.ALIGN_LEFT));
+			tablaDatos1.AddCell(CeldaSinBorde(fTra.tra_fecha.ToString("dd/MM/yyyy"), fuenteValor, Element.ALIGN_LEFT));
+
+			PdfPCell celdaSubTabla = new PdfPCell(tablaDatos1)
+			{
+				Border = Rectangle.NO_BORDER,
+				HorizontalAlignment = Element.ALIGN_CENTER,
+				VerticalAlignment = Element.ALIGN_MIDDLE
+			};
+
+			tabla.AddCell(celdaSubTabla);
 
 			// FILA 2
-			tablaDatos.AddCell(CeldaSinBorde("Concepto:", fuenteEtiqueta, Element.ALIGN_RIGHT));
-			tablaDatos.AddCell(CeldaSinBorde(fTra.tra_concepto.ToUpper(), fuenteValor, Element.ALIGN_LEFT));
-			tablaDatos.AddCell(CeldaSinBorde(string.Empty, fuenteEtiqueta, Element.ALIGN_RIGHT));
-			tablaDatos.AddCell(CeldaSinBorde(string.Empty, fuenteValor, Element.ALIGN_LEFT));
+			var concepto = $"{fTra.tra_concepto.ToUpper()} ({fTra.ctaf_id}) {fTra.ctaf_denominacion.ToUpper()}";
+			tablaDatos2.AddCell(CeldaSinBorde("Concepto:", fuenteEtiqueta, Element.ALIGN_LEFT));
+			tablaDatos2.AddCell(CeldaSinBorde(concepto, fuenteValor, Element.ALIGN_LEFT));
+
+			celdaSubTabla = new PdfPCell(tablaDatos2)
+			{
+				Border = Rectangle.NO_BORDER,
+				HorizontalAlignment = Element.ALIGN_CENTER,
+				VerticalAlignment = Element.ALIGN_MIDDLE
+			};
+
+			tabla.AddCell(celdaSubTabla);
 
 			// FILA 3 
-			tablaDatos.AddCell(CeldaSinBorde("Fec. Movimiento:", fuenteEtiqueta, Element.ALIGN_RIGHT));
-			tablaDatos.AddCell(CeldaSinBorde(fTra.tra_fecha_movi.ToString("dd/MM/yyyy"), fuenteValor, Element.ALIGN_LEFT));
-			tablaDatos.AddCell(CeldaSinBorde("Registrado por:", fuenteEtiqueta, Element.ALIGN_RIGHT));
-			tablaDatos.AddCell(CeldaSinBorde(fTra.usu_apellidoynombre, fuenteValor, Element.ALIGN_LEFT));
+			tablaDatos3.AddCell(CeldaSinBorde("Fec. Movimiento:", fuenteEtiqueta, Element.ALIGN_LEFT));
+			tablaDatos3.AddCell(CeldaSinBorde(fTra.tra_fecha_movi.ToString("dd/MM/yyyy"), fuenteValor, Element.ALIGN_LEFT));
+			tablaDatos3.AddCell(CeldaSinBorde("Registrado por:", fuenteEtiqueta, Element.ALIGN_LEFT));
+			tablaDatos3.AddCell(CeldaSinBorde(fTra.usu_apellidoynombre, fuenteValor, Element.ALIGN_LEFT));
 
-			PdfPCell celdaSubTabla = new PdfPCell(tablaDatos)
+			celdaSubTabla = new PdfPCell(tablaDatos3)
 			{
 				Border = Rectangle.NO_BORDER,
 				HorizontalAlignment = Element.ALIGN_CENTER,
