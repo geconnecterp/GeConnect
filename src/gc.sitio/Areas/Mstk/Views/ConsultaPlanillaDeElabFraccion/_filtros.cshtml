@@ -7,13 +7,13 @@
 	}
 
 </style>
-<div class="card card-golden w-50" style="padding-left: 0px;padding-right: 0px;">
+<div class="card card-golden w-50 gc-filter gc-filter-base" style="padding-left: 0px;padding-right: 0px;">
 	<div class="card-header mb-2">
 		<h5 class="mb-0" id="tituloLegend">Filtros </h5>
 	</div>
 	<div class="card-body">
 		<div class="row">
-			<div class="col-6 mb-3 mt-3">
+			<div class="col-12 mb-3 mt-3">
 				<div class="row">
 					<div class="input-group input-group-sm">
 						<div class="form-check form-check-inline form-switch mb-2">
@@ -21,16 +21,18 @@
 							<label class="form-check-label" for="chkDesdeHasta" id="lbChkDesdeHasta"></label>
 						</div>
 					</div>
-					<div class=" col-sm-6">
-						<div class="input-group input-group-sm">
-							<span class="input-group-text" id="lbIdDesde">Desde:</span>
-							<input type="date" class="form-control inputEditable" asp-for="Desde" style="background-color:rgb(251,255,195);font-weight:900;" autofocus />
+					<div class="row col-12">
+						<div class=" col-sm-6">
+							<div class="input-group input-group-sm">
+								<span class="input-group-text" id="lbIdDesde">Desde:</span>
+								<input type="date" class="form-control inputEditable" asp-for="Desde" style="background-color:rgb(251,255,195);font-weight:900;" autofocus />
+							</div>
 						</div>
-					</div>
-					<div class=" col-sm-6">
-						<div class="input-group input-group-sm">
-							<span class="input-group-text" id="lbIdHasta">Hasta:</span>
-							<input type="date" class="form-control inputEditable" asp-for="Hasta" style="background-color:rgb(251,255,195);font-weight:900;" autofocus />
+						<div class=" col-sm-6">
+							<div class="input-group input-group-sm">
+								<span class="input-group-text" id="lbIdHasta">Hasta:</span>
+								<input type="date" class="form-control inputEditable" asp-for="Hasta" style="background-color:rgb(251,255,195);font-weight:900;" autofocus />
+							</div>
 						</div>
 					</div>
 				</div>
