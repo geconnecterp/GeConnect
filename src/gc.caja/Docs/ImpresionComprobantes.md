@@ -18,6 +18,28 @@ Publicar las nuevas versiones de Caja y del iniciador. Al actualizar el JSON, ce
 
 No es necesario configurar políticas para compilar, desarrollar ni usar Pantalla. Sólo los puestos o desarrolladores que prueben impresión directa necesitan esta preparación. Chrome es el navegador principal; para impresión silenciosa se requiere versión 144 o posterior. La configuración silenciosa afecta todas las impresiones de ese navegador, no sólo Caja.
 
+### Verificar el papel dentro de Chrome antes de activar la salida silenciosa
+
+La impresora predeterminada y el tamaño del papel son ajustes distintos. `PrintPreviewUseSystemDefaultPrinter` selecciona el destino de Windows; no sustituye la comprobación del papel en la vista previa de Chrome. En el incidente del 13/11/2026 Windows indicaba A4, pero Chrome tenía Oficio: generaba unos 3 cm en blanco arriba y recortaba el pie. Seleccionar A4 en Chrome eliminó el desplazamiento; el responsable confirmó la factura completa en papel. El PDF y la impresión desde Windows/Acrobat ya salían correctamente.
+
+Antes de habilitar impresión silenciosa en cada puesto/perfil e impresora:
+
+1. Verificar impresora predeterminada y papel cargado en Windows.
+2. Con impresión silenciosa desactivada, abrir un comprobante existente en Chrome y pulsar Ctrl+P. En Más ajustes, verificar el papel del navegador: los reportes A/B 67/68 y el acuse de Custodia actuales son A4. Otros formatos deben respetar su tamaño real.
+3. Comprobar que la vista previa incluya cabecera, todos los productos, totales y QR/CAE; imprimir una copia y revisar los bordes. No basta con que Windows registre una página enviada.
+4. Habilitar las políticas y recargarlas. Reimprimir automáticamente el mismo documento para comprobar que Chrome conserve el papel correcto, sin emitir otra operación ni repetir su cobro.
+5. Repetir la comprobación al cambiar impresora o perfil del navegador. No compensar una selección Oficio/A4 incorrecta con desplazamientos o márgenes negativos en el PDF.
+
+Para diagnosticar un puesto que ya imprime sin diálogo, guardar el valor previo y desactivar temporalmente sólo la política silenciosa:
+
+```powershell
+reg.exe add "HKCU\Software\Policies\Google\Chrome" /v SilentPrintingEnabled /t REG_DWORD /d 0 /f
+```
+
+Recargar `chrome://policy` y verificar el valor efectivo `false` antes de pulsar Ctrl+P. Después de una impresión correcta, restaurar el valor previo (en los puestos de impresión automática, `1`) y volver a recargar; no dejar la impresión silenciosa desactivada por una prueba. La aplicación no modifica el perfil de Chrome ni fuerza el papel mediante JavaScript.
+
+Referencia del alcance de la política de destino: [PrintPreviewUseSystemDefaultPrinter, Chromium](https://chromium.googlesource.com/chromium/src/+/refs/heads/main/components/policy/resources/templates/policy_definitions/Printing/PrintPreviewUseSystemDefaultPrinter.yaml).
+
 La herramienta `gc.caja.iniciador/Configurar-Impresion.ps1` permite consultar, habilitar y restaurar estas dos políticas. Crea un respaldo antes de modificar valores y no cambia la impresora de Windows, otras políticas ni permisos del sistema. Usa HKCU: ejecutarla para el mismo usuario de Windows que utiliza Chrome. Los permisos necesarios dependen de la administración del equipo. Sistemas también puede distribuir las políticas de equipo mediante sus mecanismos habituales.
 
 ```powershell

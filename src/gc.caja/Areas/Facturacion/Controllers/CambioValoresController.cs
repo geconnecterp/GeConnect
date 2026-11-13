@@ -185,7 +185,8 @@ namespace gc.caja.Areas.Facturacion.Controllers
                 {
                     ok = respuesta?.Ok == true,
                     mensaje = respuesta?.Ok == true ? "OK" : respuesta?.Mensaje,
-                    datos = lista
+                    datos = lista,
+                    condiciones = ObtenerCondicionesPago(ClienteActual!)
                 });
             }
             catch (Exception ex)
@@ -235,6 +236,16 @@ namespace gc.caja.Areas.Facturacion.Controllers
 
                 var respuesta = await _checkoutServicio.ObtenerValoresIns(request, token);
                 var lista = respuesta?.ListaEntidad ?? [];
+                if (respuesta?.Ok == true)
+                {
+                    foreach (var operacion in new[] { "CV", "IV" })
+                    {
+                        var catalogo = LeerCatalogoIntegrado(operacion);
+                        foreach (var ins in lista.Where(i => !string.IsNullOrWhiteSpace(i.ins_id)))
+                            catalogo[ins.ins_id.Trim()] = ins.tcf_id?.Trim().ToUpperInvariant() ?? "";
+                        GuardarCatalogoIntegrado(operacion, catalogo);
+                    }
+                }
 
                 _logger?.LogInformation(
                     "Cambio valores: respuesta instrumentos. Ok={Ok}; Registros={Registros}; Mensaje={Mensaje}",
@@ -279,6 +290,34 @@ namespace gc.caja.Areas.Facturacion.Controllers
 
                 var tipo = string.Equals(request?.Tipo, "IV", StringComparison.OrdinalIgnoreCase) ? "IV" : "CV";
                 var catalogoIntegrado = LeerCatalogoIntegrado(tipo);
+                if (valores.Any(v => v.rb_importe <= 0 || decimal.Round(v.rb_importe, 2) != v.rb_importe))
+                    return Json(new { ok = false, mensaje = "Ingrese valores positivos con hasta dos decimales." });
+                if (valores.Any(v => !catalogoIntegrado.ContainsKey(v.ins_id?.Trim() ?? "")))
+                    return Json(new { ok = false, mensaje = "Recargue los instrumentos habilitados para el cliente antes de confirmar." });
+
+                // Reconsultar habilitación: la grilla no acredita vigencia del catálogo.
+                var mediosVigentes = await _checkoutServicio.ObtenerValoresMP(new ValoresMPReqDto
+                    { co_tipo = CO_TIPO_CONSULTA, cta_id = ctaId, adm_id = AdministracionId }, TokenCookie);
+                if (mediosVigentes?.Ok != true || mediosVigentes.ListaEntidad == null)
+                    return Json(new { ok = false, mensaje = mediosVigentes?.Mensaje ?? "No se pudo verificar el catálogo de pagos." });
+                var catalogoVigente = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+                foreach (var categoria in valores.Select(v => catalogoIntegrado[v.ins_id.Trim()]).Distinct())
+                {
+                    if (!mediosVigentes.ListaEntidad.Any(m => string.Equals(m.tcf_id?.Trim(), categoria, StringComparison.OrdinalIgnoreCase)))
+                        return Json(new { ok = false, mensaje = "Una forma de pago ya no está habilitada para el cliente. Consulte sus condiciones." });
+                    var instrumentos = await _checkoutServicio.ObtenerValoresIns(new ValoresInsReqDto
+                        { co_tipo = CO_TIPO_CONSULTA, cta_id = ctaId, adm_id = AdministracionId, tcf_id = categoria }, TokenCookie);
+                    if (instrumentos?.Ok != true || instrumentos.ListaEntidad == null)
+                        return Json(new { ok = false, mensaje = instrumentos?.Mensaje ?? "No se pudo verificar el instrumento." });
+                    foreach (var ins in instrumentos.ListaEntidad.Where(i => !string.IsNullOrWhiteSpace(i.ins_id)))
+                        catalogoVigente[ins.ins_id.Trim()] = categoria;
+                }
+                if (valores.Any(v => !catalogoVigente.ContainsKey(v.ins_id.Trim())))
+                    return Json(new { ok = false, mensaje = "Un instrumento ya no está habilitado para el cliente." });
+                var reglas = ReglasCreditoPago.Validar(valores, valores.Sum(v => v.rb_importe), 0m, tipo,
+                    ObtenerCondicionesPago(ClienteActual!), catalogoVigente, DateTime.Today);
+                if (!reglas.Ok) return Json(new { ok = false, mensaje = reglas.Mensaje });
+                catalogoIntegrado = catalogoVigente;
                 var contextoClover = valores.Any(v => catalogoIntegrado.GetValueOrDefault(v.ins_id) == "T1") ? ContextoClover(tipo) : null;
                 var contextoMp = valores.Any(v => catalogoIntegrado.GetValueOrDefault(v.ins_id) == "T2") ? ContextoCobroIntegrado<PagoIntegradoContextoDto>(tipo, "MP") : null;
                 var valoresConfirmacion = PrepararValoresConfirmacion(valores, tipo);
@@ -371,6 +410,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
 
                 if (contextoClover != null) LimpiarOperacionClover(contextoClover);
                 if (contextoMp != null) LimpiarOperacionIntegrada(contextoMp, "MP");
+                RegistrarOperacionConfirmada();
                 var comprobanteConfirmacion = ObtenerComprobanteConfirmacion(respuesta.resultado_id);
 
                 return Json(new

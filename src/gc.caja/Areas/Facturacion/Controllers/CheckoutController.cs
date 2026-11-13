@@ -560,7 +560,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
                 var contextoMp = valores.Any(v => catalogoPago.GetValueOrDefault(v.ins_id) == "T2") ? ContextoCobroIntegrado<PagoIntegradoContextoDto>(coTipo, "MP") : null;
                 var totalOperacionPago = ObtenerTotalOperacionParaNc(esCobranzaGen, importe, subtotalesFactura) + ajustePagosIntegrados;
                 var reglasCredito = ReglasCreditoPago.Validar(valores, totalOperacionPago, validacionNc.TotalImputado,
-                    coTipo, ReglasCreditoPago.ObtenerCondiciones(clienteActual), catalogoPago, DateTime.Today);
+                    coTipo, ObtenerCondicionesPago(clienteActual), catalogoPago, DateTime.Today);
                 if (!reglasCredito.Ok) return Json(new { ok = false, mensaje = reglasCredito.Mensaje });
                 var catalogoEfectivo = catalogoPago.Where(x => x.Value == "EF")
                     .Select(x => new ValoresInsResDto { ins_id = x.Key, tcf_id = "EF" }).ToList();
@@ -971,6 +971,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
 
                 if (contextoClover != null) LimpiarOperacionClover(contextoClover);
                 if (contextoMp != null) LimpiarOperacionIntegrada(contextoMp, "MP");
+                RegistrarOperacionConfirmada();
                 // ⓳ LIMPIAR SESIÓN DE FACTURA
                 FacturaProductos = new List<ProductoFactJsonDto>();
                 FacturaSubtotales = [];
@@ -1615,7 +1616,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
                     }
                 }
 
-                var condiciones = ReglasCreditoPago.ObtenerCondiciones(cli);
+                var condiciones = ObtenerCondicionesPago(cli);
                 var medios = res.ListaEntidad?.Where(m => condiciones.registrado ||
                     (m.tcf_id?.Trim().ToUpperInvariant() is not ("CH" or "DO"))).ToList();
                 return Json(new { ok = true, error = false, warn = false, mensaje = "Valores MP obtenidos correctamente", datos = medios, condiciones });
@@ -1679,7 +1680,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
                         return Json(new { ok = false, error = false, warn = true, mensaje = res.Mensaje ?? "Ocurrió una advertencia al obtener los valores Ins" });
                     }
                 }
-                var condiciones = ReglasCreditoPago.ObtenerCondiciones(cli);
+                var condiciones = ObtenerCondicionesPago(cli);
                 if (!condiciones.registrado && req.tcf_id?.Trim().ToUpperInvariant() is "CH" or "DO")
                     return Json(new { ok = false, mensaje = "Cheques y documentos requieren un cliente registrado." });
                 var catalogo = LeerCatalogoPago(req.co_tipo, cli);

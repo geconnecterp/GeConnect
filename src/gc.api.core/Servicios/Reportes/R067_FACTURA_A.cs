@@ -19,8 +19,6 @@ namespace gc.api.core.Servicios.Reportes
 {
     public class R067_FacturaA : Servicio<EntidadBase>, IGeneradorReporte
     {
-        private const int FilasPaginaComun = 30;
-        private const int FilasUltimaPagina = 20;
         private readonly IApiProductoFactServicio _factServicio;
         private readonly EmpresaGeco _empresaGeco;
         private readonly ILogger _logger;
@@ -163,43 +161,18 @@ namespace gc.api.core.Servicios.Reportes
             Font fuenteNormal,
             Font fuenteNormalBold)
         {
-            var totalPaginas = FacturaBase.CalcularTotalPaginas(productos.Count, FilasPaginaComun, FilasUltimaPagina);
-            var indiceProducto = 0;
-
-            for (var pagina = 1; pagina <= totalPaginas; pagina++)
+            void CabeceraContinuacion()
             {
-                if (pagina > 1)
-                {
-                    pdf.NewPage();
-                    GenerarCabeceraFactura(pdf, encabezado, logo, fuenteTitulo, fuenteSubtitulo, fuenteNormal, fuenteChica, leyendaImpresion);
-                    GenerarDatosEmisorReceptor(pdf, encabezado, fuenteNormal, fuenteNormalBold, fuenteChica);
-                }
-
+                GenerarCabeceraFactura(pdf, encabezado, logo, fuenteTitulo, fuenteSubtitulo, fuenteNormal, fuenteChica, leyendaImpresion);
+                GenerarDatosEmisorReceptor(pdf, encabezado, fuenteNormal, fuenteNormalBold, fuenteChica);
                 pdf.Add(new Paragraph(" ", fuenteChica) { SpacingAfter = 0f });
-
-                var filasPagina = FacturaBase.ObtenerCantidadFilasPagina(pagina, totalPaginas, FilasPaginaComun, FilasUltimaPagina);
-                var productosPagina = productos.Skip(indiceProducto).Take(filasPagina).ToList();
-                indiceProducto += productosPagina.Count;
-
-                pdf.Add(CrearTablaProductosFacturaA(productosPagina, fuenteChica, fuenteNormalBold));
-
-                if (pagina == totalPaginas)
-                {
-                    FacturaBase.DibujarPieFacturaA(
-                        writer,
-                        pdf,
-                        encabezado,
-                        datosIva,
-                        datosPercepciones,
-                        pagina,
-                        totalPaginas,
-                        fuenteNormal,
-                        fuenteNormalBold,
-                        fuenteChica,
-                        _logger
-                    );
-                }
             }
+            pdf.Add(new Paragraph(" ", fuenteChica) { SpacingAfter = 0f });
+            FacturaBase.GenerarDetallePaginado(pdf, writer,
+                CrearTablaProductosFacturaA(productos, fuenteChica, fuenteNormalBold),
+                CabeceraContinuacion,
+                (pagina, total) => FacturaBase.CrearPieFacturaA(pdf, encabezado, datosIva,
+                    datosPercepciones, pagina, total, fuenteNormal, fuenteNormalBold, fuenteChica, pagina > 0 ? _logger : null));
         }
 
         private static PdfPTable CrearTablaProductosFacturaA(List<FeDetResDto> productos, Font fuenteChica, Font fuenteNormalBold)

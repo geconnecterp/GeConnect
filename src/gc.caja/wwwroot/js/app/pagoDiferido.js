@@ -47,9 +47,11 @@ $(function () {
 
     // MANEJAR BOTONES DEL MODAL DE FACTURAS PENDIENTES (modal de cliente específico)
     $('#btnCancelarSeleccionFacturas').on('click', function () {
-        $('#modalFacturasPendientes').modal('hide');
-        // Volver a abrir el modal de identificación
-        setTimeout(() => $('#modalIdentificarCliente').modal('show'), 500);
+        volverAIdentificarClienteCD('#modalFacturasPendientes');
+    });
+
+    $('#btnCerrarFacturasPendientesVFP').on('click', function () {
+        volverAIdentificarClienteCD('#modalVerFacturasPendientes');
     });
 
     $(document)
@@ -189,6 +191,28 @@ $(function () {
 // ========================================================
 // SELECCIÓN DE FACTURAS - MODAL FACTURAS PENDIENTES
 // ========================================================
+
+// Sólo los botones de retorno abren identificación. El cierre para cobrar
+// conserva su propio destino y no debe abrir otro modal por hidden.bs.modal.
+async function volverAIdentificarClienteCD(selector) {
+    if (estadoCobranzaDiferida.volviendoAIdentificar || reinicioCobranzaDiferidaEnCurso) return;
+
+    estadoCobranzaDiferida.volviendoAIdentificar = true;
+    const $botones = $('#btnCancelarSeleccionFacturas, #btnCerrarFacturasPendientesVFP');
+    $botones.prop('disabled', true);
+    try {
+        await cerrarModalSiEstaAbierto(selector);
+        if (reinicioCobranzaDiferidaEnCurso) return;
+
+        $('#modalIdentificarCliente')
+            .off('shown.bs.modal.retornoCD')
+            .one('shown.bs.modal.retornoCD', () => $('#txtBuscarCliente').trigger('focus'))
+            .modal('show');
+    } finally {
+        estadoCobranzaDiferida.volviendoAIdentificar = false;
+        $botones.prop('disabled', false);
+    }
+}
 
 function obtenerCheckboxesFacturasPendientes() {
     return $('#tbodyFacturasPendientes input.form-check-input[type="checkbox"]');

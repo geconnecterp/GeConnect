@@ -1,3 +1,4 @@
+﻿using gc.infraestructura.Core.Exceptions;
 using gc.infraestructura.Dtos.Cajas;
 using gc.infraestructura.Dtos.Cajas.Response;
 using gc.infraestructura.Dtos.Gen;
@@ -13,8 +14,6 @@ namespace gc.api.core.Servicios.Reportes
 {
     internal static class FacturaBase
     {
-        private const float FooterTopY = 165f;
-        private const float FooterBottomY = 86f;
         private const string ArcaQrBaseUrl = "https://www.arca.gob.ar/fe/qr/?p=";
         private const long CaeEjemploDesarrollo = 70417054367476;
         private static readonly DateTime CaeVtoEjemploDesarrollo = new(2020, 10, 23);
@@ -99,20 +98,64 @@ namespace gc.api.core.Servicios.Reportes
             return $"{domicilio} - {administracion}";
         }
 
-        internal static int CalcularTotalPaginas(int totalFilas, int filasPaginaComun, int filasUltimaPagina)
+        // Medir las filas evita páginas finales vacías y contempla descripciones de varias líneas.
+        internal static void GenerarDetallePaginado(
+            Document pdf, PdfWriter writer, PdfPTable detalle,
+            Action generarCabecera, Func<int, int, PdfPTable> crearPie)
         {
-            if (totalFilas <= filasUltimaPagina)
+            var ancho = pdf.PageSize.Width - pdf.LeftMargin - pdf.RightMargin;
+            detalle.TotalWidth = ancho;
+            detalle.LockedWidth = true;
+            var pie = crearPie(0, 0); // Medición, todavía sin número de página definitivo.
+            pie.TotalWidth = ancho;
+            pie.LockedWidth = true;
+            const float separacion = 10f;
+            var limiteInferior = pdf.BottomMargin + pie.TotalHeight + separacion;
+            var alturaEncabezado = detalle.GetRowHeight(0);
+            var alturaDisponible = writer.GetVerticalPosition(true) - limiteInferior - alturaEncabezado;
+            var paginas = new List<(int Desde, int Hasta)>();
+            var desde = 1; // La primera fila es el encabezado de columnas.
+            var altura = 0f;
+            for (var fila = 1; fila < detalle.Rows.Count; fila++)
             {
-                return 1;
+                var alturaFila = detalle.GetRowHeight(fila);
+                if (alturaFila > alturaDisponible)
+                    throw new NegocioException("Una fila del comprobante no cabe junto a la cabecera y el pie fiscal.");
+                if (altura + alturaFila > alturaDisponible)
+                {
+                    paginas.Add((desde, fila));
+                    desde = fila;
+                    altura = 0f;
+                }
+                altura += alturaFila;
             }
+            if (desde < detalle.Rows.Count) paginas.Add((desde, detalle.Rows.Count));
 
-            var filasPrevias = totalFilas - filasUltimaPagina;
-            return (int)Math.Ceiling(filasPrevias / (decimal)filasPaginaComun) + 1;
-        }
-
-        internal static int ObtenerCantidadFilasPagina(int paginaActual, int totalPaginas, int filasPaginaComun, int filasUltimaPagina)
-        {
-            return paginaActual == totalPaginas ? filasUltimaPagina : filasPaginaComun;
+            for (var indice = 0; indice < paginas.Count; indice++)
+            {
+                if (indice > 0)
+                {
+                    pdf.NewPage();
+                    generarCabecera();
+                }
+                var y = writer.GetVerticalPosition(true);
+                y = detalle.WriteSelectedRows(0, 1, pdf.LeftMargin, y, writer.DirectContent);
+                var pagina = paginas[indice];
+                detalle.WriteSelectedRows(pagina.Desde, pagina.Hasta, pdf.LeftMargin, y, writer.DirectContent);
+                if (indice == paginas.Count - 1)
+                {
+                    pie = crearPie(indice + 1, paginas.Count);
+                    pie.TotalWidth = ancho;
+                    pie.LockedWidth = true;
+                    pie.WriteSelectedRows(0, -1, pdf.LeftMargin, pdf.BottomMargin + pie.TotalHeight, writer.DirectContent);
+                }
+                else
+                {
+                    ColumnText.ShowTextAligned(writer.DirectContent, Element.ALIGN_CENTER,
+                        new Phrase($"Pág. {indice + 1}/{paginas.Count}", CrearFuente(6)),
+                        pdf.PageSize.Width / 2, pdf.BottomMargin + 3f, 0);
+                }
+            }
         }
 
         internal static void GenerarLeyendaComprobante(Document pdf, string leyendaImpresion)
@@ -257,8 +300,7 @@ namespace gc.api.core.Servicios.Reportes
             tabla.AddCell(celda);
         }
 
-        internal static void DibujarPieFacturaB(
-            PdfWriter writer,
+        internal static PdfPTable CrearPieFacturaB(
             Document pdf,
             FeResDto encabezado,
             List<FePerResDto> datosPercepciones,
@@ -269,9 +311,6 @@ namespace gc.api.core.Servicios.Reportes
             Font fuenteChica,
             ILogger? logger = null)
         {
-            var canvas = writer.DirectContent;
-            DibujarLineasPie(canvas, pdf);
-
             PdfPTable tablaTotales = new PdfPTable(2);
             tablaTotales.TotalWidth = 230f;
             tablaTotales.SetWidths(new float[] { 68f, 32f });
@@ -284,12 +323,17 @@ namespace gc.api.core.Servicios.Reportes
             AgregarLineaTotal(tablaTotales, "Rec/Dto:", encabezado.cm_dto, fuenteNormal, false);
             AgregarLineaTotal(tablaTotales, "Importe Total:", encabezado.cm_total, fuenteNormalBold, true);
 
-            tablaTotales.WriteSelectedRows(0, -1, pdf.PageSize.Width - pdf.RightMargin - 230f, FooterTopY - 10f, canvas);
-            DibujarPieFiscalComun(writer, pdf, encabezado, paginaActual, totalPaginas, fuenteChica, logger);
+            var contenido = new PdfPTable(2);
+            contenido.SetWidths(new[] { 58f, 42f });
+            contenido.AddCell(new PdfPCell { Border = Rectangle.NO_BORDER });
+            contenido.AddCell(CeldaBloque(tablaTotales));
+            var pie = new PdfPTable(1);
+            pie.AddCell(CeldaBloque(contenido, Rectangle.TOP_BORDER));
+            pie.AddCell(CeldaBloque(CrearPieFiscalComun(pdf, encabezado, paginaActual, totalPaginas, fuenteChica, logger), Rectangle.TOP_BORDER));
+            return pie;
         }
 
-        internal static void DibujarPieFacturaA(
-            PdfWriter writer,
+        internal static PdfPTable CrearPieFacturaA(
             Document pdf,
             FeResDto encabezado,
             List<FeIvaResDto> datosIva,
@@ -301,9 +345,6 @@ namespace gc.api.core.Servicios.Reportes
             Font fuenteChica,
             ILogger? logger = null)
         {
-            var canvas = writer.DirectContent;
-            DibujarLineasPie(canvas, pdf);
-
             PdfPTable resumen = new PdfPTable(6);
             resumen.TotalWidth = pdf.PageSize.Width - pdf.LeftMargin - pdf.RightMargin;
             resumen.SetWidths(new float[] { 16f, 12f, 16f, 12f, 16f, 12f });
@@ -313,11 +354,8 @@ namespace gc.api.core.Servicios.Reportes
             AgregarCeldaResumen(resumen, FormatearImporte(encabezado.cm_percepciones), fuenteNormalBold, Element.ALIGN_RIGHT);
             AgregarCeldaResumen(resumen, "Rec/Dto.:", fuenteChica, Element.ALIGN_RIGHT);
             AgregarCeldaResumen(resumen, FormatearImporte(encabezado.cm_dto), fuenteNormalBold, Element.ALIGN_RIGHT);
-            resumen.WriteSelectedRows(0, -1, pdf.LeftMargin, FooterTopY + 10f, canvas);
 
             PdfPTable tributos = CrearTablaTributos(datosPercepciones, fuenteNormalBold, fuenteChica);
-            tributos.TotalWidth = 270f;
-            tributos.WriteSelectedRows(0, -1, pdf.LeftMargin, FooterTopY - 12f, canvas);
 
             PdfPTable totales = new PdfPTable(2);
             totales.TotalWidth = 230f;
@@ -327,23 +365,33 @@ namespace gc.api.core.Servicios.Reportes
                 AgregarLineaTotal(totales, lineaIva.concepto ?? string.Empty, lineaIva.importe ?? 0, fuenteNormal, false);
             }
             AgregarLineaTotal(totales, "Importe Total:", encabezado.cm_total, fuenteNormalBold, true);
-            totales.WriteSelectedRows(0, -1, pdf.PageSize.Width - pdf.RightMargin - 230f, FooterTopY - 12f, canvas);
-
-            DibujarPieFiscalComun(writer, pdf, encabezado, paginaActual, totalPaginas, fuenteChica, logger);
+            var contenido = new PdfPTable(3);
+            contenido.SetWidths(new[] { 49f, 9f, 42f });
+            contenido.AddCell(CeldaBloque(tributos));
+            contenido.AddCell(new PdfPCell { Border = Rectangle.NO_BORDER });
+            contenido.AddCell(CeldaBloque(totales));
+            var pie = new PdfPTable(1);
+            pie.AddCell(CeldaBloque(resumen));
+            pie.AddCell(CeldaBloque(contenido));
+            pie.AddCell(CeldaBloque(CrearPieFiscalComun(pdf, encabezado, paginaActual, totalPaginas, fuenteChica, logger), Rectangle.TOP_BORDER));
+            return pie;
         }
 
-        private static void DibujarLineasPie(PdfContentByte canvas, Document pdf)
+        private static PdfPCell CeldaBloque(PdfPTable tabla, int borde = Rectangle.NO_BORDER)
         {
-            canvas.SetLineWidth(0.5f);
-            canvas.MoveTo(pdf.LeftMargin, FooterTopY);
-            canvas.LineTo(pdf.PageSize.Width - pdf.RightMargin, FooterTopY);
-            canvas.Stroke();
-            canvas.MoveTo(pdf.LeftMargin, FooterBottomY);
-            canvas.LineTo(pdf.PageSize.Width - pdf.RightMargin, FooterBottomY);
-            canvas.Stroke();
+            tabla.WidthPercentage = 100;
+            return new PdfPCell(tabla)
+            {
+                Border = borde,
+                PaddingLeft = 0f,
+                PaddingRight = 0f,
+                PaddingTop = 4f,
+                PaddingBottom = 4f,
+                VerticalAlignment = Element.ALIGN_TOP
+            };
         }
 
-        private static void DibujarPieFiscalComun(PdfWriter writer, Document pdf, FeResDto encabezado, int paginaActual, int totalPaginas, Font fuenteChica, ILogger? logger = null)
+        private static PdfPTable CrearPieFiscalComun(Document pdf, FeResDto encabezado, int paginaActual, int totalPaginas, Font fuenteChica, ILogger? logger = null)
         {
             PdfPTable tabla = new PdfPTable(3);
             tabla.TotalWidth = pdf.PageSize.Width - pdf.LeftMargin - pdf.RightMargin;
@@ -395,7 +443,7 @@ namespace gc.api.core.Servicios.Reportes
             celdaCae.Border = Rectangle.NO_BORDER;
             tabla.AddCell(celdaCae);
 
-            tabla.WriteSelectedRows(0, -1, pdf.LeftMargin, FooterBottomY - 5f, writer.DirectContent);
+            return tabla;
         }
 
         private static Image? GenerarQrArca(FeResDto encabezado, ILogger? logger = null)
