@@ -32,6 +32,7 @@ if ($Accion -eq 'Habilitar') {
     Write-Output "Politicas habilitadas. Respaldo: $Respaldo"
     Write-Output 'Chrome/Edge 144 o posterior. La impresion silenciosa afecta todas las impresiones de ese navegador.'
     Write-Output 'No cambia la impresora predeterminada de Windows. Una politica de equipo puede tener precedencia.'
+    Write-Output 'Verifique también el papel en la vista previa del navegador: los comprobantes A/B y Custodia actuales usan A4. Windows en A4 no garantiza que Chrome tenga A4.'
 } elseif ($Accion -eq 'Restaurar') {
     foreach ($dato in @($anterior | Where-Object { $destinos -contains $_.ruta -and $nombres -contains $_.nombre })) {
         $actual = Get-ItemPropertyValue -LiteralPath $dato.ruta -Name $dato.nombre -ErrorAction SilentlyContinue
