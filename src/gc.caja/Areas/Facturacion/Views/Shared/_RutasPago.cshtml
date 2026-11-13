@@ -1,0 +1,10 @@
+<script>
+    const finalizarCompraUrl = '@Url.Action("FinalizarCompra", "Checkout", new { area = "Facturacion" })';
+    const rutasPago = Object.freeze({
+        instrumentos: '@Url.Action("ObtenerValoresIns", "Checkout", new { area = "Facturacion" })',
+        bancos: '@Url.Action("ObtenerBancos", "Checkout", new { area = "Facturacion" })',
+        pendientes: '@Url.Action("ObtenerFacturasPendientesSesion", "PDiferido", new { area = "Facturacion" })',
+        diferido: '@Url.Action("Index", "PDiferido", new { area = "Facturacion" })',
+        ingreso: '@Url.Action("Login", "Token", new { area = "Seguridad" })'
+    });
+</script>

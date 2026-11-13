@@ -1996,6 +1996,7 @@ namespace gc.caja.Areas.Facturacion.Controllers
                 }
 
                 LimpiarEstadoTemporalDevolucion();
+                RegistrarOperacionConfirmada();
 
                 return Json(new
                 {

@@ -1992,8 +1992,8 @@ function inicializarNCAntesDeAbrirMediosPago(seleccionPrevia = null) {
                 sincronizarDisponibilidadNCConMediosPago(medios);
                 actualizarTotalesPago();
                 if (!seleccionPrevia && conceptosPago.diferencia > 0.009) abrirModalTipoMedioPagoDespuesDeNC();
-            }).fail(function () {
-                if (revision !== revisionPago) return;
+            }).fail(function (error) {
+                if (revision !== revisionPago || error?.cancelada) return;
                 mostrarMensajeError('No se pudieron consultar los medios de pago. Puede reintentar con Agregar.');
             });
         })
@@ -2271,9 +2271,11 @@ function abrirModalTipoMedioPago() {
     bloquearModalTipoMedioPago('Cargando opciones de pago...');
 
     // ❺ Cargar datos desde el servidor
-    cargarValoresMP()
+    const cargaMedios = cargarValoresMP();
+    const consulta = consultaCatalogoMediosPago;
+    cargaMedios
         .then(function (valoresMP) {
-            if (revision !== revisionPago) return;
+            if (revision !== revisionPago || consulta !== consultaCatalogoMediosPago) return;
             console.log('✅ Valores MP obtenidos:', valoresMP);
 
             // ❻ Renderizar opciones en el modal
@@ -2294,6 +2296,7 @@ function abrirModalTipoMedioPago() {
             console.log('✅ Modal de tipo medio de pago listo');
         })
         .catch(function (error) {
+            if (revision !== revisionPago || consulta !== consultaCatalogoMediosPago || error?.cancelada) return;
             console.error('❌ Error al cargar valores MP:', error);
 
             // Mostrar mensaje de error en el modal
@@ -2301,16 +2304,17 @@ function abrirModalTipoMedioPago() {
                 <div class="text-center py-5 text-danger">
                     <i class="bx bx-error-circle bx-lg mb-3"></i>
                     <p class="mb-2">Error al cargar las opciones de pago</p>
-                    <small class="text-muted">${error.message || 'Error desconocido'}</small>
+                    <small class="text-muted">${escapeHtml(error.message || 'Error desconocido')}</small>
                     <div class="mt-3">
-                        <button class="btn btn-sm btn-outline-primary" onclick="location.reload()">
-                            <i class="bx bx-refresh"></i> Recargar Página
+                        <button class="btn btn-sm btn-outline-primary" onclick="abrirModalTipoMedioPago()">
+                            <i class="bx bx-refresh"></i> Reintentar
                         </button>
                     </div>
                 </div>
             `);
         })
         .always(function () {
+            if (revision !== revisionPago || consulta !== consultaCatalogoMediosPago) return;
             desbloquearModalTipoMedioPago();
         });
 }
@@ -2331,154 +2335,50 @@ function abrirModalTipoMedioPago() {
  * 
  * @returns {Promise<Array>} - Array de valores MP
  */
+let claveCatalogoMediosPago = null;
+let consultaCatalogoMediosPago = 0;
 function cargarValoresMP() {
     const revision = revisionPago;
-    console.log('═══════════════════════════════════════════════════');
-    console.log('📡 CARGAR VALORES MP v27.0 (CO_TIPO DINÁMICO)');
-    console.log('═══════════════════════════════════════════════════');
-
-    // ═══════════════════════════════════════════════════════════════════
-    // ❶ OBTENER co_tipo DINÁMICAMENTE
-    // ═══════════════════════════════════════════════════════════════════
-
-    let coTipo = null;
-
-    // ✅ NUEVO v27.0: Intentar obtener de variable global (establecida por iniciarProcesoPago)
-    if (typeof window._coTipoActual !== 'undefined' && window._coTipoActual) {
-        coTipo = window._coTipoActual.trim().toUpperCase();
-        console.log('✅ co_tipo obtenido de variable global (iniciarProcesoPago)');
-        console.log(`   Valor: ${coTipo}`);
-    } else {
-        // ⚠️ FALLBACK: Calcular co_tipo con lógica anterior (compatibilidad con código legacy)
-        console.warn('⚠️ Variable global window._coTipoActual NO definida');
-        console.warn('   Aplicando fallback: Cálculo basado en cta_id');
-
-        const ctaId = $('#txtClienteIdPago').val() || '';
-        coTipo = ctaId && ctaId !== 'N/A' && ctaId.trim() !== '' ? 'CR' : 'CF';
-
-        console.log(`   cta_id: ${ctaId || 'N/A'}`);
-        console.log(`   co_tipo calculado (fallback): ${coTipo}`);
-    }
-
-    console.log('═══════════════════════════════════════════════════');
-
-    // ═══════════════════════════════════════════════════════════════════
-    // ❷ VERIFICAR CACHE (INVALIDAR SI co_tipo CAMBIÓ)
-    // ═══════════════════════════════════════════════════════════════════
-
-    // ✅ NUEVO v27.0: Cache por co_tipo (evita problemas al cambiar contexto)
-    if (valoresMPCargados && valoresMPCache !== null && window._coTipoCache === coTipo) {
-        console.log('✅ Valores MP encontrados en cache');
-        console.log(`   co_tipo del cache: ${window._coTipoCache}`);
-        console.log(`   co_tipo actual: ${coTipo}`);
-        console.log('   ℹ️ Cache válido - Reutilizando datos');
-        return $.Deferred().resolve(valoresMPCache).promise();
-    }
-
-    // ⚠️ Si co_tipo cambió, invalidar cache
-    if (valoresMPCargados && window._coTipoCache && window._coTipoCache !== coTipo) {
-        console.warn('⚠️ Cache invalidado - co_tipo cambió');
-        console.warn(`   co_tipo anterior: ${window._coTipoCache}`);
-        console.warn(`   co_tipo actual: ${coTipo}`);
-        valoresMPCargados = false;
-        valoresMPCache = null;
-    }
-
-    // ═══════════════════════════════════════════════════════════════════
-    // ❸ OBTENER DATOS DEL CLIENTE
-    // ═══════════════════════════════════════════════════════════════════
-
     const ctaId = $('#txtClienteIdPago').val() || '';
+    const coTipo = String(window._coTipoActual || (ctaId && ctaId !== 'N/A' ? 'CR' : 'CF')).trim().toUpperCase();
+    const clave = JSON.stringify([revision, coTipo, ctaId]);
+    if (valoresMPCargados && Array.isArray(valoresMPCache) && claveCatalogoMediosPago === clave)
+        return $.Deferred().resolve(valoresMPCache).promise();
 
-    console.log('📋 Datos de la consulta:');
-    console.log(`   cta_id: ${ctaId || 'N/A'}`);
-    console.log(`   co_tipo: ${coTipo}`);
-
-    // ✅ Descripción del co_tipo para logs
-    const descripcionCoTipo = {
-        'CR': 'Cliente Registrado',
-        'CF': 'Consumidor Final',
-        'CD': 'Cobranza Diferida',
-        'CC': 'Cuenta Corriente' // ← Soporte futuro
-    };
-
-    const descripcion = descripcionCoTipo[coTipo] || `Tipo personalizado (${coTipo})`;
-    console.log(`   Descripción: ${descripcion}`);
-
-    // ═══════════════════════════════════════════════════════════════════
-    // ❹ PREPARAR REQUEST DATA
-    // ═══════════════════════════════════════════════════════════════════
-
-    // ✅ CAMBIO CRÍTICO: NO enviar adm_id desde el frontend
-    // El servidor lo obtendrá automáticamente desde la sesión
-    const requestData = {
-        co_tipo: coTipo,
-        cta_id: ctaId
-        // ❌ NO INCLUIR: adm_id (el servidor lo obtiene de la sesión)
-    };
-
-    console.log('   ✅ adm_id: Gestionado automáticamente por el servidor');
-    console.log('═══════════════════════════════════════════════════');
-
-    // ═══════════════════════════════════════════════════════════════════
-    // ❺ LLAMADA AJAX
-    // ═══════════════════════════════════════════════════════════════════
-
+    const consulta = ++consultaCatalogoMediosPago;
+    function vigente() { return revision === revisionPago && consulta === consultaCatalogoMediosPago; }
+    function invalidar() {
+        if (!vigente()) return;
+        valoresMPCache = null;
+        valoresMPCargados = false;
+        condicionesPagoCliente = null;
+        claveCatalogoMediosPago = null;
+    }
+    invalidar();
     return $.ajax({
-        url: typeof obtenerValoresMPUrl !== 'undefined' && obtenerValoresMPUrl
-            ? obtenerValoresMPUrl
-            : '/Facturacion/checkout/ObtenerValoresMP',
-        type: 'POST',
-        contentType: 'application/json',
-        data: JSON.stringify(requestData),
-        dataType: 'json',
-        timeout: 10000
-    })
-        .then(function (response) {
-            if (revision !== revisionPago) return [];
-            console.log('✅ Respuesta recibida:', response);
-
-            if (!response || !response.ok) {
-                console.warn('⚠️ Respuesta no exitosa');
-                valoresMPCache = [];
-                valoresMPCargados = true;
-                window._coTipoCache = coTipo; // ✅ NUEVO v27.0: Guardar co_tipo del cache
-                return [];
-            }
-
-            condicionesPagoCliente = response.condiciones || null;
-            const datos = response.datos || response.data || [];
-
-            if (!Array.isArray(datos)) {
-                console.warn('⚠️ Datos no son un array');
-                valoresMPCache = [];
-                valoresMPCargados = true;
-                window._coTipoCache = coTipo; // ✅ NUEVO v27.0
-                return [];
-            }
-
-            console.log(`✅ ${datos.length} tipos de medio de pago recibidos`);
-
-            // ✅ NUEVO v27.0: Guardar co_tipo junto con el cache
-            valoresMPCache = datos;
-            valoresMPCargados = true;
-            window._coTipoCache = coTipo;
-
-            console.log(`   📦 Cache actualizado para co_tipo: ${coTipo}`);
-
-            return datos;
-        })
-        .fail(function (jqXHR, textStatus, errorThrown) {
-            console.error('❌ ERROR AL CARGAR VALORES MP');
-            console.error('   Status:', textStatus);
-            console.error('   Error:', errorThrown);
-
-            valoresMPCache = [];
-            valoresMPCargados = true;
-            window._coTipoCache = coTipo; // ✅ NUEVO v27.0
-
-            return $.Deferred().reject(new Error(`Error de comunicación: ${textStatus}`)).promise();
-        });
+        url: obtenerValoresMPUrl,
+        type: 'POST', contentType: 'application/json', dataType: 'json', timeout: 10000,
+        data: JSON.stringify({ co_tipo: coTipo, cta_id: ctaId })
+    }).then(function (response) {
+        if (!vigente()) return $.Deferred().reject({ cancelada: true }).promise();
+        const datos = response?.datos ?? response?.data;
+        if (!response?.ok || !Array.isArray(datos)) {
+            invalidar();
+            return $.Deferred().reject(new Error(response?.mensaje || 'Respuesta inválida al consultar los medios de pago.')).promise();
+        }
+        condicionesPagoCliente = response.condiciones || null;
+        valoresMPCache = datos;
+        valoresMPCargados = true;
+        claveCatalogoMediosPago = clave;
+        window._coTipoCache = coTipo;
+        return datos;
+    }, function (xhr, status) {
+        if (!vigente()) return $.Deferred().reject({ cancelada: true }).promise();
+        invalidar();
+        return $.Deferred().reject(new Error(status === 'timeout'
+            ? 'La consulta de medios de pago demoró demasiado. Puede reintentar con Agregar.'
+            : 'No se pudieron consultar los medios de pago. Puede reintentar con Agregar.')).promise();
+    });
 }
 
 /**
@@ -3316,7 +3216,7 @@ function enviarPagoAlServidor(jsonValores, jsonUniones) {
             // ❶ URL del endpoint para obtener facturas desde sesión
             const urlFacturas = typeof ObtenerFacturasPendientesSesionUrl !== 'undefined' && ObtenerFacturasPendientesSesionUrl
                 ? ObtenerFacturasPendientesSesionUrl
-                : '/Facturacion/PDiferido/ObtenerFacturasPendientesSesion';
+                : rutasPago.pendientes;
 
             console.log(`   URL: ${urlFacturas}`);
 
@@ -3429,7 +3329,7 @@ function enviarPagoAlServidor(jsonValores, jsonUniones) {
     //     // ❶ URL del endpoint para obtener facturas desde sesión
     //     const urlFacturas = typeof ObtenerFacturasPendientesSesionUrl !== 'undefined' && ObtenerFacturasPendientesSesionUrl
     //         ? ObtenerFacturasPendientesSesionUrl
-    //         : '/Facturacion/PDiferido/ObtenerFacturasPendientesSesion';
+    //         : rutasPago.pendientes;
 
     //     console.log(`   URL: ${urlFacturas}`);
 
@@ -3608,7 +3508,13 @@ function enviarPayloadAlServidor(
     // ❷ URL del endpoint
     const url = typeof finalizarCompraUrl !== 'undefined' && finalizarCompraUrl
         ? finalizarCompraUrl
-        : '/Facturacion/Checkout/FinalizarCompra';
+        : null;
+    if (!url) {
+        confirmacionPagoEnCurso = false;
+        ocultarLoadingGlobal();
+        mostrarMensajeError('No se pudo resolver la ruta de confirmación. Recargue la vista antes de continuar.');
+        return;
+    }
 
     console.log(`   URL: ${url}`);
 
@@ -4088,7 +3994,7 @@ function obtenerUrlIndexCobranzaDiferida() {
         return cobranzaDiferidaInicializaUrl;
     }
 
-    return '/Facturacion/PDiferido';
+    return rutasPago.diferido;
 }
 
 function redireccionarAIndexCobranzaDiferida() {
@@ -4308,7 +4214,7 @@ function manejarSesionExpirada(mensaje) {
 
             // Redirigir al login después de 1 segundo
             setTimeout(function () {
-                window.location.href = '/Account/Login';
+                window.location.href = rutasPago.ingreso;
             }, 1000);
         },
         false,
@@ -5815,7 +5721,7 @@ function cargarInstrumentos(tipoMedioPago) {
     return $.ajax({
         url: typeof obtenerValoresInsUrl !== 'undefined' && obtenerValoresInsUrl
             ? obtenerValoresInsUrl
-            : '/Facturacion/Checkout/ObtenerValoresIns',
+            : rutasPago.instrumentos,
         type: 'POST',
         contentType: 'application/json',
         data: JSON.stringify(requestData),
@@ -9438,7 +9344,7 @@ function cargarBancos() {
     // ❶ URL del endpoint
     const url = typeof obtenerBancosUrl !== 'undefined' && obtenerBancosUrl
         ? obtenerBancosUrl
-        : '/Facturacion/Checkout/ObtenerBancos';
+        : rutasPago.bancos;
 
     console.log(`   URL: ${url}`);
 

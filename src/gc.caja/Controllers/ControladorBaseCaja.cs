@@ -21,6 +21,7 @@ using X.PagedList;
 
 namespace gc.caja.Controllers
 {
+    [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
     public partial class ControladorBaseCaja : Controller
     {
         private readonly AppSettings _options;
@@ -610,6 +611,9 @@ namespace gc.caja.Controllers
             }
             set
             {
+                var anterior = ClienteActual;
+                if (anterior?.cta_id != value?.cta_id || anterior?.cta_documento != value?.cta_documento || anterior?.Origen != value?.Origen)
+                    InvalidarConsultasPago();
                 if (value == null)
                 {
                     _context.HttpContext?.Session.Remove("ClienteActual");

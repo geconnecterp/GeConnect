@@ -9,6 +9,8 @@ let bancosCambioValores = [];
 let valoresCambioValores = [];
 let finalizandoCambioValores = false;
 let contextoDetalleCambioValores = null;
+let condicionesCambioValores = null;
+let revisionConsultaCambioValores = 0;
 
 window.validarClienteAntesDeMostrar = function (cliente) {
     if (!cliente) return true;
@@ -196,6 +198,8 @@ function validarClienteRegistradoCambioValores(cliente) {
 }
 
 function informarClienteNoValidoCambioValores(cliente) {
+    revisionConsultaCambioValores++;
+    condicionesCambioValores = null;
     clienteSeleccionadoCambioValores = null;
     mediosCambioValores = [];
     instrumentosCambioValores = [];
@@ -225,6 +229,8 @@ function informarClienteNoValidoCambioValores(cliente) {
 
 function reiniciarCambioValoresParaNuevoCliente() {
     if (valoresCambioValores.some(esCobroIntegrado) || cobroIntegradoEnProceso()) { mostrarMensajeCambioValores('Pago pendiente', 'Complete o recupere el pago integrado antes de cambiar de cliente.', 'warn!'); return; }
+    revisionConsultaCambioValores++;
+    condicionesCambioValores = null;
     clienteSeleccionadoCambioValores = null;
     mediosCambioValores = [];
     instrumentosCambioValores = [];
@@ -274,6 +280,10 @@ function abrirModalCambioValores(cliente) {
 }
 
 function cargarMediosPagoCambioValores() {
+    const revision = ++revisionConsultaCambioValores;
+    condicionesCambioValores = null;
+    mediosCambioValores = [];
+    instrumentosCambioValores = [];
     mostrarLoaderCambioValores('Consultando medios habilitados para el cliente...');
     $('#cmbMedioCambioValores').html('<option value="">Cargando...</option>');
     $('#cmbInstrumentoCambioValores').html('<option value="">Seleccione un medio</option>');
@@ -285,6 +295,7 @@ function cargarMediosPagoCambioValores() {
         contentType: 'application/json; charset=utf-8',
         data: JSON.stringify({}),
         success: function (response) {
+            if (revision !== revisionConsultaCambioValores) return;
             ocultarLoaderCambioValores();
             console.log('[CambioValores] Response medios:', response);
             if (!response || response.ok !== true) {
@@ -293,10 +304,12 @@ function cargarMediosPagoCambioValores() {
                 mostrarMensajeCambioValores('Atencion', response?.mensaje || 'No se pudieron obtener los medios habilitados.', 'warn!');
                 return;
             }
+            condicionesCambioValores = response.condiciones || null;
             mediosCambioValores = Array.isArray(response.datos) ? response.datos : [];
             renderizarMediosCambioValores();
         },
         error: function (xhr, status, error) {
+            if (revision !== revisionConsultaCambioValores) return;
             ocultarLoaderCambioValores();
             console.error('[CambioValores] Error medios:', { status: xhr.status, responseText: xhr.responseText, error: error });
             mediosCambioValores = [];
@@ -321,6 +334,8 @@ function renderizarMediosCambioValores() {
 }
 
 function cargarInstrumentosCambioValores(tcfId) {
+    const revision = ++revisionConsultaCambioValores;
+    instrumentosCambioValores = [];
     const medio = obtenerMedioSeleccionadoCambioValores();
     if (esMedioPagoIntegrado(null, medio)) {
         instrumentosCambioValores = [];
@@ -342,6 +357,7 @@ function cargarInstrumentosCambioValores(tcfId) {
         contentType: 'application/json; charset=utf-8',
         data: JSON.stringify({ tcf_id: tcfId }),
         success: function (response) {
+            if (revision !== revisionConsultaCambioValores) return;
             ocultarLoaderCambioValores();
             console.log('[CambioValores] Response instrumentos:', response);
             if (!response || response.ok !== true) {
@@ -352,6 +368,7 @@ function cargarInstrumentosCambioValores(tcfId) {
             renderizarInstrumentosCambioValores();
         },
         error: function (xhr, status, error) {
+            if (revision !== revisionConsultaCambioValores) return;
             ocultarLoaderCambioValores();
             console.error('[CambioValores] Error instrumentos:', { status: xhr.status, responseText: xhr.responseText, error: error });
             mostrarMensajeCambioValores('Error', 'No se pudieron consultar los instrumentos habilitados.', 'error!');
@@ -383,7 +400,9 @@ function actualizarFormularioInstrumentoCambioValores() {
     configurarDatoCambioValores(2, usaModalDetalle ? '' : instrumento?.ins_dato2_desc);
     configurarDatoCambioValores(3, usaModalDetalle ? '' : instrumento?.ins_dato3_desc);
 
-    const tieneVto = !usaModalDetalle && obtenerPrimerValorCambioValores(instrumento?.ins_tiene_vto).toUpperCase() === 'S';
+    const tieneVto = !usaModalDetalle && (tipo === 'DO' || obtenerPrimerValorCambioValores(instrumento?.ins_tiene_vto).toUpperCase() === 'S');
+    $('#txtFechaValorCambioValores').attr('min', tipo === 'DO' ? obtenerFechaActualIsoCambioValores() : null)
+        .attr('max', tipo === 'DO' ? fechaMaximaCreditoCambioValores(condicionesCambioValores?.dias_documento) : null);
     $('#grpFechaCambioValores').toggleClass('d-none', usaModalDetalle || !tieneVto);
     if (!tieneVto) setFechaValorActualCambioValores();
 
@@ -436,7 +455,7 @@ function agregarValorCambioValores() {
     }
 
     const fechaValor = $('#txtFechaValorCambioValores').val() || obtenerFechaActualIsoCambioValores();
-    agregarValorNormalizadoCambioValores({
+    if (agregarValorNormalizadoCambioValores({
         medio: medio,
         instrumento: instrumento,
         dato1: $('#txtDato1CambioValores').val() || '',
@@ -445,7 +464,7 @@ function agregarValorCambioValores() {
         fechaValor: fechaValor,
         importe: importe,
         observacion: [$('#txtDato1CambioValores').val(), $('#txtDato2CambioValores').val(), $('#txtDato3CambioValores').val()].filter(Boolean).join(' / ')
-    });
+    }) === false) return;
 
     limpiarCargaValorCambioValores(true);
 }
@@ -456,7 +475,8 @@ function abrirModalChequeCambioValores(medio, instrumento) {
     $('#lblTipoMedioPagoCheque').text(medio.tcf_desc || medio.tcf_id || 'Cheque');
     $('#lblInstrumentoCheque').text(instrumento.ins_desc || instrumento.ins_id || '-');
     $('#txtNroCheque').val('');
-    $('#txtFechaCheque').val(obtenerFechaActualIsoCambioValores());
+    $('#txtFechaCheque').attr('min', obtenerFechaActualIsoCambioValores())
+        .attr('max', fechaMaximaCreditoCambioValores(condicionesCambioValores?.dias_cheque)).val(obtenerFechaActualIsoCambioValores());
     $('#txtMontoCheque').val('');
     cargarBancosChequeCambioValores();
     resetSeleccionInicialDetalleCambioValores('#modalDetalleCheque');
@@ -535,10 +555,10 @@ function guardarDetalleChequeCambioValores() {
     if (!/^\d+$/.test(nroCheque)) { mostrarErrorCampoCambioValores('#txtNroCheque', 'El numero de cheque debe ser numerico'); return; }
     if (nroCheque.length > 8) { mostrarErrorCampoCambioValores('#txtNroCheque', 'El numero de cheque no puede superar 8 digitos'); return; }
     if (!fechaCheque) { mostrarErrorCampoCambioValores('#txtFechaCheque', 'Debe seleccionar la fecha del cheque'); return; }
-    if (!fechaEnRangoChequeCambioValores(fechaCheque)) { mostrarErrorCampoCambioValores('#txtFechaCheque', 'La fecha debe estar entre hoy y 365 dias'); return; }
+    if (!fechaEnRangoChequeCambioValores(fechaCheque)) { mostrarErrorCampoCambioValores('#txtFechaCheque', 'El vencimiento debe estar entre hoy y el plazo de cheques del cliente (' + (condicionesCambioValores?.dias_cheque ?? 'sin configurar') + ' días)'); return; }
     if (monto <= 0) { mostrarErrorCampoCambioValores('#txtMontoCheque', 'Debe ingresar un monto mayor a cero'); return; }
 
-    agregarValorNormalizadoCambioValores({
+    if (agregarValorNormalizadoCambioValores({
         medio: contextoDetalleCambioValores.medio,
         instrumento: contextoDetalleCambioValores.instrumento,
         dato1: bancoId,
@@ -547,7 +567,7 @@ function guardarDetalleChequeCambioValores() {
         fechaValor: fechaCheque,
         importe: monto,
         observacion: `CH ${nroCheque.padStart(8, '0')} - ${bancoTexto}${plaza ? ' - Plaza ' + plaza : ''}`
-    });
+    }) === false) return;
 
     $('#modalDetalleCheque').modal('hide');
     limpiarCargaValorCambioValores(true);
@@ -582,7 +602,7 @@ function guardarDetalleTransferenciaCambioValores() {
     if (!fechaTransferenciaValidaCambioValores(fechaTransferencia)) { mostrarErrorCampoCambioValores('#txtFechaTransferencia', 'La fecha no puede ser futura ni anterior a ayer'); return; }
     if (monto <= 0) { mostrarErrorCampoCambioValores('#txtMontoTransferencia', 'Debe ingresar un monto mayor a cero'); return; }
 
-    agregarValorNormalizadoCambioValores({
+    if (agregarValorNormalizadoCambioValores({
         medio: contextoDetalleCambioValores.medio,
         instrumento: contextoDetalleCambioValores.instrumento,
         dato1: '',
@@ -591,7 +611,7 @@ function guardarDetalleTransferenciaCambioValores() {
         fechaValor: fechaTransferencia,
         importe: monto,
         observacion: `${esMedioCobroElectronico(contextoDetalleCambioValores.medio) ? 'Cobro' : 'Transf'} ${nroTransferencia}`
-    });
+    }) === false) return;
 
     $('#modalDetalleTransferencia').modal('hide');
     limpiarCargaValorCambioValores(true);
@@ -620,9 +640,12 @@ function agregarValorNormalizadoCambioValores(datos) {
         id_externo: ''
     };
 
+    const errorCredito = validarCreditoCambioValores([...valoresCambioValores, valor]);
+    if (errorCredito) { mostrarMensajeCambioValores('Revisar valor', errorCredito, 'warn!'); return false; }
     valoresCambioValores.push(valor);
     console.log('[CambioValores] Valor agregado:', valor);
     renderizarValoresCambioValores();
+    return true;
 }
 
 function renderizarValoresCambioValores() {
@@ -662,6 +685,8 @@ function eliminarValorCambioValores(index) {
 
 function prepararConfirmacionCambioValores() {
     if (finalizandoCambioValores) return;
+    const errorCredito = validarCreditoCambioValores(valoresCambioValores);
+    if (errorCredito) { mostrarMensajeCambioValores('Revisar valores', errorCredito, 'warn!'); return; }
     if (!valoresCambioValores.length) {
         mostrarMensajeCambioValores('Atencion', 'Debe cargar al menos un valor antes de finalizar.', 'warn!');
         return;
@@ -708,6 +733,8 @@ function renderizarConfirmacionCambioValores() {
 
 function confirmarOperacionCambioValores() {
     if (finalizandoCambioValores) return;
+    const errorCredito = validarCreditoCambioValores(valoresCambioValores);
+    if (errorCredito) { mostrarMensajeCambioValores('Revisar valores', errorCredito, 'warn!'); return; }
     finalizandoCambioValores = true;
 
     const tipo = $('#chkIngresoValor').is(':checked') ? 'IV' : 'CV';
@@ -875,12 +902,40 @@ function formatearFechaCambioValores(valor) {
     return texto;
 }
 
+function fechaMaximaCreditoCambioValores(dias) {
+    if (!Number.isInteger(dias) || dias < 1) return obtenerFechaActualIsoCambioValores();
+    const fecha = new Date(obtenerFechaActualIsoCambioValores() + 'T00:00:00');
+    fecha.setDate(fecha.getDate() + dias);
+    if (!Number.isFinite(fecha.getTime())) return obtenerFechaActualIsoCambioValores();
+    return `${fecha.getFullYear()}-${String(fecha.getMonth() + 1).padStart(2, '0')}-${String(fecha.getDate()).padStart(2, '0')}`;
+}
+function fechaCreditoValidaCambioValores(fecha, dias) {
+    const valor = new Date(fecha + 'T00:00:00');
+    const fechaReal = Number.isFinite(valor.getTime())
+        ? `${valor.getFullYear()}-${String(valor.getMonth() + 1).padStart(2, '0')}-${String(valor.getDate()).padStart(2, '0')}` : '';
+    return Number.isInteger(dias) && dias >= 1 && /^\d{4}-\d{2}-\d{2}$/.test(fecha || '') && fecha === fechaReal &&
+        fecha >= obtenerFechaActualIsoCambioValores() && fecha <= fechaMaximaCreditoCambioValores(dias);
+}
 function fechaEnRangoChequeCambioValores(fechaIso) {
-    const fecha = new Date(`${fechaIso}T00:00:00`);
-    const hoy = new Date(`${obtenerFechaActualIsoCambioValores()}T00:00:00`);
-    const max = new Date(hoy);
-    max.setDate(max.getDate() + 365);
-    return fecha >= hoy && fecha <= max;
+    return fechaCreditoValidaCambioValores(fechaIso, condicionesCambioValores?.dias_cheque);
+}
+function validarCreditoCambioValores(valores) {
+    const credito = valores.filter(v => ['CH', 'DO'].includes(String(v.tcf_id || '').trim().toUpperCase()));
+    if (!credito.length) return '';
+    const condiciones = condicionesCambioValores;
+    if (!condiciones?.registrado) return 'Identifique al cliente y consulte sus condiciones de pago.';
+    const total = credito.reduce((s, v) => s + Math.round(Number(v.rb_importe) * 100), 0);
+    if (!(Number(condiciones.tope) > 0) || total > Math.round(Number(condiciones.tope) * 100))
+        return 'La suma de cheques y documentos supera el tope de crédito del cliente.';
+    for (const valor of credito) {
+        const dias = String(valor.tcf_id).trim().toUpperCase() === 'CH' ? condiciones.dias_cheque : condiciones.dias_documento;
+        if (!fechaCreditoValidaCambioValores(String(valor.rb_fecha_valor || '').slice(0, 10), dias))
+            return 'El vencimiento debe estar entre hoy y el plazo configurado para la forma de pago del cliente.';
+    }
+    return '';
+}
+function hayCobroIntegradoCambioValores() {
+    return valoresCambioValores.some(esCobroIntegrado) || cobroIntegradoEnProceso();
 }
 
 function fechaTransferenciaValidaCambioValores(fechaIso) {
