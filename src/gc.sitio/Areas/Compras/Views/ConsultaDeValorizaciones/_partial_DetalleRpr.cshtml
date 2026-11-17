@@ -25,15 +25,26 @@
 		max-width: 5% !important;
 	}
 
-	.celda-p-desc {
+/* 	.celda-p-desc {
 		width: 300px;
 		max-width: 300px;
-	}
+	} */
 
 	.celda-v {
-		width: 1% !important;
-		max-width: 1% !important;
+		width: 5px !important;
+		max-width: 5px !important;
 		font-size: small !important;
+		padding-left: 10px !important;
+		padding-right: 10px !important;
+	}
+
+	.celda-p-desc {
+		width: 130px !important;
+		max-width: 130px !important;
+		min-width: 130px !important;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
 	}
 </style>
 <div class="grid-golden" style="padding-left: 0px; padding-right: 0px;">
@@ -42,7 +53,8 @@
 			<div class="col-md-10 col-sm-6 d-flex align-items-center">
 				<h5 class="mb-0 flex-grow-1">
 					<i class="bx bx-package me-2"></i>
-					Detalle <strong>@Model.leyenda</strong>
+					@* Detalle <strong>@Model.leyenda</strong> *@
+					Detalle Valorizado
 				</h5>
 			</div>
 		</div>
@@ -167,8 +179,8 @@
 		</div>
 	</div>
 </div>
-</div>
-<script>
+
+@* <script>
 	$(function() {
 			// Forzar el ancho de la columna de descripción
 			const setDescriptionColumnWidth = function() {
@@ -191,3 +203,4 @@
 			$(window).on('resize', setDescriptionColumnWidth);
 		});
 </script>
+ *@

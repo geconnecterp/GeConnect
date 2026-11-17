@@ -31,6 +31,7 @@ namespace gc.infraestructura.Dtos.Almacen
 		public string cm_compte_obs { get; set; } = string.Empty;
 		public decimal cm_percep_imp_nacionales { get; set; }
 		public decimal cm_percep_imp_municipales { get; set; }
-		public string comprobante => $"{tco_desc} ({tco_id}) - {cm_compte}";
+		public string comprobante => $"{tco_desc}";
+		public string title => $"({tco_id}) {cm_compte}";
 	}
 }

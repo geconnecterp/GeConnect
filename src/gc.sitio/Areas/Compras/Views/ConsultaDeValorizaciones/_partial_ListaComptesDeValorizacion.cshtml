@@ -61,7 +61,7 @@
 								data-dia-movi="@item.dia_movi"
 								onclick="selectCompteDeValorizacion(this)"
 								ondblclick="dblClickCompteDeValorizacion(this)">
-								<td class="@Model.Grilla.ObtenerClase(item.comprobante)">@Model.Grilla.FormatearDato(item.comprobante, FormatDato.Ninguno)</td>
+								<td class="@Model.Grilla.ObtenerClase(item.comprobante)" title="@item.title">@Model.Grilla.FormatearDato(item.comprobante, FormatDato.Ninguno)</td>
 								<td class="@Model.Grilla.ObtenerClase(item.cm_no_gravado)">@GridHelper.FormatearDato(item.cm_no_gravado, FormatDato.Monto, true)</td>
 								<td class="@Model.Grilla.ObtenerClase(item.cm_exento)">@GridHelper.FormatearDato(item.cm_exento, FormatDato.Monto, true)</td>
 								<td class="@Model.Grilla.ObtenerClase(item.cm_gravado)">@GridHelper.FormatearDato(item.cm_gravado, FormatDato.Monto, true)</td>
