@@ -70,10 +70,7 @@ function LimpiarSeleccionEnRadioButtons() {
 function btnAbmAceptarClick() {
 	var valResult = ValidarAntesDeConfirmar();
 	if (valResult.error === true) {
-		AbrirMensaje("ATENCIÓN", valResult.msg, function () {
-			$("#msjModal").modal("hide");
-			return true;
-		}, false, ["Aceptar"], "error!", null);
+		MostrarErrorSimplificado(valResult.msg);
 	}
 	else {
 		AbrirMensaje("ATENCIÓN", "¿Confirma la anulación del comprobante seleccionado?", function (e) {
@@ -107,17 +104,13 @@ function btnAbmAceptarClick() {
 					PostGen(data, confirmarAnulacionUrl, function (obj) {
 						if (obj.error === true) {
 							CerrarWaiting();
-							//ControlaMensajeError(obj.msg);
-							AbrirMensaje("ATENCIÓN", obj.msg, function () {
-								$("#msjModal").modal("hide");
-								return true;
-							}, false, ["Aceptar"], "error!", null);
+							MostrarErrorSimplificado(obj.msg);
 						}
 						else {
 							AbrirMensaje("ATENCIÓN", obj.msg, function () {
 								$("#msjModal").modal("hide");
 								return true;
-							}, false, ["Aceptar"], "error!", null);
+							}, false, ["Aceptar"], "succ!", null);
 							//ControlaMensajeSuccess(obj.msg);
 							InicializarDatosEnSesion(false);
 							InicializarComprobante(ctaIdSelected);

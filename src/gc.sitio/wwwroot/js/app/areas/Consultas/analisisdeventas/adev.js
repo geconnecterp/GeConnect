@@ -32,20 +32,14 @@ $(function () {
 		if (validarFechasAnalisis()) {
 			var sucursalesIds = ObtenerSucursalesSeleccionadas();
 			if (!sucursalesIds || sucursalesIds.length == 0) {
-				AbrirMensaje("ATENCIÓN", "Debe al menos seleccionar una sucursal.", function () {
-					$("#msjModal").modal("hide");
-					return true;
-				}, false, ["Aceptar"], "error!", null);
+				MostrarErrorSimplificado("Debe al menos seleccionar una sucursal.", false);
 			} else {
 				// mostrar filtros aplicados antes de inicializar
 				try { MostrarFiltrosAplicados(); } catch (e) { console.warn('MostrarFiltrosAplicados no disponible:', e); }
 				InicializarPantallaPrincipal();
 			}
 		} else {
-			AbrirMensaje("ATENCIÓN", "Problemas con las fechas, por favor verifique.", function () {
-				$("#msjModal").modal("hide");
-				return true;
-			}, false, ["Aceptar"], "error!", null);
+			MostrarErrorSimplificado("Problemas con las fechas, por favor verifique.", false);
 		}
 	});
 	try { MostrarFiltrosAplicados(); } catch (e) { }
@@ -111,10 +105,8 @@ function InicializarPantallaPrincipal() {
 }
 
 function EvaluarBotonImprimir(tabId) {
-	console.log("Evaluando botón imprimir para tab:", tabId);
 	const tablaSelector = TabToTableMap[tabId];
 	if (!tablaSelector) {
-		console.log("tablaSelector:", tablaSelector);
 		$("#btnImprimir").hide();
 		return;
 	}
@@ -123,8 +115,6 @@ function EvaluarBotonImprimir(tabId) {
 
 	// Si la tabla no existe o no tiene filas de datos
 	if ($tabla.length === 0 || $tabla.find("tbody tr").length === 0) {
-		console.log("$tabla.length:", $tabla.length);
-		console.log("$tabla.find(tbody tr).length:", $tabla.find("tbody tr").length);
 		$("#btnImprimir").hide();
 		return;
 	}
@@ -142,7 +132,6 @@ $("#btnImprimir").on("click", function () {
 });
 
 function ReseteoDeReportes() {
-	console.log("Reseto de reportes");
 	ReporteResetArre();
 }
 
@@ -219,10 +208,7 @@ function ImprimirDetalleDiario() {
 		CerrarWaiting();
 		if (obj.error === true) {
 			CerrarWaiting();
-			AbrirMensaje("ATENCIÓN", obj.msg, function () {
-				$("#msjModal").modal("hide");
-				return true;
-			}, false, ["Aceptar"], "error!", null);
+			MostrarErrorSimplificado(obj.msg, false);
 		}
 		else {
 			HandlerImprimirDetalleDiario();
@@ -257,10 +243,7 @@ function ImprimirDetalleHora() {
 		CerrarWaiting();
 		if (obj.error === true) {
 			CerrarWaiting();
-			AbrirMensaje("ATENCIÓN", obj.msg, function () {
-				$("#msjModal").modal("hide");
-				return true;
-			}, false, ["Aceptar"], "error!", null);
+			MostrarErrorSimplificado(obj.msg, false);
 		}
 		else {
 			HandlerImprimirDetalleHora();
@@ -295,10 +278,7 @@ function ImprimirDetalleSucursal() {
 		CerrarWaiting();
 		if (obj.error === true) {
 			CerrarWaiting();
-			AbrirMensaje("ATENCIÓN", obj.msg, function () {
-				$("#msjModal").modal("hide");
-				return true;
-			}, false, ["Aceptar"], "error!", null);
+			MostrarErrorSimplificado(obj.msg, false);
 		}
 		else {
 			HandlerImprimirDetalleSucursal();
@@ -333,10 +313,7 @@ function ImprimirDetalleCierre() {
 		CerrarWaiting();
 		if (obj.error === true) {
 			CerrarWaiting();
-			AbrirMensaje("ATENCIÓN", obj.msg, function () {
-				$("#msjModal").modal("hide");
-				return true;
-			}, false, ["Aceptar"], "error!", null);
+			MostrarErrorSimplificado(obj.msg, false);
 		}
 		else {
 			HandlerImprimirDetalleCierre();
@@ -371,10 +348,7 @@ function ImprimirAnual() {
 		CerrarWaiting();
 		if (obj.error === true) {
 			CerrarWaiting();
-			AbrirMensaje("ATENCIÓN", obj.msg, function () {
-				$("#msjModal").modal("hide");
-				return true;
-			}, false, ["Aceptar"], "error!", null);
+			MostrarErrorSimplificado(obj.msg, false);
 		}
 		else {
 			HandlerImprimirDetalleAnual();

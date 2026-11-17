@@ -64,20 +64,14 @@ function InicializaEventos() {
 		if (validarFechasAnalisis()) {
 			var sucursalesIds = ObtenerSucursalesSeleccionadas();
 			if (!sucursalesIds || sucursalesIds.length == 0) {
-				AbrirMensaje("ATENCIÓN", "Debe al menos seleccionar una sucursal.", function () {
-					$("#msjModal").modal("hide");
-					return true;
-				}, false, ["Aceptar"], "error!", null);
+				MostrarErrorSimplificado("Debe al menos seleccionar una sucursal.", false);
 			} else {
 				// Mostrar filtros aplicados en la UI antes de cargar la pantalla
 				MostrarFiltrosAplicados();
 				InicializarPantallaPrincipal();
 			}
 		} else {
-			AbrirMensaje("ATENCIÓN", "Problemas con las fechas, por favor verifique.", function () {
-				$("#msjModal").modal("hide");
-				return true;
-			}, false, ["Aceptar"], "error!", null);
+			MostrarErrorSimplificado("Problemas con las fechas, por favor verifique.", false);
 		}
 	});
 }
@@ -137,10 +131,7 @@ function CargarSeccionProcesoDeCajas(pag = 1) {
 			CerrarWaiting();
 			PostGen({}, buscarMetadataURL, function (obj) {
 				if (obj.error === true) {
-					AbrirMensaje("ATENCIÓN", obj.msg, function () {
-						$("#msjModal").modal("hide");
-						return true;
-					}, false, ["Aceptar"], "error!", null);
+					MostrarErrorSimplificado(obj.msg, false);
 				} else {
 					totalRegs = obj.metadata.totalCount;
 					pags = obj.metadata.totalPages;
@@ -160,12 +151,10 @@ function CargarSeccionProcesoDeCajas(pag = 1) {
 }
 
 function InicializarEventosProcesosDeCaja() {
-	console.log("Inicializando eventos de Procesos de Caja...");
 
 	// Nos aseguramos que el contenedor exista
 	const $contenedor = $("#divProcDeCajaProcesos");
 	if ($contenedor.length === 0) {
-		console.warn("No se encontró #divProcDeCajaProcesos en el DOM.");
 		return;
 	}
 
@@ -174,10 +163,8 @@ function InicializarEventosProcesosDeCaja() {
 
 	// Delegamos el click desde el contenedor fijo
 	$contenedor.on("click", "#tbGridProcesos tbody tr", function (e) {
-		console.log("Click en fila de procesos de caja");
 
 		if ($(e.target).is("button, a, .btn, i")) {
-			console.log("Click ignorado por ser botón/link/icono");
 			return;
 		}
 
@@ -197,7 +184,6 @@ function InicializarEventosProcesosDeCaja() {
 function ProcesarSeleccionFilaEnProcesosDeCaja($fila) {
 	$("#tbGridProcesos tbody tr").removeClass("selected-row");
 	$fila.addClass("selected-row");
-	console.log("Fila seleccionada:", $fila.data("caja-nro-proceso"), $fila.data("adm-id"));
 	BuscarCierresDeProcesoDeCaja($fila.data("caja-nro-proceso"));
 }
 
@@ -228,12 +214,10 @@ function BuscarCierresDeProcesoDeCaja(caja_nro_proceso) {
 }
 
 function InicializarEventosCierresDeProcesosDeCaja() {
-	console.log("Inicializando eventos de Cierres de Procesos de Caja...");
 
 	// Nos aseguramos que el contenedor exista
 	const $contenedor = $("#divProcDeCajaCierres");
 	if ($contenedor.length === 0) {
-		console.warn("No se encontró #divProcDeCajaCierres en el DOM.");
 		return;
 	}
 
@@ -242,9 +226,7 @@ function InicializarEventosCierresDeProcesosDeCaja() {
 
 	// Delegamos el click desde el contenedor fijo
 	$contenedor.on("click", "#tbGridCierres tbody tr", function (e) {
-		console.log("Click en fila de cierres de procesos de caja");
 		if ($(e.target).is("button, a, .btn, i")) {
-			console.log("Click ignorado por ser botón/link/icono");
 			return;
 		}
 
@@ -259,7 +241,6 @@ let caja_nro_cierre_seleccionado = null;
 function ProcesarSeleccionFilaEnCierresDeProcesosDeCaja($fila) {
 	$("#tbGridCierres tbody tr").removeClass("selected-row");
 	$fila.addClass("selected-row");
-	console.log("Fila seleccionada:", $fila.data("caja-nro-proceso"), $fila.data("caja-nro-cierre"), $fila.data("caja-id"));
 	caja_nro_proceso_seleccionado = $fila.data("caja-nro-proceso");
 	caja_nro_cierre_seleccionado = $fila.data("caja-nro-cierre");
 	let estado = $fila.data("cierre-estado");
@@ -286,10 +267,8 @@ function buildQueryFilters(pag) {
 }
 
 function EvaluarBotonImprimir(tabId) {
-	console.log("Evaluando botón imprimir para tab:", tabId);
 	const tablaSelector = TabToTableMap[tabId];
 	if (!tablaSelector) {
-		console.log("tablaSelector:", tablaSelector);
 		$("#btnImprimir").hide();
 		return;
 	}
@@ -298,8 +277,6 @@ function EvaluarBotonImprimir(tabId) {
 
 	// Si la tabla no existe o no tiene filas de datos
 	if ($tabla.length === 0 || $tabla.find("tbody tr").length === 0) {
-		console.log("$tabla.length:", $tabla.length);
-		console.log("$tabla.find(tbody tr).length:", $tabla.find("tbody tr").length);
 		$("#btnImprimir").hide();
 		return;
 	}
@@ -313,10 +290,7 @@ function EvaluarBotonImprimir(tabId) {
 
 function ImprimirReporteRendicionCierre() {
 	if (!caja_nro_proceso_seleccionado || !caja_nro_cierre_seleccionado) {
-		AbrirMensaje("ATENCIÓN", "Debe seleccionar un cierre de caja.", function () {
-			$("#msjModal").modal("hide");
-			return true;
-		}, false, ["Aceptar"], "error!", null);
+		MostrarErrorSimplificado("Debe seleccionar un cierre de caja.", false);
 	}
 	else {
 		AbrirWaiting();
@@ -326,10 +300,7 @@ function ImprimirReporteRendicionCierre() {
 			CerrarWaiting();
 			if (obj.error === true) {
 				CerrarWaiting();
-				AbrirMensaje("ATENCIÓN", obj.msg, function () {
-					$("#msjModal").modal("hide");
-					return true;
-				}, false, ["Aceptar"], "error!", null);
+				MostrarErrorSimplificado(obj.msg, false);
 			}
 			else {
 				HandlerImprimirReporteRendicionCierre();
@@ -340,10 +311,7 @@ function ImprimirReporteRendicionCierre() {
 
 function ImprimirReporteAnaliticoOperaciones() {
 	if (!caja_nro_proceso_seleccionado || !caja_nro_cierre_seleccionado) {
-		AbrirMensaje("ATENCIÓN", "Debe seleccionar un cierre de caja.", function () {
-			$("#msjModal").modal("hide");
-			return true;
-		}, false, ["Aceptar"], "error!", null);
+		MostrarErrorSimplificado("Debe seleccionar un cierre de caja.", false);
 	}
 	else {
 		AbrirWaiting();
@@ -353,10 +321,7 @@ function ImprimirReporteAnaliticoOperaciones() {
 			CerrarWaiting();
 			if (obj.error === true) {
 				CerrarWaiting();
-				AbrirMensaje("ATENCIÓN", obj.msg, function () {
-					$("#msjModal").modal("hide");
-					return true;
-				}, false, ["Aceptar"], "error!", null);
+				MostrarErrorSimplificado(obj.msg, false);
 			}
 			else {
 				HandlerImprimirReporteAnaliticoOperaciones();
@@ -392,7 +357,6 @@ function HandlerImprimirReporteAnaliticoOperaciones() {
 }
 
 function ReseteoDeReportes() {
-	console.log("Reseto de reportes");
 	ReporteResetArre();
 }
 

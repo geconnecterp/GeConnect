@@ -607,6 +607,26 @@ function AbrirMensaje(Titulo, Mensaje, CallBack, EsConfirmacion, Botones, Tipo, 
     $('#msjModal').modal('show');
 }
 
+function MostrarErrorSimplificado(msg, cerrarW = false) {
+    AbrirMensaje("ATENCIÓN", msg, function () {
+        $("#msjModal").modal("hide");
+		if (cerrarW) { CerrarWaiting(); }
+        return true;
+    },
+        false, ["Aceptar"], "error!", null
+    );
+}
+
+function MostrarWarningSimplificado(msg, cerrarW = false) {
+    AbrirMensaje("ATENCIÓN", msg, function () {
+        $("#msjModal").modal("hide");
+		if (cerrarW) { CerrarWaiting(); }
+        return true;
+    },
+        false, ["Aceptar"], "warn!", null
+    );
+}
+
 
 //function AbrirMensaje(Titulo, Mensaje, CallBack, EsConfirmacion, Botones, Tipo, CallBackExportar) {
 //    if (EsConfirmacion) {

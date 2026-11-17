@@ -94,10 +94,7 @@ function InicializaEventos() {
 				InicializarPantallaPrincipal();
 			}
 		} else {
-			AbrirMensaje("ATENCIÓN", "Problemas con las fechas, por favor verifique.", function () {
-				$("#msjModal").modal("hide");
-				return true;
-			}, false, ["Aceptar"], "error!", null);
+			MostrarErrorSimplificado("Problemas con las fechas, por favor verifique.", false);
 		}
 	});
 }
@@ -175,8 +172,6 @@ function finalizarCarga() {
 }
 
 function EvaluarBotonImprimir(tabId) {
-	console.log("Evaluando botón imprimir para tab:", tabId);
-
 	const tablaSelector = TabToTableMap[tabId];
 	if (!tablaSelector) {
 		$("#btnImprimir").hide();
@@ -195,7 +190,6 @@ function EvaluarBotonImprimir(tabId) {
 
 	if (filasReales.length === 0) {
 		// No hay datos reales → ocultar
-		console.log("No hay filas reales, ocultando botón imprimir");
 		$("#btnImprimir").hide();
 		return;
 	}
@@ -273,7 +267,6 @@ function InicializarCamposEnFiltros(vieneDeCancelar) {
 }
 
 function ReseteoDeReportes() {
-	console.log("Reseto de reportes");
 	ReporteResetArre();
 }
 
@@ -303,10 +296,7 @@ function ImprimirConsCtaCteFinanciera() {
 		CerrarWaiting();
 		if (obj.error === true) {
 			CerrarWaiting();
-			AbrirMensaje("ATENCIÓN", obj.msg, function () {
-				$("#msjModal").modal("hide");
-				return true;
-			}, false, ["Aceptar"], "error!", null);
+			MostrarErrorSimplificado(obj.msg, false);
 		}
 		else {
 			HandlerImprimirConsCtaCteFinanciera();
@@ -322,10 +312,7 @@ function ImprimirDetalleDeValoresEnCartera() {
 		CerrarWaiting();
 		if (obj.error === true) {
 			CerrarWaiting();
-			AbrirMensaje("ATENCIÓN", obj.msg, function () {
-				$("#msjModal").modal("hide");
-				return true;
-			}, false, ["Aceptar"], "error!", null);
+			MostrarErrorSimplificado(obj.msg, false);
 		}
 		else {
 			HandlerImprimirDetalleDeValoresEnCartera();

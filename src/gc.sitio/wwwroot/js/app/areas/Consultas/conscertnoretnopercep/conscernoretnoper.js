@@ -47,10 +47,7 @@ function ResetDeFiltros() {
 
 function ControlaImprimirSelected() {
 	if ($("#tbGridCertificados > tbody > tr").length === 0) {
-		AbrirMensaje("ATENCIÓN", "No hay datos generar el reporte.", function () {
-			$("#msjModal").modal("hide");
-			return true;
-		}, false, ["Aceptar"], "error!", null);
+		MostrarErrorSimplificado("No hay datos generar el reporte.", false);
 	}
 	else {
 		ImprimirListaCertificados_Generada();
@@ -58,7 +55,6 @@ function ControlaImprimirSelected() {
 }
 
 function ReseteoDeReportes() {
-	console.log("Reseto de reportes");
 	ReporteResetArre();
 }
 
@@ -125,10 +121,7 @@ function BuscarCertificados(pag) {
 			$("#divDetalle").collapse("show");
 			PostGen({}, buscarMetadataURL, function (obj) {
 				if (obj.error === true) {
-					AbrirMensaje("ATENCIÓN", obj.msg, function () {
-						$("#msjModal").modal("hide");
-						return true;
-					}, false, ["Aceptar"], "error!", null);
+					MostrarErrorSimplificado(obj.msg, false);
 				}
 				else {
 					totalRegs = obj.metadata.totalCount;
@@ -154,10 +147,7 @@ function BuscarCertificados(pag) {
 		});
 	}
 	else {
-		AbrirMensaje("ATENCIÓN", retMsj, function () {
-			$("#msjModal").modal("hide");
-			return true;
-		}, false, ["Aceptar"], "error!", null);
+		MostrarErrorSimplificado(retMsj, false);
 	}
 }
 

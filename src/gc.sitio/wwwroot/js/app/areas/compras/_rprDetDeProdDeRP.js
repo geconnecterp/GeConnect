@@ -49,19 +49,19 @@ function AplicarFormato() {
 
 function analizaInputUP(x) {
 	if (x.which == "13") {
-		$("#txtBtoEnComprobanteRP").focus();
+		$("#txtBtoEnComprobanteRP").trigger("focus");
 	}
 }
 
 function analizaInputBto(x) {
 	if (x.which == "13") {
-		$("#txtUnidEnComprobanteRP").focus();
+		$("#txtUnidEnComprobanteRP").trigger("focus");
 	}
 }
 
 function analizaInputUnid(x) {
 	if (x.which == "13") {
-		$("#btnAddProdEnComprobanteRP").focus();
+		$("#btnAddProdEnComprobanteRP").trigger("focus");
 	}
 }
 
@@ -88,10 +88,7 @@ function ActualizarEstadoBotonAgregarOC() {
 function AgregarProdManual() {
 	var idProd = $("#txtIdProdEnComprobanteRP").val();
 	if (idProd === "") {
-		AbrirMensaje("Atención", "Debe ingresar un producto para agregar.", function () {
-			$("#msjModal").modal("hide");
-			return true;
-		}, false, ["Aceptar"], "warn!", null);
+		MostrarWarningSimplificado("Debe ingresar un producto para agregar.");
 	} else {
 		var accion = "";
 		var oc_compte = "";
@@ -160,7 +157,7 @@ function LimpiarCamposDeCarga(seteaFoco) {
 	$("#txtBtoEnComprobanteRP").val("");
 	$("#txtUnidEnComprobanteRP").val("");
 	if (seteaFoco) {
-		$("#Busqueda").focus();
+		$("#Busqueda").trigger("focus");
 	}
 }
 function CargarDetalleDeProducto() {
@@ -196,13 +193,10 @@ function DelProdEnComprobanteRP() {
 					break;
 			}
 			return true;
-		}, true, ["Aceptar", "Cancelar"], "info!", null);
+		}, true, ["SI", "NO"], "info!", null);
 	}
 	else {
-		AbrirMensaje("Atención", "Debe seleccionar un producto para quitar de la lista.", function () {
-			$("#msjModal").modal("hide");
-			return true;
-		}, false, ["Aceptar"], "warn!", null);
+		MostrarWarningSimplificado("Debe seleccionar un producto para quitar de la lista.");
 	}
 }
 
@@ -230,15 +224,9 @@ function RegresarDesdeComprobanteRP() {
 	datos = { desdeDetalle };
 	PostGen(datos, verificarDetalleCargadoURL, function (o) {
 		if (o.error === true) {
-			AbrirMensaje("Atención", o.msg, function () {
-				$("#msjModal").modal("hide");
-				return true;
-			}, false, ["Aceptar"], "error!", null);
+			MostrarErrorSimplificado(o.msg);
 		} else if (o.warn === true) {
-			AbrirMensaje("Atención", o.msg, function () {
-				$("#msjModal").modal("hide");
-				return true;
-			}, false, ["Aceptar"], "warn!", null);
+			MostrarWarningSimplificado(o.msg);
 		} else if (o.vacio === false) {
 			AbrirMensaje("Atención", o.msg, function (e) {
 				$("#msjModal").modal("hide");
@@ -253,7 +241,7 @@ function RegresarDesdeComprobanteRP() {
 						break;
 				}
 				return true;
-			}, true, ["Aceptar", "Cancelar"], "info!", null);
+			}, true, ["SI", "NO"], "info!", null);
 		} else {
 			var uri = VolverANuevaAutUrl + "?rp=" + $("#Rp").val();
 			window.location.href = uri;
@@ -279,17 +267,9 @@ function GuardarDetalleDeProductos(guardado) {
 	datos = { guardado, generar, listaProd };
 	PostGen(datos, GuardarDetalleDeComprobanteRPUrl, function (o) {
 		if (o.error === true) {
-			AbrirMensaje("Atención", o.msg, function () {
-				$("#msjModal").modal("hide");
-				CerrarWaiting();
-				return true;
-			}, false, ["Aceptar"], "error!", null);
+			MostrarErrorSimplificado(o.msg, true);
 		} else if (o.warn === true) {
-			AbrirMensaje("Atención", o.msg, function () {
-				$("#msjModal").modal("hide");
-				CerrarWaiting();
-				return true;
-			}, false, ["Aceptar"], "warn!", null);
+			MostrarWarningSimplificado(o.msg, true);
 		} else {
 			CerrarWaiting();
 			var uri = VolverANuevaAutUrl + "?rp=" + $("#Rp").val();
@@ -324,15 +304,11 @@ function AgregarProdDesdeDetalleDeOC() {
 		}
 	}
 	else {
-		AbrirMensaje("Atención", "Debe seleccionar una OC.", function () {
-			$("#msjModal").modal("hide");
-			return true;
-		}, false, ["Aceptar"], "warn!", null);
+		MostrarWarningSimplificado("Debe seleccionar una OC.", false);
 		return true;
 	}
 }
 
-//ValidarExistenciaDeProductoSinOCYaExistente
 function ExistenciaProdEnGrilla(id) {
 	var ids = [];
 	var existe = false;
@@ -421,10 +397,7 @@ function CargarDetalleDeProductosEnRP(accion) {
 		});
 
 		if (listaProd.length == 0) {
-			AbrirMensaje("Atención", "Debe seleccionar al menos un producto de la OC.", function () {
-				$("#msjModal").modal("hide");
-				return true;
-			}, false, ["Aceptar"], "warn!", null);
+			MostrarWarningSimplificado("Debe seleccionar al menos un producto de la OC.", false);
 			return false;
 		}
 	}

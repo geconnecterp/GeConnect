@@ -114,7 +114,7 @@ function ConfirmarRP() {
 				break;
 		}
 		return true;
-	}, true, ["Aceptar", "Cancelar"], "info!", null);
+	}, true, ["SI", "NO"], "info!", null);
 }
 
 function Confirmar() {

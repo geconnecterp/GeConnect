@@ -121,10 +121,8 @@ function ProcesarSeleccionFilaEnResumenDeVentas($fila) {
 }
 
 function EvaluarBotonImprimir(tabId) {
-	console.log("Evaluando botón imprimir para tab:", tabId);
 	const tablaSelector = TabToTableMap[tabId];
 	if (!tablaSelector) {
-		console.log("tablaSelector:", tablaSelector);
 		$("#btnImprimir").hide();
 		return;
 	}
@@ -133,8 +131,6 @@ function EvaluarBotonImprimir(tabId) {
 
 	// Si la tabla no existe o no tiene filas de datos
 	if ($tabla.length === 0 || $tabla.find("tbody tr").length === 0) {
-		console.log("$tabla.length:", $tabla.length);
-		console.log("$tabla.find(tbody tr).length:", $tabla.find("tbody tr").length);
 		$("#btnImprimir").hide();
 		return;
 	}
@@ -186,10 +182,7 @@ function InicializaEventos() {
 			try { MostrarFiltrosAplicados(); } catch (e) { console.warn('MostrarFiltrosAplicados no disponible:', e); }
 			InicializarPantallaPrincipal();
 		} else {
-			AbrirMensaje("ATENCIÓN", msg, function () {
-				$("#msjModal").modal("hide");
-				return true;
-			}, false, ["Aceptar"], "error!", null);
+			MostrarErrorSimplificado(msg, false);
 		}
 	});
 }
@@ -249,10 +242,7 @@ function ImprimirDetalle() {
 		CerrarWaiting();
 		if (obj.error === true) {
 			CerrarWaiting();
-			AbrirMensaje("ATENCIÓN", obj.msg, function () {
-				$("#msjModal").modal("hide");
-				return true;
-			}, false, ["Aceptar"], "error!", null);
+			MostrarErrorSimplificado(obj.msg, false);
 		}
 		else {
 			HandlerImprimirDetalle();
@@ -268,10 +258,7 @@ function ImprimirResumen() {
 		CerrarWaiting();
 		if (obj.error === true) {
 			CerrarWaiting();
-			AbrirMensaje("ATENCIÓN", obj.msg, function () {
-				$("#msjModal").modal("hide");
-				return true;
-			}, false, ["Aceptar"], "error!", null);
+			MostrarErrorSimplificado(obj.msg, false);
 		}
 		else {
 			HandlerImprimirResumen();

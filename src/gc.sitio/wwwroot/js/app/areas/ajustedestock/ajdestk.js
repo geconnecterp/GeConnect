@@ -43,15 +43,9 @@ function VerificarAntesDeCancelarAjuste() {
 		}
 
 		if (o.error === true) {
-			AbrirMensaje("Atención", o.msg, function () {
-				$("#msjModal").modal("hide");
-				return true;
-			}, false, ["Aceptar"], "error!", null);
+			MostrarErrorSimplificado(o.msg);
 		} else if (o.warn === true) {
-			AbrirMensaje("Atención", o.msg, function () {
-				$("#msjModal").modal("hide");
-				return true;
-			}, false, ["Aceptar"], "warn!", null);
+			MostrarErrorSimplificado(o.msg);
 		} else {
 			CancelarAjuste(o.msg);
 		}
@@ -125,10 +119,7 @@ function ConfirmarAjuste() {
 	var rows = $("#tbDetalleDeProductosAAjustar tbody tr").length;
 	if (rows <= 0) {
 		hayError = true;
-		AbrirMensaje("Atención", "Debe agregar al menos un producto en el Ajuste de Stock antes de confirmar.", function () {
-			$("#msjModal").modal("hide");
-			return false;
-		}, false, ["Aceptar"], "warn!", null);
+		MostrarWarning("Debe agregar al menos un producto en el Ajuste de Stock antes de confirmar.");
 	}
 	var motivo = $("#listaMotivo").val();
 	if (motivo === "") {
@@ -180,15 +171,9 @@ function HandlerConfirmarAjuste(nota) {
 		}
 
 		if (o.error === true) {
-			AbrirMensaje("Atención", o.msg, function () {
-				$("#msjModal").modal("hide");
-				return true;
-			}, false, ["Aceptar"], "error!", null);
+			MostrarErrorSimplificado(o.msg);
 		} else if (o.warn === true) {
-			AbrirMensaje("Atención", o.msg, function () {
-				$("#msjModal").modal("hide");
-				return true;
-			}, false, ["Aceptar"], "warn!", null);
+			MostrarWarning(o.msg);
 		} else {
 			AbrirMensaje("Atención", o.msg, function () {
 				$("#msjModal").modal("hide");
@@ -233,10 +218,7 @@ function ObtenerIdsDeProdSeleccionadosEnModal() {
 
 function DelProd() {
 	if (pIdSeleccionado === "") {
-		AbrirMensaje("Atención", "Debe seleccionar un producto.", function () {
-			$("#msjModal").modal("hide");
-			return true;
-		}, false, ["Aceptar"], "warn!", null);
+		MostrarWarningSimplificado("Debe seleccionar un producto.");
 	}
 	AbrirWaiting("Quitando producto...");
 	var pId = pIdSeleccionado;
@@ -252,10 +234,7 @@ function DelProd() {
 
 function quitarProducto(p_id) {
 	if (p_id === "") {
-		AbrirMensaje("Atención", "Debe seleccionar un producto.", function () {
-			$("#msjModal").modal("hide");
-			return true;
-		}, false, ["Aceptar"], "warn!", null);
+		MostrarWarningSimplificado("Debe seleccionar un producto.");
 	}
 	else {
 		AbrirWaiting("Quitando producto...");
@@ -361,10 +340,7 @@ function AgregarHandlerAGrillaDetalleDeProductosEnModal() {
 function seleccionarProductosDesdeCargaPrevia() {
 	var ids = ObtenerIdsDeProdSeleccionadosEnModal();
 	if (ids.length == 0) {
-		AbrirMensaje("Atención", "Debe seleccionar al menos un producto.", function () {
-			$("#msjModal").modal("hide");
-			return true;
-		}, false, ["Aceptar"], "warn!", null);
+		MostrarWarningSimplificado("Debe seleccionar al menos un producto.");
 		return false;
 	}
 	var depoId = $("#listaDepositoEnCargaPrevia").val();
@@ -511,7 +487,7 @@ function AgregarProdManual() {
 			if ($("#txtUnid").val() === "") {
 				AbrirMensaje("Atención", "Debe especificar un valor para Unid.", function () {
 					$("#msjModal").modal("hide");
-					$("#txtUnid").focus();
+					$("#txtUnid").trigger('focus');
 					return true;
 				}, false, ["Aceptar"], "warn!", null);
 			}
@@ -626,8 +602,7 @@ function RevertirAjuste(ajId) {
 	PostGenHtml(datos, ObtenerProductosDesdeAJRevertidoURL, function (obj) {
 		$("#divDetalleDeProductosAAjustar").html(obj);
 		AddEventListenerToGrid("tbDetalleDeProductosAAjustar");
-		//if ($("#tbDetalleDeProductosAAjustar tr")[1] !== undefined && $("#tbDetalleDeProductosAAjustar tr")[1] !== null)
-		//	ObtenerNotaDesdeProductosRevertidos($("#tbDetalleDeProductosAAjustar tr")[1].children[7].innerText);
+
 		if ($("#tbDetalleDeProductosAAjustar tbody tr").length > 0) {
 
 			const $fila = $("#tbDetalleDeProductosAAjustar tbody tr").first();

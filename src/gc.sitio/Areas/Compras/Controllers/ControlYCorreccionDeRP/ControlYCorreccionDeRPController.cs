@@ -185,6 +185,7 @@ namespace gc.sitio.Areas.Compras.Controllers.ControlYCorreccionDeRP
 				request.json_p = ObtenerJsonProductosParaRprCtl();
 				PrintProperties(request);
 				var respuesta = _prdSrv.ConfirmarRprCtl(request, TokenCookie);
+				LimpiarDatosEnSesion();
 				return AnalizarRespuesta(respuesta, "La acción se ejecutó correctamente.");
 			}
 			catch (NegocioException ex)
@@ -199,6 +200,8 @@ namespace gc.sitio.Areas.Compras.Controllers.ControlYCorreccionDeRP
 
 			return Json(new { error = true, msg });
 		}
+
+		
 
 		[HttpPost]
 		public JsonResult CambiarTcoEnRpr(CambiarTcoEnRprRequest request)
@@ -312,6 +315,11 @@ namespace gc.sitio.Areas.Compras.Controllers.ControlYCorreccionDeRP
 		}
 
 		#region Métodos Privados
+		private void LimpiarDatosEnSesion()
+		{
+			RprCtlPendienteLista = [];
+			RprCtlDetalleLista = [];
+		}
 		private void CargarDatosIniciales(bool actualizar)
 		{
 			if (ProveedoresLista.Count == 0 || actualizar)

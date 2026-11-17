@@ -32,10 +32,7 @@
 			const familias = $("#FamiliaList option");
 
 			if (familias.length === 0) {
-				AbrirMensaje("ATENCIÓN", "Debe seleccionar al menos una Familia.", function () {
-					$("#msjModal").modal("hide");
-					return true;
-				}, false, ["Aceptar"], "error!", null);
+				MostrarErrorSimplificado("Debe seleccionar al menos una Familia.", false);
 				return;
 			}
 		}
@@ -85,7 +82,6 @@ function ajustarHeaderSticky() {
 	if (!firstRow) return;
 
 	const height = firstRow.offsetHeight;
-	console.log("header height:", height);
 
 	if (height > 0) {
 		document.documentElement.style.setProperty("--header-height", height + "px");
@@ -394,10 +390,7 @@ function ControlaImprimirProductosEvalSelected() {
 		});
 
 	if (filasReales.length === 0) {
-		AbrirMensaje("ATENCIÓN", "No hay datos generar el reporte.", function () {
-			$("#msjModal").modal("hide");
-			return true;
-		}, false, ["Aceptar"], "error!", null);
+		MostrarErrorSimplificado("No hay datos generar el reporte.", false);
 	}
 	else {
 		ImprimirListaProductosEval_Generada();
