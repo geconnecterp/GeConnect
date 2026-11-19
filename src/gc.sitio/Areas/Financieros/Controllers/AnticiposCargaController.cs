@@ -2,6 +2,7 @@
 using DocumentFormat.OpenXml.Spreadsheet;
 using gc.api.core.Entidades;
 using gc.infraestructura.Core.EntidadesComunes.Options;
+using gc.infraestructura.Dtos.Almacen;
 using gc.infraestructura.Dtos.Almacen.Request;
 using gc.infraestructura.Dtos.Financieros;
 using gc.infraestructura.Dtos.Gen;
@@ -24,6 +25,7 @@ namespace gc.sitio.Areas.Financieros.Controllers
 		private readonly IFinancieroServicio _financieroServicio;
 		private readonly ICuentaServicio _cuentaServicio;
 		private readonly ITipoAnticipoEmpleadoServicio _tipoAnticipoEmpleadoServicio;
+		private readonly ICuentaServicio _ctaSrv;
 
 		//PARA MODULO DE IMPRESION
 		private readonly DocsManager _docsManager; //recupero los datos desde el appsettings.json
@@ -35,7 +37,7 @@ namespace gc.sitio.Areas.Financieros.Controllers
 		public AnticiposCargaController(IOptions<AppSettings> options, IHttpContextAccessor contexto, ILogger<AnticiposCargaController> logger,
 										IFinancieroServicio financieroServicio, ICuentaServicio cuentaServicio,
 										IDocManagerServicio docManager, IOptions<DocsManager> docsManager,
-										ITipoAnticipoEmpleadoServicio tipoAnticipoEmpleadoServicio) : base(options, contexto, logger)
+										ITipoAnticipoEmpleadoServicio tipoAnticipoEmpleadoServicio, ICuentaServicio ctaSrv) : base(options, contexto, logger)
 		{
 			_setting = options.Value;
 			_financieroServicio = financieroServicio;
@@ -46,6 +48,7 @@ namespace gc.sitio.Areas.Financieros.Controllers
 			_docsManager = docsManager.Value; //recupero los datos desde el appsettings.json
 			_modulo = _docsManager.Modulos.First(x => x.Id == APP_MODULO); //identifico los datos del modulo que necesito: ADE
 			_docMSv = docManager; //instancio el servicio de impresión
+			_ctaSrv = ctaSrv;
 		}
 
 		public IActionResult Index()
@@ -101,9 +104,14 @@ namespace gc.sitio.Areas.Financieros.Controllers
 				if (!auth.Item1 || auth.Item2 < DateTime.Now)
 					return RedirectToAction("Login", "Token", new { area = "seguridad" });
 
-				model.cuotas = 0;
-				model.importe = 0;
-				model.intereses = intereses;
+
+				//Cargar cuyentas de empleados 
+				var ctasEmpleados = _ctaSrv.ObtenerListaCuentaComercial("%", 'E', TokenCookie).Result;
+				model.CuentaEmpleados = ObtenerGridCoreSmart<CuentaDto>(ctasEmpleados);
+				model.CuentaEmpleadosParaCargar = ObtenerGridCoreSmart<CuentaDto>(new List<CuentaDto>());
+				model.cuotasModalCarga = 1;
+				model.importeModalCarga = 0;
+				model.interesModalCarga = 0;
 				model.cta_id = cta_id;
 				model.cta_desc = cta_desc;
 

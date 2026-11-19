@@ -95,6 +95,9 @@
 	<table class="table table-bordered table-hover table-golden" id="tbListaAnticipos">
 		<thead>
 			<tr class="header">
+				<th class="text-center" style="width:3%;">
+					<input type="checkbox" id="chkTodos" />
+				</th>
 				<th class="text-center" scope="col" style="width: 40%;">Cliente</th>
 				<th class="text-center" scope="col">Cuotas</th>
 				<th class="text-center" scope="col">Importe</th>
@@ -114,6 +117,11 @@
 					<tr class="@clase @(item.mostrar_alerta ? "alerta-fila" : "")"
 						title="El valor total supera el tope permitido"
 						onclick="selectItemGrillaAnticipo(this);">
+						<td class="text-center align-middle">
+							<input type="checkbox"
+								   class="chkItemAnticipo"
+								   data-id="@item.id" />
+						</td>
 						<td class="@Model.GrillaAnticipos.ObtenerClase(item.cta_denominacion)">@Model.GrillaAnticipos.FormatearDato(item.cta_denominacion, FormatDato.Ninguno)</td>
 						<td class="@Model.GrillaAnticipos.ObtenerClase(item.cuotas)">@Model.GrillaAnticipos.FormatearDato(item.cuotas, FormatDato.Ninguno)</td>
 						<td class="@Model.GrillaAnticipos.ObtenerClase(item.importe)">@Model.GrillaAnticipos.FormatearDato(item.importe, FormatDato.Monto)</td>

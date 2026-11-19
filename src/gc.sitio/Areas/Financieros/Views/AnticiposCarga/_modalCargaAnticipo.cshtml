@@ -1,5 +1,8 @@
-﻿@model CargaAnticipoModel
+﻿@using static gc.infraestructura.Helpers.GridHelper
+@model CargaAnticipoModel
 @{
+	var alt = true;
+	string clase = string.Empty;
 }
 <style>
 	.btn-abms {
@@ -7,38 +10,159 @@
 		text-align: center;
 		white-space: nowrap;
 	}
+
+	.btn-grid-header {
+		width: 32px;
+		height: 32px;
+		padding: 0;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.destino-actualizado {
+		animation: flashGolden .45s ease;
+	}
+
+	@@keyframes flashGolden {
+
+		0% {
+			box-shadow: 0 0 0 rgba(212,175,55,0);
+		}
+
+		50% {
+			box-shadow: 0 0 15px rgba(212,175,55,.8);
+		}
+
+		100% {
+			box-shadow: 0 0 0 rgba(212,175,55,0);
+		}
+	}
 </style>
 @Html.Hidden("cta_id", Model.cta_id)
 @Html.Hidden("cta_desc", Model.cta_desc)
-@Html.Hidden("intereses", Model.intereses)
 <div id="divInputsModal">
 	<div class="modal-header">
 		<h5 class="modal-title" id="modalCenterTitle"></h5>
 	</div>
 	<div class="modal-body">
 		<div class="row">
+			<div class="row col-6 mb-2"">
+				<div class="input-group input-group-sm mt-2">
+					<span class="input-group-text fixed-lbl-for-abm-100" title="Cliente">Cuenta: </span>
+					<input type="text" class="form-control inputEditable" name="Rel02" id="Rel02" />
+					@Html.Hidden("Rel02Item")
+				</div>
+			</div>
 			<div class="row col-12">
-				<div class="col-12">
-					<div class="input-group input-group-sm mt-2">
-						<span class="input-group-text fixed-lbl-for-abm-100" title="Cliente">Cliente: </span>
-						<input type="text" class="form-control inputEditable" name="Rel02" id="Rel02" />
-						@Html.Hidden("Rel02Item")
+				<div class="col-md-6">
+					<div class="grid-golden">
+						<div class="grid-golden-header">
+							<div class="d-flex justify-content-between align-items-center">
+								<h5 class="mb-0">
+									<strong>Cuentas Empleados</strong>
+								</h5>
+								<button type="button"
+										id="btnAgregarTodasLasCuentas"
+										class="btn btn-success btn-sm btn-grid-header"
+										title="Agregar todas las cuentas de empleado">
+									<i class="bx bx-plus"></i>
+								</button>
+							</div>
+						</div>
+						<div class="grid-golden-body">
+							<div class="table-wrapper" id="containerGrillaCuentasEmpleados">
+								<table id="tabCuentasEmpleados" class="table table-sm table-hover table-golden">
+									<thead>
+										<tr class="header">
+											<th class="text-center" style="width:80px;">ID</th>
+											<th class="text-center">Denominación</th>
+										</tr>
+									</thead>
+									<tbody>
+										@if (Model != null && Model.CuentaEmpleados != null && Model.CuentaEmpleados.ListaDatos != null && Model.CuentaEmpleados.ListaDatos.Count > 0)
+										{
+											@foreach (var item in Model.CuentaEmpleados.ListaDatos)
+											{
+												if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+												<tr class="@clase"
+													data-id="@item.Cta_Id"
+													data-descripcion="@item.Cta_Denominacion"
+													onclick="selectItemGrillaCuentasEmpleados(this);">
+													<td class="text-center" style="width:80px;">@Model.CuentaEmpleados.FormatearDato(item.Cta_Id, FormatDato.Ninguno)</td>
+													<td class="text-start">@Model.CuentaEmpleados.FormatearDato(item.Cta_Denominacion, FormatDato.Ninguno)</td>
+												</tr>
+											}
+										}
+									</tbody>
+								</table>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="col-md-6">
+					<div class="grid-golden">
+						<div class="grid-golden-header">
+							<div class="d-flex justify-content-between align-items-center">
+								<h5 class="mb-0">
+									<strong>Cuentas Para Agregar</strong>
+								</h5>
+								<button type="button"
+										id="btnQuitarTodasLasCuentas"
+										class="btn btn-danger btn-sm btn-grid-header"
+										title="Quitar todas las cuentas agregadas">
+									<i class="bx bx-minus"></i>
+								</button>
+							</div>
+						</div>
+						<div class="grid-golden-body">
+							<div class="table-wrapper" id="containerGrillaCuentasParaAgregar">
+								<table id="tabCuentasEmpleadosParaAgregar" class="table table-sm table-hover table-golden">
+									<thead>
+										<tr class="header">
+											<th class="text-center" style="width:80px;">ID</th>
+											<th class="text-center">Denominación</th>
+										</tr>
+									</thead>
+									<tbody>
+										@if (Model != null && Model.CuentaEmpleadosParaCargar != null && Model.CuentaEmpleadosParaCargar.ListaDatos != null && Model.CuentaEmpleadosParaCargar.ListaDatos.Count > 0)
+										{
+											@foreach (var item in Model.CuentaEmpleadosParaCargar.ListaDatos)
+											{
+												if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+												<tr class="@clase"
+													data-id="@item.Cta_Id"
+													data-descripcion="@item.Cta_Denominacion"
+													onclick="selectItemGrillaCuentasEmpleadosParaCargar(this);">
+													<td class="text-center" style="width:80px;">@Model.CuentaEmpleadosParaCargar.FormatearDato(item.Cta_Id, FormatDato.Ninguno)</td>
+													<td class="text-start">@Model.CuentaEmpleadosParaCargar.FormatearDato(item.Cta_Denominacion, FormatDato.Ninguno)</td>
+												</tr>
+											}
+										}
+									</tbody>
+								</table>
+							</div>
+						</div>
 					</div>
 				</div>
 			</div>
 			<div class="row col-12">
-				<div class="col-6">
+				<div class="col-4">
 					<div class="input-group input-group-sm mt-2">
 						<span class="input-group-text fixed-lbl-for-abm-100" id="lbIdDesde">Cuotas:</span>
-						<input type="text" class="form-control activable inputEditable" asp-for="cuotas"  />
+						<input type="text" class="form-control activable inputEditable" asp-for="cuotasModalCarga" />
 					</div>
 				</div>
-			</div>
-			<div class="row col-12">
-				<div class="col-6">
+				<div class="col-4">
 					<div class="input-group input-group-sm mt-2">
 						<span class="input-group-text fixed-lbl-for-abm-100">Importe: </span>
-						<input type="text" asp-for="importe" class="form-control activable inputEditable" />
+						<input type="text" asp-for="importeModalCarga" class="form-control activable inputEditable" />
+					</div>
+				</div>
+				<div class="col-4">
+					<div class="input-group input-group-sm mt-2">
+						<span class="input-group-text fixed-lbl-for-abm-100" id="lbIdDesde">Interés:</span>
+						<input type="text" class="form-control activable inputEditable" asp-for="interesModalCarga" />
 					</div>
 				</div>
 			</div>

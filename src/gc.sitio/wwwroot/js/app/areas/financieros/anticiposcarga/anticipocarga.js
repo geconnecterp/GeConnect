@@ -1,7 +1,11 @@
-﻿$(function () {
+﻿let anticiposSeleccionados = [];
+let empleadosSeleccionados = [];
+
+$(function () {
 
 	InicializarControles();
 	$(document).on("click", "#btnAgregar", AbrirModalAgregarAnticipo);
+	$(document).on("click", "#btnAplicar", AplicarCambiosEnFilas);
 	$(document).on("click", "#btnConfirmar", AgregarAnticipo);
 	$(document).on("click", "#btnSalir", CerrarModal);
 	$(document).on("click", "#btnConfirmarCargaDeAnticipo", ConfirmarAnticipos);
@@ -219,9 +223,9 @@ function AgregarAnticipo() {
 		AbrirWaiting();
 		var cta_id = clienteIdSelected;
 		var cta_desc = clienteDescSelected;
-		var cuotas = $("#cuotas").inputmask('unmaskedvalue');
-		var importe = $("#importe").inputmask('unmaskedvalue');
-		var intereses = $("#porc_interes").val();
+		var cuotas = $("#cuotas1").inputmask('unmaskedvalue');
+		var importe = $("#importe1").inputmask('unmaskedvalue');
+		var intereses = $("#intereses1").val();
 		var data = { cta_id, cta_desc, cuotas, importe, intereses };
 		PostGen(data, agregarAnticipoUrl, function (obj) {
 			if (obj.error === true) {
@@ -252,8 +256,36 @@ function ActualizarListaDeAnticipos() {
 	AbrirWaiting();
 	PostGen({}, actualizarListaDeAnticiposUrl, function (obj) {
 		$("#divGrillaAnticipos").html(obj);
+		RestaurarChecksSeleccionados(anticiposSeleccionados);
 		CerrarWaiting();
 	});
+}
+
+function AplicarCambiosEnFilas() {
+	var filas = $("#tbListaAnticipos tbody tr").length;
+	if (filas > 0) {
+		let cuota = $("#cuotas").inputmask('unmaskedvalue');
+		let importe = $("#importe").inputmask('unmaskedvalue');
+		let interes = $("#porc_interes").inputmask('unmaskedvalue');
+		var data = { cuota, importe, interes };
+		PostGen(data, aplicarCambiosEnFilasUrl, function (obj) {
+			CerrarWaiting();
+			if (obj.error === true) {
+				AbrirMensaje("ATENCIÓN", obj.msg, function () {
+					$("#msjModal").modal("hide");
+					return true;
+				}, false, ["Aceptar"], "error!", null);
+			}
+			else {
+				setTimeout(() => {
+					ActualizarListaDeAnticipos();
+				}, 500);
+			}
+		});
+	}
+	else {
+		MostrarError("No existen registros a los cuales aplicar el proceso.");
+	}
 }
 
 function AbrirModalAgregarAnticipo() {
@@ -308,6 +340,71 @@ function limpiarCamposEnModal() {
 	clienteIdSelected = "";
 }
 
+function agregarEmpleadoSeleccionado(id, descripcion) {
+
+	if (empleadosSeleccionados.some(x => x.id === id)) {
+		return;
+	}
+	empleadosSeleccionados.push({
+		id,
+		descripcion
+	});
+	renderizarTablaSeleccionados();
+}
+
+function renderizarTablaSeleccionados() {
+
+	const $tbody =
+		$("#tabCuentasEmpleadosParaAgregar tbody");
+
+	$tbody.addClass("animando-tabla");
+
+	let html = "";
+	let alt = true;
+
+	empleadosSeleccionados.forEach(x => {
+
+		const clase = alt ? "alt" : "";
+
+		html += `
+            <tr class="${clase} fila-nueva"
+                data-id="${x.id}"
+                data-descripcion="${x.descripcion}"
+                onclick="selectItemGrillaCuentasEmpleadosParaCargar(this);">
+
+                <td class="text-center" style="width:80px;">
+                    ${x.id}
+                </td>
+
+                <td class="text-start">
+                    ${x.descripcion}
+                </td>
+
+            </tr>
+        `;
+
+		alt = !alt;
+	});
+
+	setTimeout(() => {
+
+		$tbody.html(html);
+
+		requestAnimationFrame(() => {
+			$tbody.removeClass("animando-tabla");
+		});
+
+	}, 150);
+}
+
+function selectItemGrillaCuentasEmpleadosParaCargar(x) {
+
+	$("#tabCuentasEmpleadosParaAgregar tbody tr")
+		.removeClass("selected-row");
+
+	$(x).addClass("selected-row");
+}
+
 function inicializarCamposEnModal() {
 	$("#modalCenterTitle").text("Carga de Anticipo de Empleado");
 	getMaskForIntegerMax24("#cuotas");
@@ -334,7 +431,10 @@ function inicializarCamposEnModal() {
 			select: function (event, ui) {
 				clienteIdSelected = ui.item.id;
 				clienteDescSelected = ui.item.value;
-
+				agregarEmpleadoSeleccionado(
+					ui.item.id,
+					ui.item.value
+				);
 				return true;
 			}
 		});
@@ -344,12 +444,35 @@ function inicializarCamposEnModal() {
 	// 🧠 Lista ordenada manualmente
 	const $ordenFoco = [
 		$("#Rel02"),
-		$("#cuotas"),
-		$("#importe"),
-		$("#btnConfirmar")
+		$("#cuotasModalCarga"),
+		$("#importeModalCarga"),
+		$("#interesModalCarga"),
+		$("#btnConfirmar"),
+		$("#btnSalir")
 	];
 
-	$("#importe").off("keydown.enterDirect").on("keydown.enterDirect", function (e) {
+	$("#cuotasModalCarga").off("keydown.enterDirect").on("keydown.enterDirect", function (e) {
+		if (e.key === "Enter") {
+			e.preventDefault();
+			e.stopImmediatePropagation(); // 🔒 Evita salto al btn-close
+
+			// Foco directo al botón Confirmar
+			$("#importeModalCarga").trigger('focus');
+		}
+	});
+
+
+	$("#importeModalCarga").off("keydown.enterDirect").on("keydown.enterDirect", function (e) {
+		if (e.key === "Enter") {
+			e.preventDefault();
+			e.stopImmediatePropagation(); // 🔒 Evita salto al btn-close
+
+			// Foco directo al botón Confirmar
+			$("#interesModalCarga").trigger('focus');
+		}
+	});
+
+	$("#interesModalCarga").off("keydown.enterDirect").on("keydown.enterDirect", function (e) {
 		if (e.key === "Enter") {
 			e.preventDefault();
 			e.stopImmediatePropagation(); // 🔒 Evita salto al btn-close
@@ -363,9 +486,87 @@ function inicializarCamposEnModal() {
 	$("#btnConfirmar").off("keydown.enterClick").on("keydown.enterClick", function (e) {
 		if (e.key === "Enter") {
 			e.preventDefault();
-			$(this).click();
+			$(this).trigger('click');
 		}
 	});
+
+	$(document).on(
+		"dblclick",
+		"#tabCuentasEmpleados tbody tr",
+		function () {
+
+			let id = $(this).data("id");
+			let descripcion = $(this).data("descripcion");
+
+			agregarEmpleadoSeleccionado(id, descripcion);
+		});
+
+	$(document).on(
+		"dblclick",
+		"#tabCuentasEmpleadosParaAgregar tbody tr",
+		function () {
+
+			let id = $(this).data("id");
+
+			empleadosSeleccionados =
+				empleadosSeleccionados.filter(
+					x => x.id !== id
+				);
+
+			renderizarTablaSeleccionados();
+		});
+
+	$(document).on("click", "#btnAgregarTodasLasCuentas", AgregarTodasLasCuentas);
+
+	$(document).on("click", "#btnQuitarTodasLasCuentas", QuitarTodasLasCuentas);
+}
+
+function AgregarTodasLasCuentas() {
+
+	const idsExistentes = new Set(
+		empleadosSeleccionados.map(x => x.id)
+	);
+
+	$("#tabCuentasEmpleados tbody tr").each(function () {
+
+		const id = $(this).data("id");
+
+		if (!idsExistentes.has(id)) {
+
+			empleadosSeleccionados.push({
+				id: id,
+				descripcion: $(this).data("descripcion")
+			});
+
+			idsExistentes.add(id);
+		}
+	});
+
+	renderizarTablaSeleccionados();
+	animarGrillaCuentasParaAgregar();
+}
+
+function animarGrillaCuentasParaAgregar() {
+
+	const $grid = $("#containerGrillaCuentasParaAgregar");
+
+	$grid.removeClass("destino-actualizado");
+
+	// Fuerza el navegador a recalcular el DOM para reiniciar la animación
+	void $grid[0].offsetWidth;
+
+	$grid.addClass("destino-actualizado");
+}
+
+function QuitarTodasLasCuentas() {
+
+	if (empleadosSeleccionados.length === 0) {
+		return;
+	}
+	empleadosSeleccionados = [];
+
+	renderizarTablaSeleccionados();
+	animarGrillaCuentasParaAgregar();
 }
 
 function eliminarItem(id) {
@@ -409,29 +610,126 @@ function selectItemGrillaAnticipo(x) {
 	$(x).addClass("selected-row");
 }
 
+function selectItemGrillaCuentasEmpleados(x) {
+	$("#tabCuentasEmpleados tbody tr").each(function (index) {
+		$(this).removeClass("selected-row");
+		$(this).removeClass("selectedEdit-row");
+	});
+	$(x).addClass("selected-row");
+}
+
+function selectItemGrillaCuentasEmpleadosParaCargar(x) {
+	$("#containerGrillaCuentasParaAgregar tbody tr").each(function (index) {
+		$(this).removeClass("selected-row");
+		$(this).removeClass("selectedEdit-row");
+	});
+	$(x).addClass("selected-row");
+}
+
 function InicializarControles() {
-	getMaskForIntegerMax1000("#porc_interes");
+	getMaskForMoneyType("#porc_interes");
+	getMaskForIntegerMax24("#cuotas");
+	getMaskForMoneyType("#importe");
 	$("#listaTipoAnticipo").trigger('focus');
 
-	const $div = $("#divInputs");
-	$div.find("input").on("keydown", function (e) {
-		if (e.key === "Enter") {
-			e.preventDefault();
+	const ordenFoco = [
+		"#listaTipoAnticipo",
+		"#Concepto",
+		"#Rel01",
+		"#cuotas",
+		"#importe",
+		"#porc_interes",
+		"#btnAgregar",
+		"#btnConfirmarCargaDeAnticipo",
+		"#btnCancelar"
+	];
 
-			const $campos = $div.find("select, input")
-				.filter(":visible:enabled");
+	$(document)
+		.off("keydown.flujoAnticipos")
+		.on(
+			"keydown.flujoAnticipos",
+			ordenFoco.join(","),
+			function (e) {
 
-			const index = $campos.index(this);
+				if (e.key !== "Enter")
+					return;
 
-			if (index !== -1) {
-				if (index < $campos.length - 1) {
-					$campos.eq(index + 1).focus();
-				} else {
-					$div.find("#btnAgregar").focus();
+				// si el autocomplete está abierto,
+				// dejamos actuar a jQuery UI
+				if ($(this).is("#Rel01") &&
+					$(".ui-autocomplete:visible").length > 0) {
+					return;
 				}
-			}
+
+				e.preventDefault();
+
+				const actual = "#" + this.id;
+				const indice = ordenFoco.indexOf(actual);
+
+				if (indice >= 0 &&
+					indice < ordenFoco.length - 1) {
+
+					$(ordenFoco[indice + 1]).trigger("focus");
+				}
+			});
+
+	$(document)
+		.off("keydown.botonesAnticipos")
+		.on(
+			"keydown.botonesAnticipos",
+			"#btnAgregar,#btnConfirmarCargaDeAnticipo,#btnCancelar",
+			function (e) {
+
+				if (e.key === "Enter") {
+					e.preventDefault();
+					$(this).trigger("click");
+				}
+			});
+
+	$(document).on("change", "#chkTodos", function () {
+		const checked = $(this).prop("checked");
+		$(".chkItemAnticipo").prop("checked", checked);
+		anticiposSeleccionados = ObtenerIdsSeleccionados();
+	});
+
+	$(document).on("change", ".chkItemAnticipo", function () {
+		anticiposSeleccionados = ObtenerIdsSeleccionados();
+		ActualizarCheckCabecera();
+	});
+}
+
+function ObtenerIdsSeleccionados() {
+
+	return $(".chkItemAnticipo:checked")
+		.map(function () {
+			return $(this).data("id");
+		})
+		.get();
+}
+
+function RestaurarChecksSeleccionados(idsSeleccionados) {
+
+	$(".chkItemAnticipo").each(function () {
+
+		const id = $(this).data("id").toString();
+
+		if (idsSeleccionados.includes(id)) {
+			$(this).prop("checked", true);
 		}
 	});
+
+	ActualizarCheckCabecera();
+}
+
+function ActualizarCheckCabecera() {
+
+	const total = $(".chkItemAnticipo").length;
+	const seleccionados = $(".chkItemAnticipo:checked").length;
+
+	$("#chkTodos").prop(
+		"checked",
+		total > 0 && total === seleccionados
+	);
 }
 
 function getMaskForMoneyType(selector) {
@@ -479,4 +777,13 @@ function getMaskForIntegerMax1000(selector) {
 		min: 0,
 		max: 1000
 	});
+}
+
+function MostrarError(msg) {
+	AbrirMensaje("ATENCIÓN", msg, function () {
+		$("#msjModal").modal("hide");
+		return true;
+	},
+		false, ["Aceptar"], "error!", null
+	);
 }

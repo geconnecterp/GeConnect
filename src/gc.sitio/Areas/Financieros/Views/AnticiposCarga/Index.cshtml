@@ -35,6 +35,27 @@
 		white-space: nowrap;
 	}
 
+	#modalCargaDeAnticipo .modal-body {
+		min-height: 550px;
+		padding-top: 5px;
+		padding-bottom: 5px;
+	}
+
+	#tabCuentasEmpleados tbody,
+	#tabCuentasEmpleadosParaAgregar tbody {
+		display: block;
+		height: 350px;
+		overflow-y: auto;
+	}
+
+		#tabCuentasEmpleados thead,
+		#tabCuentasEmpleados tbody tr,
+		#tabCuentasEmpleadosParaAgregar thead,
+		#tabCuentasEmpleadosParaAgregar tbody tr {
+			display: table;
+			width: 100%;
+			table-layout: fixed;
+		}
 </style>
 @Html.Hidden("prov_id_selected", Model.prov_id_selected)
 @Html.Hidden("prov_denominacion_selected", Model.prov_denominacion_selected)
@@ -51,17 +72,15 @@
 				</button>
 			</div>
 		</div>
-		<div class="row align-items-center mb-2">
+		<div class="row align-items-center">
 			<div class="col-12">
 				<div class="contenedor-frames">
-					<fieldset class="frame-inputs" style="min-height: 41px;padding-right: 6px;padding-top: 6px;margin-right: 0px;">
-						<div class="input-group input-group-sm" id="divInputs">
+					<fieldset class="frame-inputs" style="min-height: 41px;padding-right: 6px;padding-top: 6px;margin-right: 0px;width: 70%;max-width: 70%;">
+						<div class="input-group input-group-sm" id="divInputsCabecera">
 							<span class="input-group-text d-flex align-items-center justify-content-end lbl-sm">Tipo: </span>
 							@Html.DropDownListFor(m => m.selectedValue, Model.ListaTipo, "Seleccionar", new { @id = "listaTipoAnticipo", @class = "form-control inputEditable activable", @style = "max-width: 13%;" })
 							<span class="input-group-text">Concepto: </span>
 							<input type="text" asp-for="Concepto" class="form-control activable inputEditable" />
-							<span class="input-group-text">% Interes: </span>
-							<input type="text" asp-for="porc_interes" class="form-control activable inputEditable" style="max-width: 5%;" value="0" />
 							<span class="input-group-text fixed-lbl-for-abm-100" style="width: 160px;" title="Cuenta Proveedor">Contrapartida (cta. Prov.): </span>
 							<input type="text" class="form-control inputEditable" name="Rel01" id="Rel01" />
 							@Html.Hidden("Rel01Item")
@@ -84,13 +103,32 @@
 				</div>
 			</div>
 		</div>
+		<div class="row align-items-center mb-2">
+			<div class="col-12">
+				<div class="contenedor-frames">
+					<fieldset class="frame-inputs" style="min-height: 41px;padding-right: 6px;padding-top: 6px;margin-right: 0px;width: 68%;max-width: 68%;">
+						<div class="input-group input-group-sm" id="divInputsImportes">
+							<span class="input-group-text">Cuotas: </span>
+							<input type="text" asp-for="cuotas" class="form-control activable inputEditable" style="max-width: 5%;" value="1" />
+							<span class="input-group-text">Importe: </span>
+							<input type="text" asp-for="importe" class="form-control activable inputEditable" style="max-width: 10%;"/>
+							<span class="input-group-text">% Interes: </span>
+							<input type="text" asp-for="porc_interes" class="form-control activable inputEditable" style="max-width: 10%;" value="0" />
+							<button type="button" class="btn btn-primary btn-sm ms-1 btn-anticipo" id="btnAplicar">
+								<i class="bx bx-badge-check"></i> Aplicar
+							</button>
+						</div>
+					</fieldset>
+				</div>
+			</div>
+		</div>
 		<div class="row" id="divGrillaAnticipos">
 			<partial name="_grillaAnticipos" model="Model" />
 		</div>
 	</div>
 </div>
 <div class="modal fade modal-golden in" id="modalCargaDeAnticipo" tabindex="-1" style="display: none;" aria-hidden="true" data-backdrop="static">
-	<div class="modal-dialog modal-x" role="document">
+	<div class="modal-dialog modal-xl" role="document">
 		<div class="modal-content">
 			<div id="divCargaDeAnticipo">
 			</div>
@@ -116,6 +154,7 @@
 		var cancelarAnticiposUrl = "@Url.Action("CancelarAnticipos", "anticiposcarga", new { area = "Financieros" })";
 		var confirmarCargaDeAnticipoUrl = "@Url.Action("ConfirmarCargaDeAnticipo", "anticiposcarga", new { area = "Financieros" })";
 		var actualizarInteresDeAnticiposUrl = "@Url.Action("ActualizarInteresDeAnticipos", "anticiposcarga", new { area = "Financieros" })";
+		var aplicarCambiosEnFilasUrl = "@Url.Action("AplicarCambiosEnFilas", "anticiposcarga", new { area = "Financieros" })";
 
 		/* Gestor de impresión*/
 		var repoApiUrl = '@Url.Action("ObtenerPdfDesdeAPI", "GestorImpresion", new { area = "ControlComun" })';
