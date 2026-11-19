@@ -46,14 +46,13 @@ $(function () {
     });
 
     $("#busquedaModal").on('shown.bs.modal', function () {
-        setTimeout(function () {
-            $('#Search').trigger('focus');
-        }, 150); // Un pequeño retraso para asegurar que el modal esté completamente visible
+        this.querySelector('#Search')?.focus({ preventScroll: true });
     });
 
     $("#busquedaModal").on("hidden.bs.modal", function () {
         console.log("📕 Modal de búsqueda cerrado");
         inicializarControlesBusquedaAvanzada();
+        enfocarCodigoProducto(document.getElementById('btnBuscarProductos'));
     });
 
     // ✅ CRÍTICO: Callback para paginación
@@ -370,19 +369,23 @@ function selectRegDbl(x) {
     const cantidadPreviaValida = matchCantidadPrevia &&
         Number.isFinite(Number(matchCantidadPrevia[1])) && Number(matchCantidadPrevia[1]) > 0;
 
-    // ❺ Cerrar modal de búsqueda avanzada
-    $("#busquedaModal").modal("hide");
-    console.log('   → Modal cerrado');
+    function ejecutarAlCerrarBusqueda(accion) {
+        $('#busquedaModal').one('hidden.bs.modal.seleccionProducto', accion).modal('hide');
+    }
 
     if (pareceCantidad && !cantidadPreviaValida) {
-        mostrarMensajeEstado('Ingrese una cantidad mayor a cero, con hasta 3 decimales y un signo + final opcional.', 'warning', 0);
-        $("#txtCodigoProducto").trigger("focus");
+        ejecutarAlCerrarBusqueda(() => {
+            mostrarMensajeEstado('Ingrese una cantidad mayor a cero, con hasta 3 decimales y un signo + final opcional.', 'warning', 0);
+            enfocarCodigoProducto(document.getElementById('btnBuscarProductos'));
+        });
         return;
     }
 
     if (cantidadPreviaValida && tieneCodigoBarras) {
-        mostrarMensajeEstado('El producto seleccionado tiene código de barras. No se cargó; se conserva la cantidad para que pueda elegir otro producto.', 'warning', 0);
-        $("#txtCodigoProducto").trigger("focus");
+        ejecutarAlCerrarBusqueda(() => {
+            mostrarMensajeEstado('El producto seleccionado tiene código de barras. No se cargó; se conserva la cantidad para que pueda elegir otro producto.', 'warning', 0);
+            enfocarCodigoProducto(document.getElementById('btnBuscarProductos'));
+        });
         return;
     }
 
@@ -401,29 +404,11 @@ function selectRegDbl(x) {
         console.log('   → Agregando directamente a la grilla...');
         console.log('═══════════════════════════════════════════════════');
 
-        // ❼ CRÍTICO: Marcar origen como 'busquedaAvanzada' (para logs)
-        // Esta variable debe estar definida en prodfact.js
-        if (typeof origenCargaActual !== 'undefined') {
-            origenCargaActual = 'busquedaAvanzada';
-        }
-
-        // ❽ Colocar código en el input (para referencia visual)
-        setTimeout(() => {
-            $("#txtCodigoProducto").val(entradaProducto);
-
-            // ❾ CRÍTICO: Disparar búsqueda automática
-            // Llamar a la función que procesa la entrada de código
-            if (typeof procesarEntradaCodigo === 'function') {
-                procesarEntradaCodigo();
-            } else {
-                console.error('❌ Función procesarEntradaCodigo no encontrada');
-                // Fallback: disparar Enter manualmente
-                $("#txtCodigoProducto").trigger($.Event('keypress', { which: 13 }));
-            }
-
-            console.log('✅ Búsqueda automática disparada');
-            console.log('   → El producto se agregará a la grilla automáticamente');
-        }, 300); // Delay para asegurar que el modal se cerró
+        const cargarSeleccion = () => {
+            $('#txtCodigoProducto').val(entradaProducto);
+            procesarEntradaCodigo('busquedaAvanzada');
+        };
+        ejecutarAlCerrarBusqueda(cargarSeleccion);
 
     } else {
         // ⚠️ CASO 2: CON CÓDIGO DE BARRAS → Colocar en campo (sin agregar)
@@ -433,11 +418,11 @@ function selectRegDbl(x) {
         console.log('   → Operador debe presionar ENTER o BUSCAR');
         console.log('═══════════════════════════════════════════════════');
 
-        setTimeout(() => {
-            $("#txtCodigoProducto").val(idProducto);
-            $("#txtCodigoProducto").trigger("focus").trigger("select");
-            console.log(`   → Código "${idProducto}" listo para confirmar`);
-        }, 300);
+        ejecutarAlCerrarBusqueda(() => {
+            $('#txtCodigoProducto').val(idProducto);
+            enfocarCodigoProducto(document.getElementById('btnBuscarProductos'));
+            document.getElementById('txtCodigoProducto')?.select();
+        });
     }
 
     console.log('═══════════════════════════════════════════════════');
