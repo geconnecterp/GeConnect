@@ -1,0 +1,34 @@
+.gc-dictado-boton {
+    --bs-btn-color: #745606;
+    --bs-btn-bg: #fff9e8;
+    --bs-btn-border-color: #cfa62d;
+    --bs-btn-hover-color: #362700;
+    --bs-btn-hover-bg: #ffe8a3;
+    --bs-btn-hover-border-color: #a7800f;
+    --bs-btn-disabled-color: #786e55;
+    --bs-btn-disabled-bg: #f4f0e6;
+    --bs-btn-disabled-border-color: #d6cfbc;
+    min-width: 2.75rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+.gc-dictado-boton .bx { font-size: 1.3em; }
+.gc-dictado-boton.gc-dictado-activo {
+    color: #9e2d18;
+    background: #fff0e9;
+    border-color: #cb654d;
+    box-shadow: inset 0 0 0 1px #cb654d;
+}
+.gc-dictado-boton:focus-visible { outline: 3px solid #a67a0b; outline-offset: 2px; }
+.gc-dictado-estado {
+    display: block;
+    margin-top: .35rem;
+    color: #705611;
+    font-size: .82rem;
+    line-height: 1.4;
+}
+.gc-dictado-estado[data-estado="error"] { color: #a42e1e; }
+.gc-dictado-estado[data-estado="ok"] { color: #326c33; }
+.gc-dictado-estado[hidden] { display: none; }
+.gc-dictado-campo { width: 100%; }

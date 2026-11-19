@@ -22,15 +22,24 @@
             <!-- ====== HEADER CON DATOS DEL CLIENTE ====== -->
             <div class="modal-header bg-gradient-green p-0">
                 <div class="w-100">
-                    <div class="d-flex justify-content-between align-items-center p-3 border-bottom border-light">
-                        <h5 class="mb-0 text-white">
+                    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 px-3 py-2 border-bottom border-light">
+                        <h5 id="modalProductosFacturaTitle" class="mb-0 text-white">
                             <i class='bx bx-receipt'></i>
                             FACTURACIÓN
                         </h5>
-                        <div class="d-flex gap-2">
+                        <div class="d-flex flex-wrap align-items-center justify-content-end gap-2">
                             <span class="badge bg-white text-dark fs-6" id="badgeTipoComprobante">
                                 <i class='bx bx-file'></i> FACTURA A
                             </span>
+                            <div class="productos-factura-total d-flex align-items-center gap-2">
+                                <label for="txtTotalFactura" class="text-white fw-bold">TOTAL</label>
+                                <input type="text"
+                                       class="form-control text-end fw-bold text-success"
+                                       id="txtTotalFactura"
+                                       tabindex="-1"
+                                       readonly
+                                       value="$ 0.00">
+                            </div>
                         </div>
                     </div>
 
@@ -137,21 +146,22 @@
             </div>
 
             <!-- ====== BODY DEL MODAL ====== -->
-            <div class="modal-body p-3 bg-light">
+            <div class="modal-body productos-factura-cuerpo p-3 bg-light">
 
                 <!-- ====== SECCIÓN: BÚSQUEDA Y ACCIONES ====== -->
-                <div class="card card-golden mb-3">
+                <div class="card card-golden productos-factura-captura mb-2">
                     <div class="card-body p-2">
                         <div class="row g-2">
                             <!-- Campo de búsqueda de código -->
                             <div class="col-md-8">
                                 <div class="input-group input-group-lg">
-                                    <span class="input-group-text bg-golden text-white fw-bold">
-                                        <i class='bx bx-search-alt'></i> Código
-                                    </span>
+                                    <label for="txtCodigoProducto" class="input-group-text bg-golden text-white fw-bold">
+                                        <i class='bx bx-search-alt' aria-hidden="true"></i> Código
+                                    </label>
                                     <input type="text"
                                            class="form-control form-control-lg fw-bold jsteclado jsdecimal"
                                            id="txtCodigoProducto"
+                                           data-vk-enter="stay"
                                            placeholder="Ingrese código de producto..."
                                            maxlength="20"
                                            autocomplete="off">
@@ -172,6 +182,7 @@
                                         Presione <kbd>Enter</kbd> o <strong>BUSCAR</strong> para agregar producto
                                     </span>
                                 </small>
+                                <small id="estadoLecturasProducto" class="fw-semibold text-dark" role="status" hidden></small>
                             </div>
 
                             <!-- Botones de acción rápida -->
@@ -220,9 +231,9 @@
                 </div>
 
                 <!-- ====== TABLA DE PRODUCTOS (ANCHO COMPLETO) ====== -->
-                <div class="card card-golden">
+                <div class="card card-golden productos-factura-detalle">
                     <div class="card-body p-0">
-                        <div class="table-responsive" style="max-height: 450px; overflow-y: auto;">
+                        <div class="table-responsive" id="grillaProductosFactura" tabindex="0" role="region" aria-label="Productos cargados">
                             <table class="table table-golden table-hover table-sm mb-0">
                                 <thead class="table-golden-header sticky-top">
                                     <tr>
@@ -253,22 +264,6 @@
                         </div>
                     </div>
 
-                    <!-- Footer con Total -->
-                    <div class="card-footer bg-golden-light border-top border-golden">
-                        <div class="row g-2 align-items-center">
-                            <div class="col-md-8 text-end">
-                                <span class="fw-bold text-golden-dark fs-4">TOTAL:</span>
-                            </div>
-                            <div class="col-md-4">
-                                <input type="text"
-                                       class="form-control form-control-lg text-end fw-bold text-success"
-                                       id="txtTotalFactura"
-                                       readonly
-                                       value="$ 0.00"
-                                       style="font-size: 1.75rem; background-color: #fff; border: 2px solid var(--bs-golden-primary);">
-                            </div>
-                        </div>
-                    </div>
                 </div>
 
             </div>

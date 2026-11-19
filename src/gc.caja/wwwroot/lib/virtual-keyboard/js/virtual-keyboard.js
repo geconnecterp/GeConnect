@@ -278,6 +278,8 @@
             const keypressEvt = new KeyboardEvent('keypress', eventProps);
             activeInput.dispatchEvent(keydownEvt);
             activeInput.dispatchEvent(keypressEvt);
+
+            if (activeInput.dataset.vkEnter === 'stay' && keypressEvt.defaultPrevented) return;
             
             if (currentIndex > -1 && currentIndex < inputs.length - 1) {
                 // Navegar al siguiente campo compatible

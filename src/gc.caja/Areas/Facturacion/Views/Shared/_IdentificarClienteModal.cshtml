@@ -1,4 +1,4 @@
-﻿@{
+@{
     // Determina el módulo actual, con "Facturacion" como valor por defecto.
     var modulo = ViewData["Modulo"] as string ?? "Facturacion";
     string titulo=string.Empty;
@@ -49,7 +49,8 @@
                                 <i class='bx bx-search-alt'></i> CUIT/DNI/ID
                             </span>
                             <input type="text"
-                                   class="form-control form-control-lg fw-bold jsteclado"
+                                   class="form-control form-control-lg fw-bold jsteclado js-dictado"
+                                   data-dictado-etiqueta="búsqueda de cliente"
                                    id="txtBuscarCliente"
                                    placeholder="Ingrese CUIT, DNI o ID del cliente..."
                                    maxlength="20"

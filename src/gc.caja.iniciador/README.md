@@ -10,7 +10,7 @@
    ```
 
 3. Copiar la publicación del iniciador a cada PC. Junto al ejecutable, colocar su `cajasettings.json` local. Conservar los campos existentes y agregar `servidor` con la URL HTTPS de Caja. Ver `cajasettings.ejemplo.json` (sus valores son ejemplos).
-4. Crear un acceso directo al ejecutable y usar siempre el mismo navegador/perfil. Si el archivo se conserva en otra carpeta, el acceso directo puede indicar:
+4. Instalar Google Chrome en el puesto y crear un acceso directo al ejecutable. Caja se abre en una ventana de aplicación de Chrome. Usar siempre el mismo perfil. Si el archivo se conserva en otra carpeta, el acceso directo puede indicar:
 
    ```text
    gc.caja.iniciador.exe --config "C:\Sitios\CajaConfig\cajasettings.json" --servidor "https://caja.suempresa.local"
@@ -19,6 +19,18 @@
 El iniciador necesita permiso de lectura sobre ese archivo. No requiere permisos de administrador, servicio Windows, servidor localhost ni instalación de .NET si se publica autocontenido. Usa el nombre de Windows para identificar la PC; se puede establecer `estacionId` explícitamente en el JSON si se necesita un nombre estable diferente. `IP` conserva el significado de la configuración actual, no se reemplaza por la IP del servidor.
 
 El certificado HTTPS del servidor debe ser confiable en los puestos. El iniciador no omite su validación.
+
+## Ventana de Caja
+
+El iniciador abre Chrome en modo aplicación y solicita una ventana maximizada. La ventana presenta Caja con sus controles de minimizar, maximizar y cerrar. El campo de dirección y la barra de pestañas quedan ocultos durante el ingreso y la operación. Se puede cerrar la ventana con su botón habitual o Alt+F4.
+
+`navegadorModo` es una opción local con dos valores. `VENTANA` es el valor predeterminado, también para los JSON existentes. `PREDETERMINADO` recupera la apertura mediante el navegador predeterminado de Windows cuando soporte la necesita. La identificación del puesto y el ingreso del operador siguen el mismo flujo.
+
+Se busca Chrome en el registro de aplicaciones de Windows y en sus carpetas habituales. Si está instalado en otra ubicación, agregar `chromeRuta` con la ruta completa a `chrome.exe`, por ejemplo `C:\Program Files\Google\Chrome\Application\chrome.exe`. Dentro del JSON cada barra invertida se escribe duplicada. El acceso directo conserva sus parámetros actuales `--config` y `--servidor`.
+
+La ventana utiliza el perfil habitual de Chrome. En puestos con varios perfiles, iniciar Chrome con el perfil de Caja antes de ejecutar el iniciador y mantener ese perfil en las siguientes ejecuciones. El respaldo de Último detalle, las cookies, las políticas y la selección de papel pertenecen a ese perfil. Verificar una copia A4 completa al preparar el puesto, como se indica en Salida de comprobantes.
+
+Este modo presenta una ventana de aplicación. Los accesos y las operaciones siguen protegidos por la autenticación y las validaciones del sistema.
 
 ## Flujo
 

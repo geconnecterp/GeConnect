@@ -21,11 +21,13 @@ try
     }
     config.EstacionId = string.IsNullOrWhiteSpace(config.EstacionId) ? Environment.MachineName : config.EstacionId;
     config.ImpresionModo = config.ImpresionModo?.Trim().ToUpperInvariant();
+    config.NavegadorModo = config.NavegadorModo?.Trim().ToUpperInvariant() ?? "";
     Validator.ValidateObject(config, new ValidationContext(config), true);
     var servidor = Opcion("--servidor") ?? config.Servidor;
     if (!Uri.TryCreate(servidor?.TrimEnd('/') + "/", UriKind.Absolute, out var destino) || destino.Scheme != "https" || !string.IsNullOrEmpty(destino.UserInfo) || !string.IsNullOrEmpty(destino.Query) || !string.IsNullOrEmpty(destino.Fragment))
         throw new InvalidOperationException("Configure Servidor o --servidor con la URL HTTPS de GECO Caja.");
     if (args.Contains("--validar")) { Console.WriteLine($"Configuración válida. Puesto {config.EstacionId}, caja {config.CajaId}, sucursal {config.AdmId}."); return 0; }
+    var inicioNavegador = args.Contains("--sin-abrir") ? null : NavegadorCaja.Preparar(config.NavegadorModo, config.ChromeRuta);
     // Una redirección a login no es una preparación válida: no seguirla ni reenviar la configuración.
     using var handler = new HttpClientHandler { AllowAutoRedirect = false };
     using var cliente = new HttpClient(handler) { Timeout = TimeSpan.FromSeconds(20) };
@@ -37,7 +39,16 @@ try
     var pase = await RespuestaInicio.LeerPaseAsync(respuesta, endpoint);
     var url = new Uri(destino, "Seguridad/Estacion/Iniciar?pase=" + pase).AbsoluteUri;
     if (args.Contains("--sin-abrir")) Console.WriteLine(url); // Diagnóstico: pase efímero, de un solo uso.
-    else Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
+    else
+    {
+        if (inicioNavegador!.UseShellExecute) inicioNavegador.FileName = url;
+        else
+        {
+            inicioNavegador.ArgumentList.Add("--start-maximized");
+            inicioNavegador.ArgumentList.Add("--app=" + url);
+        }
+        using var proceso = Process.Start(inicioNavegador);
+    }
     return 0;
 }
 catch (Exception ex)
@@ -50,6 +61,9 @@ catch (Exception ex)
 sealed class Configuracion
 {
     public string? Servidor { get; set; }
+    [Required, RegularExpression(@"^(VENTANA|PREDETERMINADO)$")]
+    public string NavegadorModo { get; set; } = "VENTANA";
+    public string? ChromeRuta { get; set; }
     [Required, StringLength(80), RegularExpression(@"[A-Za-z0-9_.-]+")]
     public string EstacionId { get; set; } = "";
     [Required, StringLength(4), RegularExpression(@"[A-Za-z0-9]+")]

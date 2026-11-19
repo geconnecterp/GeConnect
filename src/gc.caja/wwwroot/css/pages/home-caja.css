@@ -111,7 +111,35 @@ body {
     font-size: clamp(3rem, 5vw, 5.25rem);
     font-weight: 700;
     letter-spacing: 0;
-    line-height: 0.98;
+    line-height: 1.06;
+    overflow-wrap: anywhere;
+}
+
+#modalMenuCaja .caja-menu-encabezado {
+    gap: 0.75rem;
+}
+
+.caja-menu-identidad {
+    min-width: 0;
+}
+
+.caja-menu-sucursal {
+    margin-top: 0.3rem;
+    color: #251d0c;
+}
+
+.caja-menu-sucursal__etiqueta {
+    display: block;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.caja-menu-sucursal strong {
+    display: block;
+    font-size: clamp(1.5rem, 3.6vw, 2.75rem);
+    line-height: 1.12;
+    overflow-wrap: anywhere;
 }
 
 .home-geco-lead {
