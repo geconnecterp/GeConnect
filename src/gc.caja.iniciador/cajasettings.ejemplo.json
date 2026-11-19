@@ -1,5 +1,6 @@
 {
   "servidor": "https://caja.suempresa.local",
+  "navegadorModo": "VENTANA",
   "cajaId": "0001",
   "admId": "0000",
   "ip": "192.168.1.50",

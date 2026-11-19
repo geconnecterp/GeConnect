@@ -3937,6 +3937,40 @@ input, select, textarea, button, checkbox, radio {
     margin-right: 0.25rem;
 }
 
+#modalProductosFactura .productos-factura-cuerpo {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    overflow: hidden;
+}
+
+#modalProductosFactura .productos-factura-captura {
+    flex-shrink: 0;
+}
+
+#modalProductosFactura .productos-factura-detalle,
+#modalProductosFactura .productos-factura-detalle > .card-body {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    min-height: 0;
+}
+
+#grillaProductosFactura {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: auto;
+    overscroll-behavior: contain;
+}
+
+#txtTotalFactura {
+    width: clamp(8.5rem, 17vw, 17rem);
+    padding-block: 0.2rem;
+    font-size: clamp(1.1rem, 2vw, 1.65rem);
+    background-color: #fff;
+    border: 2px solid var(--bs-golden-primary, #daa520);
+}
+
 /* Responsive para modal en pantallas pequeñas */
 @media (max-width: 768px) {
     #modalIdentificarCliente .modal-dialog {

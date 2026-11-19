@@ -1,19 +1,26 @@
+@model string
+
 <!-- Modal Menú Principal Caja -->
-<div class="modal modal-golden fade" id="modalMenuCaja" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="modalMenuTitle" aria-hidden="true">
+<div class="modal modal-golden fade" id="modalMenuCaja" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="modalMenuTitle" aria-describedby="cajaMenuSucursal" aria-hidden="true">
     <div class="modal-dialog modal-fullscreen">
         <div class="modal-content">
             <!-- Header con gradiente dorado -->
-            <div class="modal-header bg-gradient-golden">
-                <h5 class="modal-title fw-bold" id="modalMenuTitle">
-                    <i class='bx bx-store-alt text-white'></i>
-                    Menú Principal - Caja
-                    <span id="lblPV" class="badge bg-light text-dark ms-2 shadow-sm"></span>
-                </h5>
-                <div class="d-flex align-items-center gap-2">
-                @await Html.PartialAsync("_CuentaOperador")
-                <button type="button" class="btn btn-sm btn-danger d-flex align-items-center shadow" id="btnCerrarMenu">
-                    <i class='bx bx-x fs-5'></i> Salir
-                </button>
+            <div class="modal-header bg-gradient-golden caja-menu-encabezado">
+                <div class="caja-menu-identidad">
+                    <h5 class="modal-title fw-bold" id="modalMenuTitle">
+                        <i class="bx bx-store-alt text-white" aria-hidden="true"></i>
+                        Menú Principal - Caja
+                    </h5>
+                    <div id="cajaMenuSucursal" class="caja-menu-sucursal">
+                        <span class="caja-menu-sucursal__etiqueta">Sucursal</span>
+                        <strong>@Model</strong>
+                    </div>
+                </div>
+                <div class="d-flex align-items-center gap-2 flex-shrink-0">
+                    @await Html.PartialAsync("_CuentaOperador")
+                    <button type="button" class="btn btn-sm btn-danger d-flex align-items-center shadow" id="btnCerrarMenu">
+                        <i class="bx bx-x fs-5" aria-hidden="true"></i> Salir
+                    </button>
                 </div>
             </div>
 

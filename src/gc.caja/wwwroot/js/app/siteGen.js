@@ -1502,10 +1502,7 @@ function mostrarMensajeEstado(mensaje, tipo = 'danger', duracion = 5000) {
         }, duracion);
     }
 
-    // ❹ CRÍTICO: Devolver foco al input de código
-    setTimeout(() => {
-        $('#txtCodigoProducto').trigger('focus');
-    }, 100);
+    if (typeof enfocarCodigoProducto === 'function') enfocarCodigoProducto();
 }
 
 // ---------------------------------------------------------
