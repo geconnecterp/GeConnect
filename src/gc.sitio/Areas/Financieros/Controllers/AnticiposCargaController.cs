@@ -130,7 +130,13 @@ namespace gc.sitio.Areas.Financieros.Controllers
 			}
 		}
 
-		public JsonResult AgregarAnticipo(string cta_id, string cta_desc, int cuotas, decimal importe, int intereses)
+		public class CuentaSeleccionada
+		{
+			public string id { get; set; } = string.Empty;
+			public string descripcion { get; set; } = string.Empty;
+		}
+
+		public JsonResult AgregarAnticipo(List<CuentaSeleccionada> empleadosSeleccionados, int cuotas, decimal importe, decimal intereses)
 		{
 			try
 			{
@@ -138,48 +144,58 @@ namespace gc.sitio.Areas.Financieros.Controllers
 				if (!auth.Item1 || auth.Item2 < DateTime.Now)
 					return Json(new { error = true, warn = false, msg = "No autenticado." });
 
-				if (string.IsNullOrEmpty(cta_id))
-					return Json(new { error = true, warn = false, msg = "Debe seleccionar un cliente." });
+				if (empleadosSeleccionados == null || empleadosSeleccionados.Count <= 0)
+					return Json(new { error = true, warn = false, msg = "Debe seleccionar al menos un cliente." });
 				if (importe <= 0)
 					return Json(new { error = true, warn = false, msg = "El importe debe ser mayor a cero." });
 				if (cuotas <= 0)
 					return Json(new { error = true, warn = false, msg = "La cuota debe ser mayor a 0." });
-				if (AnticiposLista.Any() && AnticiposLista.Where(x => x.cta_id == cta_id).Any())
-					return Json(new { error = true, warn = false, msg = "El cliente ya se encuentra en la lista de anticipos." });
-				if (!ClientesLista.Any(x => x.Cta_Id == cta_id))
-					return Json(new { error = true, warn = false, msg = "El cliente especificado no existe." }); 
+				var listaIdsPorAgregar = new List<string>();
+				listaIdsPorAgregar.AddRange(empleadosSeleccionados.Select(x => x.id).ToList());
+				if (AnticiposLista.Any() && AnticiposLista.Where(x => listaIdsPorAgregar.Contains(x.id)).Any())
+					return Json(new { error = true, warn = false, msg = "Alguna de las cuentas que intenta agregar ya existen." });
 
+				string ids = string.Join(", ", listaIdsPorAgregar);
 				var tope = 0.00M;
 				var tope_original = 0.00M;
-				var topeCtaLista = _financieroServicio.GetFinancieroTopePorCuenta(cta_id, TokenCookie);
-				if (topeCtaLista == null || topeCtaLista.Count == 0)
-				{
-					tope = 0;
-					tope_original = 0;
-				}
-				else
-				{
-					tope = topeCtaLista[0].saldo ?? 0.00M;
-					tope_original = topeCtaLista[0].saldo ?? 0.00M;
-				}
+				var topeCtaLista = _financieroServicio.GetFinancieroTopePorCuentaLista(ids, TokenCookie);
+				//if (topeCtaLista == null || topeCtaLista.Count == 0)
+				//{
+				//	tope = 0;
+				//	tope_original = 0;
+				//}
+				//else
+				//{
+				//	tope = topeCtaLista[0].saldo ?? 0.00M;
+				//	tope_original = topeCtaLista[0].saldo ?? 0.00M;
+				//}
 
 				var listaTemp = AnticiposLista;
-				var nuevoAnticipo = new AnticipoDto
+				foreach (var item in empleadosSeleccionados)
 				{
-					id = Guid.NewGuid().ToString(),
-					cta_id = cta_id,
-					cta_denominacion = cta_desc,
-					importe = importe,
-					cuotas = cuotas,
-					intereses = Math.Round((importe * intereses) / 100, 2),
-					valor_cuota = (importe + Math.Round((importe * intereses) / 100, 2)) / cuotas,
-					valor_total = (importe + Math.Round((importe * intereses) / 100, 2)),
-					tope = tope,
-					tope_original = tope_original,
-					mostrar_alerta = ((importe + Math.Round((importe * intereses) / 100, 2)) > tope)
-				};
+					var inter = Math.Round((importe * (intereses / 100)) , 2);
+					var val_cuota = (importe + inter) / cuotas;
+					var val_total = importe + inter;
+					var tope_ = topeCtaLista.Where(x => x.cta_id == item.id)?.FirstOrDefault()?.saldo;
+					var nuevoAnticipo = new AnticipoDto
+					{
+						id = Guid.NewGuid().ToString(),
+						cta_id = item.id,
+						cta_denominacion = item.descripcion,
+						importe = importe,
+						cuotas = cuotas,
+						intereses = inter,
+						valor_cuota = val_cuota,
+						valor_total = val_total,
+						tope = tope_ ?? 0,
+						tope_original = tope_ ?? 0,
+						mostrar_alerta = (val_total > tope)
+					};
 
-				listaTemp.Add(nuevoAnticipo);
+					listaTemp.Add(nuevoAnticipo);
+				}
+
+
 				AnticiposLista = listaTemp;
 
 				return Json(new { error = false, warn = false, msg = "" });
@@ -347,18 +363,18 @@ namespace gc.sitio.Areas.Financieros.Controllers
 		}
 
 		[HttpPost]
-        public JsonResult BuscarClientes(string prefix)
-        {
-            var top = ClientesLista.Where(x => x.Cta_Denominacion.ToUpperInvariant().Contains(prefix.ToUpperInvariant()));
-            var tipos = top.Select(x => new
-            {
-                Id = x.Cta_Id,
-                Descripcion = $"{x.Cta_Denominacion} ({x.Cta_Id})",
-                TipoDesc = x.Tipo_Desc,
-                Tipo = x.Tipo
-            });
-            return Json(tipos);
-        }
+		public JsonResult BuscarClientes(string prefix)
+		{
+			var top = ClientesLista.Where(x => x.Cta_Denominacion.ToUpperInvariant().Contains(prefix.ToUpperInvariant()));
+			var tipos = top.Select(x => new
+			{
+				Id = x.Cta_Id,
+				Descripcion = $"{x.Cta_Denominacion} ({x.Cta_Id})",
+				TipoDesc = x.Tipo_Desc,
+				Tipo = x.Tipo
+			});
+			return Json(tipos);
+		}
 
 		#region Clases auxiliares
 		public class AnticipoParaCarga

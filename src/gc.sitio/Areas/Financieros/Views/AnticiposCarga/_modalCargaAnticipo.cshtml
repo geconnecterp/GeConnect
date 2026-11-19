@@ -10,6 +10,9 @@
 		text-align: center;
 		white-space: nowrap;
 	}
+	.lbl-w {
+		width: 70px;
+	}
 
 	.btn-grid-header {
 		width: 32px;
@@ -47,9 +50,11 @@
 	</div>
 	<div class="modal-body">
 		<div class="row">
-			<div class="row col-6 mb-2"">
+			<div class="row col-6 mb-2">
+			</div>
+			<div class="row col-6 mb-2" style="padding-left: 27px; padding-right: 0px;">
 				<div class="input-group input-group-sm mt-2">
-					<span class="input-group-text fixed-lbl-for-abm-100" title="Cliente">Cuenta: </span>
+					<span class="input-group-text lbl-w" title="Cliente">Cuenta: </span>
 					<input type="text" class="form-control inputEditable" name="Rel02" id="Rel02" />
 					@Html.Hidden("Rel02Item")
 				</div>
@@ -146,22 +151,22 @@
 					</div>
 				</div>
 			</div>
-			<div class="row col-12">
-				<div class="col-4">
+			<div class="row col-8">
+				<div class="col-3">
 					<div class="input-group input-group-sm mt-2">
-						<span class="input-group-text fixed-lbl-for-abm-100" id="lbIdDesde">Cuotas:</span>
+						<span class="input-group-text lbl-w" id="lbIdDesde">Cuotas:</span>
 						<input type="text" class="form-control activable inputEditable" asp-for="cuotasModalCarga" />
 					</div>
 				</div>
-				<div class="col-4">
+				<div class="col-3">
 					<div class="input-group input-group-sm mt-2">
-						<span class="input-group-text fixed-lbl-for-abm-100">Importe: </span>
+						<span class="input-group-text lbl-w">Importe: </span>
 						<input type="text" asp-for="importeModalCarga" class="form-control activable inputEditable" />
 					</div>
 				</div>
-				<div class="col-4">
+				<div class="col-3">
 					<div class="input-group input-group-sm mt-2">
-						<span class="input-group-text fixed-lbl-for-abm-100" id="lbIdDesde">Interés:</span>
+						<span class="input-group-text lbl-w" id="lbIdDesde">Interés:</span>
 						<input type="text" class="form-control activable inputEditable" asp-for="interesModalCarga" />
 					</div>
 				</div>

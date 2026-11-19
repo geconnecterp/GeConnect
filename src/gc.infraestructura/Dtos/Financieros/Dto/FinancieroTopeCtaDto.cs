@@ -5,4 +5,10 @@ namespace gc.infraestructura.Dtos.Financieros
 	{
 		public decimal? saldo { get; set; }
 	}
+
+	public class FinancieroTopeCtaListaDto : Dto
+	{
+		public string cta_id { get; set; }
+		public decimal? saldo { get; set; }
+	}
 }

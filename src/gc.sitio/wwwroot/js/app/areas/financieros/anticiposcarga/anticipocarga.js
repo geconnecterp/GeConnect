@@ -212,21 +212,23 @@ function imprimirOPP() {
 //############ COMENTAR AL FINALIZAR ############
 
 function AgregarAnticipo() {
-	if (ctaIdSelected == "") {
-		AbrirMensaje("ATENCIÓN", "Seleccionar un cliente.", function () {
+	var cuotas = $("#cuotasModalCarga").inputmask('unmaskedvalue');
+	var importe = $("#importeModalCarga").inputmask('unmaskedvalue');
+	var intereses = $("#interesModalCarga").inputmask('unmaskedvalue');
+	var filasCuentasEmpleadosParaAgregar = $("#tabCuentasEmpleadosParaAgregar tbody tr").length;
+	if (filasCuentasEmpleadosParaAgregar <= 0) {
+		MostrarError("Debe agregar al menos una Cuenta.");
+	}
+	else if (intereses < 0) {
+		AbrirMensaje("ATENCIÓN", "Intereses no debe ser negativo.", function () {
 			$("#msjModal").modal("hide");
-			$("#porc_interes").trigger('focus');
+			$("#interesModalCarga").trigger('focus');
 			return true;
 		}, false, ["Aceptar"], "error!", null);
 	}
 	else {
 		AbrirWaiting();
-		var cta_id = clienteIdSelected;
-		var cta_desc = clienteDescSelected;
-		var cuotas = $("#cuotas1").inputmask('unmaskedvalue');
-		var importe = $("#importe1").inputmask('unmaskedvalue');
-		var intereses = $("#intereses1").val();
-		var data = { cta_id, cta_desc, cuotas, importe, intereses };
+		var data = { empleadosSeleccionados, cuotas, importe, intereses };
 		PostGen(data, agregarAnticipoUrl, function (obj) {
 			if (obj.error === true) {
 				CerrarWaiting();
@@ -407,8 +409,13 @@ function selectItemGrillaCuentasEmpleadosParaCargar(x) {
 
 function inicializarCamposEnModal() {
 	$("#modalCenterTitle").text("Carga de Anticipo de Empleado");
-	getMaskForIntegerMax24("#cuotas");
-	getMaskForMoneyType("#importe");
+	getMaskForIntegerMax("#cuotasModalCarga",1, 60);
+	getMaskForMoneyType("#importeModalCarga");
+	getMaskForMoneyType("#interesModalCarga");
+	$("input#Rel02").on("click", function () {
+		$("input#Rel02").val("");
+		$("#Rel02Item").val("");
+	});
 	$(document).on("keydown.autocomplete", "input#Rel02", function () {
 		$(this).autocomplete({
 			source: function (request, response) {
@@ -696,6 +703,20 @@ function InicializarControles() {
 		anticiposSeleccionados = ObtenerIdsSeleccionados();
 		ActualizarCheckCabecera();
 	});
+
+	$("#cuotas,#importe,#porc_interes")
+		.addClass("campo-deshabilitado");
+
+	$(".check-aplicar").change(function () {
+
+		const input = $(this)
+			.closest(".input-group-text")
+			.next(".input-group-text")
+			.next("input");
+
+		input.toggleClass("campo-deshabilitado", !this.checked);
+
+	});
 }
 
 function ObtenerIdsSeleccionados() {
@@ -760,6 +781,22 @@ function getMaskForIntegerMax24(selector) {
 		unmaskAsNumber: true,
 		min: 1,
 		max: 24
+	});
+}
+
+function getMaskForIntegerMax(selector, min = 1, max = 60) {
+	$(selector).inputmask({
+		alias: 'numeric',
+		groupSeparator: '.',       // separador de miles
+		digits: 0,                 // sin decimales
+		digitsOptional: false,
+		allowMinus: false,
+		prefix: '',
+		suffix: '',
+		rightAlign: true,
+		unmaskAsNumber: true,
+		min: min,
+		max: max
 	});
 }
 

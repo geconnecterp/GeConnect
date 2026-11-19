@@ -52,7 +52,9 @@ namespace gc.api.core.Contratos.Servicios
         List<FlujoDeIngresoDto> GetFlujoDeIngreso(BuscarFlujoDeIngresoRequest request);
         List<RespuestaDto> FinancieroAnticipoEmpleadoConfirma(CargaAnticipoEmpleadoRequest request);
         List<FinancieroTopeCtaDto> GetFinancieroTopePorCuenta(string cta_id);
-        List<AnticipoDetalleDto> GetAnticipoDetalle(string an_compte);
+        List<FinancieroTopeCtaListaDto> GetFinancieroTopePorCuentaLista(string cta_id_lista);
+
+		List<AnticipoDetalleDto> GetAnticipoDetalle(string an_compte);
         List<FinancieroUsuarioDto> GetFinancieroUsuarios(GetFinancieroUsuariosRequest request);
         List<AnticipoFinanEmpListaDto> BuscarAnticipoFinancierosDeEmpleados(ConsultaAnticipoFinanEmpRequest filtros);
         List<RespuestaDto> FinancieroAnticipoAnular(FinancieroAnticipoAnularRequest request);

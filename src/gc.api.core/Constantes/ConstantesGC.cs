@@ -426,6 +426,7 @@ namespace gc.api.core.Constantes
 			public const string SP_F_REPO_FINAN_FLUJO = "SPGECO_F_Repo_Finan_Flujo";
 			public const string SP_F_AN_CONFIRMA = "SPGECO_F_AN_Confirmar";
 			public const string SP_F_OBTENER_TOPE_CTA = "SPGECO_F_Obtener_Topes_Cta";
+			public const string SP_F_OBTENER_TOPE_CTA_LISTA = "SPGECO_F_Obtener_Topes_Ctas_Lista";
 			public const string SP_F_AN_DETALLE = "SPGECO_F_AN_Detalle";
 			public const string SP_F_AN_USU = "SPGECO_F_AN_Usu";
 			public const string SP_F_AN_LISTA = "SPGECO_F_AN_Lista";

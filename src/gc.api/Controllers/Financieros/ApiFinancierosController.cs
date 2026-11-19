@@ -531,6 +531,21 @@ namespace gc.api.Controllers.Financieros
 		}
 
 		[HttpGet]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<FinancieroTopeCtaListaDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult GetFinancieroTopePorCuentaLista(string cta_id_lista)
+		{
+			ApiResponse<List<FinancieroTopeCtaListaDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
+			var res = _financieroServicio.GetFinancieroTopePorCuentaLista(cta_id_lista);
+
+			response = new ApiResponse<List<FinancieroTopeCtaListaDto>>(res);
+
+			return Ok(response);
+		}
+
+		[HttpGet]
 		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<AnticipoDetalleDto>))]
 		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
 		[Route("[action]")]

@@ -56,6 +56,23 @@
 			width: 100%;
 			table-layout: fixed;
 		}
+
+	.check-aplicar {
+		cursor: pointer;
+		width: 16px;
+		height: 16px;
+		margin: 0;
+	}
+
+	#divInputsImportes .input-group-text {
+		display: flex;
+		align-items: center;
+	}
+
+	.campo-deshabilitado {
+		opacity: .55;
+		background-color: #f5f5f5;
+	}
 </style>
 @Html.Hidden("prov_id_selected", Model.prov_id_selected)
 @Html.Hidden("prov_denominacion_selected", Model.prov_denominacion_selected)
@@ -108,6 +125,59 @@
 				<div class="contenedor-frames">
 					<fieldset class="frame-inputs" style="min-height: 41px;padding-right: 6px;padding-top: 6px;margin-right: 0px;width: 68%;max-width: 68%;">
 						<div class="input-group input-group-sm" id="divInputsImportes">
+
+							<div class="input-group-text">
+								<input type="checkbox"
+									   id="chkCuotas"
+									   class="form-check-input check-aplicar">
+							</div>
+
+							<span class="input-group-text">Cuotas:</span>
+
+							<input type="text"
+								   asp-for="cuotas"
+								   class="form-control activable inputEditable"
+								   style="max-width:5%;"
+								   value="1" />
+
+
+							<div class="input-group-text">
+								<input type="checkbox"
+									   id="chkImporte"
+									   class="form-check-input check-aplicar">
+							</div>
+
+							<span class="input-group-text">Importe:</span>
+
+							<input type="text"
+								   asp-for="importe"
+								   class="form-control activable inputEditable"
+								   style="max-width:10%;" />
+
+
+							<div class="input-group-text">
+								<input type="checkbox"
+									   id="chkInteres"
+									   class="form-check-input check-aplicar">
+							</div>
+
+							<span class="input-group-text">% Interés:</span>
+
+							<input type="text"
+								   asp-for="porc_interes"
+								   class="form-control activable inputEditable"
+								   style="max-width:10%;"
+								   value="0" />
+
+
+							<button type="button"
+									class="btn btn-primary btn-sm ms-1 btn-anticipo"
+									id="btnAplicar">
+								<i class="bx bx-badge-check"></i> Aplicar
+							</button>
+
+						</div>
+						@* <div class="input-group input-group-sm" id="divInputsImportes">
 							<span class="input-group-text">Cuotas: </span>
 							<input type="text" asp-for="cuotas" class="form-control activable inputEditable" style="max-width: 5%;" value="1" />
 							<span class="input-group-text">Importe: </span>
@@ -117,7 +187,7 @@
 							<button type="button" class="btn btn-primary btn-sm ms-1 btn-anticipo" id="btnAplicar">
 								<i class="bx bx-badge-check"></i> Aplicar
 							</button>
-						</div>
+						</div> *@
 					</fieldset>
 				</div>
 			</div>

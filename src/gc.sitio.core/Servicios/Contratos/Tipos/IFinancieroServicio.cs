@@ -52,6 +52,7 @@ namespace gc.sitio.core.Servicios.Contratos
 		List<FlujoDeIngresoDto> GetFlujoDeIngreso(BuscarFlujoDeIngresoRequest request, string token);
 		RespuestaGenerica<RespuestaDto> FinancieroAnticipoEmpleadoConfirma(CargaAnticipoEmpleadoRequest request, string token);
 		List<FinancieroTopeCtaDto> GetFinancieroTopePorCuenta(string cta_id, string token);
+		List<FinancieroTopeCtaListaDto> GetFinancieroTopePorCuentaLista(string cta_id_lista, string token);
 		List<AnticipoDetalleDto> GetAnticipoDetalle(string an_compte, string token);
 		List<FinancieroUsuarioDto> GetFinancieroUsuarios(GetFinancieroUsuariosRequest request, string token);
 		Task<(List<AnticipoFinanEmpListaDto>, MetadataGrid)> BuscarAnticipoFinancierosDeEmpleados(ConsultaAnticipoFinanEmpRequest filters, string token);
