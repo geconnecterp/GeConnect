@@ -1,4 +1,4 @@
-﻿@model List<ProductoListaDto>
+@model List<ProductoListaDto>
 
 <div class="modal modal-golden" 
     id="busquedaModal" 
@@ -42,7 +42,8 @@
                                     <i class="bx bx-search"></i>
                                 </span>
                                 <input type="text" 
-                                       class="form-control form-control-sm inputEditable jsteclado" 
+                                       class="form-control form-control-sm inputEditable jsteclado js-dictado"
+                                       data-dictado-etiqueta="búsqueda de producto"
                                        name="Search" 
                                        id="Search" 
                                        placeholder="Código, descripción o código de barras..." 

@@ -15,6 +15,7 @@
     <link href="~/css/golden-overlay.css" rel="stylesheet" asp-append-version="true">
     <link href="~/css/pages/cuenta-caja.css" rel="stylesheet" asp-append-version="true">
     <link href="~/css/pages/salida-comprobantes.css" rel="stylesheet" asp-append-version="true">
+    <link href="~/css/pages/dictado.css" rel="stylesheet" asp-append-version="true">
 
     <style>
         /* Estilos adicionales propios de la vista (para la grilla de menú) */
@@ -101,6 +102,7 @@
     <script src="~/js/app/helpers/inputMaskMonetario.js" asp-append-version="true"></script>
 
     <script src="~/lib/virtual-keyboard/js/virtual-keyboard.js" asp-append-version="true"></script>
+    <script src="~/js/app/dictado.js" asp-append-version="true"></script>
     @if (User.Identity?.IsAuthenticated == true)
     {
         <partial name="_SalidaComprobantes" />
