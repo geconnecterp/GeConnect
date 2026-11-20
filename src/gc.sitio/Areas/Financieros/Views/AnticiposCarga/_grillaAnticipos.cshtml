@@ -91,55 +91,68 @@
 		height: 1.6rem !important;
 	}
 </style>
-<div class="table-responsive table-wrapper-500-full-width" id="containerGrillaAnticipos">
-	<table class="table table-bordered table-hover table-golden" id="tbListaAnticipos">
-		<thead>
-			<tr class="header">
-				<th class="text-center" style="width:3%;">
-					<input type="checkbox" id="chkTodos" />
-				</th>
-				<th class="text-center" scope="col" style="width: 40%;">Cliente</th>
-				<th class="text-center" scope="col">Cuotas</th>
-				<th class="text-center" scope="col">Importe</th>
-				<th class="text-center" scope="col">Intereses</th>
-				<th class="text-center" scope="col">Valor Cuota</th>
-				<th class="text-center" scope="col">Valor Total</th>
-				<th class="text-center" scope="col">Tope</th>
-				<th style="width:4%;"></th>
-			</tr>
-		</thead>
-		<tbody>
-			@if (Model != null && Model.GrillaAnticipos != null && Model.GrillaAnticipos.ListaDatos != null && Model.GrillaAnticipos.ListaDatos.Count > 0)
-			{
-				@foreach (var item in Model.GrillaAnticipos.ListaDatos)
-				{
-					if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
-					<tr class="@clase @(item.mostrar_alerta ? "alerta-fila" : "")"
-						onclick="selectItemGrillaAnticipo(this);">
-						<td class="text-center align-middle">
-							<input type="checkbox"
-								   class="chkItemAnticipo"
-								   data-id="@item.id" />
-						</td>
-						<td class="@Model.GrillaAnticipos.ObtenerClase(item.cta_denominacion)">@Model.GrillaAnticipos.FormatearDato(item.cta_denominacion, FormatDato.Ninguno)</td>
-						<td class="@Model.GrillaAnticipos.ObtenerClase(item.cuotas)">@Model.GrillaAnticipos.FormatearDato(item.cuotas, FormatDato.Ninguno)</td>
-						<td class="@Model.GrillaAnticipos.ObtenerClase(item.importe)">@Model.GrillaAnticipos.FormatearDato(item.importe, FormatDato.Monto)</td>
-						<td class="@Model.GrillaAnticipos.ObtenerClase(item.intereses)">@Model.GrillaAnticipos.FormatearDato(item.intereses, FormatDato.Monto)</td>
-						<td class="@Model.GrillaAnticipos.ObtenerClase(item.valor_cuota)">@Model.GrillaAnticipos.FormatearDato(item.valor_cuota, FormatDato.Monto)</td>
-						<td class="@Model.GrillaAnticipos.ObtenerClase(item.valor_total) @(item.mostrar_alerta ? "alerta-importe" : "")">
-							@Model.GrillaAnticipos.FormatearDato(item.valor_total, FormatDato.Monto)
-						</td>
-						<td class="@Model.GrillaAnticipos.ObtenerClase(item.tope)">@Model.GrillaAnticipos.FormatearDato(item.tope, FormatDato.Monto)</td>
-						<td class="text-center align-middle">
-							<div class="d-flex justify-content-center gap-1">
-								<button type="button" class="btn btn-danger btn-icon-compact" title="Eliminar" onclick="eliminarItem('@item.id')">
-									<i class="bx bx-trash"></i>
-								</button>
-							</div>
-						</td>
+<div class="grid-golden" style="padding-left: 0px; padding-right: 0px;">
+	<div class="grid-golden-header">
+		<div class="d-flex justify-content-between align-items-center">
+			<h5 class="mb-0">
+				<strong>Cuentas de Empleados</strong>
+			</h5>
+		</div>
+	</div>
+	<div class="grid-golden-body">
+		<div class="table-responsive table-wrapper-500-full-width" id="containerGrillaAnticipos">
+			<table class="table table-bordered table-hover table-golden" id="tbListaAnticipos">
+				<thead>
+					<tr class="header">
+						<th class="text-center" style="width:3%;">
+							<input type="checkbox" id="chkTodos" />
+						</th>
+						<th class="text-center" scope="col" style="width: 40%;">Cliente</th>
+						<th class="text-center" scope="col">Cuotas</th>
+						<th class="text-center" scope="col">Importe</th>
+						<th class="text-center" scope="col">Intereses</th>
+						<th class="text-center" scope="col">Valor Cuota</th>
+						<th class="text-center" scope="col">Valor Total</th>
+						<th class="text-center" scope="col">Tope</th>
+						<th style="width:4%;"></th>
 					</tr>
-				}
-			}
-		</tbody>
-	</table>
+				</thead>
+				<tbody>
+					@if (Model != null && Model.GrillaAnticipos != null && Model.GrillaAnticipos.ListaDatos != null && Model.GrillaAnticipos.ListaDatos.Count > 0)
+					{
+						@foreach (var item in Model.GrillaAnticipos.ListaDatos)
+						{
+							if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+							<tr class="@clase @(item.mostrar_alerta ? "alerta-fila" : "")"
+								onclick="selectItemGrillaAnticipo(this);"
+								data-cta-id="@item.cta_id"
+								data-cta-denominacion="@item.cta_denominacion">
+								<td class="text-center align-middle">
+									<input type="checkbox"
+										   class="chkItemAnticipo"
+										   data-id="@item.id" />
+								</td>
+								<td class="@Model.GrillaAnticipos.ObtenerClase(item.cta_denominacion)">@Model.GrillaAnticipos.FormatearDato(item.cta_denominacion, FormatDato.Ninguno)</td>
+								<td class="@Model.GrillaAnticipos.ObtenerClase(item.cuotas)">@Model.GrillaAnticipos.FormatearDato(item.cuotas, FormatDato.Ninguno)</td>
+								<td class="@Model.GrillaAnticipos.ObtenerClase(item.importe)">@Model.GrillaAnticipos.FormatearDato(item.importe, FormatDato.Monto)</td>
+								<td class="@Model.GrillaAnticipos.ObtenerClase(item.intereses)">@Model.GrillaAnticipos.FormatearDato(item.intereses, FormatDato.Monto)</td>
+								<td class="@Model.GrillaAnticipos.ObtenerClase(item.valor_cuota)">@Model.GrillaAnticipos.FormatearDato(item.valor_cuota, FormatDato.Monto)</td>
+								<td class="@Model.GrillaAnticipos.ObtenerClase(item.valor_total) @(item.mostrar_alerta ? "alerta-importe" : "")">
+									@Model.GrillaAnticipos.FormatearDato(item.valor_total, FormatDato.Monto)
+								</td>
+								<td class="@Model.GrillaAnticipos.ObtenerClase(item.tope)">@Model.GrillaAnticipos.FormatearDato(item.tope, FormatDato.Monto)</td>
+								<td class="text-center align-middle">
+									<div class="d-flex justify-content-center gap-1">
+										<button type="button" class="btn btn-danger btn-icon-compact" title="Eliminar" onclick="eliminarItem('@item.id')">
+											<i class="bx bx-trash"></i>
+										</button>
+									</div>
+								</td>
+							</tr>
+						}
+					}
+				</tbody>
+			</table>
+		</div>
+	</div>
 </div>

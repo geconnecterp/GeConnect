@@ -104,7 +104,7 @@ namespace gc.sitio.Areas.Financieros.Controllers
 				if (!auth.Item1 || auth.Item2 < DateTime.Now)
 					return RedirectToAction("Login", "Token", new { area = "seguridad" });
 
-
+				//var tempList = 
 				//Cargar cuyentas de empleados 
 				var ctasEmpleados = _ctaSrv.ObtenerListaCuentaComercial("%", 'E', TokenCookie).Result;
 				model.CuentaEmpleados = ObtenerGridCoreSmart<CuentaDto>(ctasEmpleados);
@@ -157,18 +157,7 @@ namespace gc.sitio.Areas.Financieros.Controllers
 
 				string ids = string.Join(", ", listaIdsPorAgregar);
 				var tope = 0.00M;
-				var tope_original = 0.00M;
 				var topeCtaLista = _financieroServicio.GetFinancieroTopePorCuentaLista(ids, TokenCookie);
-				//if (topeCtaLista == null || topeCtaLista.Count == 0)
-				//{
-				//	tope = 0;
-				//	tope_original = 0;
-				//}
-				//else
-				//{
-				//	tope = topeCtaLista[0].saldo ?? 0.00M;
-				//	tope_original = topeCtaLista[0].saldo ?? 0.00M;
-				//}
 
 				var listaTemp = AnticiposLista;
 				foreach (var item in empleadosSeleccionados)
@@ -189,12 +178,11 @@ namespace gc.sitio.Areas.Financieros.Controllers
 						valor_total = val_total,
 						tope = tope_ ?? 0,
 						tope_original = tope_ ?? 0,
-						mostrar_alerta = (val_total > tope)
+						mostrar_alerta = (val_total > tope_)
 					};
 
 					listaTemp.Add(nuevoAnticipo);
 				}
-
 
 				AnticiposLista = listaTemp;
 
@@ -275,6 +263,75 @@ namespace gc.sitio.Areas.Financieros.Controllers
 					Mensaje = ex.Message
 				};
 				return PartialView("_gridMensaje", response);
+			}
+		}
+
+		public JsonResult AplicarCambiosEnFilas(List<CuentaSeleccionada> anticipos, int cuotas, decimal importe, decimal interes, bool aplicarCuotas, bool aplicarImporte, bool aplicarInteres)
+		{
+			try
+			{
+				var auth = EstaAutenticado;
+
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+					return Json(new { error = true, warn = false, msg = "No autenticado." });
+
+				if (anticipos == null || !anticipos.Any())
+					return Json(new { error = true, warn = false, msg = "Debe seleccionar al menos un anticipo." });
+
+				if (!aplicarCuotas && !aplicarImporte && !aplicarInteres)
+					return Json(new { error = true, warn = false, msg = "Debe seleccionar al menos un campo para aplicar." });
+
+				if (aplicarCuotas && (cuotas < 1 || cuotas > 60))
+					return Json(new { error = true, warn = false, msg = "Las cuotas deben estar entre 1 y 60." });
+
+				if (aplicarImporte && importe <= 0)
+					return Json(new { error = true, warn = false, msg = "El importe debe ser mayor a cero." });
+
+				if (aplicarInteres && interes < 0)
+					return Json(new { error = true, warn = false, msg = "El interés debe ser mayor o igual a cero." });
+
+				var idsSeleccionados = anticipos.Select(x => x.id).ToHashSet();
+				var listaTemp = AnticiposLista;
+
+				foreach (var item in listaTemp.Where(x => idsSeleccionados.Contains(x.cta_id)))
+				{
+					if (aplicarCuotas)
+						item.cuotas = cuotas;
+
+					if (aplicarImporte)
+						item.importe = importe;
+
+					decimal porcentajeInteres = interes;
+
+					if (aplicarInteres)
+						item.intereses = Math.Round((item.importe * (interes / 100)), 2);
+					
+					item.valor_total = item.importe + item.intereses;
+					item.valor_cuota =
+						item.cuotas > 0
+							? item.valor_total / item.cuotas
+							: 0;
+
+					item.mostrar_alerta = item.valor_total > item.tope;
+				}
+
+				AnticiposLista = listaTemp;
+
+				return Json(new
+				{
+					error = false,
+					warn = false,
+					msg = ""
+				});
+			}
+			catch (Exception ex)
+			{
+				return Json(new
+				{
+					error = true,
+					warn = false,
+					msg = ex.InnerException?.Message ?? ex.Message
+				});
 			}
 		}
 

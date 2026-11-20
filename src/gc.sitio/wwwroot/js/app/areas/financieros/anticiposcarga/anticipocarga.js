@@ -10,6 +10,7 @@ $(function () {
 	$(document).on("click", "#btnSalir", CerrarModal);
 	$(document).on("click", "#btnConfirmarCargaDeAnticipo", ConfirmarAnticipos);
 	$(document).on("click", "#btnCancelar", CancelarAnticipos);
+	$(document).on("click", "#btnHistorial", CargarDesdeHistorial); 
 
 	$(document).on("keydown.autocomplete", "input#Rel01", function () {
 		$(this).autocomplete({
@@ -55,7 +56,7 @@ $(function () {
 	});
 	$("#porc_interes").on("valorInteresModificado", function (e, anterior, nuevo) {
 		console.log("Cambio detectado:", anterior, "→", nuevo);
-		valorInteresModificado(nuevo);
+		//valorInteresModificado(nuevo);
 	});
 
 
@@ -120,7 +121,6 @@ function handlerCancelarAnticipos() {
 				$("#listaTipoAnticipo").val("");
 				$("#Concepto").val("");
 				$("#porc_interes").val("0");
-				$("#Rel01").val("");
 				ActualizarListaDeAnticipos();
 			}, 500);
 		}
@@ -211,7 +211,22 @@ function imprimirOPP() {
 }
 //############ COMENTAR AL FINALIZAR ############
 
+function ObtenerIdsAnticiposExistentes() {
+
+	return $("#tbListaAnticipos tbody tr")
+		.map(function () {
+			return $(this).data("cta-id");
+		})
+		.get()
+		.map(String);
+}
+
 function AgregarAnticipo() {
+	const idsExistentes = ObtenerIdsAnticiposExistentes();
+	empleadosSeleccionados = empleadosSeleccionados.filter(
+		x => !idsExistentes.includes(String(x.id))
+	);
+
 	var cuotas = $("#cuotasModalCarga").inputmask('unmaskedvalue');
 	var importe = $("#importeModalCarga").inputmask('unmaskedvalue');
 	var intereses = $("#interesModalCarga").inputmask('unmaskedvalue');
@@ -251,6 +266,7 @@ function AgregarAnticipo() {
 }
 
 function CerrarModal() {
+	empleadosSeleccionados = [];
 	$('#modalCargaDeAnticipo').modal('hide');
 }
 
@@ -263,31 +279,130 @@ function ActualizarListaDeAnticipos() {
 	});
 }
 
+function ObtenerAnticiposSeleccionados() {
+	return $("#tbListaAnticipos .chkItemAnticipo:checked")
+		.map(function () {
+			const $fila = $(this).closest("tr");
+
+			return {
+				id: $fila.data("cta-id"),
+				descripcion: $fila.data("cta-denominacion")
+			};
+		})
+		.get();
+}
+
 function AplicarCambiosEnFilas() {
-	var filas = $("#tbListaAnticipos tbody tr").length;
-	if (filas > 0) {
-		let cuota = $("#cuotas").inputmask('unmaskedvalue');
-		let importe = $("#importe").inputmask('unmaskedvalue');
-		let interes = $("#porc_interes").inputmask('unmaskedvalue');
-		var data = { cuota, importe, interes };
-		PostGen(data, aplicarCambiosEnFilasUrl, function (obj) {
-			CerrarWaiting();
-			if (obj.error === true) {
-				AbrirMensaje("ATENCIÓN", obj.msg, function () {
+
+	const filas = $("#tbListaAnticipos tbody tr").length;
+
+	if (filas <= 0) {
+		MostrarError("No existen registros a los cuales aplicar el proceso.");
+		return;
+	}
+
+	if (anticiposSeleccionados.length === 0) {
+		MostrarError("Debe seleccionar al menos un anticipo.");
+		return;
+	}
+
+	const aplicarCuotas = $("#chkCuotas").is(":checked");
+	const aplicarImporte = $("#chkImporte").is(":checked");
+	const aplicarInteres = $("#chkInteres").is(":checked");
+
+	if (!aplicarCuotas && !aplicarImporte && !aplicarInteres) {
+		MostrarError("Debe seleccionar al menos un campo para aplicar cambios.");
+		return;
+	}
+
+	//const cuotas = Number($("#cuotas").inputmask("unmaskedvalue") || 0);
+	const cuotas = $("#cuotas").inputmask("unmaskedvalue");
+	const importe = $("#importe").inputmask("unmaskedvalue");
+	//const interes = Number($("#porc_interes").inputmask("unmaskedvalue") || 0);
+	const interes = $("#porc_interes").inputmask("unmaskedvalue");
+
+	if (aplicarCuotas) {
+
+		if (cuotas < 1 || cuotas > 60) {
+
+			AbrirMensaje(
+				"ATENCIÓN",
+				"La cantidad de cuotas debe estar comprendida entre 1 y 60.",
+				function () {
+					$("#msjModal").modal("hide");
+					$("#cuotas").trigger("focus");
+					return true;
+				},
+				false,
+				["Aceptar"],
+				"error!",
+				null
+			);
+
+			return;
+		}
+	}
+
+	if (aplicarInteres) {
+
+		if (interes < 0) {
+
+			AbrirMensaje(
+				"ATENCIÓN",
+				"El porcentaje de interés debe ser mayor o igual a 0.",
+				function () {
+					$("#msjModal").modal("hide");
+					$("#porc_interes").trigger("focus");
+					return true;
+				},
+				false,
+				["Aceptar"],
+				"error!",
+				null
+			);
+
+			return;
+		}
+	}
+
+	AbrirWaiting();
+	const anticipos = ObtenerAnticiposSeleccionados();
+	const data = {
+		anticipos,
+		cuotas,
+		importe,
+		interes,
+		aplicarCuotas,
+		aplicarImporte,
+		aplicarInteres
+	};
+
+	PostGen(data, aplicarCambiosEnFilasUrl, function (obj) {
+
+		CerrarWaiting();
+
+		if (obj.error === true) {
+
+			AbrirMensaje(
+				"ATENCIÓN",
+				obj.msg,
+				function () {
 					$("#msjModal").modal("hide");
 					return true;
-				}, false, ["Aceptar"], "error!", null);
-			}
-			else {
-				setTimeout(() => {
-					ActualizarListaDeAnticipos();
-				}, 500);
-			}
-		});
-	}
-	else {
-		MostrarError("No existen registros a los cuales aplicar el proceso.");
-	}
+				},
+				false,
+				["Aceptar"],
+				"error!",
+				null
+			);
+		}
+		else {
+
+			setTimeout(() => {
+				ActualizarListaDeAnticipos();
+			}, 500);
+		}
+	});
 }
 
 function AbrirModalAgregarAnticipo() {
@@ -342,16 +457,31 @@ function limpiarCamposEnModal() {
 	clienteIdSelected = "";
 }
 
-function agregarEmpleadoSeleccionado(id, descripcion) {
+function ExisteEmpleadoEnAnticipos(id) {
 
+	return $("#tbListaAnticipos tbody tr").toArray().some(
+		tr => String($(tr).data("cta-id")) === String(id)
+	);
+}
+
+function agregarEmpleadoSeleccionado(id, descripcion) {
+	//Tabla izq. en modal
 	if (empleadosSeleccionados.some(x => x.id === id)) {
+		MostrarError("La cuenta ya existe en Cuentas de Empleados para Agregar.");
 		return;
 	}
-	empleadosSeleccionados.push({
-		id,
-		descripcion
-	});
-	renderizarTablaSeleccionados();
+	//Tabla de emp. en Index
+	else if (ExisteEmpleadoEnAnticipos(id)) {
+		MostrarError("La cuenta ya existe en Cuentas de Empleados.");
+		return;
+	}
+	else {
+		empleadosSeleccionados.push({
+			id,
+			descripcion
+		});
+		renderizarTablaSeleccionados();
+	}
 }
 
 function renderizarTablaSeleccionados() {
@@ -635,7 +765,7 @@ function selectItemGrillaCuentasEmpleadosParaCargar(x) {
 
 function InicializarControles() {
 	getMaskForMoneyType("#porc_interes");
-	getMaskForIntegerMax24("#cuotas");
+	getMaskForIntegerMax("#cuotas", 1, 60);
 	getMaskForMoneyType("#importe");
 	$("#listaTipoAnticipo").trigger('focus');
 
