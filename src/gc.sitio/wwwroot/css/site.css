@@ -52,6 +52,25 @@
     font-size: 1.25rem !important;
 }
 
+/* Contexto de sucursal visible junto al menú principal. */
+.geco-app-navbar > .container-fluid { flex-wrap: wrap; }
+.geco-navbar-branch {
+    display: flex;
+    min-width: 0;
+    flex: 0 0 100%;
+    flex-direction: column;
+    gap: .15rem;
+    padding: .35rem .65rem .65rem;
+    color: #493a17;
+    line-height: 1.15;
+}
+.geco-navbar-branch > span { font-size: .72rem; font-weight: 600; }
+.geco-navbar-branch > strong {
+    font-size: clamp(1.65rem, 2.5vw, 2.4rem);
+    font-weight: 750;
+    overflow-wrap: anywhere;
+}
+
 /* Identificación del usuario dentro del menú de perfil */
 .dropdown-user .user-profile-summary {
     min-width: 0;
