@@ -3,10 +3,9 @@
 }
 @if (User.Identity?.IsAuthenticated == true)
 {
-    var nombre = User.Claims.First(c => c.Type.Contains("nya")).Value;
-    var administracionClaim = User.Claims.First(c => c.Type.Contains("AdmId")).Value;
-    var administracionPartes = administracionClaim.Split("#");
-    var sucursal = administracionPartes.Length > 1 ? administracionPartes[1] : administracionClaim;
+    var operador = gc.pocket.site.Models.Cuenta.OperadorCuenta.Desde(User);
+    var nombre = operador.Nombre;
+    var sucursal = operador.Sucursal;
     var primerNombre = nombre.Split(' ', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault() ?? nombre;
     /*
     var saludo = DateTime.Now.Hour switch
@@ -31,15 +30,11 @@
         <div class="home-welcome">
             <div class="home-welcome-rings" aria-hidden="true"></div>
             <div class="home-welcome-copy">
-                <span class="home-welcome-eyebrow">CENTRO DE OPERACIONES</span>
-                <h1 id="homeWelcomeTitle">@saludo, @primerNombre</h1>
-                <p>Elegí una operación para comenzar a trabajar desde GECO Pocket.</p>
+                <span class="home-welcome-eyebrow">Sucursal</span>
+                <h1 id="homeWelcomeTitle">@sucursal</h1>
+                <p>@saludo, @primerNombre. Elegí una operación para comenzar a trabajar desde GECO Pocket.</p>
 
                 <div class="home-welcome-meta">
-                    <span>
-                        <i class="bx bx-building" aria-hidden="true"></i>
-                        Sucursal @sucursal
-                    </span>
                     <span>
                         <i class="bx bx-shield-quarter" aria-hidden="true"></i>
                         Sesión activa

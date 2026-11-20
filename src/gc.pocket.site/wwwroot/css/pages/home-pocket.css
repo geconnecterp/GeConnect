@@ -112,31 +112,34 @@ body.pocket-app-body {
 
 .pocket-app-nav-actions {
     display: flex;
+    flex-shrink: 0;
+    margin-left: auto;
     min-width: 0;
     align-items: center;
     gap: 0.8rem;
 }
 
 .pocket-app-branch {
-    display: inline-flex;
-    max-width: 18rem;
-    min-height: 38px;
-    align-items: center;
-    gap: 0.45rem;
-    overflow: hidden;
-    padding: 0.45rem 0.75rem;
-    border: 1px solid rgba(212, 168, 13, 0.2);
-    border-radius: 10px;
-    color: #6f5916;
-    background: rgba(239, 200, 71, 0.12);
-    font-size: 0.78rem;
-    font-weight: 650;
-    white-space: nowrap;
+    display: flex;
+    min-width: 0;
+    flex: 1 1 12rem;
+    flex-direction: column;
+    gap: .15rem;
+    padding: .3rem 1rem;
+    color: var(--home-ink);
+    line-height: 1.15;
 }
 
-.pocket-app-branch span {
-    overflow: hidden;
-    text-overflow: ellipsis;
+.pocket-app-branch .pocket-branch-label {
+    color: var(--home-gold-dark);
+    font-size: .7rem;
+    font-weight: 700;
+}
+
+.pocket-app-branch .pocket-branch-name {
+    font-size: clamp(1.25rem, 2.2vw, 1.9rem);
+    font-weight: 750;
+    overflow-wrap: anywhere;
 }
 
 .pocket-user-menu {
@@ -328,10 +331,11 @@ body.pocket-app-body {
 .home-welcome h1 {
     margin: 0;
     color: #fff;
-    font-size: clamp(2rem, 4vw, 3.5rem);
+    font-size: clamp(2.5rem, 5vw, 4.25rem);
     font-weight: 700;
     letter-spacing: -0.045em;
-    line-height: 1.04;
+    line-height: 1.08;
+    overflow-wrap: anywhere;
 }
 
 .home-welcome p {
@@ -613,6 +617,8 @@ body.pocket-app-body {
 
 @media (max-width: 767.98px) {
     .pocket-app-navbar {
+        flex-wrap: wrap;
+        row-gap: .35rem;
         min-height: 62px;
         padding-right: 0.75rem;
         padding-left: 0.75rem;
@@ -629,9 +635,9 @@ body.pocket-app-body {
     }
 
     .pocket-app-branch {
-        max-width: 9rem;
-        min-height: 36px;
-        padding: 0.35rem 0.55rem;
+        order: 3;
+        flex-basis: 100%;
+        padding: .15rem 0 .35rem;
     }
 
     .pocket-user-summary,
@@ -668,17 +674,13 @@ body.pocket-app-body {
 }
 
 @media (max-width: 575.98px) {
-    .pocket-app-branch span {
-        max-width: 5.3rem;
-    }
-
     .home-welcome {
         min-height: 190px;
         padding: 1.3rem;
     }
 
     .home-welcome h1 {
-        font-size: clamp(1.65rem, 8vw, 2.15rem);
+        font-size: clamp(2rem, 8vw, 2.75rem);
     }
 
     .home-welcome p {
@@ -746,10 +748,6 @@ body.pocket-app-body {
 }
 
 @media (max-width: 350px) {
-    .pocket-app-branch {
-        display: none;
-    }
-
     .home-module-grid {
         grid-template-columns: 1fr;
     }

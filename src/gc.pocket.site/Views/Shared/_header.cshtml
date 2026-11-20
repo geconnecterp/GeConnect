@@ -1,13 +1,6 @@
 @{
     var autenticado = User.Identity?.IsAuthenticated == true;
-    var sucursal = string.Empty;
-
-    if (autenticado)
-    {
-        var administracionClaim = User.Claims.First(c => c.Type.Contains("AdmId")).Value;
-        var administracionPartes = administracionClaim.Split("#");
-        sucursal = administracionPartes.Length > 1 ? administracionPartes[1] : administracionClaim;
-    }
+    var sucursal = gc.pocket.site.Models.Cuenta.OperadorCuenta.Desde(User).Sucursal;
 }
 
 <header class="pocket-app-header">
@@ -24,13 +17,17 @@
             </span>
         </a>
 
+        @if (autenticado)
+        {
+            <div class="pocket-app-branch" title="Sucursal @sucursal" aria-label="Sucursal activa">
+                <span class="pocket-branch-label">Sucursal</span>
+                <strong class="pocket-branch-name">@sucursal</strong>
+            </div>
+        }
+
         <div class="pocket-app-nav-actions">
             @if (autenticado)
             {
-                <span class="pocket-app-branch" title="Sucursal @sucursal">
-                    <i class="bx bx-building" aria-hidden="true"></i>
-                    <span>Sucursal @sucursal</span>
-                </span>
                 <partial name="_loginAuth" />
             }
             else

@@ -1,5 +1,17 @@
-﻿<nav class="navbar navbar-expand-lg navbar-light bg-light">
+﻿@{
+    var administracion = (User.FindFirst("AdmId")?.Value ?? "").Split('#', 2, StringSplitOptions.TrimEntries);
+    var sucursal = administracion.Length > 1 && administracion[1].Length > 0
+        ? administracion[1] : administracion[0].Length > 0 ? administracion[0] : "No informada";
+}
+<nav class="navbar navbar-expand-lg navbar-light bg-light geco-app-navbar">
     <div class="container-fluid">
+        @if (User.Identity?.IsAuthenticated == true)
+        {
+            <div class="geco-navbar-branch" aria-label="Sucursal activa">
+                <span>Sucursal</span>
+                <strong>@sucursal</strong>
+            </div>
+        }
         <a class="navbar-brand navbar-home-link"
            asp-controller="home"
            asp-action="index"
