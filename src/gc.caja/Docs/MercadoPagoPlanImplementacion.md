@@ -76,6 +76,7 @@ No sumar indiscriminadamente todos los rb_aux: reconocer los ajustes de los prov
 
 - Monto sugerido editable; cuotas del catálogo; recargo y total de lectura; tipos Débito/Crédito/QR; Pagar MP; ID y Cargar manual MP; Volver.
 - Con más de una cuota real seleccionar Crédito y deshabilitar Débito/QR con explicación visible. Al volver a una cuota, habilitar los tres tipos sin alterar innecesariamente una selección válida.
+- Ajuste del 2026-11-24: el combo de cuotas queda deshabilitado en QR y Débito; sólo Crédito permite seleccionarlas. Se conserva el plan técnico del catálogo al enviar la solicitud. Un catálogo con una sola opción no se amplía desde la interfaz.
 - Aplicar la regla por cuota, nunca por el número pos_plan: un plan 9 puede representar una cuota.
 - ID como texto uppercase tanto en navegador como en servidor, sin relleno ni conversión numérica. Máximo contractual 30; mínimo técnico 4 hasta resolver la discrepancia del SP.
 - Estilo de Caja, importes con $, foco/selección del monto y recorrido de teclado. Enter no debe iniciar un cobro accidental mientras se editan campos. Mismo orden de capas de Clover: ventana sobre el pago, avisos y teclado por encima.
@@ -139,3 +140,7 @@ Compilar Caja y los hosts API en salidas aisladas y desplegar sus versiones comp
 ## Próximo ensayo operativo
 
 Recompilar y reiniciar Caja y la API con versiones compatibles. Consultar catálogo T2/M00 y opciones reales; si faltan registros, informar al DBA sin sustituir el instrumento. Avisar al responsable antes de intentar un cobro Point para coordinar con el tester; no se realizó ninguno en esta entrega. Recuperación de pago real, reutilización, impresión y confirmación fiscal de MP quedan pendientes de ese circuito. No se modificaron SP ni gc.sitio.
+
+## Verificación de selector por tipo, 2026-11-24
+
+Corregida la vista JavaScript compartida para bloquear Cuotas en QR/Débito y permitir su edición en Crédito. Se mantienen las restricciones de MP-02 y los catálogos existentes. Sintaxis y 60 verificaciones JS privadas aprobadas; navegador aislado con parcial/scripts reales y transporte ficticio verificó un plan (cuota 1 / pos_plan 9), tres cuotas de Crédito y regreso a QR, sin enviar solicitudes al Point ni ejecutar SP. Evidencias locales en .artifacts/mercadopago-cuotas-20261124 y captura privada. Para esta corrección basta publicar wwwroot/js/app/mercadoPagoVista.js y recargar la vista; no requiere cambios de API ni SP. Aceptación en Caja desplegada pendiente. Regla canónica MP-08 en BitacoraUnicaReglasCaja.md, versión 1.86; publicación NotebookLM pendiente.

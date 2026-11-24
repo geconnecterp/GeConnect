@@ -7,5 +7,6 @@
   "facturacion": 1,
   "tipoCnnCF": 0,
   "acumula": true,
-  "impresionModo": "IMPRESORA"
+  "impresionModo": "IMPRESORA",
+  "impresionFormatoFE": "A4"
 }
