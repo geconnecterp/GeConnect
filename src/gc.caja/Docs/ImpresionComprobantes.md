@@ -14,6 +14,10 @@ Valores: `IMPRESORA` solicita impresión sin presentar el documento; `PANTALLA` 
 
 Publicar las nuevas versiones de Caja y del iniciador. Al actualizar el JSON, cerrar la sesión y volver a entrar mediante el iniciador, como ante otros cambios de configuración del puesto. Una configuración anterior sin esta propiedad sigue siendo válida y ahora utiliza impresión directa. `PANTALLA` debe establecerse expresamente en el puesto; el valor legado `AppSettings:NotaCreditoReporteModo` deja de decidir la salida de NC/ND/FS. El campo `facturacion` y el controlador validado siguen determinando si corresponde un comprobante electrónico.
 
+## Formato de la FE: A4 o ticket
+
+Desde el 2026-11-21, `impresionFormatoFE` en el JSON del iniciador permite elegir A4/TK. Es opcional y tiene prioridad sobre `ctrl_papel` del SP; ausentes ambos, A4. Es independiente de `impresionModo` y de la modalidad FE/controlador. El primer ticket es B de 80 mm con logo y QR. Ticket A y email quedan pendientes; no se sustituyen automáticamente por una impresión A4. Ver [contrato, publicación y validaciones](FacturaElectronicaTicket.md). Custodia y recibos conservan sus formatos.
+
 ## Preparación de Windows y Chrome
 
 No es necesario configurar políticas para compilar, desarrollar ni usar Pantalla. Sólo los puestos o desarrolladores que prueben impresión directa necesitan esta preparación. Chrome es el navegador principal; para impresión silenciosa se requiere versión 144 o posterior. La configuración silenciosa afecta todas las impresiones de ese navegador, no sólo Caja.
@@ -25,7 +29,7 @@ La impresora predeterminada y el tamaño del papel son ajustes distintos. `Print
 Antes de habilitar impresión silenciosa en cada puesto/perfil e impresora:
 
 1. Verificar impresora predeterminada y papel cargado en Windows.
-2. Con impresión silenciosa desactivada, abrir un comprobante existente en Chrome y pulsar Ctrl+P. En Más ajustes, verificar el papel del navegador: los reportes A/B 67/68 y el acuse de Custodia actuales son A4. Otros formatos deben respetar su tamaño real.
+2. Con impresión silenciosa desactivada, abrir un comprobante existente en Chrome y pulsar Ctrl+P. En Más ajustes, verificar el papel del navegador: el formato de hoja de los reportes A/B 67/68 y el acuse de Custodia son A4; el ticket B usa 80 mm. Otros formatos deben respetar su tamaño real.
 3. Comprobar que la vista previa incluya cabecera, todos los productos, totales y QR/CAE; imprimir una copia y revisar los bordes. No basta con que Windows registre una página enviada.
 4. Habilitar las políticas y recargarlas. Reimprimir automáticamente el mismo documento para comprobar que Chrome conserve el papel correcto, sin emitir otra operación ni repetir su cobro.
 5. Repetir la comprobación al cambiar impresora o perfil del navegador. No compensar una selección Oficio/A4 incorrecta con desplazamientos o márgenes negativos en el PDF.

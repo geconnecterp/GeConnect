@@ -1968,6 +1968,10 @@ namespace gc.caja.Areas.Facturacion.Controllers
                     });
                 }
 
+                var errorFormato = PrepararFormatoComprobante(reporteSolicitud, request.tco_letra);
+                if (errorFormato != null)
+                    return Ok(new RespuestaReportDto { resultado = -1, resultado_msj = errorFormato, Base64 = string.Empty });
+
                 // ❺ Llamar a la API de reportes usando el servicio extraído
                 var respuestaReporte = await _reportesService.ObtenerPdfDesdeAPI(reporteSolicitud, token);
 

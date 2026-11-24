@@ -41,6 +41,8 @@ namespace gc.api.core.Servicios.Reportes
 
             try
             {
+                if (FormatoPapelComprobante.Resolver(solicitud.Parametros.GetValueOrDefault("ctrl_papel")) != "A4")
+                    throw new NegocioException("El formato solicitado todavía no está disponible para Factura A. Utilice A4 para este comprobante.");
                 var ms = new MemoryStream();
 
                 #region Obtener Datos Separados

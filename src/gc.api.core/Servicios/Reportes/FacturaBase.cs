@@ -446,7 +446,7 @@ namespace gc.api.core.Servicios.Reportes
             return tabla;
         }
 
-        private static Image? GenerarQrArca(FeResDto encabezado, ILogger? logger = null)
+        internal static Image? GenerarQrArca(FeResDto encabezado, ILogger? logger = null)
         {
             var url = GenerarUrlQrArca(encabezado, logger);
             if (string.IsNullOrWhiteSpace(url))

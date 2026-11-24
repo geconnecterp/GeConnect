@@ -21,6 +21,7 @@ try
     }
     config.EstacionId = string.IsNullOrWhiteSpace(config.EstacionId) ? Environment.MachineName : config.EstacionId;
     config.ImpresionModo = config.ImpresionModo?.Trim().ToUpperInvariant();
+    config.ImpresionFormatoFE = string.IsNullOrWhiteSpace(config.ImpresionFormatoFE) ? null : config.ImpresionFormatoFE.Trim().ToUpperInvariant();
     config.NavegadorModo = config.NavegadorModo?.Trim().ToUpperInvariant() ?? "";
     Validator.ValidateObject(config, new ValidationContext(config), true);
     var servidor = Opcion("--servidor") ?? config.Servidor;
@@ -34,7 +35,7 @@ try
     cliente.DefaultRequestHeaders.Accept.ParseAdd("application/json");
     var endpoint = new Uri(destino, "Seguridad/Estacion/Preparar");
     using var respuesta = await cliente.PostAsJsonAsync(endpoint, new {
-        config.EstacionId, config.CajaId, config.AdmId, config.IP, config.Facturacion, config.TipoCnnCF, config.Acumula, config.ImpresionModo
+        config.EstacionId, config.CajaId, config.AdmId, config.IP, config.Facturacion, config.TipoCnnCF, config.Acumula, config.ImpresionModo, config.ImpresionFormatoFE
     });
     var pase = await RespuestaInicio.LeerPaseAsync(respuesta, endpoint);
     var url = new Uri(destino, "Seguridad/Estacion/Iniciar?pase=" + pase).AbsoluteUri;
@@ -77,4 +78,6 @@ sealed class Configuracion
     public bool Acumula { get; set; }
     [RegularExpression(@"(?i)^(PANTALLA|IMPRESORA)$")]
     public string? ImpresionModo { get; set; }
+    [RegularExpression(@"(?i)^(A4|TK)$")]
+    public string? ImpresionFormatoFE { get; set; }
 }

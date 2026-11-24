@@ -34,6 +34,7 @@
         public decimal? lp_id_dis_porc { get; set; }
 
         public string ctrl_id { get; set; } = string.Empty;
+        public string? ctrl_papel { get; set; }
         public string ctrl_descripcion { get; set; } = string.Empty;
         public string ocx_marca { get; set; } = string.Empty;
         public int? copias { get; set; }

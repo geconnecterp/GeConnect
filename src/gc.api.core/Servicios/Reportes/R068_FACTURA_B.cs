@@ -38,6 +38,9 @@ namespace gc.api.core.Servicios.Reportes
 
             try
             {
+                var papel = FormatoPapelComprobante.Resolver(solicitud.Parametros.GetValueOrDefault("ctrl_papel"));
+                if (papel == "EM")
+                    throw new NegocioException("El puesto solicita envío por email. Ese circuito debe configurarse antes de generar una salida de impresión.");
                 var ms = new MemoryStream();
                 var encabezado = ObtenerDatosFactura(solicitud);
                 var productos = ObtenerDetalleProductos(solicitud);
@@ -52,6 +55,10 @@ namespace gc.api.core.Servicios.Reportes
                 {
                     throw new NegocioException("No se encontraron productos para la factura solicitada.");
                 }
+
+                if (papel == "TK")
+                    return Convert.ToBase64String(FacturaBTicketPdf.Generar(encabezado, productos, datosPercepciones,
+                        solicitud.LogoPath, FacturaBase.ObtenerLeyendaImpresion(solicitud), _logger));
 
                 pdf = HelperPdf.GenerarInstanciaAndInit(
                     ref writer,
@@ -151,12 +158,13 @@ namespace gc.api.core.Servicios.Reportes
 
             foreach (var producto in productos)
             {
-                var precioConIva = producto.cmd_pvta + (producto.cmd_pvta * producto.iva_alicuota / 100);
+                // FE_D calcula cmd_subtotal_con_iva desde cmd_pvta: el unitario ya es final.
+                var precioUnitario = producto.cmd_pvta;
 
                 FacturaBase.AgregarCeldaProducto(tabla, producto.p_id ?? string.Empty, fuenteChica, Element.ALIGN_CENTER);
                 FacturaBase.AgregarCeldaProducto(tabla, producto.p_desc ?? string.Empty, fuenteChica, Element.ALIGN_LEFT);
                 FacturaBase.AgregarCeldaProducto(tabla, FacturaBase.FormatearImporte(producto.cmd_cantidad), fuenteChica, Element.ALIGN_RIGHT);
-                FacturaBase.AgregarCeldaProducto(tabla, FacturaBase.FormatearImporte(precioConIva), fuenteChica, Element.ALIGN_RIGHT);
+                FacturaBase.AgregarCeldaProducto(tabla, FacturaBase.FormatearImporte(precioUnitario), fuenteChica, Element.ALIGN_RIGHT);
                 FacturaBase.AgregarCeldaProducto(tabla, FacturaBase.FormatearImporte(producto.cmd_subtotal_con_iva), fuenteChica, Element.ALIGN_RIGHT);
             }
 

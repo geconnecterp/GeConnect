@@ -28,7 +28,8 @@
         let claves = '';
         const sesion = new global.MercadoPagoModelo.Sesion(transporte, s => {
             const bloqueado = !s.puedeEditar();
-            ['txtMontoMercadoPago','cmbCuotaMercadoPago','txtPaymentIdMercadoPago'].forEach(id => q(id).disabled = bloqueado);
+            ['txtMontoMercadoPago','txtPaymentIdMercadoPago'].forEach(id => q(id).disabled = bloqueado);
+            q('cmbCuotaMercadoPago').disabled = bloqueado || s.tipo !== 2;
             ['btnVolverMercadoPago','btnCerrarMercadoPago'].forEach(id => q(id).disabled = !s.puedeCerrar());
             q('formDetalleMercadoPago').setAttribute('aria-busy', String(s.estado === 'ESPERANDO' || s.estado === 'CARGANDO'));
             q('lblInstrumentoMercadoPago').textContent = s.contexto?.instrumento?.ins_desc || 'MercadoPago';
@@ -36,7 +37,12 @@
             valor('txtMontoMercadoPago', s.base || ''); valor('txtPaymentIdMercadoPago', s.paymentid || '');
             const varias = s.opciones.find(o => o.clave === s.plan)?.cuota > 1;
             root.querySelectorAll('[name="tipoMercadoPago"]').forEach(radio => { radio.checked = Number(radio.value) === s.tipo; radio.disabled = bloqueado || varias && Number(radio.value) !== 2; });
-            q('ayudaTipoMercadoPago').textContent = varias ? 'Con más de una cuota, el pago debe ser con tarjeta de Crédito.' : 'En una cuota puede elegir Débito, Crédito o QR en el Point.';
+            q('ayudaTipoMercadoPago').textContent = !s.opciones.length ? ''
+                : s.tipo === 3 ? 'Para QR, las cuotas no se seleccionan desde Caja.'
+                : s.tipo === 1 ? 'Débito se procesa en un solo pago.'
+                : varias ? 'Con más de una cuota, el pago debe ser con tarjeta de Crédito.'
+                : s.opciones.length === 1 ? 'El catálogo ofrece una sola opción de cuotas para esta operación.'
+                : 'Para Débito o QR, seleccione primero una opción de un pago.';
             const firma = JSON.stringify([s.estado === 'CARGANDO', s.opciones]);
             if (firma !== claves) {
                 claves = firma; q('cmbCuotaMercadoPago').replaceChildren();

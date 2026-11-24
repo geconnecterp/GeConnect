@@ -21,6 +21,10 @@ public sealed class EstacionPuesto
     [RegularExpression(@"(?i)^(PANTALLA|IMPRESORA)$")]
     public string? ImpresionModo { get; set; }
 
+    // Preferencia local opcional; sin valor se consulta ctrl_papel del SP.
+    [RegularExpression(@"(?i)^(A4|TK)$")]
+    public string? ImpresionFormatoFE { get; set; }
+
     public CajaSettings Configuracion() => new() { CajaId = CajaId, AdmId = AdmId, IP = IP,
         Facturacion = (TipoFact)Facturacion, TipoCnnCF = (TipoCnnCF)TipoCnnCF, acumula = Acumula };
 }
