@@ -5,6 +5,7 @@ let anticipoHistoricoSeleccionado = null;
 $(function () {
 
 	InicializarControles();
+	ActualizarEstadoBotonHistorial();
 	$(document).on("click", "#btnAgregar", AbrirModalAgregarAnticipo);
 	$(document).on("click", "#btnAplicar", AplicarCambiosEnFilas);
 	$(document).on("click", "#btnConfirmar", AgregarAnticipo);
@@ -15,6 +16,7 @@ $(function () {
 	$(document).on("click", "#btnHistorial", AbrirModalAgregarAnticipoDesdeHistorial);
 	$(document).on("click", "#btnBuscarHistoricoDeAnticipo", BuscarHistoricoDeAnticipo);
 	$(document).on("click", "#btnConfirmarCargaDesdeHistorial", ConfirmarCargaDesdeHistorial);
+	$(document).on("click", "#btnEliminarTodos", EliminarTodosLosAnticipos);
 
 	$(document).on("keydown.autocomplete", "input#Rel01", function () {
 		$(this).autocomplete({
@@ -68,6 +70,55 @@ $(function () {
 	ctaDescSelected = $("#prov_denominacion_selected").val();
 	$("#Rel01").val(`${ctaDescSelected} (${ctaIdSelected})`);
 });
+
+function EliminarTodosLosAnticipos() {
+
+	const filas = $("#tbListaAnticipos tbody tr").length;
+
+	if (filas <= 0) {
+		MostrarError("No existen cuentas cargadas.");
+		return;
+	}
+
+	AbrirMensaje(
+		"ATENCIÓN",
+		"¿Está seguro que desea eliminar todas las cuentas cargados?",
+		function (e) {
+
+			$("#msjModal").modal("hide");
+
+			switch (e) {
+				case "SI":
+					handlerEliminarTodosLosAnticipos();
+					break;
+			}
+
+			return true;
+		},
+		true,
+		["SI", "NO"],
+		"question!",
+		null
+	);
+}
+
+function handlerEliminarTodosLosAnticipos() {
+
+	AbrirWaiting();
+
+	PostGen({}, eliminarTodosLosAnticiposUrl, function (obj) {
+
+		CerrarWaiting();
+
+		if (obj.error === true) {
+			MostrarError(obj.msg);
+		}
+		else {
+			anticiposSeleccionados = [];
+			ActualizarListaDeAnticipos();
+		}
+	});
+}
 
 function valorInteresModificado(nuevo_interes) {
 	AbrirWaiting();
@@ -284,6 +335,7 @@ function ActualizarListaDeAnticipos() {
 	PostGen({}, actualizarListaDeAnticiposUrl, function (obj) {
 		$("#divGrillaAnticipos").html(obj);
 		RestaurarChecksSeleccionados(anticiposSeleccionados);
+		ActualizarEstadoBotonHistorial();
 		CerrarWaiting();
 	});
 }
@@ -495,11 +547,12 @@ function CargarDetalleDeAnticipo(row) {
 }
 
 function ConfirmarCargaDesdeHistorial() {
+	AbrirWaiting("Cargando desde Historial...");
 	var filas = $("#tbGridAnticipoFinEmpDetalle tbody tr").length;
 	if (filas > 0) {
 		var anCompte = anticipoHistoricoSeleccionado;
 		var data = { anCompte };
-		PostGen(data, eliminarItemAnticipoUrl, function (obj) {
+		PostGen(data, confirmarCargaDesdeHistorialUrl, function (obj) {
 			CerrarWaiting();
 			if (obj.error === true) {
 				AbrirMensaje("ATENCIÓN", obj.msg, function () {
@@ -739,7 +792,7 @@ function inicializarCamposEnModal() {
 		}
 	});
 
-	$(document).on(
+	$(document).off("dblclick", "#tabCuentasEmpleados tbody tr").on(
 		"dblclick",
 		"#tabCuentasEmpleados tbody tr",
 		function () {
@@ -750,7 +803,7 @@ function inicializarCamposEnModal() {
 			agregarEmpleadoSeleccionado(id, descripcion);
 		});
 
-	$(document).on(
+	$(document).off("dblclick", "#tabCuentasEmpleadosParaAgregar tbody tr").on(
 		"dblclick",
 		"#tabCuentasEmpleadosParaAgregar tbody tr",
 		function () {
@@ -765,9 +818,9 @@ function inicializarCamposEnModal() {
 			renderizarTablaSeleccionados();
 		});
 
-	$(document).on("click", "#btnAgregarTodasLasCuentas", AgregarTodasLasCuentas);
+	$(document).off("click", "#btnAgregarTodasLasCuentas").on("click", "#btnAgregarTodasLasCuentas", AgregarTodasLasCuentas);
 
-	$(document).on("click", "#btnQuitarTodasLasCuentas", QuitarTodasLasCuentas);
+	$(document).off("click", "#btnQuitarTodasLasCuentas").on("click", "#btnQuitarTodasLasCuentas", QuitarTodasLasCuentas);
 }
 
 function AgregarTodasLasCuentas() {
@@ -982,6 +1035,12 @@ function RestaurarChecksSeleccionados(idsSeleccionados) {
 	});
 
 	ActualizarCheckCabecera();
+}
+
+function ActualizarEstadoBotonHistorial() {
+	const tieneFilas = $("#tbListaAnticipos tbody tr").length > 0;
+
+	$("#btnHistorial").prop("disabled", tieneFilas);
 }
 
 function ActualizarCheckCabecera() {

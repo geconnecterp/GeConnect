@@ -428,6 +428,7 @@ namespace gc.api.core.Constantes
 			public const string SP_F_OBTENER_TOPE_CTA = "SPGECO_F_Obtener_Topes_Cta";
 			public const string SP_F_OBTENER_TOPE_CTA_LISTA = "SPGECO_F_Obtener_Topes_Ctas_Lista";
 			public const string SP_F_AN_DETALLE = "SPGECO_F_AN_Detalle";
+			public const string SP_F_AN_DETALLE_X_CTA = "SPGECO_F_AN_Detalle_X_Cta";
 			public const string SP_F_AN_USU = "SPGECO_F_AN_Usu";
 			public const string SP_F_AN_LISTA = "SPGECO_F_AN_Lista";
 			public const string SP_F_AN_ANULA_CONFIRMAR = "SPGECO_F_AN_Anula_Confirmar";

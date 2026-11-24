@@ -337,7 +337,88 @@ namespace gc.sitio.Areas.Financieros.Controllers
 			}
 		}
 
+		public JsonResult ConfirmarCargaDesdeHistorial(string anCompte)
+		{
+			try
+			{
+				var auth = EstaAutenticado;
 
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+					return Json(new { error = true, warn = false, msg = "No autenticado." });
+
+				if (string.IsNullOrEmpty(anCompte))
+					return Json(new { error = true, warn = false, msg = "Debe seleccionar al menos un anticipo." });
+
+				var resultado = _financieroServicio.GetAnticipoDetallePorCuenta(anCompte, TokenCookie);
+				if (resultado == null || resultado.Count <= 0)
+					return Json(new { error = true, warn = false, msg = "No se ha encontrado detalle del anticipo seleccionado." });
+
+				var listaTemp = AnticiposLista;
+				foreach (var item in resultado)
+				{
+					var nuevoAnticipo = new AnticipoDto
+					{
+						id = Guid.NewGuid().ToString(),
+						cta_id = item.cta_id,
+						cta_denominacion = item.cta_denominacion,
+						importe = item.cv_importe_tot,
+						cuotas = item.cm_compte_cuota_tot,
+						intereses = 0,
+						valor_cuota = (item.cv_importe_tot / item.cm_compte_cuota_tot),
+						valor_total = item.cv_importe_tot,
+						tope = item.tope,
+						tope_original = item.tope,
+						mostrar_alerta = (item.cv_importe_tot > item.tope)
+					};
+					listaTemp.Add(nuevoAnticipo);
+				}
+				AnticiposLista = listaTemp;
+
+				return Json(new
+				{
+					error = false,
+					warn = false,
+					msg = ""
+				});
+			}
+			catch (Exception ex)
+			{
+				return Json(new
+				{
+					error = true,
+					warn = false,
+					msg = ex.InnerException?.Message ?? ex.Message
+				});
+			}
+		}
+
+		public JsonResult EliminarTodosLosAnticipos()
+		{
+			try
+			{
+				var auth = EstaAutenticado;
+
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+					return Json(new { error = true, warn = false, msg = "No autenticado." });
+
+				AnticiposLista = [];
+				return Json(new
+				{
+					error = false,
+					warn = false,
+					msg = ""
+				});
+			}
+			catch (Exception ex)
+			{
+				return Json(new
+				{
+					error = true,
+					warn = false,
+					msg = ex.InnerException?.Message ?? ex.Message
+				});
+			}
+		}
 
 		public IActionResult CancelarAnticipos()
 		{

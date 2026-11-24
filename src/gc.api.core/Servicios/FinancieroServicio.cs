@@ -840,6 +840,17 @@ namespace gc.api.core.Servicios
 			return listaTemp;
 		}
 
+		public List<AnticipoDetallePorCuentaDto> GetAnticipoDetallePorCuenta(string an_compte)
+		{
+			var sp = Constantes.ConstantesGC.StoredProcedures.SP_F_AN_DETALLE_X_CTA;
+			var ps = new List<SqlParameter>()
+			{
+				new("@an_compte", an_compte),
+			};
+			var listaTemp = _repository.EjecutarLstSpExt<AnticipoDetallePorCuentaDto>(sp, ps, true);
+			return listaTemp;
+		}
+
 		public List<FinancieroUsuarioDto> GetFinancieroUsuarios(GetFinancieroUsuariosRequest request)
 		{
 			var sp = Constantes.ConstantesGC.StoredProcedures.SP_F_AN_USU;

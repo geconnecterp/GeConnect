@@ -560,6 +560,21 @@ namespace gc.api.Controllers.Financieros
 			return Ok(response);
 		}
 
+		[HttpGet]
+		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<AnticipoDetallePorCuentaDto>))]
+		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
+		[Route("[action]")]
+		public IActionResult GetAnticipoDetallePorCuenta(string an_compte)
+		{
+			ApiResponse<List<AnticipoDetallePorCuentaDto>> response;
+			_logger.LogInformation($"{GetType().Name} - {MethodBase.GetCurrentMethod()?.Name}");
+			var res = _financieroServicio.GetAnticipoDetallePorCuenta(an_compte);
+
+			response = new ApiResponse<List<AnticipoDetallePorCuentaDto>>(res);
+
+			return Ok(response);
+		}
+
 		[HttpPost]
 		[ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(ApiResponse<FinancieroUsuarioDto>))]
 		[ProducesResponseType((int)HttpStatusCode.BadRequest)]
