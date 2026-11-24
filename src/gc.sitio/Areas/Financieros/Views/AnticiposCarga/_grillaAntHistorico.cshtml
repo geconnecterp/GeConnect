@@ -1,0 +1,39 @@
+﻿@using static gc.infraestructura.Helpers.GridHelper
+@model GridCoreSmart<AnticipoFinanEmpListaDto>
+@{
+	var alt = true;
+	string clase = string.Empty;
+}
+<div class="table-responsive table-wrapper">
+	<table class="table table-sm table-golden" id="tbGridAnticipoFinEmp">
+		<thead>
+			<tr class="header">
+				<th class="text-center th-compact" scope="col" style="width: 10%;">N° Anticipo</th>
+				<th class="text-center th-compact" scope="col" style="width: 40%;">Concepto</th>
+				<th class="text-center th-compact" scope="col">Fecha</th>
+				<th class="text-center th-compact" scope="col">Contrapartida</th>
+				<th class="text-center th-compact" scope="col">Anulado</th>
+			</tr>
+		</thead>
+		<tbody>
+			@if (Model != null && Model != null && Model.ListaDatos != null && Model.ListaDatos.Count > 0)
+			{
+				@foreach (var item in Model.ListaDatos)
+				{
+					if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+
+					@* <tr class="@clase" onclick="selectReg(this, 'tbGridAnticipoFinEmp')" data-an-compte="@item.an_compte"> *@
+					<tr class="@clase" 
+						data-grid="tbGridAnticipoFinEmp"
+						data-id="@item.an_compte">
+						<td class="@Model.ObtenerClase(item.an_compte) align-center cell-fit-content">@Model.FormatearDato(item.an_compte, FormatDato.Ninguno)</td>
+						<td class="@Model.ObtenerClase(item.an_concepto) cell-fit-content">@Model.FormatearDato(item.an_concepto, FormatDato.Ninguno)</td>
+						<td class="@Model.ObtenerClase(item.an_fecha) cell-fit-content">@Model.FormatearDato(item.an_fecha, FormatDato.Fecha)</td>
+						<td class="@Model.ObtenerClase(item.ant_desc) align-left cell-fit-content">@Model.FormatearDato(item.ant_desc, FormatDato.Ninguno)</td>
+						<td class="@Model.ObtenerClase(item.str_an_anulada) align-center cell-fit-content">@Model.FormatearDato(item.str_an_anulada, FormatDato.Ninguno)</td>
+					</tr>
+				}
+			}
+		</tbody>
+	</table>
+</div>

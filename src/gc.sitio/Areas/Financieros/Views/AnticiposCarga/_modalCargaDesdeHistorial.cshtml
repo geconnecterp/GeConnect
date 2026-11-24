@@ -1,0 +1,142 @@
+﻿@using static gc.infraestructura.Helpers.GridHelper
+@model CargaAnticipoHistorialModel
+@{
+	var alt = true;
+	string clase = string.Empty;
+}
+<style>
+	.btn-abms {
+		width: 125px !important;
+		text-align: center;
+		white-space: nowrap;
+	}
+
+	.lbl-w {
+		width: 70px;
+	}
+</style>
+<div>
+	<div class="modal-header">
+		<h5 class="modal-title" id="modalCenterTitle">Histórico de Anticipos</h5>
+	</div>
+	<div class="modal-body">
+		<div class="row">
+			<div class="col-md-4">
+				<div class="input-group input-group-sm">
+					<span class="input-group-text" id="lbIdDesde">Desde:</span>
+					<input type="date" class="form-control inputEditable" asp-for="Desde" style="background-color:rgb(251,255,195);font-weight:900;" autofocus data-tabindex="2" />
+				</div>
+			</div>
+			<div class=" col-sm-4">
+				<div class="input-group input-group-sm">
+					<span class="input-group-text" id="lbIdHasta">Hasta:</span>
+					<input type="date" class="form-control inputEditable" asp-for="Hasta" style="background-color:rgb(251,255,195);font-weight:900;" autofocus data-tabindex="3" />
+				</div>
+			</div>
+			<div class=" col-sm-4">
+				<button type="button" class="btn btn-success btn-sm ms-1 btn-abms" id="btnBuscarHistoricoDeAnticipo" title="Buscar Histórico de Anticipos">
+					<i class="bx bx-badge-check"></i> Buscar
+				</button>
+			</div>
+		</div>
+		<div class="row mt-2">
+			<div class="grid-golden" style="padding-left: 0px; padding-right: 0px;">
+				<div class="grid-golden-header">
+					<div class="d-flex justify-content-between align-items-center">
+						<h5 class="mb-0">
+							<strong>Anticipos</strong>
+						</h5>
+					</div>
+				</div>
+				<div class="grid-golden-body" id="divGridHistoricoDeAnticipos">
+					<div class="table-responsive table-wrapper">
+						<table class="table table-sm table-golden" id="tbGridAnticipoFinEmp">
+							<thead>
+								<tr class="header">
+									<th class="text-center th-compact" scope="col">N° Anticipo</th>
+									<th class="text-center th-compact" scope="col">Concepto</th>
+									<th class="text-center th-compact" scope="col">Fecha</th>
+									<th class="text-center th-compact" scope="col">Contrapartida</th>
+									<th class="text-center th-compact" scope="col">Anulado</th>
+								</tr>
+							</thead>
+							<tbody>
+								@if (Model != null && Model.GrillaAnticipoFinanEmp != null && Model.GrillaAnticipoFinanEmp.ListaDatos != null && Model.GrillaAnticipoFinanEmp.ListaDatos.Count > 0)
+								{
+									@foreach (var item in Model.GrillaAnticipoFinanEmp.ListaDatos)
+									{
+										if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+
+										@* <tr class="@clase" onclick="selectReg(this, 'tbGridAnticipoFinEmp')" data-an-compte="@item.an_compte"> *@
+										<tr class="@clase" 
+											data-grid="tbGridAnticipoFinEmp"
+											data-id="@item.an_compte">
+											<td class="@Model.GrillaAnticipoFinanEmp.ObtenerClase(item.an_compte) align-center cell-fit-content">@Model.GrillaAnticipoFinanEmp.FormatearDato(item.an_compte, FormatDato.Ninguno)</td>
+											<td class="@Model.GrillaAnticipoFinanEmp.ObtenerClase(item.an_concepto) cell-fit-content">@Model.GrillaAnticipoFinanEmp.FormatearDato(item.an_concepto, FormatDato.Ninguno)</td>
+											<td class="@Model.GrillaAnticipoFinanEmp.ObtenerClase(item.an_fecha) cell-fit-content">@Model.GrillaAnticipoFinanEmp.FormatearDato(item.an_fecha, FormatDato.Fecha)</td>
+											<td class="@Model.GrillaAnticipoFinanEmp.ObtenerClase(item.ant_desc) align-left cell-fit-content">@Model.GrillaAnticipoFinanEmp.FormatearDato(item.ant_desc, FormatDato.Ninguno)</td>
+											<td class="@Model.GrillaAnticipoFinanEmp.ObtenerClase(item.str_an_anulada) align-center cell-fit-content">@Model.GrillaAnticipoFinanEmp.FormatearDato(item.str_an_anulada, FormatDato.Ninguno)</td>
+										</tr>
+									}
+								}
+							</tbody>
+						</table>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="row">
+			<div class="grid-golden" style="padding-left: 0px; padding-right: 0px;">
+				<div class="grid-golden-header">
+					<div class="d-flex justify-content-between align-items-center">
+						<h5 class="mb-0">
+							<strong>Detalle</strong>
+						</h5>
+					</div>
+				</div>
+				<div class="grid-golden-body" id="divGridHistoricoDeAnticiposDetalle">
+					<div class="table-responsive table-wrapper">
+						<table class="table table-sm table-golden" id="tbGridAnticipoFinEmpDetalle">
+							<thead>
+								<tr class="header">
+									<th class="text-center th-compact" scope="col">Código</th>
+									<th class="text-center th-compact" scope="col">Denominación</th>
+									<th class="text-center th-compact" scope="col">Legajo</th>
+									<th class="text-center th-compact" scope="col">Anticipo</th>
+									<th class="text-center th-compact" scope="col">Cuotas</th>
+								</tr>
+							</thead>
+							<tbody>
+								@if (Model != null && Model.GrillaAnticipoFinanEmpDetalle != null && Model.GrillaAnticipoFinanEmpDetalle.ListaDatos != null && Model.GrillaAnticipoFinanEmpDetalle.ListaDatos.Count > 0)
+								{
+									@foreach (var item in Model.GrillaAnticipoFinanEmpDetalle.ListaDatos)
+									{
+										if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+
+										<tr class="@clase" onclick="selectReg(this, 'tbGridAnticipoFinEmpDetalle')" data-an-compte="@item.an_compte">
+											<td class="@Model.GrillaAnticipoFinanEmpDetalle.ObtenerClase(item.cta_id) align-center cell-fit-content">@Model.GrillaAnticipoFinanEmpDetalle.FormatearDato(item.cta_id, FormatDato.Ninguno)</td>
+											<td class="@Model.GrillaAnticipoFinanEmpDetalle.ObtenerClase(item.cta_denominacion) align-left cell-fit-content">@Model.GrillaAnticipoFinanEmpDetalle.FormatearDato(item.cta_denominacion, FormatDato.Ninguno)</td>
+											<td class="@Model.GrillaAnticipoFinanEmpDetalle.ObtenerClase(item.cta_emp_legajo) align-center cell-fit-content">@Model.GrillaAnticipoFinanEmpDetalle.FormatearDato(item.cta_emp_legajo, FormatDato.Ninguno)</td>
+											<td class="@Model.GrillaAnticipoFinanEmpDetalle.ObtenerClase(item.cv_importe) cell-fit-content">@Model.GrillaAnticipoFinanEmpDetalle.FormatearDato(item.cv_importe, FormatDato.Monto)</td>
+											<td class="@Model.GrillaAnticipoFinanEmpDetalle.ObtenerClase(item.cm_compte_cuota) align-center cell-fit-content">@Model.GrillaAnticipoFinanEmpDetalle.FormatearDato(item.cm_compte_cuota, FormatDato.Ninguno)</td>
+										</tr>
+									}
+								}
+							</tbody>
+						</table>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="modal-footer">
+		<div class="input-group input-group-sm">
+			<button type="button" class="btn btn-success btn-sm ms-1 btn-abms" id="btnConfirmarCargaDesdeHistorial">
+				<i class="bx bx-badge-check"></i> Cargar
+			</button>
+			<button type="button" class="btn btn-outline-secondary btn-sm ms-1 btn-abms" id="btnSalirDeCargaDeHistorial">
+				<i class="bx bx-log-out-circle"></i> Salir
+			</button>
+		</div>
+	</div>
+</div>

@@ -200,6 +200,15 @@
 	</div>
 </div>
 
+<div class="modal fade modal-golden in" id="modalCargaDeAnticipoDesdeHistorial" tabindex="-1" style="display: none;" aria-hidden="true" data-backdrop="static">
+	<div class="modal-dialog modal-xl" role="document">
+		<div class="modal-content">
+			<div id="divCargaDeAnticipoDesdeHistorial">
+			</div>
+		</div>
+	</div>
+</div>
+
 <!-- para el modal del geston de impresion -->
 <div id="modalGestorDocumental"></div>
 
@@ -219,6 +228,9 @@
 		var confirmarCargaDeAnticipoUrl = "@Url.Action("ConfirmarCargaDeAnticipo", "anticiposcarga", new { area = "Financieros" })";
 		var actualizarInteresDeAnticiposUrl = "@Url.Action("ActualizarInteresDeAnticipos", "anticiposcarga", new { area = "Financieros" })";
 		var aplicarCambiosEnFilasUrl = "@Url.Action("AplicarCambiosEnFilas", "anticiposcarga", new { area = "Financieros" })";
+		var abrirModalAgregarAnticipoDesdeHistorialUrl = "@Url.Action("AbrirModalAgregarAnticipoDesdeHistorial", "anticiposcarga", new { area = "Financieros" })";
+		var buscarHistoricoDeAnticipoUrl = "@Url.Action("BuscarHistorialDeAnticipos", "anticiposcarga", new { area = "Financieros" })";
+		var cargarDetalleDeAnticipoUrl = "@Url.Action("CargarDetalleDeAnticipo", "anticiposcarga", new { area = "Financieros" })";
 
 		/* Gestor de impresión*/
 		var repoApiUrl = '@Url.Action("ObtenerPdfDesdeAPI", "GestorImpresion", new { area = "ControlComun" })';

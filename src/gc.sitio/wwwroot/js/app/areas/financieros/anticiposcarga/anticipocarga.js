@@ -1,5 +1,6 @@
 ﻿let anticiposSeleccionados = [];
 let empleadosSeleccionados = [];
+let anticipoHistoricoSeleccionado = null;
 
 $(function () {
 
@@ -8,9 +9,12 @@ $(function () {
 	$(document).on("click", "#btnAplicar", AplicarCambiosEnFilas);
 	$(document).on("click", "#btnConfirmar", AgregarAnticipo);
 	$(document).on("click", "#btnSalir", CerrarModal);
+	$(document).on("click", "#btnSalirDeCargaDeHistorial", CerrarModalHistorico);
 	$(document).on("click", "#btnConfirmarCargaDeAnticipo", ConfirmarAnticipos);
 	$(document).on("click", "#btnCancelar", CancelarAnticipos);
-	$(document).on("click", "#btnHistorial", CargarDesdeHistorial); 
+	$(document).on("click", "#btnHistorial", AbrirModalAgregarAnticipoDesdeHistorial);
+	$(document).on("click", "#btnBuscarHistoricoDeAnticipo", BuscarHistoricoDeAnticipo);
+	$(document).on("click", "#btnConfirmarCargaDesdeHistorial", ConfirmarCargaDesdeHistorial);
 
 	$(document).on("keydown.autocomplete", "input#Rel01", function () {
 		$(this).autocomplete({
@@ -270,6 +274,11 @@ function CerrarModal() {
 	$('#modalCargaDeAnticipo').modal('hide');
 }
 
+function CerrarModalHistorico() {
+	$('#modalCargaDeAnticipoDesdeHistorial').modal('hide');
+	anticipoHistoricoSeleccionado = null;
+}
+
 function ActualizarListaDeAnticipos() {
 	AbrirWaiting();
 	PostGen({}, actualizarListaDeAnticiposUrl, function (obj) {
@@ -403,6 +412,109 @@ function AplicarCambiosEnFilas() {
 			}, 500);
 		}
 	});
+}
+
+function AbrirModalAgregarAnticipoDesdeHistorial() {
+	AbrirWaiting();
+	let data = {};
+	PostGenHtml(data, abrirModalAgregarAnticipoDesdeHistorialUrl, function (obj) {
+		$("#divCargaDeAnticipoDesdeHistorial").empty();
+		$("#divCargaDeAnticipoDesdeHistorial").html(obj);
+		const $modal = $("#modalCargaDeAnticipoDesdeHistorial");
+
+		$modal.modal({
+			backdrop: 'static',
+		});
+
+		//inicializarCamposEnModal();
+
+		CerrarWaiting();
+		$modal.modal('show');
+
+		setTimeout(() => {
+			BuscarHistoricoDeAnticipo();
+		}, 500);
+
+		return true
+	});
+}
+
+function BuscarHistoricoDeAnticipo() {
+	AbrirWaiting();
+	var desde = $("#Desde").val();
+	var hasta = $("#Hasta").val();
+	var data = { desde, hasta };
+	PostGenHtml(data, buscarHistoricoDeAnticipoUrl, function (obj) {
+		$("#divGridHistoricoDeAnticipos").empty();
+		$("#divGridHistoricoDeAnticipos").html(obj);
+		inicializarEventosTablaAnticipoHistorico();
+		// Posicionar en el primer registro y cargar detalle
+		const $primerRegistro = $("#tbGridAnticipoFinEmp tbody tr:first");
+
+		if ($primerRegistro.length) {
+			$primerRegistro.trigger("click");
+		}
+		CerrarWaiting();
+	});
+}
+
+function inicializarEventosTablaAnticipoHistorico() {
+	let clickTimer = null;
+
+	// CLICK
+	$(document)
+		.off("click", "#tbGridAnticipoFinEmp tbody tr")
+		.on("click", "#tbGridAnticipoFinEmp tbody tr", function () {
+
+			const row = this;
+			selectReg(row, "tbGridAnticipoFinEmp");   // CLICK NORMAL
+			CargarDetalleDeAnticipo(row);
+
+		});
+
+}
+
+function CargarDetalleDeAnticipo(row) {
+
+	const anCompte = $(row).data("id");
+
+	AbrirWaiting();
+
+	const data = {
+		an_compte: anCompte
+	};
+
+	PostGenHtml(data, cargarDetalleDeAnticipoUrl, function (obj) {
+
+		$("#divGridHistoricoDeAnticiposDetalle").empty();
+		$("#divGridHistoricoDeAnticiposDetalle").html(obj);
+
+		CerrarWaiting();
+	});
+	anticipoHistoricoSeleccionado = anCompte;
+}
+
+function ConfirmarCargaDesdeHistorial() {
+	var filas = $("#tbGridAnticipoFinEmpDetalle tbody tr").length;
+	if (filas > 0) {
+		var anCompte = anticipoHistoricoSeleccionado;
+		var data = { anCompte };
+		PostGen(data, eliminarItemAnticipoUrl, function (obj) {
+			CerrarWaiting();
+			if (obj.error === true) {
+				AbrirMensaje("ATENCIÓN", obj.msg, function () {
+					$("#msjModal").modal("hide");
+					return true;
+				}, false, ["Aceptar"], "error!", null);
+			}
+			else {
+				ActualizarListaDeAnticipos();
+			}
+		});
+	}
+	else {
+		MostrarError("El anticipo seleccionado no tiene detalle asociado.");
+	}
 }
 
 function AbrirModalAgregarAnticipo() {
@@ -539,7 +651,7 @@ function selectItemGrillaCuentasEmpleadosParaCargar(x) {
 
 function inicializarCamposEnModal() {
 	$("#modalCenterTitle").text("Carga de Anticipo de Empleado");
-	getMaskForIntegerMax("#cuotasModalCarga",1, 60);
+	getMaskForIntegerMax("#cuotasModalCarga", 1, 60);
 	getMaskForMoneyType("#importeModalCarga");
 	getMaskForMoneyType("#interesModalCarga");
 	$("input#Rel02").on("click", function () {

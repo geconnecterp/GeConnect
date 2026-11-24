@@ -5,6 +5,7 @@ using gc.infraestructura.Core.EntidadesComunes.Options;
 using gc.infraestructura.Dtos.Almacen;
 using gc.infraestructura.Dtos.Almacen.Request;
 using gc.infraestructura.Dtos.Financieros;
+using gc.infraestructura.Dtos.Financieros.Request;
 using gc.infraestructura.Dtos.Gen;
 using gc.infraestructura.EntidadesComunes.Options;
 using gc.infraestructura.Enumeraciones;
@@ -130,11 +131,35 @@ namespace gc.sitio.Areas.Financieros.Controllers
 			}
 		}
 
-		public class CuentaSeleccionada
+		public IActionResult AbrirModalAgregarAnticipoDesdeHistorial()
 		{
-			public string id { get; set; } = string.Empty;
-			public string descripcion { get; set; } = string.Empty;
+			var model = new CargaAnticipoHistorialModel();
+			try
+			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+					return RedirectToAction("Login", "Token", new { area = "seguridad" });
+
+				model.Desde = DateTime.Today.AddDays(-30);
+				model.Hasta = DateTime.Today;
+				model.GrillaAnticipoFinanEmp = ObtenerGridCoreSmart<AnticipoFinanEmpListaDto>(new List<AnticipoFinanEmpListaDto>());
+				model.GrillaAnticipoFinanEmpDetalle = ObtenerGridCoreSmart<AnticipoDetalleDto>(new List<AnticipoDetalleDto>());	
+				return PartialView("_modalCargaDesdeHistorial", model);
+			}
+			catch (Exception ex)
+			{
+				RespuestaGenerica<EntidadBase> response = new()
+				{
+					Ok = false,
+					EsError = true,
+					EsWarn = false,
+					Mensaje = ex.Message
+				};
+				return PartialView("_gridMensaje", response);
+			}
 		}
+
+		
 
 		public JsonResult AgregarAnticipo(List<CuentaSeleccionada> empleadosSeleccionados, int cuotas, decimal importe, decimal intereses)
 		{
@@ -242,6 +267,77 @@ namespace gc.sitio.Areas.Financieros.Controllers
 				return PartialView("_gridMensaje", response);
 			}
 		}
+
+		public IActionResult BuscarHistorialDeAnticipos(DateTime desde, DateTime hasta)
+		{
+			var model = new GridCoreSmart<AnticipoFinanEmpListaDto>();
+			try
+			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+					return RedirectToAction("Login", "Token", new { area = "seguridad" });
+
+				var request = new ConsultaAnticipoFinanEmpRequest
+				{
+					desde = desde,
+					hasta = hasta,
+					cta = false,
+					cta_list = [],
+					tipo = false,
+					tipo_list = [],
+					usu = false,
+					usu_list = [],
+					Registros = 1000,
+					Pagina = 1
+				};
+				var res = _financieroServicio.BuscarAnticipoFinancierosDeEmpleados(request, TokenCookie).Result;
+				model = ObtenerGridCoreSmart<AnticipoFinanEmpListaDto>(res.Item1);
+				return PartialView("_grillaAntHistorico", model);
+			}
+			catch (Exception ex)
+			{
+				RespuestaGenerica<EntidadBase> response = new()
+				{
+					Ok = false,
+					EsError = true,
+					EsWarn = false,
+					Mensaje = ex.Message
+				};
+				return PartialView("_gridMensaje", response);
+			}
+		}
+
+		[HttpPost]
+		public IActionResult CargarDetalleDeAnticipo(string an_compte)
+		{
+			var model = new GridCoreSmart<AnticipoDetalleDto>();
+			try
+			{
+				var auth = EstaAutenticado;
+				if (!auth.Item1 || auth.Item2 < DateTime.Now)
+					return RedirectToAction("Login", "Token", new { area = "seguridad" });
+
+				var resultado = _financieroServicio.GetAnticipoDetalle(an_compte, TokenCookie);
+				if (resultado == null || resultado.Count <= 0)
+					return PartialView("_grillaAntHistoricoDetalle", model);
+
+				model = ObtenerGridCoreSmart<AnticipoDetalleDto>(resultado);
+				return PartialView("_grillaAntHistoricoDetalle", model);
+			}
+			catch (Exception ex)
+			{
+				RespuestaGenerica<EntidadBase> response = new()
+				{
+					Ok = false,
+					EsError = true,
+					EsWarn = false,
+					Mensaje = ex.Message
+				};
+				return PartialView("_gridMensaje", response);
+			}
+		}
+
+
 
 		public IActionResult CancelarAnticipos()
 		{
@@ -434,6 +530,11 @@ namespace gc.sitio.Areas.Financieros.Controllers
 		}
 
 		#region Clases auxiliares
+		public class CuentaSeleccionada
+		{
+			public string id { get; set; } = string.Empty;
+			public string descripcion { get; set; } = string.Empty;
+		}
 		public class AnticipoParaCarga
 		{
 			public string cta_id { get; set; } = string.Empty;
