@@ -141,19 +141,19 @@
 							switch (Model.AgrupadoPor)
 							{
 								case 1:
-									productos = Model.GrillaProductoStk.ListaDatos.OrderBy(p => p.sec_id).ToList();
+									productos = Model.GrillaProductoStk.ListaDatos.OrderBy(p => p.sec_desc).ToList();
 									break;
 								case 2:
-									productos = Model.GrillaProductoStk.ListaDatos.OrderBy(p => p.rubg_id).ToList();
+									productos = Model.GrillaProductoStk.ListaDatos.OrderBy(p => p.rubg_desc).ToList();
 									break;
 								case 3:
-									productos = Model.GrillaProductoStk.ListaDatos.OrderBy(p => p.rub_id).ToList();
+									productos = Model.GrillaProductoStk.ListaDatos.OrderBy(p => p.rub_desc).ToList();
 									break;
 								case 4:
-									productos = Model.GrillaProductoStk.ListaDatos.OrderBy(p => p.cta_id).ToList();
+									productos = Model.GrillaProductoStk.ListaDatos.OrderBy(p => p.cta_denominacion).ToList();
 									break;
 								default:
-									productos = Model.GrillaProductoStk.ListaDatos.OrderBy(p => p.p_id).ToList();
+									productos = Model.GrillaProductoStk.ListaDatos.OrderBy(p => p.p_desc).ToList();
 									break;
 							}
 						}

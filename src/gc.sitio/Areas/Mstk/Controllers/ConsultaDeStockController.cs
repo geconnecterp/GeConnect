@@ -64,7 +64,7 @@ namespace gc.sitio.Areas.Mstk.Controllers
 				if (!auth.Item1 || auth.Item2 < DateTime.Now)
 					return RedirectToAction("Login", "Token", new { area = "seguridad" });
 
-				var titulo = "REPORTE DE STOCK";
+				var titulo = "CONSULTA DE STOCK";
 				ViewData["Titulo"] = titulo;
 
 				#region Gestor Impresion - Inicializacion de variables
@@ -112,7 +112,8 @@ namespace gc.sitio.Areas.Mstk.Controllers
 				{
 					request.Sort = sort;
 					request.SortDir = sortDir;
-					request.Registros = _setting.NroRegistrosPagina;
+					//request.Registros = _setting.NroRegistrosPagina;
+					request.Registros = 5000;
 					//request.Pagina = pag;
 
 					var res = await _consultaServicio.ConsultarProductoStk(request, TokenCookie);

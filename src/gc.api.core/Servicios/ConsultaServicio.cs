@@ -355,7 +355,7 @@ namespace gc.api.core.Servicios
 					sb.Append(item);
 				}
 				ps.Add(new SqlParameter("@adm", "1"));
-				ps.Add(new SqlParameter("@adm_list", sb.ToString() + ','));
+				ps.Add(new SqlParameter("@adm_list", sb.ToString()));
 			}
 			else
 				ps.Add(new SqlParameter("@adm", "0"));
@@ -374,7 +374,7 @@ namespace gc.api.core.Servicios
 					sb.Append(item);
 				}
 				ps.Add(new SqlParameter("@depo", "1"));
-				ps.Add(new SqlParameter("@depo_list", sb.ToString() + ','));
+				ps.Add(new SqlParameter("@depo_list", sb.ToString()));
 			}
 			else
 				ps.Add(new SqlParameter("@depo", "0"));
@@ -393,7 +393,7 @@ namespace gc.api.core.Servicios
 					sb.Append(item);
 				}
 				ps.Add(new SqlParameter("@prov", "1"));
-				ps.Add(new SqlParameter("@prov_list", sb.ToString() + ','));
+				ps.Add(new SqlParameter("@prov_list", sb.ToString()));
 			}
 			else
 				ps.Add(new SqlParameter("@prov", "0"));
@@ -412,7 +412,7 @@ namespace gc.api.core.Servicios
 					sb.Append(item);
 				}
 				ps.Add(new SqlParameter("@pg", "1"));
-				ps.Add(new SqlParameter("@pg_list", sb.ToString() + ','));
+				ps.Add(new SqlParameter("@pg_list", sb.ToString()));
 			}
 			else
 				ps.Add(new SqlParameter("@pg", "0"));
@@ -431,7 +431,7 @@ namespace gc.api.core.Servicios
 					sb.Append(item);
 				}
 				ps.Add(new SqlParameter("@rub", "1"));
-				ps.Add(new SqlParameter("@rub_list", sb.ToString() + ','));
+				ps.Add(new SqlParameter("@rub_list", sb.ToString()));
 			}
 			else
 				ps.Add(new SqlParameter("@rub", "0"));
@@ -496,7 +496,7 @@ namespace gc.api.core.Servicios
 					sb.Append(item);
 				}
 				ps.Add(new SqlParameter("@adm", "1"));
-				ps.Add(new SqlParameter("@adm_list", sb.ToString() + ','));
+				ps.Add(new SqlParameter("@adm_list", sb.ToString()));
 			}
 			else
 				ps.Add(new SqlParameter("@adm", "0"));
@@ -515,7 +515,7 @@ namespace gc.api.core.Servicios
 					sb.Append(item);
 				}
 				ps.Add(new SqlParameter("@depo", "1"));
-				ps.Add(new SqlParameter("@depo_list", sb.ToString() + ','));
+				ps.Add(new SqlParameter("@depo_list", sb.ToString()));
 			}
 			else
 				ps.Add(new SqlParameter("@depo", "0"));
@@ -534,7 +534,7 @@ namespace gc.api.core.Servicios
 					sb.Append(item);
 				}
 				ps.Add(new SqlParameter("@prov", "1"));
-				ps.Add(new SqlParameter("@prov_list", sb.ToString() + ','));
+				ps.Add(new SqlParameter("@prov_list", sb.ToString()));
 			}
 			else
 				ps.Add(new SqlParameter("@prov", "0"));
@@ -553,7 +553,7 @@ namespace gc.api.core.Servicios
 					sb.Append(item);
 				}
 				ps.Add(new SqlParameter("@pg", "1"));
-				ps.Add(new SqlParameter("@pg_list", sb.ToString() + ','));
+				ps.Add(new SqlParameter("@pg_list", sb.ToString()));
 			}
 			else
 				ps.Add(new SqlParameter("@pg", "0"));
@@ -572,7 +572,7 @@ namespace gc.api.core.Servicios
 					sb.Append(item);
 				}
 				ps.Add(new SqlParameter("@rub", "1"));
-				ps.Add(new SqlParameter("@rub_list", sb.ToString() + ','));
+				ps.Add(new SqlParameter("@rub_list", sb.ToString()));
 			}
 			else
 				ps.Add(new SqlParameter("@rub", "0"));

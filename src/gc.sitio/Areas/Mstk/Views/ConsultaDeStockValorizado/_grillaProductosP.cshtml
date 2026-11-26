@@ -147,7 +147,8 @@
 				<tbody>
 					@if (Model != null && Model.GrillaProductoStk != null && Model.GrillaProductoStk.ListaDatos != null && Model.GrillaProductoStk.ListaDatos.Count > 0)
 					{
-						productos = Model.GrillaProductoStk.ListaDatos.ToList();
+						//productos = Model.GrillaProductoStk.ListaDatos.ToList();
+						productos = Model.GrillaProductoStk.ListaDatos.OrderBy(x => x.rub_desc).ThenBy(x => x.p_desc).ToList();
 
 						@foreach (var item in productos)
 						{
