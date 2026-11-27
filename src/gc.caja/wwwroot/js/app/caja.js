@@ -1,4 +1,4 @@
-﻿// ============================================
+// ============================================
 // GESTOR PRINCIPAL DEL FLUJO DE CAJA
 // ============================================
 
@@ -606,7 +606,7 @@ $(function () {
                 console.warn("ðŸš« MenÃº configurado: SIN ACCESO");
                 break;
         }
-        $botones.filter('[data-action="administrador"]').prop('disabled', false).removeClass('disabled-menu-item');
+        $botones.filter('[data-action="administrador"], [data-action="consulta-reportes"]').prop('disabled', false).removeClass('disabled-menu-item');
         const zHabilitado = reimpresionZDisponible && ['completo', 'parcial', 'solo-cierre'].includes(nivelAccesoMenu);
         $botones.filter('[data-action="reportes-z"]').prop('disabled', !zHabilitado)
             .toggleClass('disabled-menu-item', !zHabilitado).attr('aria-disabled', String(!zHabilitado))
@@ -853,6 +853,9 @@ $(function () {
                 break;
             case 'administrador':
                 abrirModuloAdministrador();
+                break;
+            case 'consulta-reportes':
+                window.location.assign(ConsultaComprobantesUrl);
                 break;
             case 'reportes-z':
                 abrirModuloReportesZ();

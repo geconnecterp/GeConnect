@@ -1,0 +1,48 @@
+@{
+    ViewData["Title"] = "Control de reportes";
+    ViewData["OmitirSalidaComprobantes"] = true;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@section styles {
+    <link rel="stylesheet" href="~/css/pages/consulta-comprobantes.css" asp-append-version="true" />
+}
+<section class="consulta-reportes py-4" id="consultaReportes"
+         data-tipos-url="@Url.Action("Tipos")" data-buscar-url="@Url.Action("Buscar")" data-generar-url="@Url.Action("Generar")">
+    <div class="card shadow-sm border-golden">
+        <div class="card-header bg-gradient-golden d-flex align-items-center justify-content-between gap-3 flex-wrap">
+            <h1 class="h4 mb-0"><i class="bx bx-file-find" aria-hidden="true"></i> Control de reportes <span class="badge bg-dark fs-6">Temporal</span></h1>
+            <a class="btn btn-light" href="@Url.Action("Index", "Home", new { area = "", menu = true })"><i class="bx bx-arrow-back" aria-hidden="true"></i> Volver al menú principal</a>
+        </div>
+        <div class="card-body">
+            <p class="mb-1">Consulte un comprobante A o B ya emitido y compare su presentación en A4 y en ticket de 80 mm.</p>
+            <p class="text-muted small">Sucursal: <strong>@ViewBag.Sucursal</strong>. Esta herramienta sólo visualiza: no emite, no cobra ni envía a imprimir. La elección de formato no cambia la configuración del puesto.</p>
+            <form id="consultaReportesForm" autocomplete="off">
+                @Html.AntiForgeryToken()
+                <div class="row g-3 align-items-end">
+                    <div class="col-md-6"><label class="form-label" for="consultaTipo">Tipo de comprobante</label><select id="consultaTipo" class="form-select" required disabled><option value="">Cargando tipos…</option></select></div>
+                    <div class="col-5 col-md-2"><label class="form-label" for="consultaPv">Punto de venta</label><input id="consultaPv" class="form-control text-center" type="text" inputmode="numeric" maxlength="4" pattern="[0-9]{1,4}" placeholder="0001" required /></div>
+                    <div class="col-7 col-md-4"><label class="form-label" for="consultaNumero">Número de comprobante</label><input id="consultaNumero" class="form-control text-center" type="text" inputmode="numeric" maxlength="8" pattern="[0-9]{1,8}" placeholder="00000075" required /></div>
+                </div>
+                <div class="mt-3 d-flex gap-2 flex-wrap"><button id="consultaBuscar" class="btn btn-golden" type="submit" disabled><i class="bx bx-search" aria-hidden="true"></i> Buscar comprobante</button><button class="btn btn-outline-secondary" id="consultaLimpiar" type="button">Limpiar</button></div>
+            </form>
+            <div id="consultaEstado" class="alert alert-info mt-3 mb-0" role="status" aria-live="polite">Cargando tipos de comprobante…</div>
+            <div id="consultaSeleccion" class="mt-3" hidden>
+                <label class="form-label" for="consultaRepeticion">Comprobante encontrado</label>
+                <select id="consultaRepeticion" class="form-select"></select>
+                <p id="consultaResumen" class="mt-2 mb-0 fw-semibold"></p>
+                <div class="d-flex gap-2 flex-wrap mt-3">
+                    <button type="button" class="btn btn-golden" data-consulta-formato="A4" disabled>Ver A4</button>
+                    <button type="button" class="btn btn-golden" data-consulta-formato="TK" disabled>Ver ticket de 80 mm</button>
+                    <button type="button" class="btn btn-outline-dark" data-consulta-formato="AMBOS" disabled>Comparar ambos</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="consultaVisores" class="consulta-reportes__visores mt-4" hidden>
+        <article class="card shadow-sm" data-consulta-panel="A4" hidden><h2 class="h5 card-header mb-0">Hoja A4</h2><p data-consulta-pdf-estado class="small px-3 pt-2 mb-0" role="status"></p><iframe title="Vista del comprobante en A4" data-consulta-pdf="A4" hidden></iframe></article>
+        <article class="card shadow-sm" data-consulta-panel="TK" hidden><h2 class="h5 card-header mb-0">Ticket de 80 mm</h2><p data-consulta-pdf-estado class="small px-3 pt-2 mb-0" role="status"></p><iframe title="Vista del comprobante en ticket de 80 mm" data-consulta-pdf="TK" hidden></iframe></article>
+    </div>
+</section>
+@section Scripts {
+    <script src="~/js/app/consultaComprobantes.js" asp-append-version="true"></script>
+}
