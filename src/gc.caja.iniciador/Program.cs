@@ -78,6 +78,7 @@ sealed class Configuracion
     public bool Acumula { get; set; }
     [RegularExpression(@"(?i)^(PANTALLA|IMPRESORA)$")]
     public string? ImpresionModo { get; set; }
+    // Papel físico declarado para contrastar con GECO; no reemplaza ctrl_papel.
     [RegularExpression(@"(?i)^(A4|TK)$")]
     public string? ImpresionFormatoFE { get; set; }
 }

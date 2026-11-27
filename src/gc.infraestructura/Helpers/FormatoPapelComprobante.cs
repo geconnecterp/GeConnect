@@ -9,6 +9,6 @@ public static class FormatoPapelComprobante
         "A4" => "A4",
         "TK" => "TK",
         "EM" => "EM",
-        _ => throw new ArgumentException("Formato de comprobante desconocido. Revise ctrl_papel o impresionFormatoFE.")
+        _ => throw new ArgumentException("Formato de comprobante desconocido. Revise ctrl_papel del punto de venta.")
     };
 }

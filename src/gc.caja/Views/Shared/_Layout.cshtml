@@ -72,6 +72,10 @@
 <body data-pathbase="@Context.Request.PathBase" data-estado-operacion-url="@Url.Action("Consultar", "EstadoOperacion", new { area = "" })" data-operacion-version="@Context.Session.GetString("CajaOperacionVersion")">
     <div class="container">
         <main role="main" class="pb-3">
+            @if (User.Identity?.IsAuthenticated == true)
+            {
+                <partial name="_AvisoPapelImpresora" />
+            }
             @RenderBody()
         </main>
     </div>
@@ -97,6 +101,7 @@
     <script src="~/js/app/siteGen.js" asp-append-version="true"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     <script src="~/js/app/estadoOperacionCaja.js" asp-append-version="true"></script>
+    <script src="~/js/app/controlPapelImpresora.js" asp-append-version="true"></script>
     <script src="~/js/mask/jquery.inputmask.min.js"></script>
         <!-- ✅ NUEVO: Módulo de máscaras monetarias -->
     <script src="~/js/app/helpers/inputMaskMonetario.js" asp-append-version="true"></script>

@@ -1,0 +1,18 @@
+@using gc.caja.Models.Estacion
+@using gc.infraestructura.EntidadesComunes.Options
+@inject EstacionPuestoServicio Estaciones
+@{
+    CajaSettings? caja = null;
+    var json = Context.Session.GetString("CajaActual");
+    if (!string.IsNullOrEmpty(json))
+    {
+        try { caja = Newtonsoft.Json.JsonConvert.DeserializeObject<CajaSettings>(json); }
+        catch (Newtonsoft.Json.JsonException) { }
+    }
+    var aviso = User.Identity?.IsAuthenticated == true
+        ? ControlPapelImpresora.AvisoPara(caja, Estaciones.Obtener(Context)) : null;
+}
+<div class="alert alert-warning my-3" role="status" data-aviso-papel-impresora hidden="@(string.IsNullOrEmpty(aviso) ? "hidden" : null)">
+    <strong><i class="bx bx-printer" aria-hidden="true"></i> Revisar configuración de impresión</strong>
+    <div data-aviso-papel-texto>@aviso</div>
+</div>
