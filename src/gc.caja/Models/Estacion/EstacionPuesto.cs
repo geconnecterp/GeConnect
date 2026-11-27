@@ -21,7 +21,7 @@ public sealed class EstacionPuesto
     [RegularExpression(@"(?i)^(PANTALLA|IMPRESORA)$")]
     public string? ImpresionModo { get; set; }
 
-    // Preferencia local opcional; sin valor se consulta ctrl_papel del SP.
+    // Papel físico declarado del puesto: sólo contraste; ctrl_papel del SP decide el documento.
     [RegularExpression(@"(?i)^(A4|TK)$")]
     public string? ImpresionFormatoFE { get; set; }
 

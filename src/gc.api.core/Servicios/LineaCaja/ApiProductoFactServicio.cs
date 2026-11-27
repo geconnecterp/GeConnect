@@ -222,7 +222,8 @@ namespace gc.api.core.Servicios.LineaCaja
                 new SqlParameter("@cm_repetido", req.cm_repetido)
             };
 
-            var res = _repository.EjecutarLstSpExt<FePerResDto>(sp, ps);
+            // El SP entrega "base" y el DTO expone Base: preservar el dato sin distinguir mayúsculas.
+            var res = _repository.EjecutarLstSpExt<FePerResDto>(sp, ps, ignoreCase: true);
             return res;
         }
 

@@ -16,7 +16,7 @@ Publicar las nuevas versiones de Caja y del iniciador. Al actualizar el JSON, ce
 
 ## Formato de la FE: A4 o ticket
 
-Desde el 2026-11-21, `impresionFormatoFE` en el JSON del iniciador permite elegir A4/TK. Es opcional y tiene prioridad sobre `ctrl_papel` del SP; ausentes ambos, A4. Es independiente de `impresionModo` y de la modalidad FE/controlador. El primer ticket es B de 80 mm con logo y QR. Ticket A y email quedan pendientes; no se sustituyen automáticamente por una impresión A4. Ver [contrato, publicación y validaciones](FacturaElectronicaTicket.md). Custodia y recibos conservan sus formatos.
+Regla actualizada el 2026-11-26: `ctrl_papel` del SP decide A4/TK/EM. `impresionFormatoFE` en el JSON del iniciador declara el papel físico A4/TK del puesto para contrastarlo; ya no tiene prioridad sobre GECO. Si difieren se informa ambos valores al ingresar/menú y se registra la divergencia en el log; el aviso es informativo y no altera el formato del SP ni bloquea la operación. Sin dato del SP se conserva A4 por compatibilidad, nunca se fuerza el formato local. Este control no detecta hardware automáticamente. Es independiente de `impresionModo` y de FE/controlador. Los tickets A y B son de 80 mm con logo y QR; A discrimina netos e IVA desde los SP. Email queda pendiente y no se sustituye automáticamente por A4. Ver [contrato, publicación y validaciones](FacturaElectronicaTicket.md). Custodia y recibos conservan sus formatos.
 
 ## Preparación de Windows y Chrome
 

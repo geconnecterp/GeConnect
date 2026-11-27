@@ -274,6 +274,12 @@ namespace gc.caja.Controllers
                     });
                 }
 
+                var puesto = HttpContext.RequestServices.GetService<gc.caja.Models.Estacion.EstacionPuestoServicio>()?.Obtener(HttpContext);
+                var avisoPapel = gc.caja.Models.Estacion.ControlPapelImpresora.AvisoPara(caja, puesto);
+                if (avisoPapel != null)
+                    _logger?.LogWarning("[CAJA][PAPEL_DIVERGENTE] Caja={Caja} Sucursal={Sucursal} CtrlPapel={CtrlPapel} PapelFisicoPuesto={PapelFisico} Aviso={Aviso}",
+                        caja.CajaId, AdministracionId, caja.Caja.ctrl_papel, puesto?.ImpresionFormatoFE, avisoPapel);
+
                 // Preparar respuesta exitosa
                 var respuestaExito = new
                 {
@@ -290,12 +296,13 @@ namespace gc.caja.Controllers
                         result?.Entidad?.dia_movi,
                         result?.Entidad?.caja_estado,
                         result?.Entidad?.caja_nro_proceso,
+                        aviso_papel_impresora = avisoPapel,
                         caja //lleva toda la info del sp, incluyendo settings y datos para el menú dinámico (botones, etc)
                     }
                 };
 
                 // Si hay advertencia, agregarla
-                if (validacionPV.EsAdvertencia)
+                if (validacionPV.EsAdvertencia || avisoPapel != null)
                 {
                     return Json(new
                     {
@@ -303,7 +310,7 @@ namespace gc.caja.Controllers
                         respuestaExito.resultado,
                         respuestaExito.mensaje,
                         respuestaExito.datos,
-                        mensaje_advertencia = validacionPV.Mensaje,
+                        mensaje_advertencia = string.Join("\n", new[] { validacionPV.EsAdvertencia ? validacionPV.Mensaje : null, avisoPapel }.Where(m => !string.IsNullOrWhiteSpace(m))),
                         mostrar_mensaje = true
                     });
                 }

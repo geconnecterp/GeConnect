@@ -41,15 +41,16 @@ namespace gc.api.core.Servicios.Reportes
 
             try
             {
-                if (FormatoPapelComprobante.Resolver(solicitud.Parametros.GetValueOrDefault("ctrl_papel")) != "A4")
-                    throw new NegocioException("El formato solicitado todavía no está disponible para Factura A. Utilice A4 para este comprobante.");
+                var papel = FormatoPapelComprobante.Resolver(solicitud.Parametros.GetValueOrDefault("ctrl_papel"));
+                if (papel == "EM")
+                    throw new NegocioException("GECO indica envío por email. Ese circuito debe configurarse antes de generar una salida de impresión.");
                 var ms = new MemoryStream();
 
                 #region Obtener Datos Separados
                 var encabezado = ObtenerDatosFactura(solicitud);
                 var productos = ObtenerDetalleProductos(solicitud);
-                var datosIva = ObtenerDatosIva(solicitud);
-                var datosPercepciones = ObtenerDatosPercepciones(solicitud);
+                var datosIva = ObtenerDatosIva(solicitud, exigirDetalle: papel == "TK");
+                var datosPercepciones = ObtenerDatosPercepciones(solicitud, exigirDetalle: papel == "TK");
 
                 if (encabezado == null)
                 {
@@ -61,6 +62,10 @@ namespace gc.api.core.Servicios.Reportes
                     throw new NegocioException("No se encontraron productos para la factura solicitada.");
                 }
                 #endregion
+
+                if (papel == "TK")
+                    return Convert.ToBase64String(FacturaATicketPdf.Generar(encabezado, productos, datosIva, datosPercepciones,
+                        solicitud.LogoPath, FacturaBase.ObtenerLeyendaImpresion(solicitud), _logger));
 
                 #region Inicialización PDF
                 pdf = HelperPdf.GenerarInstanciaAndInit(
@@ -752,7 +757,7 @@ namespace gc.api.core.Servicios.Reportes
             }
         }
 
-        private List<FeIvaResDto> ObtenerDatosIva(ReporteSolicitudDto solicitud)
+        private List<FeIvaResDto> ObtenerDatosIva(ReporteSolicitudDto solicitud, bool exigirDetalle = false)
         {
             try
             {
@@ -768,11 +773,12 @@ namespace gc.api.core.Servicios.Reportes
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error al obtener datos de IVA");
+                if (exigirDetalle) throw new NegocioException("No se pudo obtener el desglose de IVA para el ticket A. Reintente sólo la generación del comprobante.");
                 return new List<FeIvaResDto>();
             }
         }
 
-        private List<FePerResDto> ObtenerDatosPercepciones(ReporteSolicitudDto solicitud)
+        private List<FePerResDto> ObtenerDatosPercepciones(ReporteSolicitudDto solicitud, bool exigirDetalle = false)
         {
             try
             {
@@ -788,6 +794,7 @@ namespace gc.api.core.Servicios.Reportes
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error al obtener datos de percepciones");
+                if (exigirDetalle) throw new NegocioException("No se pudieron obtener las percepciones para el ticket A. Reintente sólo la generación del comprobante.");
                 return new List<FePerResDto>();
             }
         }

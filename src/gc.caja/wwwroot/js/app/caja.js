@@ -415,6 +415,7 @@ $(function () {
 
                 // âœ… NUEVO: Actualizar el footer del menÃº con los datos recibidos
                 actualizarFooterMenu(response.datos);
+                window.ControlPapelImpresoraVista?.actualizar(response.datos?.aviso_papel_impresora);
 
                 // âœ… VALIDACIÃ“N 2: Verificar si hay mensaje de advertencia del sistema
                 const tieneAdvertencia = response.mostrar_mensaje === true && response.mensaje_advertencia;
