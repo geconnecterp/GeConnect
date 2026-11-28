@@ -1,0 +1,41 @@
+﻿@model CierresGecoModel
+@{
+	var alt = true;
+	string clase = string.Empty;
+}
+<div class="table-wrapper" id="containerCierresGeco">
+	<table class="table table-sm table-golden" id="tbCierresGeco">
+		<thead>
+			<tr class="header">
+				<th class="text-center">N° Proceso</th>
+				<th class="text-center">N° Cierre</th>
+				<th class="text-center">N° Renv</th>
+				<th class="text-center">PV</th>
+				<th class="text-center">Cajero</th>
+				<th class="text-center">Cupones OK</th>
+				<th class="text-center">Cupon FILE</th>
+			</tr>
+		</thead>
+		<tbody>
+			@if (Model != null && Model.GrillaCierreGeco != null && Model.GrillaCierreGeco.ListaDatos != null && Model.GrillaCierreGeco.ListaDatos.Count > 0)
+			{
+				@foreach (var item in Model.GrillaCierreGeco.ListaDatos)
+				{
+					if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+					<tr class="@clase"
+						onclick="selectReg(this, 'tbCierresGeco')"
+						data-nro-proceso="@item.nro_proceso"
+						data-nro-cierre="@item.nro_cierre">
+						<td class="@Model.GrillaCierreGeco.ObtenerClase(item.nro_proceso) align-center cell-fit-content">@Model.GrillaCierreGeco.FormatearDato(item.nro_proceso, FormatDato.Ninguno)</td>
+						<td class="@Model.GrillaCierreGeco.ObtenerClase(item.nro_cierre) align-center cell-fit-content">@Model.GrillaCierreGeco.FormatearDato(item.nro_cierre, FormatDato.Ninguno)</td>
+						<td class="@Model.GrillaCierreGeco.ObtenerClase(item.nro_renv) align-center cell-fit-content">@Model.GrillaCierreGeco.FormatearDato(item.nro_renv, FormatDato.Ninguno)</td>
+						<td class="@Model.GrillaCierreGeco.ObtenerClase(item.pv) align-center cell-fit-content">@Model.GrillaCierreGeco.FormatearDato(item.pv, FormatDato.Ninguno)</td>
+						<td class="@Model.GrillaCierreGeco.ObtenerClase(item.cajero) text-start cell-fit-content">@Model.GrillaCierreGeco.FormatearDato(item.cajero, FormatDato.Ninguno)</td>
+						<td class="@Model.GrillaCierreGeco.ObtenerClase(item.cupones_ok) align-center cell-fit-content">@Model.GrillaCierreGeco.FormatearDato(item.cupones_ok, FormatDato.Ninguno)</td>
+						<td class="@Model.GrillaCierreGeco.ObtenerClase(item.cupon_file) align-center cell-fit-content">@Model.GrillaCierreGeco.FormatearDato(item.cupon_file, FormatDato.Ninguno)</td>
+					</tr>
+				}
+			}
+		</tbody>
+	</table>
+</div>

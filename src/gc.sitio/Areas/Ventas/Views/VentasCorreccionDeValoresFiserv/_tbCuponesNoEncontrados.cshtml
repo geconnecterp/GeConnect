@@ -1,0 +1,46 @@
+﻿@model CuponesNoEncontradosModel
+@{
+	var alt = true;
+	string clase = string.Empty;
+}
+<div class="table-wrapper" id="containerCuponesNoEncontrados">
+	<table class="table table-sm table-golden" id="tbCuponesNoEncontrados">
+		<thead>
+			<tr class="header">
+				<th class="text-center">Fecha</th>
+				<th class="text-center">ID</th>
+				<th class="text-center">Producto</th>
+				<th class="text-center">N° Tran</th>
+				<th class="text-center">N° Term</th>
+				<th class="text-center">Tc/Tra</th>
+				<th class="text-center">Lote</th>
+				<th class="text-center">Cupón</th>
+				<th class="text-center">Imnporte</th>
+				<th class="text-center">Proceso/Cierre</th>
+			</tr>
+		</thead>
+		<tbody>
+			@if (Model != null && Model.GrillaCuponesNoEncontrados != null && Model.GrillaCuponesNoEncontrados.ListaDatos != null && Model.GrillaCuponesNoEncontrados.ListaDatos.Count > 0)
+			{
+				@foreach (var item in Model.GrillaCuponesNoEncontrados.ListaDatos)
+				{
+					if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+					<tr class="@clase"
+						onclick="selectReg(this, 'tbCuponesEnGeco')"
+						data-id="@item.id">
+						<td class="@Model.GrillaCuponesNoEncontrados.ObtenerClase(item.id) text-center cell-fit-content">@Model.GrillaCuponesNoEncontrados.FormatearDato(item.id, FormatDato.Ninguno)</td>
+						<td class="@Model.GrillaCuponesNoEncontrados.ObtenerClase(item.fecha) text-center cell-fit-content">@Model.GrillaCuponesNoEncontrados.FormatearDato(item.fecha, FormatDato.Fecha)</td>
+						<td class="@Model.GrillaCuponesNoEncontrados.ObtenerClase(item.producto) text-start cell-fit-content">@Model.GrillaCuponesNoEncontrados.FormatearDato(item.producto, FormatDato.Ninguno)</td>
+						<td class="@Model.GrillaCuponesNoEncontrados.ObtenerClase(item.nro_trans) text-center cell-fit-content">@Model.GrillaCuponesNoEncontrados.FormatearDato(item.nro_trans, FormatDato.Ninguno)</td>
+						<td class="@Model.GrillaCuponesNoEncontrados.ObtenerClase(item.nro_term) text-center cell-fit-content">@Model.GrillaCuponesNoEncontrados.FormatearDato(item.nro_term, FormatDato.Ninguno)</td>
+						<td class="@Model.GrillaCuponesNoEncontrados.ObtenerClase(item.tc_tra) text-center cell-fit-content">@Model.GrillaCuponesNoEncontrados.FormatearDato(item.tc_tra, FormatDato.Ninguno)</td>
+						<td class="@Model.GrillaCuponesNoEncontrados.ObtenerClase(item.lote) text-center cell-fit-content">@Model.GrillaCuponesNoEncontrados.FormatearDato(item.lote, FormatDato.Ninguno)</td>
+						<td class="@Model.GrillaCuponesNoEncontrados.ObtenerClase(item.cupon) text-center cell-fit-content">@Model.GrillaCuponesNoEncontrados.FormatearDato(item.cupon, FormatDato.Ninguno)</td>
+						<td class="@Model.GrillaCuponesNoEncontrados.ObtenerClase(item.importe) text-end cell-fit-content">@Model.GrillaCuponesNoEncontrados.FormatearDato(item.importe, FormatDato.Monto)</td>
+						<td class="@Model.GrillaCuponesNoEncontrados.ObtenerClase(item.proceso_cierre) text-center cell-fit-content">@Model.GrillaCuponesNoEncontrados.FormatearDato(item.proceso_cierre, FormatDato.Ninguno)</td>
+					</tr>
+				}
+			}
+		</tbody>
+	</table>
+</div>

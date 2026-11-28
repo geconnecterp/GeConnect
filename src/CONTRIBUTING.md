@@ -1,5 +1,11 @@
 ﻿# Guía de Contribución - GeConnect
 
+## 🚀 Programa de Inducción para Nuevos Integrantes
+
+La incorporación de nuevos integrantes debe incluir un cronograma documentado y una explicación de la arquitectura, las capas de la solución, la responsabilidad de cada proyecto y las funciones principales de cada módulo. El contenido debe adaptarse a la estructura real del repositorio y validarse mediante ejercicios prácticos y revisión técnica.
+
+---
+
 ## 📋 Tabla de Contenidos
 
 1. [Principios Fundamentales](#-principios-fundamentales)

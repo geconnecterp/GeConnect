@@ -1,0 +1,40 @@
+﻿@model CuponesEnGecoModel
+@{
+	var alt = true;
+	string clase = string.Empty;
+}
+<div class="table-wrapper" id="containerCuponesEnGeco">
+	<table class="table table-sm table-golden" id="tbCuponesEnGeco">
+		<thead>
+			<tr class="header">
+				<th class="text-center">ID</th>
+				<th class="text-center">Descipción</th>
+				<th class="text-center">Tc/Tra</th>
+				<th class="text-center">Lote</th>
+				<th class="text-center">Cupón</th>
+				<th class="text-center">Importe</th>
+				<th class="text-center">E</th>
+			</tr>
+		</thead>
+		<tbody>
+			@if (Model != null && Model.GrillaCuponEnGeco != null && Model.GrillaCuponEnGeco.ListaDatos != null && Model.GrillaCuponEnGeco.ListaDatos.Count > 0)
+			{
+				@foreach (var item in Model.GrillaCuponEnGeco.ListaDatos)
+				{
+					if (alt) { clase = "alt"; alt = false; } else { clase = string.Empty; alt = true; }
+					<tr class="@clase"
+						onclick="selectReg(this, 'tbCuponesEnGeco')"
+						data-id="@item.id">
+						<td class="@Model.GrillaCuponEnGeco.ObtenerClase(item.id) align-center cell-fit-content">@Model.GrillaCuponEnGeco.FormatearDato(item.id, FormatDato.Ninguno)</td>
+						<td class="@Model.GrillaCuponEnGeco.ObtenerClase(item.descripcion) text-start cell-fit-content">@Model.GrillaCuponEnGeco.FormatearDato(item.descripcion, FormatDato.Ninguno)</td>
+						<td class="@Model.GrillaCuponEnGeco.ObtenerClase(item.tc_tra) align-center cell-fit-content">@Model.GrillaCuponEnGeco.FormatearDato(item.tc_tra, FormatDato.Ninguno)</td>
+						<td class="@Model.GrillaCuponEnGeco.ObtenerClase(item.lote) align-center cell-fit-content">@Model.GrillaCuponEnGeco.FormatearDato(item.lote, FormatDato.Ninguno)</td>
+						<td class="@Model.GrillaCuponEnGeco.ObtenerClase(item.cupon) align-center cell-fit-content">@Model.GrillaCuponEnGeco.FormatearDato(item.cupon, FormatDato.Ninguno)</td>
+						<td class="@Model.GrillaCuponEnGeco.ObtenerClase(item.importe) text-end cell-fit-content">@Model.GrillaCuponEnGeco.FormatearDato(item.importe, FormatDato.Monto)</td>
+						<td class="@Model.GrillaCuponEnGeco.ObtenerClase(item.e) align-center cell-fit-content">@Model.GrillaCuponEnGeco.FormatearDato(item.e, FormatDato.Ninguno)</td>
+					</tr>
+				}
+			}
+		</tbody>
+	</table>
+</div>

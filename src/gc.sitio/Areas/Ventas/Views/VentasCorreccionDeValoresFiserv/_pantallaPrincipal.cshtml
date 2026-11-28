@@ -1,0 +1,92 @@
+﻿@using gc.sitio.Areas.Ventas.Models.VentasCorreccionDeValoresFiserv
+@model PantallaPrincipalFiservModel
+@{
+}
+<div class="container-fluid min-vh-100 d-flex flex-column">
+	<div class="row mb-1">
+		<div class="col-12">
+			<div class="p-1 border rounded bg-light">
+				<div class="d-flex justify-content-between align-items-center flex-wrap">
+					<div class="d-flex flex-wrap gap-4">
+
+						<div>Sucursal: <strong>@Model.Sucursal</strong></div>
+						<div>Fecha: <strong>@Model.Fecha</strong></div>
+						<div>Proceso: <strong>@Model.NroProceso</strong></div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="row col-12">
+		<div class="col-4" style="padding-right: 5px;">
+			<div class="grid-golden">
+				<div class="grid-golden-header">
+					<div class="row align-items-md-center">
+						<div class="col-md-10 col-sm-6 d-flex align-items-center">
+							<h5 class="mb-0 flex-grow-1">
+								<strong>Cierres GECO</strong>
+							</h5>
+						</div>
+					</div>
+				</div>
+				<div class="grid-golden-body" id="divCierresGeco">
+					<partial name="_tbCierresGeco" model="new CierresGecoModel()" />
+				</div>
+			</div>
+		</div>
+		<div class="col-6" style="padding-left: 5px;">
+			<div class="grid-golden">
+				<div class="grid-golden-header">
+					<div class="row align-items-md-center">
+						<div class="col-md-10 col-sm-6 d-flex align-items-center">
+							<h5 class="mb-0 flex-grow-1">
+								<strong>Cupones en GECO</strong>
+							</h5>
+						</div>
+					</div>
+				</div>
+				<div class="grid-golden-body" id="CierresGeco">
+					<partial name="_tbCuponesEnGeco" model="new CuponesEnGecoModel()" />
+				</div>
+			</div>
+		</div>
+		<div class="col-2" style="padding-left: 0px; padding-right: 0px;">
+			<div class="d-flex flex-column gap-1">
+				<button id="btnCargarArchivo" class="btn btn-sm btn-info">
+					<i class="bx bx-import"></i> Cargar Archivo
+				</button>
+				<button id="btnConfirmarArqueo" class="btn btn-sm btn-primary">
+					<i class="bx bx-check"></i> Confirmar Arqueo
+				</button>
+				<button id="btnSalir" class="btn btn-sm btn-danger">
+					<i class="bx bx-x-circle"></i> Salir
+				</button>
+			</div>
+		</div>
+	</div>
+	<div class="row col-12 mt-3">
+		<div class="col-10">
+			<div class="grid-golden">
+				<div class="grid-golden-header">
+					<div class="row align-items-md-center">
+						<div class="col-md-10 col-sm-6 d-flex align-items-center">
+							<h5 class="mb-0 flex-grow-1">
+								<strong>Cupones  Archivo FISERV no encontrados en GECO</strong>
+							</h5>
+						</div>
+					</div>
+				</div>
+				<div class="grid-golden-body" id="divCuponesNoEncontrados">
+					<partial name="_tbCuponesNoEncontrados" model="new CuponesNoEncontradosModel()" />
+				</div>
+			</div>
+		</div>
+		<div class="col-2" style="padding-left: 0px; padding-right: 0px;">
+			<div class="d-flex flex-column gap-1">
+				<button id="btnAgregarCupon" class="btn btn-sm btn-info">
+					<i class="bx bx-plus"></i> Cargar Archivo
+				</button>
+			</div>
+		</div>
+	</div>
+</div>
