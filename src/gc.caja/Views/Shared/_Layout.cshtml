@@ -108,7 +108,7 @@
 
     <script src="~/lib/virtual-keyboard/js/virtual-keyboard.js" asp-append-version="true"></script>
     <script src="~/js/app/dictado.js" asp-append-version="true"></script>
-    @if (User.Identity?.IsAuthenticated == true)
+    @if (User.Identity?.IsAuthenticated == true && ViewData["OmitirSalidaComprobantes"] is not true)
     {
         <partial name="_SalidaComprobantes" />
     }
